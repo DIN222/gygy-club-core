@@ -1,1 +1,253 @@
 
+<!DOCTYPE html>
+<!--
+  index.html
+  v1.1.0 — 2026-08-26
+  Главный диспетчер GY-GY Club: вход (#block-entrance) и приветствие (#block-welcome).
+  Разметка + инициализация модулей. Бизнес-логика — в core/ и modules/ (см. CONTRACT.md п.7).
+
+  Разделение файлов проекта (решено по факту сложности каждого узла, не по жёсткому
+  правилу "один экран = один файл"):
+    index.html    — вход + приветствие (лёгкая, короткая связка)
+    identity.html — регистрация, паспорт, QR (много логики — отдельный файл)
+    hall.html     — холл с 4 зонами (самостоятельный визуальный мир)
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>GY-GY Club v1.1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Montserrat:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<style>
+    :root { --gold: #FFD700; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+        width: 100%; height: 100%;
+        background: #000000;
+        color: var(--gold);
+        overflow: hidden;
+        position: fixed;
+        font-family: 'Share Tech Mono', monospace;
+    }
+
+    .nav-block {
+        position: fixed; inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 1.2s ease-in-out;
+    }
+    .nav-block.active { display: flex; opacity: 1; }
+    .nav-fade-out { opacity: 0; }
+
+    /* ===== Header ===== */
+    .header-right {
+        position: fixed; top: 18px; right: 25px; z-index: 1000;
+        font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif;
+    }
+
+    .gy-user-badge {
+        position: fixed; top: 4px; left: 50%; transform: translateX(-50%);
+        width: 36px; height: 36px; border-radius: 50%;
+        border: 2px solid var(--gold); background: #111;
+        z-index: 1000; cursor: pointer; display: none;
+    }
+    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .gy-user-badge .badge-flag {
+        position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover;
+        border: 1px solid var(--gold);
+    }
+
+    /* ===== Language selector ===== */
+    .lang-wrapper { position: absolute; top: 18px; left: 20px; z-index: 1001; width: 165px; }
+    .lang-current {
+        display: flex; align-items: center; justify-content: space-between;
+        background: rgba(0,0,0,0.95); border: 2px solid var(--gold);
+        padding: 5px 8px; border-radius: 10px; cursor: pointer;
+        transition: filter 0.3s ease;
+    }
+    .lang-current:hover { filter: brightness(1.1); }
+    .lang-current-content { display: flex; align-items: center; gap: 7px; min-width: 0; }
+    .item-flag { width: 16px; height: 11px; object-fit: cover; border: 1px solid var(--gold); flex-shrink: 0; }
+    .item-text { color: var(--gold); font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .arrow-down { color: var(--gold); font-size: 10px; }
+
+    .lang-list {
+        position: absolute; top: calc(100% + 5px); left: 0;
+        background: rgba(0,0,0,0.95); border: 2px solid var(--gold); border-radius: 10px;
+        width: 100%; max-height: 260px; overflow-y: auto; display: none; z-index: 1002;
+    }
+    .lang-list.open { display: block; }
+    .club-lang-item {
+        display: flex; align-items: center; gap: 7px; padding: 6px 8px; cursor: pointer;
+        border-bottom: 1px solid rgba(255,215,0,0.15); transition: background 0.2s;
+    }
+    .club-lang-item:last-child { border-bottom: none; }
+    .club-lang-item:hover { background: rgba(255,215,0,0.15); }
+
+    /* ===== Door ===== */
+    #main-door {
+        display: block; height: 48vh; max-height: 400px; width: auto; max-width: 100%;
+        object-fit: contain; cursor: pointer;
+        transform: scale(1);
+        transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease-out;
+    }
+    #main-door:hover { filter: brightness(1.1); }
+    #main-door.door-exploded { transform: scale(3.5); opacity: 0; }
+
+    /* ===== Welcome ===== */
+    .quote-text {
+        font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px;
+        text-align: center; max-width: 85%; margin-bottom: 8px;
+    }
+    #block-welcome img { max-height: 22vh; width: auto; object-fit: contain; margin: 6px 0; filter: drop-shadow(0 0 15px rgba(255,215,0,0.6)); }
+    .welcome-title {
+        font-size: 24px; font-weight: 700; letter-spacing: 8px; font-style: italic;
+        margin-bottom: 6px; font-family: 'Cinzel', serif;
+    }
+
+    .btn-gy {
+        min-width: 240px; padding: 10px 18px; background: #000; border: 2px solid var(--gold);
+        color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700;
+        margin: 4px 0; font-family: 'Montserrat', 'Cinzel', sans-serif; font-size: 12px;
+        transition: filter 0.3s ease;
+    }
+    .btn-gy:hover:not(.btn-sleep) { filter: brightness(1.1); }
+    .btn-sleep { opacity: 0.15; pointer-events: none; cursor: not-allowed; }
+
+    /* ===== Passport modal (рендерится modules/passport.js, стили — общие) ===== */
+    .gy-passport-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
+        display: none; align-items: center; justify-content: center; opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .gy-passport-card {
+        background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
+        padding: 25px; width: 280px; color: #000; text-align: center; position: relative;
+        font-family: 'Share Tech Mono', monospace;
+    }
+    .gy-passport-close { position: absolute; top: 10px; right: 14px; font-size: 28px; cursor: pointer; }
+    .gy-passport-title { font-weight: 900; font-size: 16px; font-family: 'Cinzel', serif; }
+    .gy-passport-id { font-weight: 700; font-size: 13px; margin-top: 5px; color: #555; }
+    .gy-passport-nick { font-weight: 700; font-size: 14px; margin-top: 4px; }
+    .gy-passport-avatar-box, .gy-passport-qr-box {
+        width: 90px; height: 90px; border: 2px solid var(--gold); background: #fff;
+        margin: 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
+</style>
+</head>
+<body>
+
+<div class="header-right">GY-GY</div>
+<div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+
+<!-- ===================== ВХОД ===================== -->
+<section id="block-entrance" class="nav-block active">
+    <div class="lang-wrapper" id="lang-wrapper">
+        <div class="lang-current" id="lang-current">
+            <div class="lang-current-content">
+                <img id="current-flag" class="item-flag" src="https://flagcdn.com/w20/gb.png" alt="">
+                <span id="current-lang-name" class="item-text">English</span>
+            </div>
+            <span class="arrow-down">▼</span>
+        </div>
+        <div class="lang-list" id="lang-list"></div>
+    </div>
+
+    <img id="main-door" src="door.jpg" alt="Enter GY-GY Club">
+</section>
+
+<!-- ===================== ПРИВЕТСТВИЕ ===================== -->
+<section id="block-welcome" class="nav-block">
+    <div class="quote-text" data-translate="welcome_charlie">I'M CHARLIE</div>
+    <div class="quote-text" data-translate="welcome_quote">In every joke there is a share of whisky</div>
+    <img src="horse_welcome.png" alt="Charlie">
+    <div class="welcome-title" data-translate="welcome_title">WELCOME</div>
+    <button id="btn-enter-hall" class="btn-gy btn-sleep" data-translate="btn_proceed_hall">PROCEED TO HALL</button>
+    <button id="btn-go-register" class="btn-gy" data-translate="btn_get_id">GET ID</button>
+</section>
+
+<audio id="snd-door" src="door_open.mp3" preload="auto"></audio>
+<audio id="snd-ambient" src="bar_ambient.mp3" preload="auto"></audio>
+
+<script type="module">
+    import { init as initLocalization, renderLanguageList, ALL_LANGUAGES, getCurrentLang } from './core/localization.js';
+    import { on } from './core/eventBus.js';
+    import { get } from './core/storage.js';
+    import { init as initPassport, hasPassport } from './modules/passport.js';
+
+    // --- Локализация статики ---
+    initLocalization(document.body);
+    renderLanguageList(document.getElementById('lang-list'));
+
+    // Отразить уже сохранённый язык в рамке при повторном визите
+    (function syncCurrentLangUI() {
+        const code = getCurrentLang();
+        const lang = ALL_LANGUAGES.find(l => l.code === code);
+        if (lang) {
+            document.getElementById('current-flag').src = `https://flagcdn.com/w20/${lang.country}.png`;
+            document.getElementById('current-lang-name').textContent = lang.name;
+        }
+    })();
+
+    // Реакция рамки на смену языка из выпадающего списка
+    on('language:changed', ({ name, flagUrl }) => {
+        document.getElementById('current-flag').src = flagUrl;
+        document.getElementById('current-lang-name').textContent = name;
+        document.getElementById('lang-list').classList.remove('open');
+    });
+
+    // --- Паспорт: бейдж в шапке (скрыт, если резидент ещё не регистрировался) ---
+    initPassport(document.getElementById('passport-badge-container'));
+
+    // --- Состояние кнопок приветствия: первый vs повторный вход ---
+    const btnEnterHall = document.getElementById('btn-enter-hall');
+    const btnGoRegister = document.getElementById('btn-go-register');
+    if (hasPassport()) {
+        btnEnterHall.classList.remove('btn-sleep');
+        btnGoRegister.classList.add('btn-sleep');
+    }
+
+    // --- Языковая рамка: минимальный дропдаун (полный рендер списка — TODO при наполнении словаря) ---
+    document.getElementById('lang-current').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('lang-list').classList.toggle('open');
+    });
+    window.addEventListener('click', () => {
+        document.getElementById('lang-list').classList.remove('open');
+    });
+
+    // --- Клик по двери: взрыв + звук двери, через 0.7с звук бара и переход к приветствию ---
+    const mainDoor = document.getElementById('main-door');
+    const sndDoor = document.getElementById('snd-door');
+    const sndAmbient = document.getElementById('snd-ambient');
+
+    mainDoor.addEventListener('click', () => {
+        sndDoor.play().catch(() => {});
+        mainDoor.classList.add('door-exploded');
+
+        setTimeout(() => {
+            sndAmbient.volume = 0.5;
+            sndAmbient.play().catch(() => {});
+
+            document.getElementById('block-entrance').classList.remove('active');
+            document.getElementById('block-welcome').classList.add('active');
+        }, 700); // манифест: звук бара через ~0.5–0.7с после начала перехода
+    });
+
+    // --- Кнопки приветствия ---
+    btnEnterHall.addEventListener('click', () => {
+        if (!btnEnterHall.classList.contains('btn-sleep')) window.location.href = 'hall.html';
+    });
+    btnGoRegister.addEventListener('click', () => {
+        window.location.href = 'identity.html';
+    });
+</script>
+
+</body>
+</html>
