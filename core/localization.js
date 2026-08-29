@@ -1,6 +1,6 @@
 /**
  * core/localization.js
- * v1.0.0 — 2026-08-26
+ * v1.0.1 — 2026-08-26
  *
  * Локализация СТАТИЧНОГО интерфейса проекта (кнопки, заголовки, слоганы).
  * Динамический контент (чаты, жалобы, генеративные AI-комнаты) НЕ входит
@@ -123,6 +123,8 @@ export function renderLanguageList(container) {
             <img class="item-flag" src="${flagUrl(lang.country)}" alt="${lang.code}">
             <span class="item-text">${lang.name}</span>
         `;
+        // Примечание: в старой версии здесь был аватар (конь) рядом с каждым языком —
+        // сознательно убран: назначение элемента утрачено, следовательно избыточен.
         item.addEventListener('click', () => selectLanguage(lang.code));
         container.appendChild(item);
     });
