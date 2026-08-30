@@ -1,6 +1,8 @@
 /**
  * modules/navigation.js
- * v1.0.0 — 2026-08-26
+ * v1.0.1 — 2026-08-26
+ * Изменения: init()/destroy() теперь эмитят MODULE_INIT/MODULE_DESTROY через EventBus
+ * (см. CONTRACT.md п.8 — жизненный цикл модуля должен быть виден извне).
  *
  * Управляет переходами между блоками/страницами: fade-эффект (1.2 сек),
  * синхронный звук, история сессии. Следует CONTRACT.md:
@@ -128,6 +130,8 @@ export function getHistory() {
     return get('navHistory', []);
 }
 
+const MODULE_NAME = 'navigation';
+
 /**
  * Контракт узла (см. CONTRACT.md).
  */
@@ -137,6 +141,8 @@ export function init(container) {
     const handleUnlock = () => emit('NAVIGATION_READY');
     on('HALL_DIRECTIONS_UNLOCKED', handleUnlock);
     unsubscribers.push({ event: 'HALL_DIRECTIONS_UNLOCKED', handler: handleUnlock });
+
+    emit('MODULE_INIT', { module: MODULE_NAME, at: Date.now() });
 }
 
 export function update() {
@@ -149,6 +155,8 @@ export function destroy() {
     unsubscribers = [];
     boundContainer = null;
     sounds = {};
+
+    emit('MODULE_DESTROY', { module: MODULE_NAME, at: Date.now() });
 }
 
 export const Navigation = {
