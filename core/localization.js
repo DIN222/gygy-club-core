@@ -1,6 +1,8 @@
 /**
  * core/localization.js
- * v1.0.1 — 2026-08-26
+ * v1.0.2 — 2026-08-26
+ * Изменения: init()/destroy() теперь эмитят MODULE_INIT/MODULE_DESTROY через EventBus
+ * (см. CONTRACT.md п.8 — жизненный цикл модуля должен быть виден извне).
  *
  * Локализация СТАТИЧНОГО интерфейса проекта (кнопки, заголовки, слоганы).
  * Динамический контент (чаты, жалобы, генеративные AI-комнаты) НЕ входит
@@ -133,11 +135,14 @@ export function renderLanguageList(container) {
 /**
  * Контракт узла (см. CONTRACT.md).
  */
+const MODULE_NAME = 'localization';
+
 let boundContainer = null;
 
 export function init(container = document) {
     boundContainer = container;
     applyTranslations(boundContainer);
+    emit('MODULE_INIT', { module: MODULE_NAME, at: Date.now() });
 }
 
 export function update() {
@@ -148,6 +153,7 @@ export function destroy() {
     boundContainer = null;
     // renderLanguageList вешает слушатели через addEventListener на элементы,
     // которые удаляются вместе с контейнером — отдельной отписки не требуется.
+    emit('MODULE_DESTROY', { module: MODULE_NAME, at: Date.now() });
 }
 
 export const Localization = {
