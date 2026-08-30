@@ -1,9 +1,8 @@
-
 /**
  * modules/passport.js
- * v1.1.0 — 2026-08-26
- * Изменения: добавлена generateAvatar(id) — процедурный SVG-аватар как
- * детерминированный "отпечаток" ID резидента, без внешних сервисов.
+ * v1.1.1 — 2026-08-26
+ * Изменения: init()/destroy() теперь эмитят MODULE_INIT/MODULE_DESTROY через EventBus
+ * (см. CONTRACT.md п.8 — жизненный цикл модуля должен быть виден извне).
  *
  * Цифровой паспорт резидента: бейдж в шапке + модальное окно с QR-кодом.
  * Переиспользуемый узел — рендерит себя в переданный container на ЛЮБОЙ
@@ -170,6 +169,12 @@ export function closeModal() {
     setTimeout(() => { modal.style.display = 'none'; }, 300);
 }
 
+const MODULE_NAME = 'passport';
+
+/**
+ * Контракт узла (см. CONTRACT.md).
+ * @param {HTMLElement} container - куда рендерить бейдж (обычно header-bar страницы)
+ */
 export function init(container) {
     boundContainer = container;
     renderBadge();
@@ -177,6 +182,8 @@ export function init(container) {
     const handleSave = () => renderBadge();
     on('PROFILE_SAVED', handleSave);
     unsubscribers.push({ event: 'PROFILE_SAVED', handler: handleSave });
+
+    emit('MODULE_INIT', { module: MODULE_NAME, at: Date.now() });
 }
 
 export function update() {
@@ -187,6 +194,8 @@ export function destroy() {
     unsubscribers.forEach(({ event, handler }) => off(event, handler));
     unsubscribers = [];
     boundContainer = null;
+
+    emit('MODULE_DESTROY', { module: MODULE_NAME, at: Date.now() });
 }
 
 export const Passport = {
