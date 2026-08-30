@@ -1,1 +1,162 @@
+<!DOCTYPE html>
+<!--
+  hall.html
+  v1.0.0 — 2026-08-26
+  Холл клуба: винтажная фотография как фон, поверх которой минимальное ядро —
+  4 навигационные зоны (AI Room, Office, Studio, вход в Bar). Остальные элементы
+  фотографии (табло, проектор и т.д.) — задел на будущее, станут интерактивными
+  по мере развития, без изменения этого ядра (см. CONTRACT.md п.7 — тонкие страницы).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>GY-GY Club — Hall v1.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<style>
+    :root { --gold: #FFD700; --violet: #8A2BE2; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+    html, body {
+        width: 100%; height: 100%;
+        background: #000000; color: var(--gold);
+        overflow: hidden; position: fixed;
+        font-family: 'Share Tech Mono', monospace;
+    }
+
+    body {
+        background: url('hall_bg_jpg.jpg') center/cover no-repeat #000000;
+    }
+
+    .header-right {
+        position: fixed; top: 18px; right: 25px; z-index: 1000;
+        font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif;
+    }
+
+    .ui-nav-arrows {
+        position: fixed; top: 18px; left: 20px; z-index: 1000;
+        display: flex; gap: 15px; font-size: 24px; font-weight: 900;
+        font-family: 'Share Tech Mono', monospace;
+    }
+    .back-arrow {
+        color: var(--gold); background: transparent; border: none; text-decoration: none;
+        cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+    }
+    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
+
+    .gy-user-badge {
+        position: fixed; top: 4px; left: 50%; transform: translateX(-50%);
+        width: 36px; height: 36px; border-radius: 50%;
+        border: 2px solid var(--gold); background: #111;
+        z-index: 1000; cursor: pointer; display: none;
+    }
+    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .gy-user-badge .badge-flag {
+        position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover;
+        border: 1px solid var(--gold);
+    }
+
+    .quote-text {
+        position: absolute; top: 10vh; left: 50%; transform: translateX(-50%);
+        width: 85%; text-align: center;
+        font-family: 'Cormorant Garamond', serif; font-style: italic;
+        font-size: 22px; color: var(--gold);
+        -webkit-text-stroke: 1px #000000;
+    }
+
+    /* ===== Навигационные зоны — минимальное ядро поверх фото ===== */
+    .hall-zone {
+        position: absolute;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        z-index: 6;
+    }
+
+    .cue-arrow {
+        color: var(--violet); font-size: 34px; font-weight: 900;
+        font-family: 'Share Tech Mono', monospace;
+        text-shadow: 0 0 12px var(--violet), 0 0 20px var(--violet);
+        pointer-events: none; user-select: none;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    .hall-zone:hover .cue-arrow { opacity: 0.75; transform: scale(1.1); }
+
+    .zone-label {
+        position: absolute;
+        top: 100%; left: 50%; transform: translateX(-50%);
+        margin-top: 4px;
+        font-size: 10px; font-weight: 700; letter-spacing: 2px;
+        color: var(--gold); text-shadow: 1px 1px 0 #000, -1px -1px 0 #000;
+        white-space: nowrap; pointer-events: none;
+        opacity: 0; transition: opacity 0.2s;
+    }
+    .hall-zone:hover .zone-label { opacity: 1; }
+
+    .zone-ai-room   { top: 22vh; left: 20vw; width: 6vw; height: 10vh; }
+    .zone-office    { bottom: 18vh; left: 20vw; width: 6vw; height: 10vh; }
+    .zone-studio    { top: 22vh; right: 20vw; width: 6vw; height: 10vh; }
+    .zone-bar {
+        bottom: 3vh; left: 50%; transform: translateX(-50%);
+        width: 10vw; height: 8vh;
+    }
+</style>
+</head>
+<body>
+
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back" title="Назад">&lt;</a>
+    <a class="back-arrow" id="btn-home" title="На вход">&lt;&lt;</a>
+</div>
+<div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+
+<div class="quote-text" data-translate="hall_quote">In every joke there is a share of whisky</div>
+
+<!-- Минимальное ядро: 4 зоны. Остальные элементы фотографии (табло, проектор) —
+     задел на будущее, пока не интерактивны. -->
+<div class="hall-zone zone-ai-room" id="zone-ai-room">
+    <span class="cue-arrow">→</span>
+    <span class="zone-label" data-translate="zone_ai_room">AI ROOM</span>
+</div>
+
+<div class="hall-zone zone-office" id="zone-office">
+    <span class="cue-arrow">→</span>
+    <span class="zone-label" data-translate="zone_office">OFFICE</span>
+</div>
+
+<div class="hall-zone zone-studio" id="zone-studio">
+    <span class="cue-arrow">←</span>
+    <span class="zone-label" data-translate="zone_studio">STUDIO</span>
+</div>
+
+<div class="hall-zone zone-bar" id="zone-bar">
+    <span class="cue-arrow">↑</span>
+    <span class="zone-label" data-translate="zone_bar">BAR</span>
+</div>
+
+<script type="module">
+    import { init as initLocalization } from './core/localization.js';
+    import { init as initPassport } from './modules/passport.js';
+    import { init as initNav, registerSound, goToPage } from './modules/navigation.js';
+
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
+    initNav(document.body);
+    registerSound('door', 'door_open.mp3');
+
+    // Минимальное ядро: клик по зоне -> сразу переход на страницу.
+    // Обёртка toggleManifest (промежуточная плашка кнопок из старого кода)
+    // сознательно не переносится в это ядро — можно добавить позже, если
+    // понадобится, не меняя структуру зон.
+    document.getElementById('zone-ai-room').addEventListener('click', () => goToPage('verses.html'));
+    document.getElementById('zone-office').addEventListener('click', () => goToPage('office.html'));
+    document.getElementById('zone-studio').addEventListener('click', () => goToPage('studio.html'));
+    document.getElementById('zone-bar').addEventListener('click', () => goToPage('bar.html', { sound: 'door' }));
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-home').addEventListener('click', () => window.location.href = 'index.html');
+</script>
+
+</body>
+</html>
