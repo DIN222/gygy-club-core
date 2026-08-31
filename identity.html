@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <!--
   identity.html
@@ -67,4 +66,199 @@
     .id-box {
         width: 75px; height: 75px; border: 2px solid var(--gold); background: #ffffff;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        cursor: pointer; position: relative;
+        cursor: pointer; position: relative; color: #000000; padding: 4px; text-align: center;
+        transition: filter 0.3s ease;
+    }
+    .id-box:hover { filter: brightness(1.1); }
+    .id-box.selected { border-color: #ffffff; box-shadow: 0 0 10px var(--gold); }
+    .id-box.readonly { cursor: default; }
+    .id-box input {
+        position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%;
+        cursor: pointer; border: none; background: transparent;
+    }
+    .id-box .label { font-size: 7px; font-weight: 900; pointer-events: none; }
+    .id-box .value { font-size: 8px; margin-top: 4px; font-weight: 700; pointer-events: none; }
+    .id-box img { width: 100%; height: 100%; object-fit: cover; }
+
+    .btn-gy {
+        min-width: 240px; padding: 10px 18px; background: #000; border: 2px solid var(--gold);
+        color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700;
+        margin: 4px 0; font-family: 'Montserrat', 'Cinzel', sans-serif; font-size: 12px;
+        transition: filter 0.3s ease;
+    }
+    .btn-gy:hover:not(.btn-sleep) { filter: brightness(1.1); }
+    .btn-sleep { opacity: 0.15; pointer-events: none; cursor: not-allowed; }
+
+    .gy-passport-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
+        display: none; align-items: center; justify-content: center; opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .gy-passport-card {
+        background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
+        padding: 25px; width: 280px; color: #000; text-align: center; position: relative;
+        font-family: 'Share Tech Mono', monospace;
+    }
+    .gy-passport-close { position: absolute; top: 10px; right: 14px; font-size: 28px; cursor: pointer; }
+    .gy-passport-title { font-weight: 900; font-size: 16px; font-family: 'Cinzel', serif; }
+    .gy-passport-id { font-weight: 700; font-size: 13px; margin-top: 5px; color: #555; }
+    .gy-passport-nick { font-weight: 700; font-size: 14px; margin-top: 4px; }
+    .gy-passport-avatar-box, .gy-passport-qr-box {
+        width: 90px; height: 90px; border: 2px solid var(--gold); background: #fff;
+        margin: 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
+</style>
+</head>
+<body>
+
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back" title="Назад">&lt;</a>
+    <a class="back-arrow" id="btn-home" title="На вход">&lt;&lt;</a>
+</div>
+<div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+
+<div class="quote-text" data-translate="identity_quote">There is never too much champagne</div>
+
+<div class="identity-grid">
+    <div class="identity-row">
+        <div class="id-box selected" id="box-own-nick">
+            <span class="label" data-translate="nick_own">YOUR NICK</span>
+            <input type="text" id="input-own-nick" placeholder="Enter nick">
+        </div>
+        <div class="id-box" id="box-club-nick">
+            <span class="label" data-translate="nick_club">CLUB NICK</span>
+            <span class="value" id="club-nick-label"></span>
+        </div>
+        <div class="id-box readonly" id="id-label">#ID</div>
+    </div>
+    <div class="identity-row">
+        <div class="id-box readonly" id="qr-box"></div>
+        <div class="id-box" id="box-photo">
+            <input type="file" id="file-input" accept="image/*">
+            <img id="photo-preview" style="display:none;">
+            <span class="label" id="txt-photo" data-translate="txt_photo">OR PHOTO</span>
+        </div>
+        <div class="id-box" id="box-avatar">
+            <img id="avatar-preview" style="display:none;">
+            <span class="label" id="txt-avatar" data-translate="txt_avatar">OR AVATAR</span>
+        </div>
+    </div>
+</div>
+
+<button id="btn-save" class="btn-gy" data-translate="btn_save">SAVE</button>
+<button id="btn-proceed" class="btn-gy btn-sleep" data-translate="btn_proceed">PROCEED</button>
+
+<script type="module">
+    import { init as initLocalization } from './core/localization.js';
+    import {
+        init as initPassport, getPassport, saveProfile, generateAvatar, openModal
+    } from './modules/passport.js';
+
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
+
+    const existing = getPassport();
+    let selectedNickType = existing?.nicknameType || 'own';
+    let currentAvatar = existing?.avatar || '';
+
+    const boxOwnNick = document.getElementById('box-own-nick');
+    const boxClubNick = document.getElementById('box-club-nick');
+    const inputOwnNick = document.getElementById('input-own-nick');
+    const clubNickLabel = document.getElementById('club-nick-label');
+    const idLabel = document.getElementById('id-label');
+    const qrBox = document.getElementById('qr-box');
+    const boxPhoto = document.getElementById('box-photo');
+    const boxAvatar = document.getElementById('box-avatar');
+    const photoPreview = document.getElementById('photo-preview');
+    const avatarPreview = document.getElementById('avatar-preview');
+    const txtPhoto = document.getElementById('txt-photo');
+    const txtAvatar = document.getElementById('txt-avatar');
+    const btnProceed = document.getElementById('btn-proceed');
+
+    // --- Предзаполнение, если резидент уже существует ---
+    if (existing) {
+        idLabel.textContent = existing.id;
+        clubNickLabel.textContent = existing.clubNickname;
+        inputOwnNick.value = existing.nickname || '';
+        if (existing.avatar) {
+            avatarPreview.src = existing.avatar;
+            avatarPreview.style.display = 'block';
+            txtAvatar.style.display = 'none';
+        }
+        renderQr(existing.id);
+        setNickType(existing.nicknameType || 'own');
+        btnProceed.classList.remove('btn-sleep');
+    } else {
+        // ID ещё не сгенерирован — сгенерируется при первом saveProfile()
+        idLabel.textContent = '#ID';
+        clubNickLabel.textContent = '···';
+    }
+
+    function renderQr(id) {
+        qrBox.innerHTML = '';
+        if (typeof window.QRCode !== 'undefined') {
+            new window.QRCode(qrBox, { text: id, width: 75, height: 75 });
+        }
+    }
+
+    function setNickType(type) {
+        selectedNickType = type;
+        boxOwnNick.classList.toggle('selected', type === 'own');
+        boxClubNick.classList.toggle('selected', type === 'club');
+    }
+
+    boxOwnNick.addEventListener('click', () => { setNickType('own'); inputOwnNick.focus(); });
+    boxClubNick.addEventListener('click', () => setNickType('club'));
+
+    // --- Фото ---
+    document.getElementById('file-input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            currentAvatar = ev.target.result;
+            photoPreview.src = currentAvatar;
+            photoPreview.style.display = 'block';
+            txtPhoto.style.display = 'none';
+            avatarPreview.style.display = 'none';
+            txtAvatar.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // --- Процедурный аватар клуба ---
+    boxAvatar.addEventListener('click', () => {
+        const idForAvatar = getPassport()?.id || `TEMP-${Date.now()}`;
+        currentAvatar = generateAvatar(idForAvatar);
+        avatarPreview.src = currentAvatar;
+        avatarPreview.style.display = 'block';
+        txtAvatar.style.display = 'none';
+        photoPreview.style.display = 'none';
+        txtPhoto.style.display = 'block';
+    });
+
+    // --- Сохранение профиля ---
+    document.getElementById('btn-save').addEventListener('click', () => {
+        const passport = saveProfile({
+            nickname: inputOwnNick.value.trim(),
+            nicknameType: selectedNickType,
+            avatar: currentAvatar
+        });
+        idLabel.textContent = passport.id;
+        clubNickLabel.textContent = passport.clubNickname;
+        renderQr(passport.id);
+        btnProceed.classList.remove('btn-sleep');
+    });
+
+    btnProceed.addEventListener('click', () => {
+        if (!btnProceed.classList.contains('btn-sleep')) window.location.href = 'hall.html';
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-home').addEventListener('click', () => window.location.href = 'index.html');
+</script>
+
+</body>
+</html>
