@@ -1,8 +1,12 @@
 /**
  * core/localization.js
- * v1.0.2 — 2026-08-26
- * Изменения: init()/destroy() теперь эмитят MODULE_INIT/MODULE_DESTROY через EventBus
- * (см. CONTRACT.md п.8 — жизненный цикл модуля должен быть виден извне).
+ * v1.1.0 — 2026-08-26
+ * Изменения: (1) исправлен баг подмены непереведённого текста техническим именем
+ * ключа вместо исходного текста — t()/applyTranslations теперь используют текст,
+ * написанный в HTML, как фолбэк; (2) английский теперь полноценный член списка
+ * языков (FULL_LANGUAGES), возвращается в выпадающий список при выборе другого
+ * языка; (3) renderLanguageList исключает из списка текущий выбранный язык,
+ * убирает дублирование (язык одновременно в рамке и в списке).
  *
  * Локализация СТАТИЧНОГО интерфейса проекта (кнопки, заголовки, слоганы).
  * Динамический контент (чаты, жалобы, генеративные AI-комнаты) НЕ входит
@@ -21,8 +25,12 @@
 import { emit } from './eventBus.js';
 import { get, set } from './storage.js';
 
-// Английский — язык по умолчанию, в отдельной рамке, не входит в выпадающий список.
+// Английский — язык по умолчанию, показывается первым в рамке, но также
+// полноценный член общего списка (FULL_LANGUAGES) — чтобы можно было вернуться
+// к нему из выпадающего списка после выбора любого другого языка.
 export const DEFAULT_LANG = 'en';
+
+const EN_LANGUAGE = { code: 'en', name: 'English', country: 'gb' };
 
 export const ALL_LANGUAGES = [
     { code: 'ru', name: 'Русский', country: 'ru' },
@@ -38,6 +46,10 @@ export const ALL_LANGUAGES = [
     { code: 'pl', name: 'Polski', country: 'pl' }
 ];
 
+// Полный пул из 12 языков — используется для поиска языка по коду и для
+// построения выпадающего списка (список = FULL_LANGUAGES минус текущий язык).
+export const FULL_LANGUAGES = [EN_LANGUAGE, ...ALL_LANGUAGES];
+
 /**
  * Словарь переводов статичных фраз.
  * Ключ словаря = значение атрибута data-translate в HTML.
@@ -48,14 +60,14 @@ export const ALL_LANGUAGES = [
  */
 const TRANSLATIONS = {
     en: {
-        'btn.enter_hall': 'Enter the Hall',
-        'btn.go_register': 'Go to Registration'
+        'btn_who_are_you': 'WHO ARE YOU?'
     },
     ru: {
-        'btn.enter_hall': 'Проходите в Холл',
-        'btn.go_register': 'Проходите на регистрацию'
+        'btn_who_are_you': 'А ВЫ КТО?'
     }
-    // остальные 9 языков добавляются сюда по мере перевода
+    // остальные 9 языков добавляются сюда по мере перевода.
+    // Для остального текста перевод не обязателен прямо сейчас — если ключа
+    // нет в словаре, applyTranslations покажет исходный текст из HTML (см. t()).
 };
 
 function flagUrl(countryCode) {
@@ -64,13 +76,17 @@ function flagUrl(countryCode) {
 
 /**
  * Получить перевод фразы по ключу для текущего языка.
- * Если перевода нет — падает обратно на английский, затем на сам ключ
- * (чтобы явно было видно в интерфейсе, что перевод не найден, а не пусто).
+ * Если перевода нет — возвращает fallback (исходный текст, написанный в HTML),
+ * а не сам ключ. Раньше при отсутствии перевода в интерфейсе показывалось
+ * техническое имя ключа (напр. "welcome_quote" вместо реального слогана) —
+ * это была системная ошибка, из-за которой пропадал почти весь непереведённый
+ * текст на сайте.
  * @param {string} key
+ * @param {string} [fallback] - исходный текст, если перевода нет
  */
-export function t(key) {
+export function t(key, fallback) {
     const lang = getCurrentLang();
-    return TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS[DEFAULT_LANG]?.[key] ?? key;
+    return TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS[DEFAULT_LANG]?.[key] ?? fallback ?? key;
 }
 
 /**
@@ -82,13 +98,19 @@ export function getCurrentLang() {
 
 /**
  * Применить перевод ко всем элементам с data-translate внутри контейнера.
+ * Исходный текст элемента запоминается при первом проходе (data-fallback-text)
+ * и используется как фолбэк, если для текущего языка перевода ещё нет —
+ * так недостающие переводы не стирают контент, а просто оставляют исходный текст.
  * Вызывается модулями в init() и повторно после смены языка.
  * @param {HTMLElement} [container=document]
  */
 export function applyTranslations(container = document) {
     container.querySelectorAll('[data-translate]').forEach(el => {
         const key = el.getAttribute('data-translate');
-        el.textContent = t(key);
+        if (el.dataset.fallbackText === undefined) {
+            el.dataset.fallbackText = el.textContent;
+        }
+        el.textContent = t(key, el.dataset.fallbackText);
     });
 }
 
@@ -98,36 +120,39 @@ export function applyTranslations(container = document) {
  * @param {string} langCode
  */
 export function selectLanguage(langCode) {
-    const lang = ALL_LANGUAGES.find(l => l.code === langCode);
-    const name = lang ? lang.name : 'English';
-    const country = lang ? lang.country : 'gb';
+    const lang = FULL_LANGUAGES.find(l => l.code === langCode) || EN_LANGUAGE;
 
     set('langCode', langCode);
-    set('langName', name);
-    set('flagCountry', country);
+    set('langName', lang.name);
+    set('flagCountry', lang.country);
 
     applyTranslations();
-    emit('language:changed', { langCode, name, country, flagUrl: flagUrl(country) });
+    emit('language:changed', { langCode, name: lang.name, country: lang.country, flagUrl: flagUrl(lang.country) });
 }
 
 /**
  * Отрисовать выпадающий список языков внутри переданного контейнера.
+ * Список = все 12 языков МИНУС текущий выбранный — раньше список показывал
+ * все 11 всегда, из-за чего выбранный язык дублировался (виден и в рамке,
+ * и в списке одновременно).
  * Модуль не владеет всей страницей — только этим списком.
  * @param {HTMLElement} container
  */
 export function renderLanguageList(container) {
     if (!container) return;
     container.innerHTML = '';
-    ALL_LANGUAGES.forEach(lang => {
+    const currentCode = getCurrentLang();
+    FULL_LANGUAGES.filter(lang => lang.code !== currentCode).forEach(lang => {
         const item = document.createElement('div');
         item.className = 'club-lang-item';
         item.innerHTML = `
             <img class="item-flag" src="${flagUrl(lang.country)}" alt="${lang.code}">
             <span class="item-text">${lang.name}</span>
         `;
-        // Примечание: в старой версии здесь был аватар (конь) рядом с каждым языком —
-        // сознательно убран: назначение элемента утрачено, следовательно избыточен.
-        item.addEventListener('click', () => selectLanguage(lang.code));
+        item.addEventListener('click', () => {
+            selectLanguage(lang.code);
+            renderLanguageList(container); // перерисовать список без нового текущего языка
+        });
         container.appendChild(item);
     });
 }
