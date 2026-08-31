@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <!--
   index.html
-  v1.1.0 — 2026-08-26
+  v1.2.0 — 2026-08-26
+  Изменения: (1) на #block-welcome добавлены стрелки навигации (по манифесту они
+  должны быть на всех страницах, кроме самого первого экрана с дверью); (2) фото
+  Чарли увеличено на 15%; (3) вместо двух кнопок — одна ("WHO ARE YOU?" → регистрация),
+  вторая кнопка ("PROCEED TO HALL") убрана: навигация для уже зарегистрированных
+  резидентов будет отдельным решением позже (см. CONTEXT — двухрежимный index.html).
+
   Главный диспетчер GY-GY Club: вход (#block-entrance) и приветствие (#block-welcome).
   Разметка + инициализация модулей. Бизнес-логика — в core/ и modules/ (см. CONTRACT.md п.7).
 
@@ -71,6 +77,8 @@
     }
     .lang-current:hover { filter: brightness(1.1); }
     .lang-current-content { display: flex; align-items: center; gap: 7px; min-width: 0; }
+    .item-avatar { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; border: 1px solid var(--gold); flex-shrink: 0; }
+    .item-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .item-flag { width: 16px; height: 11px; object-fit: cover; border: 1px solid var(--gold); flex-shrink: 0; }
     .item-text { color: var(--gold); font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .arrow-down { color: var(--gold); font-size: 10px; }
@@ -98,12 +106,24 @@
     #main-door:hover { filter: brightness(1.1); }
     #main-door.door-exploded { transform: scale(3.5); opacity: 0; }
 
+    /* ===== Nav arrows (на всех экранах, кроме входа с дверью) ===== */
+    .ui-nav-arrows {
+        position: fixed; top: 18px; left: 20px; z-index: 1000;
+        display: flex; gap: 15px; font-size: 24px; font-weight: 900;
+        font-family: 'Share Tech Mono', monospace;
+    }
+    .back-arrow {
+        color: var(--gold); background: transparent; border: none; text-decoration: none;
+        cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+    }
+    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
+
     /* ===== Welcome ===== */
     .quote-text {
         font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px;
         text-align: center; max-width: 85%; margin-bottom: 8px;
     }
-    #block-welcome img { max-height: 22vh; width: auto; object-fit: contain; margin: 6px 0; filter: drop-shadow(0 0 15px rgba(255,215,0,0.6)); }
+    #block-welcome img { max-height: 25.3vh; width: auto; object-fit: contain; margin: 6px 0; filter: drop-shadow(0 0 15px rgba(255,215,0,0.6)); }
     .welcome-title {
         font-size: 24px; font-weight: 700; letter-spacing: 8px; font-style: italic;
         margin-bottom: 6px; font-family: 'Cinzel', serif;
@@ -158,27 +178,29 @@
         <div class="lang-list" id="lang-list"></div>
     </div>
 
-<img id="main-door" src="door_1.png" alt="Enter GY-GY Club">
+    <img id="main-door" src="door_1.jpg" alt="Enter GY-GY Club">
 </section>
 
 <!-- ===================== ПРИВЕТСТВИЕ ===================== -->
 <section id="block-welcome" class="nav-block">
+    <div class="ui-nav-arrows">
+        <a class="back-arrow" id="btn-back" title="Назад">&lt;</a>
+        <a class="back-arrow" id="btn-home" title="На вход">&lt;&lt;</a>
+    </div>
     <div class="quote-text" data-translate="welcome_charlie">I'M CHARLIE</div>
     <div class="quote-text" data-translate="welcome_quote">In every joke there is a share of whisky</div>
     <img src="horse_welcome.png" alt="Charlie">
     <div class="welcome-title" data-translate="welcome_title">WELCOME</div>
-    <button id="btn-enter-hall" class="btn-gy btn-sleep" data-translate="btn_proceed_hall">PROCEED TO HALL</button>
-    <button id="btn-go-register" class="btn-gy" data-translate="btn_get_id">GET ID</button>
+    <button id="btn-go-register" class="btn-gy" data-translate="btn_who_are_you">WHO ARE YOU?</button>
 </section>
 
 <audio id="snd-door" src="door_open.mp3" preload="auto"></audio>
 <audio id="snd-ambient" src="bar_ambient.mp3" preload="auto"></audio>
 
 <script type="module">
-    import { init as initLocalization, renderLanguageList, ALL_LANGUAGES, getCurrentLang } from './core/localization.js';
+    import { init as initLocalization, renderLanguageList, FULL_LANGUAGES, getCurrentLang } from './core/localization.js';
     import { on } from './core/eventBus.js';
-    import { get } from './core/storage.js';
-    import { init as initPassport, hasPassport } from './modules/passport.js';
+    import { init as initPassport } from './modules/passport.js';
 
     // --- Локализация статики ---
     initLocalization(document.body);
@@ -187,7 +209,7 @@
     // Отразить уже сохранённый язык в рамке при повторном визите
     (function syncCurrentLangUI() {
         const code = getCurrentLang();
-        const lang = ALL_LANGUAGES.find(l => l.code === code);
+        const lang = FULL_LANGUAGES.find(l => l.code === code);
         if (lang) {
             document.getElementById('current-flag').src = `https://flagcdn.com/w20/${lang.country}.png`;
             document.getElementById('current-lang-name').textContent = lang.name;
@@ -204,15 +226,7 @@
     // --- Паспорт: бейдж в шапке (скрыт, если резидент ещё не регистрировался) ---
     initPassport(document.getElementById('passport-badge-container'));
 
-    // --- Состояние кнопок приветствия: первый vs повторный вход ---
-    const btnEnterHall = document.getElementById('btn-enter-hall');
-    const btnGoRegister = document.getElementById('btn-go-register');
-    if (hasPassport()) {
-        btnEnterHall.classList.remove('btn-sleep');
-        btnGoRegister.classList.add('btn-sleep');
-    }
-
-    // --- Языковая рамка: минимальный дропдаун (полный рендер списка — TODO при наполнении словаря) ---
+    // --- Языковая рамка: минимальный дропдаун ---
     document.getElementById('lang-current').addEventListener('click', (e) => {
         e.stopPropagation();
         document.getElementById('lang-list').classList.toggle('open');
@@ -239,12 +253,21 @@
         }, 700); // манифест: звук бара через ~0.5–0.7с после начала перехода
     });
 
-    // --- Кнопки приветствия ---
-    btnEnterHall.addEventListener('click', () => {
-        if (!btnEnterHall.classList.contains('btn-sleep')) window.location.href = 'hall.html';
-    });
-    btnGoRegister.addEventListener('click', () => {
+    // --- Кнопка приветствия: переход к регистрации ---
+    document.getElementById('btn-go-register').addEventListener('click', () => {
         window.location.href = 'identity.html';
+    });
+
+    // --- Стрелки навигации на block-welcome ---
+    document.getElementById('btn-back').addEventListener('click', () => {
+        document.getElementById('block-welcome').classList.remove('active');
+        document.getElementById('block-entrance').classList.add('active');
+        mainDoor.classList.remove('door-exploded');
+    });
+    document.getElementById('btn-home').addEventListener('click', () => {
+        document.getElementById('block-welcome').classList.remove('active');
+        document.getElementById('block-entrance').classList.add('active');
+        mainDoor.classList.remove('door-exploded');
     });
 </script>
 
