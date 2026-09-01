@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <!--
   index.html
-  v1.2.0 — 2026-08-26
-  Изменения: (1) на #block-welcome добавлены стрелки навигации (по манифесту они
-  должны быть на всех страницах, кроме самого первого экрана с дверью); (2) фото
-  Чарли увеличено на 15%; (3) вместо двух кнопок — одна ("WHO ARE YOU?" → регистрация),
-  вторая кнопка ("PROCEED TO HALL") убрана: навигация для уже зарегистрированных
-  резидентов будет отдельным решением позже (см. CONTEXT — двухрежимный index.html).
+  v1.3.0 — 2026-08-26
+  Изменения: языковая панель сворачивается в маленькую иконку-флаг для резидентов
+  с уже сохранённым паспортом (hasPassport()) — полная рамка с названием нужна
+  только при первом выборе языка, дальше освобождает левый верхний угол под
+  будущую навигацию резидента.
+
+  Предыдущие изменения (v1.2.0): на #block-welcome добавлены стрелки навигации;
+  фото Чарли увеличено на 15%; вместо двух кнопок — одна ("WHO ARE YOU?").
 
   Главный диспетчер GY-GY Club: вход (#block-entrance) и приветствие (#block-welcome).
   Разметка + инициализация модулей. Бизнес-логика — в core/ и modules/ (см. CONTRACT.md п.7).
@@ -96,6 +98,19 @@
     .club-lang-item:last-child { border-bottom: none; }
     .club-lang-item:hover { background: rgba(255,215,0,0.15); }
 
+    /* Свёрнутое состояние — для резидентов, у которых уже есть паспорт.
+       Полная рамка с названием языка нужна только один раз, при первом
+       выборе; дальше это просто маленькая иконка, освобождающая место
+       под будущую навигацию резидента в этом же углу. */
+    .lang-wrapper.collapsed { width: 36px; }
+    .lang-wrapper.collapsed .lang-current {
+        width: 36px; height: 36px; padding: 0; border-radius: 50%;
+        justify-content: center;
+    }
+    .lang-wrapper.collapsed .item-text,
+    .lang-wrapper.collapsed .arrow-down { display: none; }
+    .lang-wrapper.collapsed .lang-list { width: 165px; left: 0; }
+
     /* ===== Door ===== */
     #main-door {
         display: block; height: 48vh; max-height: 400px; width: auto; max-width: 100%;
@@ -178,7 +193,7 @@
         <div class="lang-list" id="lang-list"></div>
     </div>
 
-    <img id="main-door" src="door_1.png" alt="Enter GY-GY Club">
+    <img id="main-door" src="door_1.jpg" alt="Enter GY-GY Club">
 </section>
 
 <!-- ===================== ПРИВЕТСТВИЕ ===================== -->
@@ -200,11 +215,18 @@
 <script type="module">
     import { init as initLocalization, renderLanguageList, FULL_LANGUAGES, getCurrentLang } from './core/localization.js';
     import { on } from './core/eventBus.js';
-    import { init as initPassport } from './modules/passport.js';
+    import { init as initPassport, hasPassport } from './modules/passport.js';
 
     // --- Локализация статики ---
     initLocalization(document.body);
     renderLanguageList(document.getElementById('lang-list'));
+
+    // Свернуть языковую панель в маленькую иконку для тех, у кого уже есть
+    // паспорт — полная рамка нужна только при первом выборе языка, дальше
+    // мешает будущей навигации резидента в этом же углу экрана.
+    if (hasPassport()) {
+        document.getElementById('lang-wrapper').classList.add('collapsed');
+    }
 
     // Отразить уже сохранённый язык в рамке при повторном визите
     (function syncCurrentLangUI() {
