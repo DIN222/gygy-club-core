@@ -206,10 +206,13 @@
     if (existing) {
         idLabel.textContent = existing.id;
         inputOwnNick.value = existing.nickname || '';
-        if (existing.avatar) {
-            avatarPreview.src = existing.avatar;
-            avatarPreview.style.display = 'block';
-            txtAvatar.style.display = 'none';
+       if (existing.avatar) {
+    const target = existing.avatarSource === 'generated' ? avatarPreview : photoPreview;
+    const targetTxt = existing.avatarSource === 'generated' ? txtAvatar : txtPhoto;
+    target.src = existing.avatar;
+    target.style.display = 'block';
+    targetTxt.style.display = 'none';
+}
         }
         renderQr(existing.id);
         setNickType(existing.nicknameType || 'own');
@@ -253,6 +256,7 @@
         const reader = new FileReader();
         reader.onload = (ev) => {
             currentAvatar = ev.target.result;
+          currentAvatarSource = 'photo'; // добавить эту строку
             photoPreview.src = currentAvatar;
             photoPreview.style.display = 'block';
             txtPhoto.style.display = 'none';
@@ -265,6 +269,7 @@
     boxAvatar.addEventListener('click', () => {
         const idForAvatar = getPassport()?.id || `TEMP-${Date.now()}`;
         currentAvatar = generateAvatar(idForAvatar);
+      currentAvatarSource = 'generated'; // добавить эту строку
         avatarPreview.src = currentAvatar;
         avatarPreview.style.display = 'block';
         txtAvatar.style.display = 'none';
