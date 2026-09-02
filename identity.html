@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <!--
   identity.html
-  v1.0.0 — 2026-08-26
-  Регистрация резидента: ID, QR-код, аватар/фото, ник. Разметка + инициализация —
-  вся логика паспорта в modules/passport.js (см. CONTRACT.md п.7).
+  v1.1.0 — 2026-08-26
+  Изменения: (1) исправлен баг невидимого текстового поля ника — .id-box input
+  делал прозрачным ЛЮБОЙ input внутри плашки, включая текстовое поле ника, а не
+  только файловый инпут фото (для которого приём и задумывался); (2) вместо двух
+  кнопок (SAVE + PROCEED) — одна ("ENTER"), сама сохраняет и переходит в Холл;
+  (3) клубный ник теперь можно листать (кнопка ⟳ — новый случайный вариант),
+  фиксируется только в момент сохранения.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>GY-GY Club — Identity v1.0.0</title>
+<title>GY-GY Club — Identity v1.1.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Montserrat:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -72,13 +76,28 @@
     .id-box:hover { filter: brightness(1.1); }
     .id-box.selected { border-color: #ffffff; box-shadow: 0 0 10px var(--gold); }
     .id-box.readonly { cursor: default; }
-    .id-box input {
+
+    .id-box input[type="file"] {
         position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%;
         cursor: pointer; border: none; background: transparent;
     }
+
+    .id-box input[type="text"] {
+        width: 95%; background: transparent; border: none; text-align: center;
+        font-family: 'Share Tech Mono', monospace; font-size: 10px; font-weight: bold;
+        color: #000; outline: none; margin-top: 4px; position: relative; z-index: 2;
+    }
+
     .id-box .label { font-size: 7px; font-weight: 900; pointer-events: none; }
     .id-box .value { font-size: 8px; margin-top: 4px; font-weight: 700; pointer-events: none; }
     .id-box img { width: 100%; height: 100%; object-fit: cover; }
+
+    .reroll-btn {
+        position: absolute; top: 2px; right: 2px; font-size: 11px; font-weight: 900;
+        background: transparent; border: none; cursor: pointer; color: #000;
+        line-height: 1; padding: 2px; z-index: 3;
+    }
+    .reroll-btn:hover { opacity: 0.6; }
 
     .btn-gy {
         min-width: 240px; padding: 10px 18px; background: #000; border: 2px solid var(--gold);
@@ -86,8 +105,7 @@
         margin: 4px 0; font-family: 'Montserrat', 'Cinzel', sans-serif; font-size: 12px;
         transition: filter 0.3s ease;
     }
-    .btn-gy:hover:not(.btn-sleep) { filter: brightness(1.1); }
-    .btn-sleep { opacity: 0.15; pointer-events: none; cursor: not-allowed; }
+    .btn-gy:hover { filter: brightness(1.1); }
 
     .gy-passport-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
@@ -128,6 +146,7 @@
             <input type="text" id="input-own-nick" placeholder="Enter nick">
         </div>
         <div class="id-box" id="box-club-nick">
+            <button class="reroll-btn" id="btn-reroll-nick" title="Другой вариант">⟳</button>
             <span class="label" data-translate="nick_club">CLUB NICK</span>
             <span class="value" id="club-nick-label"></span>
         </div>
@@ -147,13 +166,12 @@
     </div>
 </div>
 
-<button id="btn-save" class="btn-gy" data-translate="btn_save">SAVE</button>
-<button id="btn-proceed" class="btn-gy btn-sleep" data-translate="btn_proceed">PROCEED</button>
+<button id="btn-enter" class="btn-gy" data-translate="btn_enter">ENTER</button>
 
 <script type="module">
     import { init as initLocalization } from './core/localization.js';
     import {
-        init as initPassport, getPassport, saveProfile, generateAvatar, openModal
+        init as initPassport, getPassport, saveProfile, generateAvatar
     } from './modules/passport.js';
 
     initLocalization(document.body);
@@ -163,24 +181,30 @@
     let selectedNickType = existing?.nicknameType || 'own';
     let currentAvatar = existing?.avatar || '';
 
+    const CLUB_NICKNAMES_PREVIEW = [
+        'БигКоин', 'Нападающий', 'Шампань', 'Магнат', 'Счастливчик',
+        'Инсайдер', 'Фантом', 'Победитель', 'Капитан', 'Маэстро',
+        'Прайм', 'Штурман', 'Панчер', 'Триумф', 'Оракул'
+    ];
+    let previewClubNick = existing?.clubNickname
+        || CLUB_NICKNAMES_PREVIEW[Math.floor(Math.random() * CLUB_NICKNAMES_PREVIEW.length)];
+
     const boxOwnNick = document.getElementById('box-own-nick');
     const boxClubNick = document.getElementById('box-club-nick');
     const inputOwnNick = document.getElementById('input-own-nick');
     const clubNickLabel = document.getElementById('club-nick-label');
     const idLabel = document.getElementById('id-label');
     const qrBox = document.getElementById('qr-box');
-    const boxPhoto = document.getElementById('box-photo');
     const boxAvatar = document.getElementById('box-avatar');
     const photoPreview = document.getElementById('photo-preview');
     const avatarPreview = document.getElementById('avatar-preview');
     const txtPhoto = document.getElementById('txt-photo');
     const txtAvatar = document.getElementById('txt-avatar');
-    const btnProceed = document.getElementById('btn-proceed');
 
-    // --- Предзаполнение, если резидент уже существует ---
+    clubNickLabel.textContent = previewClubNick;
+
     if (existing) {
         idLabel.textContent = existing.id;
-        clubNickLabel.textContent = existing.clubNickname;
         inputOwnNick.value = existing.nickname || '';
         if (existing.avatar) {
             avatarPreview.src = existing.avatar;
@@ -189,11 +213,8 @@
         }
         renderQr(existing.id);
         setNickType(existing.nicknameType || 'own');
-        btnProceed.classList.remove('btn-sleep');
     } else {
-        // ID ещё не сгенерирован — сгенерируется при первом saveProfile()
         idLabel.textContent = '#ID';
-        clubNickLabel.textContent = '···';
     }
 
     function renderQr(id) {
@@ -209,10 +230,23 @@
         boxClubNick.classList.toggle('selected', type === 'club');
     }
 
-    boxOwnNick.addEventListener('click', () => { setNickType('own'); inputOwnNick.focus(); });
+    boxOwnNick.addEventListener('click', (e) => {
+        if (e.target === inputOwnNick) return;
+        setNickType('own');
+        inputOwnNick.focus();
+    });
     boxClubNick.addEventListener('click', () => setNickType('club'));
 
-    // --- Фото ---
+    document.getElementById('btn-reroll-nick').addEventListener('click', (e) => {
+        e.stopPropagation();
+        let next = previewClubNick;
+        while (next === previewClubNick) {
+            next = CLUB_NICKNAMES_PREVIEW[Math.floor(Math.random() * CLUB_NICKNAMES_PREVIEW.length)];
+        }
+        previewClubNick = next;
+        clubNickLabel.textContent = previewClubNick;
+    });
+
     document.getElementById('file-input').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -228,7 +262,6 @@
         reader.readAsDataURL(file);
     });
 
-    // --- Процедурный аватар клуба ---
     boxAvatar.addEventListener('click', () => {
         const idForAvatar = getPassport()?.id || `TEMP-${Date.now()}`;
         currentAvatar = generateAvatar(idForAvatar);
@@ -239,21 +272,14 @@
         txtPhoto.style.display = 'block';
     });
 
-    // --- Сохранение профиля ---
-    document.getElementById('btn-save').addEventListener('click', () => {
-        const passport = saveProfile({
+    document.getElementById('btn-enter').addEventListener('click', () => {
+        saveProfile({
             nickname: inputOwnNick.value.trim(),
             nicknameType: selectedNickType,
-            avatar: currentAvatar
+            avatar: currentAvatar,
+            clubNickname: previewClubNick
         });
-        idLabel.textContent = passport.id;
-        clubNickLabel.textContent = passport.clubNickname;
-        renderQr(passport.id);
-        btnProceed.classList.remove('btn-sleep');
-    });
-
-    btnProceed.addEventListener('click', () => {
-        if (!btnProceed.classList.contains('btn-sleep')) window.location.href = 'hall.html';
+        window.location.href = 'hall.html';
     });
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
