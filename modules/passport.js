@@ -1,6 +1,7 @@
 /**
  * modules/passport.js
- * v1.1.1 — 2026-08-26
+ * v1.1.2 — 2026-08-26
+ Версию можно поднять до v1.1.2 с пометкой "принимает clubNickname извне при сохранении".
  * Изменения: init()/destroy() теперь эмитят MODULE_INIT/MODULE_DESTROY через EventBus
  * (см. CONTRACT.md п.8 — жизненный цикл модуля должен быть виден извне).
  *
@@ -120,7 +121,7 @@ export function saveProfile(data = {}) {
         id: existing?.id || generateId(),
         nickname: data.nickname ?? existing?.nickname ?? '',
         nicknameType: data.nicknameType ?? existing?.nicknameType ?? 'own',
-        clubNickname: existing?.clubNickname || randomClubNickname(),
+       clubNickname: data.clubNickname || existing?.clubNickname || randomClubNickname(),
         avatar: data.avatar ?? existing?.avatar ?? '',
         flagCountry: get('flagCountry', 'gb'),
         createdAt: existing?.createdAt || Date.now()
