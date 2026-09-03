@@ -159,4 +159,136 @@
         </div>
         <div class="id-box" id="box-avatar">
             <img id="avatar-preview" style="display:none;">
-            <span
+            <span class="label" id="txt-avatar" data-translate="txt_avatar">OR AVATAR</span>
+        </div>
+    </div>
+</div>
+
+<button id="btn-enter" class="btn-gy" data-translate="btn_enter">ENTER</button>
+
+<script type="module">
+    import { init as initLocalization } from './core/localization.js';
+    import {
+        init as initPassport, getPassport, saveProfile, generateAvatar
+    } from './modules/passport.js';
+
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
+
+    const existing = getPassport();
+    let selectedNickType = existing?.nicknameType || 'own';
+    let currentAvatar = existing?.avatar || '';
+    let currentAvatarSource = existing?.avatarSource || 'photo';
+
+    const CLUB_NICKNAMES_PREVIEW = [
+        'БигКоин', 'Нападающий', 'Шампань', 'Магнат', 'Счастливчик',
+        'Инсайдер', 'Фантом', 'Победитель', 'Капитан', 'Маэстро',
+        'Прайм', 'Штурман', 'Панчер', 'Триумф', 'Оракул'
+    ];
+    let previewClubNick = existing?.clubNickname
+        || CLUB_NICKNAMES_PREVIEW[Math.floor(Math.random() * CLUB_NICKNAMES_PREVIEW.length)];
+
+    const boxOwnNick = document.getElementById('box-own-nick');
+    const boxClubNick = document.getElementById('box-club-nick');
+    const inputOwnNick = document.getElementById('input-own-nick');
+    const clubNickLabel = document.getElementById('club-nick-label');
+    const idLabel = document.getElementById('id-label');
+    const qrBox = document.getElementById('qr-box');
+    const boxAvatar = document.getElementById('box-avatar');
+    const photoPreview = document.getElementById('photo-preview');
+    const avatarPreview = document.getElementById('avatar-preview');
+    const txtPhoto = document.getElementById('txt-photo');
+    const txtAvatar = document.getElementById('txt-avatar');
+
+    clubNickLabel.textContent = previewClubNick;
+
+    if (existing) {
+        idLabel.textContent = existing.id;
+        inputOwnNick.value = existing.nickname || '';
+        if (existing.avatar) {
+            const target = currentAvatarSource === 'generated' ? avatarPreview : photoPreview;
+            const targetTxt = currentAvatarSource === 'generated' ? txtAvatar : txtPhoto;
+            target.src = existing.avatar;
+            target.style.display = 'block';
+            targetTxt.style.display = 'none';
+        }
+        renderQr(existing.id);
+        setNickType(existing.nicknameType || 'own');
+    } else {
+        idLabel.textContent = '#ID';
+    }
+
+    function renderQr(id) {
+        qrBox.innerHTML = '';
+        if (typeof window.QRCode !== 'undefined') {
+            new window.QRCode(qrBox, { text: id, width: 75, height: 75 });
+        }
+    }
+
+    function setNickType(type) {
+        selectedNickType = type;
+        boxOwnNick.classList.toggle('selected', type === 'own');
+        boxClubNick.classList.toggle('selected', type === 'club');
+    }
+
+    boxOwnNick.addEventListener('click', (e) => {
+        if (e.target === inputOwnNick) return;
+        setNickType('own');
+        inputOwnNick.focus();
+    });
+    boxClubNick.addEventListener('click', () => setNickType('club'));
+
+    document.getElementById('btn-reroll-nick').addEventListener('click', (e) => {
+        e.stopPropagation();
+        let next = previewClubNick;
+        while (next === previewClubNick) {
+            next = CLUB_NICKNAMES_PREVIEW[Math.floor(Math.random() * CLUB_NICKNAMES_PREVIEW.length)];
+        }
+        previewClubNick = next;
+        clubNickLabel.textContent = previewClubNick;
+    });
+
+    document.getElementById('file-input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            currentAvatar = ev.target.result;
+            currentAvatarSource = 'photo';
+            photoPreview.src = currentAvatar;
+            photoPreview.style.display = 'block';
+            txtPhoto.style.display = 'none';
+            avatarPreview.style.display = 'none';
+            txtAvatar.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    boxAvatar.addEventListener('click', () => {
+        const idForAvatar = getPassport()?.id || `TEMP-${Date.now()}`;
+        currentAvatar = generateAvatar(idForAvatar);
+        currentAvatarSource = 'generated';
+        avatarPreview.src = currentAvatar;
+        avatarPreview.style.display = 'block';
+        txtAvatar.style.display = 'none';
+        photoPreview.style.display = 'none';
+        txtPhoto.style.display = 'block';
+    });
+
+    document.getElementById('btn-enter').addEventListener('click', () => {
+        saveProfile({
+            nickname: inputOwnNick.value.trim(),
+            nicknameType: selectedNickType,
+            avatar: currentAvatar,
+            avatarSource: currentAvatarSource,
+            clubNickname: previewClubNick
+        });
+        window.location.href = 'hall.html';
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-home').addEventListener('click', () => window.location.href = 'index.html');
+</script>
+
+</body>
+</html>
