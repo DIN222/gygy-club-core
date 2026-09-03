@@ -1,9 +1,12 @@
 /**
  * modules/passport.js
- * v1.1.2 — 2026-08-26
- Версию можно поднять до v1.1.2 с пометкой "принимает clubNickname извне при сохранении".
- * Изменения: init()/destroy() теперь эмитят MODULE_INIT/MODULE_DESTROY через EventBus
- * (см. CONTRACT.md п.8 — жизненный цикл модуля должен быть виден извне).
+ * v1.2.0 — 2026-08-26
+ * Изменения: (1) saveProfile принимает clubNickname извне (для листания в
+ * identity.html) и avatarSource ('photo'|'generated') — исправляет баг, когда
+ * загруженное фото при повторном визите показывалось в блоке аватара клуба
+ * вместо блока фото; (2) в модалку паспорта добавлена кнопка EDIT — ведёт на
+ * identity.html, чтобы сменить фото/ник в любой момент, не только при первой
+ * регистрации.
  *
  * Цифровой паспорт резидента: бейдж в шапке + модальное окно с QR-кодом.
  * Переиспользуемый узел — рендерит себя в переданный container на ЛЮБОЙ
@@ -31,25 +34,14 @@ const CLUB_NICKNAMES = [
 let boundContainer = null;
 let unsubscribers = [];
 
-/**
- * Есть ли уже сохранённый паспорт резидента.
- * @returns {boolean}
- */
 export function hasPassport() {
     return !!get('passport');
 }
 
-/**
- * Прочитать текущий паспорт (или null, если резидент ещё не регистрировался).
- */
 export function getPassport() {
     return get('passport', null);
 }
 
-/**
- * Сгенерировать новый ID вида GY-XXXXXX (порядковый номер + 4 случайные цифры,
- * согласно манифесту). Порядковый номер — счётчик резидентов в Storage.
- */
 function generateId() {
     const seq = get('residentSeq', 0) + 1;
     set('residentSeq', seq);
@@ -61,32 +53,18 @@ function randomClubNickname() {
     return CLUB_NICKNAMES[Math.floor(Math.random() * CLUB_NICKNAMES.length)];
 }
 
-/**
- * Простой детерминированный хэш строки в целое число.
- * Один и тот же ID всегда даёт одно и то же число — и, следовательно,
- * один и тот же аватар (не случайность, а "отпечаток" ID в системе клуба).
- */
 function hashString(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         hash = (hash << 5) - hash + str.charCodeAt(i);
-        hash |= 0; // приводим к 32-битному целому
+        hash |= 0;
     }
     return Math.abs(hash);
 }
 
-/**
- * Сгенерировать SVG-аватар клуба на основе ID резидента.
- * Золотой геометрический узор на чёрном фоне — вариаций достаточно, чтобы
- * визуально различать резидентов, но без внешних сервисов генерации изображений
- * (см. манифест, ТРИЗ п.1 — идеальность, никаких лишних тяжёлых зависимостей).
- * Возвращает data URI, готовый для использования как src изображения.
- * @param {string} id - GY-XXXXXX
- * @returns {string} data:image/svg+xml;base64,...
- */
 export function generateAvatar(id) {
     const h = hashString(id);
-    const shapeCount = 3 + (h % 4); // 3–6 фигур
+    const shapeCount = 3 + (h % 4);
     let shapes = '';
     for (let i = 0; i < shapeCount; i++) {
         const seed = h + i * 97;
@@ -106,23 +84,15 @@ export function generateAvatar(id) {
     return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
-/**
- * Создать/обновить паспорт резидента и сохранить в Storage.
- * Эмитит 'PROFILE_SAVED' — modules/hall.js и другие узлы могут подписаться
- * и, например, разблокировать двери (см. CONTRACT.md, общение через EventBus).
- * @param {object} data
- * @param {string} [data.nickname] - собственный ник резидента
- * @param {string} [data.nicknameType] - 'own' | 'club'
- * @param {string} [data.avatar] - base64 или URL изображения (фото или сгенерированный аватар)
- */
 export function saveProfile(data = {}) {
     const existing = getPassport();
     const passport = {
         id: existing?.id || generateId(),
         nickname: data.nickname ?? existing?.nickname ?? '',
         nicknameType: data.nicknameType ?? existing?.nicknameType ?? 'own',
-       clubNickname: data.clubNickname || existing?.clubNickname || randomClubNickname(),
+        clubNickname: data.clubNickname || existing?.clubNickname || randomClubNickname(),
         avatar: data.avatar ?? existing?.avatar ?? '',
+        avatarSource: data.avatarSource || existing?.avatarSource || 'photo',
         flagCountry: get('flagCountry', 'gb'),
         createdAt: existing?.createdAt || Date.now()
     };
@@ -132,11 +102,6 @@ export function saveProfile(data = {}) {
     return passport;
 }
 
-/**
- * Отрисовать бейдж пользователя (аватар + флажок) внутри шапки страницы.
- * Скрыт, если паспорта ещё нет — точь-в-точь как в старом коде
- * (global-user-badge, display:none по умолчанию).
- */
 function renderBadge() {
     if (!boundContainer) return;
     let badge = boundContainer.querySelector('#gy-user-badge');
@@ -163,10 +128,6 @@ function renderBadge() {
     }
 }
 
-/**
- * Открыть модальное окно паспорта с QR-кодом.
- * QRCode — глобальный конструктор из qrcode.min.js, подключаемого на странице.
- */
 export function openModal() {
     const passport = getPassport();
     if (!passport) return;
@@ -184,11 +145,15 @@ export function openModal() {
                 <div class="gy-passport-nick"></div>
                 <div class="gy-passport-avatar-box"><img class="gy-passport-avatar"></div>
                 <div class="gy-passport-qr-box"></div>
+                <button class="gy-passport-edit" data-translate="btn_edit_passport">EDIT</button>
             </div>
         `;
         document.body.appendChild(modal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
         modal.querySelector('.gy-passport-close').addEventListener('click', closeModal);
+        modal.querySelector('.gy-passport-edit').addEventListener('click', () => {
+            window.location.href = 'identity.html';
+        });
     }
 
     modal.querySelector('.gy-passport-id').textContent = passport.id;
@@ -215,10 +180,6 @@ export function closeModal() {
 
 const MODULE_NAME = 'passport';
 
-/**
- * Контракт узла (см. CONTRACT.md).
- * @param {HTMLElement} container - куда рендерить бейдж (обычно header-bar страницы)
- */
 export function init(container) {
     boundContainer = container;
     renderBadge();
