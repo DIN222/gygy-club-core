@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <!--
   index.html
-  v1.3.0 — 2026-08-26
-  Изменения: языковая панель сворачивается в маленькую иконку-флаг для резидентов
-  с уже сохранённым паспортом (hasPassport()) — полная рамка с названием нужна
-  только при первом выборе языка, дальше освобождает левый верхний угол под
-  будущую навигацию резидента.
+  v1.4.0 — 2026-08-26
+  Изменения: фото Чарли увеличено ещё на 15% (совокупно ~44% от исходного 22vh);
+  добавлен стиль кнопки EDIT в модалке паспорта.
 
-  Предыдущие изменения (v1.2.0): на #block-welcome добавлены стрелки навигации;
-  фото Чарли увеличено на 15%; вместо двух кнопок — одна ("WHO ARE YOU?").
+  Предыдущие изменения (v1.3.0): языковая панель сворачивается в иконку-флаг
+  для резидентов с паспортом. (v1.2.0): стрелки на block-welcome, одна кнопка.
 
   Главный диспетчер GY-GY Club: вход (#block-entrance) и приветствие (#block-welcome).
   Разметка + инициализация модулей. Бизнес-логика — в core/ и modules/ (см. CONTRACT.md п.7).
@@ -51,7 +49,6 @@
     .nav-block.active { display: flex; opacity: 1; }
     .nav-fade-out { opacity: 0; }
 
-    /* ===== Header ===== */
     .header-right {
         position: fixed; top: 18px; right: 25px; z-index: 1000;
         font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif;
@@ -69,7 +66,6 @@
         border: 1px solid var(--gold);
     }
 
-    /* ===== Language selector ===== */
     .lang-wrapper { position: absolute; top: 18px; left: 20px; z-index: 1001; width: 165px; }
     .lang-current {
         display: flex; align-items: center; justify-content: space-between;
@@ -98,20 +94,15 @@
     .club-lang-item:last-child { border-bottom: none; }
     .club-lang-item:hover { background: rgba(255,215,0,0.15); }
 
-    /* Свёрнутое состояние — для резидентов, у которых уже есть паспорт.
-       Полная рамка с названием языка нужна только один раз, при первом
-       выборе; дальше это просто маленькая иконка, освобождающая место
-       под будущую навигацию резидента в этом же углу. */
     .lang-wrapper.collapsed { width: 36px; }
     .lang-wrapper.collapsed .lang-current {
         width: 36px; height: 36px; padding: 0; border-radius: 50%;
         justify-content: center;
     }
-    .lang-wrapper.collapsed .lang-current .item-text,
-.lang-wrapper.collapsed .lang-current .arrow-down { display: none; }
+    .lang-wrapper.collapsed .item-text,
+    .lang-wrapper.collapsed .arrow-down { display: none; }
     .lang-wrapper.collapsed .lang-list { width: 165px; left: 0; }
 
-    /* ===== Door ===== */
     #main-door {
         display: block; height: 48vh; max-height: 400px; width: auto; max-width: 100%;
         object-fit: contain; cursor: pointer;
@@ -121,7 +112,6 @@
     #main-door:hover { filter: brightness(1.1); }
     #main-door.door-exploded { transform: scale(3.5); opacity: 0; }
 
-    /* ===== Nav arrows (на всех экранах, кроме входа с дверью) ===== */
     .ui-nav-arrows {
         position: fixed; top: 18px; left: 20px; z-index: 1000;
         display: flex; gap: 15px; font-size: 24px; font-weight: 900;
@@ -133,12 +123,11 @@
     }
     .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
 
-    /* ===== Welcome ===== */
     .quote-text {
         font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 20px;
         text-align: center; max-width: 85%; margin-bottom: 8px;
     }
-    #block-welcome img { max-height: 25.3vh; width: auto; object-fit: contain; margin: 6px 0; filter: drop-shadow(0 0 15px rgba(255,215,0,0.6)); }
+    #block-welcome img { max-height: 29.1vh; width: auto; object-fit: contain; margin: 6px 0; filter: drop-shadow(0 0 15px rgba(255,215,0,0.6)); }
     .welcome-title {
         font-size: 24px; font-weight: 700; letter-spacing: 8px; font-style: italic;
         margin-bottom: 6px; font-family: 'Cinzel', serif;
@@ -153,7 +142,6 @@
     .btn-gy:hover:not(.btn-sleep) { filter: brightness(1.1); }
     .btn-sleep { opacity: 0.15; pointer-events: none; cursor: not-allowed; }
 
-    /* ===== Passport modal (рендерится modules/passport.js, стили — общие) ===== */
     .gy-passport-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
         display: none; align-items: center; justify-content: center; opacity: 0;
@@ -173,6 +161,13 @@
         margin: 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
     .gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
+    .gy-passport-edit {
+        margin-top: 14px; padding: 8px 20px; background: #000; border: 2px solid var(--gold);
+        color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700;
+        font-family: 'Montserrat', 'Cinzel', sans-serif; font-size: 11px;
+        transition: filter 0.3s ease;
+    }
+    .gy-passport-edit:hover { filter: brightness(1.1); }
 </style>
 </head>
 <body>
@@ -180,7 +175,6 @@
 <div class="header-right">GY-GY</div>
 <div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
 
-<!-- ===================== ВХОД ===================== -->
 <section id="block-entrance" class="nav-block active">
     <div class="lang-wrapper" id="lang-wrapper">
         <div class="lang-current" id="lang-current">
@@ -193,10 +187,9 @@
         <div class="lang-list" id="lang-list"></div>
     </div>
 
-    <img id="main-door" src="door_1.png" alt="Enter GY-GY Club">
+    <img id="main-door" src="door_1.jpg" alt="Enter GY-GY Club">
 </section>
 
-<!-- ===================== ПРИВЕТСТВИЕ ===================== -->
 <section id="block-welcome" class="nav-block">
     <div class="ui-nav-arrows">
         <a class="back-arrow" id="btn-back" title="Назад">&lt;</a>
@@ -204,7 +197,7 @@
     </div>
     <div class="quote-text" data-translate="welcome_charlie">I'M CHARLIE</div>
     <div class="quote-text" data-translate="welcome_quote">In every joke there is a share of whisky</div>
-    <img src="horse_welcome.png" alt="Charlie"> 
+    <img src="horse_welcome.png" alt="Charlie">
     <div class="welcome-title" data-translate="welcome_title">WELCOME</div>
     <button id="btn-go-register" class="btn-gy" data-translate="btn_who_are_you">WHO ARE YOU?</button>
 </section>
@@ -217,18 +210,13 @@
     import { on } from './core/eventBus.js';
     import { init as initPassport, hasPassport } from './modules/passport.js';
 
-    // --- Локализация статики ---
     initLocalization(document.body);
     renderLanguageList(document.getElementById('lang-list'));
 
-    // Свернуть языковую панель в маленькую иконку для тех, у кого уже есть
-    // паспорт — полная рамка нужна только при первом выборе языка, дальше
-    // мешает будущей навигации резидента в этом же углу экрана.
     if (hasPassport()) {
         document.getElementById('lang-wrapper').classList.add('collapsed');
     }
 
-    // Отразить уже сохранённый язык в рамке при повторном визите
     (function syncCurrentLangUI() {
         const code = getCurrentLang();
         const lang = FULL_LANGUAGES.find(l => l.code === code);
@@ -238,17 +226,14 @@
         }
     })();
 
-    // Реакция рамки на смену языка из выпадающего списка
     on('language:changed', ({ name, flagUrl }) => {
         document.getElementById('current-flag').src = flagUrl;
         document.getElementById('current-lang-name').textContent = name;
         document.getElementById('lang-list').classList.remove('open');
     });
 
-    // --- Паспорт: бейдж в шапке (скрыт, если резидент ещё не регистрировался) ---
     initPassport(document.getElementById('passport-badge-container'));
 
-    // --- Языковая рамка: минимальный дропдаун ---
     document.getElementById('lang-current').addEventListener('click', (e) => {
         e.stopPropagation();
         document.getElementById('lang-list').classList.toggle('open');
@@ -257,7 +242,6 @@
         document.getElementById('lang-list').classList.remove('open');
     });
 
-    // --- Клик по двери: взрыв + звук двери, через 0.7с звук бара и переход к приветствию ---
     const mainDoor = document.getElementById('main-door');
     const sndDoor = document.getElementById('snd-door');
     const sndAmbient = document.getElementById('snd-ambient');
@@ -272,15 +256,13 @@
 
             document.getElementById('block-entrance').classList.remove('active');
             document.getElementById('block-welcome').classList.add('active');
-        }, 700); // манифест: звук бара через ~0.5–0.7с после начала перехода
+        }, 700);
     });
 
-    // --- Кнопка приветствия: переход к регистрации ---
     document.getElementById('btn-go-register').addEventListener('click', () => {
         window.location.href = 'identity.html';
     });
 
-    // --- Стрелки навигации на block-welcome ---
     document.getElementById('btn-back').addEventListener('click', () => {
         document.getElementById('block-welcome').classList.remove('active');
         document.getElementById('block-entrance').classList.add('active');
