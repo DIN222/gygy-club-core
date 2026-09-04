@@ -1,1 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GY-GY Club - BAR (v1.68 Optimized)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,700;0,900;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        :root { --gold: #d4af37; --violet: #8A2BE2; }
+        
+        * { -webkit-tap-highlight-color: transparent !important; box-sizing: border-box; }
+        body, button, input, div, img, span { pointer-events: auto !important; }
+        img { -webkit-user-drag: none !important; }
+
+        html, body { width: 100%; height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; overflow: hidden; position: fixed; margin:0; }
+        
+        /* ЛОГОТИП GY-GY */
+        .ui-header-right { 
+            position: fixed; top: 18px; right: 25px; z-index: 1000000; 
+            font-size: 24px; letter-spacing: 5px; font-weight: bold; 
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+        
+        /* СКВОЗНОЙ АВАТАР */
+        .ui-user-badge {
+            position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 2px solid var(--gold); background: #111;
+            box-shadow: 0 0 0 1px #000, inset 0 0 5px rgba(0,0,0,0.8);
+            z-index: 1000000; cursor: pointer; display: none;
+        }
+        .ui-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; background-color: #fff; }
+        .ui-user-badge .badge-flag {
+            position: absolute; bottom: -2px; right: -4px;
+            width: 17px; height: 12px; object-fit: cover;
+            border: 1px solid var(--gold); box-shadow: 0 0 0 1px #000;
+        }
+
+        /* ПАСПОРТ */
+        .passport-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        .passport-card { background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px; padding: 25px; width: 280px; color: #000; text-align: center; box-shadow: 0 0 25px rgba(0,0,0,0.5); position: relative; }
+        .passport-card .box-final { margin: 15px auto; border-color: #000; }
+        .passport-close-btn { position: absolute; top: 10px; right: 14px; font-size: 28px; font-weight: bold; color: #000; cursor: pointer; line-height: 1; user-select: none; }
+
+        .block { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; background: #000; z-index: 10; opacity: 0; transition: opacity 0.4s ease-in-out; }
+        .block.active { display: flex !important; opacity: 1 !important; z-index: 5000 !important; }
+
+        .quote-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 26px; text-align: center; max-width: 85%; text-shadow: 2px 2px 6px #000; }
+        
+        /* КНОПКИ БАРА */
+        .btn-gy { 
+            min-width: 140px; 
+            padding: 10px 14px; 
+            background: rgba(0,0,0,0.85) !important; 
+            border: 1px solid var(--gold) !important; 
+            color: var(--gold) !important; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-weight: 900; 
+            font-family: 'Share Tech Mono'; 
+            transition: none !important; 
+        }
+        .btn-gy:hover { 
+            cursor: pointer !important;
+            background: rgba(0,0,0,0.85) !important; 
+            color: var(--gold) !important;
+            border-color: var(--gold) !important;
+        }
+        
+        .box-final { width: 85px; height: 85px; border: 2px solid #000; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+
+        /* ИСПРАВЛЕННЫЕ НАВИГАЦИОННЫЕ СТРЕЛКИ (ФЛЕКС С ЗАЗОРОМ) */
+        .ui-nav-arrows {
+            position: fixed; top: 18px; left: 20px; z-index: 9999999; 
+            display: flex; gap: 20px; align-items: center; user-select: none;
+            pointer-events: auto !important;
+        }
+        .arrow-item { 
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 26px; 
+            font-weight: 900 !important; 
+            color: var(--gold); 
+            cursor: pointer; 
+            display: inline-flex;
+            align-items: center;
+            line-height: 1; 
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            transition: opacity 0.2s; 
+        }
+        .arrow-item:hover { opacity: 0.8; }
+        
+        /* Зазор для внутренней части двойной стрелки */
+        .arrow-item span:nth-child(2) {
+            margin-left: -4px; 
+        }
+
+        /* КОНЬ ПО ВЫСОТЕ ЭКРАНА */
+        #block-bar { padding: 0 !important; justify-content: center; overflow: hidden; }
+        .bar-bg-horse { height: 100vh; width: auto; object-fit: contain; z-index: 1; position: relative; }
+        
+        .bar-top-content { position: absolute; top: 12vh; left: 50%; transform: translateX(-50%); width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 2; pointer-events: none; }
+      
+        /* НИЖНЯЯ ПАНЕЛЬ ДЛЯ КНОПОК БАРА */
+        .bar-bottom-panel { 
+            position: fixed; 
+            bottom: 5vh; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 999999 !important; 
+            display: flex; 
+            gap: 15px; 
+            width: auto;
+            justify-content: center;
+            pointer-events: auto !important;
+        }
+
+        /* Поддержка Google Translate */
+        .goog-te-banner-frame, .skiptranslate, iframe.goog-te-menu-frame { display: none !important; }
+        body { top: 0 !important; background-color: #000 !important; opacity: 0; transition: opacity 0.4s ease-in-out !important; }
+        body.page-loaded { opacity: 1 !important; }
+        font { background-color: transparent !important; background: transparent !important; color: inherit !important; box-shadow: none !important; text-shadow: none !important; }
+        .goog-text-highlight { background-color: transparent !important; background: transparent !important; box-shadow: none !important; color: inherit !important; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div class="notranslate ui-nav-arrows" id="global-nav">
+        <div class="arrow-item" onclick="goBack()">&lt;</div>
+        <div class="arrow-item" onclick="leaveToEntrance()">
+            <span>&lt;</span><span>&lt;</span>
+        </div>
+    </div>
+
+    <div id="global-user-badge" class="ui-user-badge notranslate" onclick="openPassport()">
+        <img id="badge-avatar-img" class="badge-img" src="">
+        <img id="badge-flag-img" class="badge-flag" src="https://flagcdn.com/w20/gb.png">
+    </div>
+
+    <div id="modal-passport" class="passport-overlay" onclick="closePassport()">
+        <div class="passport-card" onclick="event.stopPropagation()">
+            <div class="passport-close-btn" onclick="closePassport()">&times;</div>
+            <div id="pass-id-title" style="font-weight:900; font-size:16px; letter-spacing:1px;">GY-GY PASSPORT</div>
+            <div id="pass-id-val" style="font-weight:700; font-size:13px; margin-top:5px; color:#555;">#ID</div>
+            <div class="box-final" style="width:100px; height:100px; border-radius:50%; border:2px solid var(--gold);"><img id="pass-avatar-img" style="width:100%; height:100%; object-fit:cover; border-radius:50%; background-color:#fff;"></div>
+            <div class="box-final" id="pass-qr-box" style="width:110px; height:110px; padding:5px;"></div>
+            <div style="font-size:10px; font-weight:900; color:#333; margin-top:5px; text-transform:uppercase;">Click &times; or outside to close</div>
+        </div>
+    </div>
+    
+    <div id="google_translate_element" style="position:fixed; bottom:0; left:0; opacity:0; z-index:-1;"></div>
+    <div class="ui-header-right notranslate">GY-GY</div>
+
+    <audio id="snd-ambient" src="bar_ambient.mp3" loop preload="auto"></audio>
+
+    <div id="block-bar" class="block">
+        <img src="horse_bar.png" class="bar-bg-horse">
+        
+        <div class="bar-top-content">
+            <div class="quote-text">In every joke there is a share of whisky</div>
+        </div>
+        
+        <div class="bar-bottom-panel">
+            <button class="btn-gy" onclick="event.stopPropagation(); goToTablesZone();">TABLES ZONE</button>
+            <button class="btn-gy" onclick="openSarcasmBook()">SARCASM BOOK</button>
+        </div>
+    </div>
+
+    <script>
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,de,es,fr,it,pl,pt,ru,tr,uk,zh-CN,ja',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        let currentID = "";
+        let currentUserImage = "";
+
+        function safeStorageGet(key, fallback = "") { try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; } }
+
+        function syncUserBadge() {
+            currentUserImage = safeStorageGet('gygy_avatar') || safeStorageGet('gy_user_img') || safeStorageGet('gy_user_avatar');
+            currentID = safeStorageGet('gygy_id') || safeStorageGet('gy_user_id') || safeStorageGet('gy_trace');
+            
+            let savedFlag = safeStorageGet('gygy_flag', 'gb') || safeStorageGet('gy_user_flag', 'gb');
+            if (savedFlag.includes('/')) {
+                savedFlag = savedFlag.split('/').pop().replace('.png', '');
+            }
+
+            if (currentUserImage) {
+                const badge = document.getElementById('global-user-badge');
+                const badgeImg = document.getElementById('badge-avatar-img');
+                const passImg = document.getElementById('pass-avatar-img');
+                const badgeFlagImg = document.getElementById('badge-flag-img');
+                
+                if (badge) badge.style.display = 'block';
+                if (badgeImg) badgeImg.src = currentUserImage;
+                if (passImg) passImg.src = currentUserImage;
+                if (badgeFlagImg) badgeFlagImg.src = `https://flagcdn.com/w20/${savedFlag.toLowerCase()}.png`;
+            }
+
+            if (currentID) {
+                const passIdVal = document.getElementById('pass-id-val');
+                const passQrBox = document.getElementById('pass-qr-box');
+                if (passIdVal) passIdVal.innerText = currentID;
+                if (passQrBox && typeof QRCode !== 'undefined') {
+                    passQrBox.innerHTML = ""; 
+                    new QRCode(passQrBox, { text: currentID, width: 100, height: 100 });
+                }
+            }
+        }
+
+        function switchLocalBlock(blockId) {
+            document.querySelectorAll('.block').forEach(b => { b.classList.remove('active'); b.style.display = 'none'; });
+            const target = document.getElementById(blockId);
+            if (target) {
+                target.style.display = 'flex';
+                setTimeout(() => { target.classList.add('active'); }, 20);
+            }
+        }
+
+        function goBack() {
+            document.body.classList.remove('page-loaded');
+            setTimeout(() => {
+                window.location.href = 'index.html?go=hall';
+            }, 400);
+        }
+
+        function leaveToEntrance() {
+            document.body.classList.remove('page-loaded');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 400);
+        }
+
+        function goToTablesZone() {
+            document.body.classList.remove('page-loaded');
+            setTimeout(() => {
+                window.location.href = 'tables.html';
+            }, 400);
+        }
+
+        function openSarcasmBook() {
+            document.body.classList.remove('page-loaded');
+            setTimeout(() => {
+                window.location.href = 'book.html';
+            }, 400);
+        }
+
+        function openPassport() { const modal = document.getElementById('modal-passport'); if (modal) { modal.style.display = 'flex'; setTimeout(() => modal.style.opacity = '1', 10); } }
+        function closePassport() { const modal = document.getElementById('modal-passport'); if (modal) { modal.style.opacity = '0'; setTimeout(() => modal.style.display = 'none', 300); } }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            syncUserBadge();
+
+            const savedLangCode = safeStorageGet('gy_lang', 'EN').toLowerCase();
+            setTimeout(() => {
+                const selectEl = document.querySelector('.goog-te-combo');
+                if (selectEl) { 
+                    selectEl.value = savedLangCode === 'ua' ? 'uk' : savedLangCode; 
+                    selectEl.dispatchEvent(new Event('change', { bubbles: true })); 
+                }
+            }, 800);
+
+            const ambient = document.getElementById('snd-ambient');
+            if (ambient) { ambient.volume = 0.55; ambient.play().catch(() => {
+                document.body.addEventListener('click', () => { ambient.play().catch(()=>{}); }, { once: true });
+            }); }
+
+            switchLocalBlock('block-bar');
+
+            const script = document.createElement('script'); script.type = 'text/javascript';
+            script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+            document.head.appendChild(script);
+            document.body.classList.add('page-loaded');
+        });
+    </script>
+</body>
+</html>
 
