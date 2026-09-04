@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <!--
   hall.html
-  v1.3.0 — 2026-08-26
-  Изменения: добавлена 5-я зона zone-projector (ромашка), привязана к проектору
-  на потолке — заготовка под будущее табло, координаты PLACEHOLDER (уточнить
-  через tools/hall-zone-picker.html), клик пока не имеет функционала.
+  v1.4.0 — 2026-08-26
+  Изменения: фон вынесен в отдельный слой (#hall-bg) с CSS-фильтром
+  contrast/saturate/brightness — картинка выглядит контрастнее и живее без
+  замены самого файла. Если проблема была в размытости (а не в тусклости) —
+  фильтром это не лечится, нужен исходник более высокого качества.
 
   Холл клуба: винтажная фотография как фон, поверх которой минимальное ядро —
   4 навигационные зоны (AI Room, Office, Studio, вход в Bar). Остальные элементы
@@ -30,7 +31,13 @@
     }
 
     body {
-        background: url('холл74f.png') center 12%/75% auto no-repeat #000000;
+        background: #000000;
+    }
+
+    #hall-bg {
+        position: fixed; inset: 0; z-index: 0;
+        background: url('hall_bg_jpg.jpg') center 12%/75% auto no-repeat;
+        filter: contrast(1.2) saturate(1.3) brightness(1.05);
     }
 
     .header-right {
@@ -67,6 +74,7 @@
         font-family: 'Cormorant Garamond', serif; font-style: italic;
         font-size: 22px; color: var(--gold);
         -webkit-text-stroke: 1px #000000;
+        z-index: 5;
     }
 
     .hall-zone {
@@ -149,6 +157,8 @@
 </style>
 </head>
 <body>
+
+<div id="hall-bg"></div>
 
 <div class="header-right">GY-GY</div>
 <div class="ui-nav-arrows">
