@@ -1,12 +1,10 @@
 /**
  * modules/passport.js
- * v1.2.0 — 2026-08-26
- * Изменения: (1) saveProfile принимает clubNickname извне (для листания в
- * identity.html) и avatarSource ('photo'|'generated') — исправляет баг, когда
- * загруженное фото при повторном визите показывалось в блоке аватара клуба
- * вместо блока фото; (2) в модалку паспорта добавлена кнопка EDIT — ведёт на
- * identity.html, чтобы сменить фото/ник в любой момент, не только при первой
- * регистрации.
+ * v1.3.0 — 2026-08-26
+ * Изменения: паспорт теперь подписан на 'language:changed' — при смене языка
+ * флаг в уже сохранённом паспорте обновляется сразу, без похода в
+ * identity.html. Раньше флаг паспорта был "снимком" на момент последнего
+ * saveProfile() и рассинхронизировался с реальным выбранным языком.
  *
  * Цифровой паспорт резидента: бейдж в шапке + модальное окно с QR-кодом.
  * Переиспользуемый узел — рендерит себя в переданный container на ЛЮБОЙ
@@ -187,6 +185,17 @@ export function init(container) {
     const handleSave = () => renderBadge();
     on('PROFILE_SAVED', handleSave);
     unsubscribers.push({ event: 'PROFILE_SAVED', handler: handleSave });
+
+    const handleLangChange = ({ country }) => {
+        const passport = getPassport();
+        if (passport && passport.flagCountry !== country) {
+            passport.flagCountry = country;
+            set('passport', passport);
+            renderBadge();
+        }
+    };
+    on('language:changed', handleLangChange);
+    unsubscribers.push({ event: 'language:changed', handler: handleLangChange });
 
     emit('MODULE_INIT', { module: MODULE_NAME, at: Date.now() });
 }
