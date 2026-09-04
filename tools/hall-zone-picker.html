@@ -1,1 +1,90 @@
 
+<!DOCTYPE html>
+<!--
+  tools/hall-zone-picker.html
+  v1.1.0 — 2026-08-26
+  Служебный инструмент (НЕ часть продакшн-сайта): кликните по фото Холла
+  в порядке AI Room, Office, Studio, Bar, Проектор — получите готовые
+  top/left в vh/vw для вставки в hall.html.
+-->
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Hall Zone Picker</title>
+<style>
+    body {
+        margin: 0; height: 100vh; overflow: hidden; position: relative;
+        background: url('../hall_bg_jpg.jpg') center 12%/75% auto no-repeat #000000;
+        cursor: crosshair;
+        font-family: monospace;
+    }
+    #panel {
+        position: fixed; top: 10px; right: 10px; z-index: 100;
+        background: rgba(0,0,0,0.85); color: #FFD700; padding: 12px;
+        border: 2px solid #FFD700; border-radius: 8px; max-width: 320px;
+        font-size: 12px; white-space: pre-wrap;
+    }
+    #panel h3 { margin: 0 0 8px; font-size: 13px; }
+    .marker {
+        position: absolute; width: 10px; height: 10px; border-radius: 50%;
+        background: red; transform: translate(-50%, -50%); pointer-events: none;
+        z-index: 50;
+    }
+    .marker span {
+        position: absolute; top: -18px; left: 12px; color: red;
+        font-size: 11px; font-weight: bold; white-space: nowrap;
+    }
+    #clear-btn {
+        margin-top: 8px; padding: 4px 10px; cursor: pointer;
+        background: #000; color: #FFD700; border: 1px solid #FFD700;
+    }
+</style>
+</head>
+<body>
+
+<div id="panel">
+    <h3>Кликните по 5 объектам по очереди:<br>AI Room, Office, Studio, Bar, Проектор</h3>
+    <div id="output">Пока пусто — кликните по фото.</div>
+    <button id="clear-btn">Очистить точки</button>
+</div>
+
+<script>
+    const output = document.getElementById('output');
+    const points = [];
+
+    document.body.addEventListener('click', (e) => {
+        if (e.target.id === 'clear-btn') return;
+
+        const vw = (e.clientX / window.innerWidth * 100).toFixed(1);
+        const vh = (e.clientY / window.innerHeight * 100).toFixed(1);
+        points.push({ vw, vh });
+
+        const marker = document.createElement('div');
+        marker.className = 'marker';
+        marker.style.left = e.clientX + 'px';
+        marker.style.top = e.clientY + 'px';
+        marker.innerHTML = `<span>${points.length}</span>`;
+        document.body.appendChild(marker);
+
+        renderOutput();
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        points.length = 0;
+        document.querySelectorAll('.marker').forEach(m => m.remove());
+        renderOutput();
+    });
+
+    function renderOutput() {
+        if (points.length === 0) {
+            output.textContent = 'Пока пусто — кликните по фото.';
+            return;
+        }
+        output.textContent = points.map((p, i) =>
+            `Точка ${i + 1}: top: ${p.vh}vh; left: ${p.vw}vw;`
+        ).join('\n');
+    }
+</script>
+
+</body>
+</html>
