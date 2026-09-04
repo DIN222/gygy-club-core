@@ -1,200 +1,218 @@
-<!DOCTYPE html>
-<!--
-  hall.html
-  v1.2.0 — 2026-08-26
-  Изменения: (1) фон "отдалён" (75% масштаб вместо cover) — открывает потолок
-  с проектором, поля вокруг чёрные, вписываются в палитру; (2) золотые точки
-  заменены на ромашки (🌼) — по просьбе пользователя, добавляет узнаваемый
-  элемент юмора/тепла клуба; (3) добавлены стили паспорт-модалки — раньше
-  отсутствовали в этом файле полностью, паспорт открывался неоформленным.
+/**
+ * modules/passport.js
+ * v1.3.0 — 2026-08-26
+ * Изменения: паспорт теперь подписан на 'language:changed' — при смене языка
+ * флаг в уже сохранённом паспорте обновляется сразу, без похода в
+ * identity.html. Раньше флаг паспорта был "снимком" на момент последнего
+ * saveProfile() и рассинхронизировался с реальным выбранным языком.
+ *
+ * Цифровой паспорт резидента: бейдж в шапке + модальное окно с QR-кодом.
+ * Переиспользуемый узел — рендерит себя в переданный container на ЛЮБОЙ
+ * странице (index.html, hall.html и т.д.), не дублируется копипастой.
+ *
+ * Зависит от qrcode.min.js (глобальный конструктор window.QRCode),
+ * подключается на странице отдельным <script> ДО импорта этого модуля.
+ *
+ * Данные паспорта — единый объект в Storage под ключом 'passport':
+ *   { id, nickname, nicknameType, avatar, flagCountry, createdAt }
+ * Замена старой схемы из отдельных ключей (gygy_id, gygy_nickname,
+ * gy_user_img и т.д.) на один структурированный объект — см. CONTRACT.md,
+ * core/storage.js теперь поддерживает объекты через JSON.
+ */
 
-  Холл клуба: винтажная фотография как фон, поверх которой минимальное ядро —
-  4 навигационные зоны (AI Room, Office, Studio, вход в Bar). Остальные элементы
-  фотографии (табло, проектор и т.д.) — задел на будущее, станут интерактивными
-  по мере развития, без изменения этого ядра (см. CONTRACT.md п.7 — тонкие страницы).
--->
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>GY-GY Club — Hall v1.1.0  20.70 </title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="qrcode.min.js"></script>
-<style>
-    :root { --gold: #FFD700; }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+import { on, off, emit } from '../core/eventBus.js';
+import { get, set } from '../core/storage.js';
 
-    html, body {
-        width: 100%; height: 100%;
-        background: #000000; color: var(--gold);
-        overflow: hidden; position: fixed;
-        font-family: 'Share Tech Mono', monospace;
+const CLUB_NICKNAMES = [
+    'БигКоин', 'Нападающий', 'Шампань', 'Магнат', 'Счастливчик',
+    'Инсайдер', 'Фантом', 'Победитель', 'Капитан', 'Маэстро',
+    'Прайм', 'Штурман', 'Панчер', 'Триумф', 'Оракул'
+];
+
+let boundContainer = null;
+let unsubscribers = [];
+
+export function hasPassport() {
+    return !!get('passport');
+}
+
+export function getPassport() {
+    return get('passport', null);
+}
+
+function generateId() {
+    const seq = get('residentSeq', 0) + 1;
+    set('residentSeq', seq);
+    const random4 = Math.floor(1000 + Math.random() * 9000);
+    return `GY-${seq}${random4}`;
+}
+
+function randomClubNickname() {
+    return CLUB_NICKNAMES[Math.floor(Math.random() * CLUB_NICKNAMES.length)];
+}
+
+function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash);
+}
+
+export function generateAvatar(id) {
+    const h = hashString(id);
+    const shapeCount = 3 + (h % 4);
+    let shapes = '';
+    for (let i = 0; i < shapeCount; i++) {
+        const seed = h + i * 97;
+        const cx = 20 + (seed % 60);
+        const cy = 20 + ((seed >> 3) % 60);
+        const r = 6 + (seed % 14);
+        const opacity = (0.35 + ((seed >> 5) % 65) / 100).toFixed(2);
+        const isCircle = seed % 2 === 0;
+        shapes += isCircle
+            ? `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#FFD700" opacity="${opacity}"/>`
+            : `<rect x="${cx - r}" y="${cy - r}" width="${r * 2}" height="${r * 2}" fill="#FFD700" opacity="${opacity}" transform="rotate(${seed % 360} ${cx} ${cy})"/>`;
+    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <rect width="100" height="100" fill="#000000"/>
+        ${shapes}
+    </svg>`;
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+
+export function saveProfile(data = {}) {
+    const existing = getPassport();
+    const passport = {
+        id: existing?.id || generateId(),
+        nickname: data.nickname ?? existing?.nickname ?? '',
+        nicknameType: data.nicknameType ?? existing?.nicknameType ?? 'own',
+        clubNickname: data.clubNickname || existing?.clubNickname || randomClubNickname(),
+        avatar: data.avatar ?? existing?.avatar ?? '',
+        avatarSource: data.avatarSource || existing?.avatarSource || 'photo',
+        flagCountry: get('flagCountry', 'gb'),
+        createdAt: existing?.createdAt || Date.now()
+    };
+    set('passport', passport);
+    emit('PROFILE_SAVED', passport);
+    if (boundContainer) renderBadge();
+    return passport;
+}
+
+function renderBadge() {
+    if (!boundContainer) return;
+    let badge = boundContainer.querySelector('#gy-user-badge');
+    const passport = getPassport();
+
+    if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'gy-user-badge';
+        badge.className = 'gy-user-badge';
+        badge.innerHTML = `
+            <img class="badge-img" id="gy-badge-avatar">
+            <img class="badge-flag" id="gy-badge-flag">
+        `;
+        badge.addEventListener('click', openModal);
+        boundContainer.appendChild(badge);
     }
 
-    body {
-        background: url('hall_bg_jpg.jpg') center 30%/60% auto no-repeat #000000;
+    if (passport) {
+        badge.style.display = 'block';
+        boundContainer.querySelector('#gy-badge-avatar').src = passport.avatar || '';
+        boundContainer.querySelector('#gy-badge-flag').src = `https://flagcdn.com/w20/${passport.flagCountry}.png`;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+export function openModal() {
+    const passport = getPassport();
+    if (!passport) return;
+
+    let modal = document.getElementById('gy-passport-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'gy-passport-modal';
+        modal.className = 'gy-passport-overlay';
+        modal.innerHTML = `
+            <div class="gy-passport-card">
+                <div class="gy-passport-close">&times;</div>
+                <div class="gy-passport-title">GY-GY PASSPORT</div>
+                <div class="gy-passport-id"></div>
+                <div class="gy-passport-nick"></div>
+                <div class="gy-passport-avatar-box"><img class="gy-passport-avatar"></div>
+                <div class="gy-passport-qr-box"></div>
+                <button class="gy-passport-edit" data-translate="btn_edit_passport">EDIT</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        modal.querySelector('.gy-passport-close').addEventListener('click', closeModal);
+        modal.querySelector('.gy-passport-edit').addEventListener('click', () => {
+            window.location.href = 'identity.html';
+        });
     }
 
-    .header-right {
-        position: fixed; top: 18px; right: 25px; z-index: 1000;
-        font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif;
+    modal.querySelector('.gy-passport-id').textContent = passport.id;
+    modal.querySelector('.gy-passport-nick').textContent =
+        passport.nicknameType === 'club' ? passport.clubNickname : passport.nickname;
+    modal.querySelector('.gy-passport-avatar').src = passport.avatar || '';
+
+    const qrBox = modal.querySelector('.gy-passport-qr-box');
+    qrBox.innerHTML = '';
+    if (typeof window.QRCode !== 'undefined') {
+        new window.QRCode(qrBox, { text: passport.id, width: 100, height: 100 });
     }
 
-    .ui-nav-arrows {
-        position: fixed; top: 18px; left: 20px; z-index: 1000;
-        display: flex; gap: 15px; font-size: 24px; font-weight: 900;
-        font-family: 'Share Tech Mono', monospace;
-    }
-    .back-arrow {
-        color: var(--gold); background: transparent; border: none; text-decoration: none;
-        cursor: pointer; transition: opacity 0.2s, transform 0.2s;
-    }
-    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
+    modal.style.display = 'flex';
+    requestAnimationFrame(() => { modal.style.opacity = '1'; });
+}
 
-    .gy-user-badge {
-        position: fixed; top: 4px; left: 50%; transform: translateX(-50%);
-        width: 36px; height: 36px; border-radius: 50%;
-        border: 2px solid var(--gold); background: #111;
-        z-index: 1000; cursor: pointer; display: none;
-    }
-    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-    .gy-user-badge .badge-flag {
-        position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover;
-        border: 1px solid var(--gold);
-    }
+export function closeModal() {
+    const modal = document.getElementById('gy-passport-modal');
+    if (!modal) return;
+    modal.style.opacity = '0';
+    setTimeout(() => { modal.style.display = 'none'; }, 300);
+}
 
-    .quote-text {
-        position: absolute; top: 10vh; left: 50%; transform: translateX(-50%);
-        width: 85%; text-align: center;
-        font-family: 'Cormorant Garamond', serif; font-style: italic;
-        font-size: 22px; color: var(--gold);
-        -webkit-text-stroke: 1px #000000;
-    }
+const MODULE_NAME = 'passport';
 
-    .hall-zone {
-        position: absolute;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        z-index: 6;
-    }
+export function init(container) {
+    boundContainer = container;
+    renderBadge();
 
-    .hotspot {
-        font-size: 22px;
-        display: inline-block;
-        filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.7));
-        animation: hotspot-pulse 2.4s ease-in-out infinite;
-        transition: transform 0.2s, filter 0.2s;
-        pointer-events: none;
-        line-height: 1;
-    }
-    @keyframes hotspot-pulse {
-        0%, 100% { opacity: 0.5; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.08); }
-    }
-    .hall-zone:hover .hotspot {
-        transform: scale(1.3);
-        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 1));
-        animation-play-state: paused;
-        opacity: 1;
-    }
+    const handleSave = () => renderBadge();
+    on('PROFILE_SAVED', handleSave);
+    unsubscribers.push({ event: 'PROFILE_SAVED', handler: handleSave });
 
-    .zone-label {
-        position: absolute;
-        top: 100%; left: 50%; transform: translateX(-50%);
-        margin-top: 4px;
-        font-size: 10px; font-weight: 700; letter-spacing: 2px;
-        font-family: 'Cinzel', serif;
-        color: var(--gold); text-shadow: 1px 1px 0 #000, -1px -1px 0 #000;
-        white-space: nowrap; pointer-events: none;
-        opacity: 0; transition: opacity 0.2s;
-    }
-    .hall-zone:hover .zone-label { opacity: 1; }
+    const handleLangChange = ({ country }) => {
+        const passport = getPassport();
+        if (passport && passport.flagCountry !== country) {
+            passport.flagCountry = country;
+            set('passport', passport);
+            renderBadge();
+        }
+    };
+    on('language:changed', handleLangChange);
+    unsubscribers.push({ event: 'language:changed', handler: handleLangChange });
 
-    .zone-ai-room   { top: 22vh; left: 20vw; width: 6vw; height: 10vh; }
-    .zone-office    { bottom: 18vh; left: 20vw; width: 6vw; height: 10vh; }
-    .zone-studio    { top: 22vh; right: 20vw; width: 6vw; height: 10vh; }
-    .zone-bar {
-        bottom: 3vh; left: 50%; transform: translateX(-50%);
-        width: 10vw; height: 8vh;
-    }
+    emit('MODULE_INIT', { module: MODULE_NAME, at: Date.now() });
+}
 
-    .gy-passport-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
-        display: none; align-items: center; justify-content: center; opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    .gy-passport-card {
-        background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
-        padding: 25px; width: 280px; color: #000; text-align: center; position: relative;
-        font-family: 'Share Tech Mono', monospace;
-    }
-    .gy-passport-close { position: absolute; top: 10px; right: 14px; font-size: 28px; cursor: pointer; }
-    .gy-passport-title { font-weight: 900; font-size: 16px; font-family: 'Cinzel', serif; }
-    .gy-passport-id { font-weight: 700; font-size: 13px; margin-top: 5px; color: #555; }
-    .gy-passport-nick { font-weight: 700; font-size: 14px; margin-top: 4px; }
-    .gy-passport-avatar-box, .gy-passport-qr-box {
-        width: 90px; height: 90px; border: 2px solid var(--gold); background: #fff;
-        margin: 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
-    }
-    .gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
-    .gy-passport-edit {
-        margin-top: 14px; padding: 8px 20px; background: #000; border: 2px solid var(--gold);
-        color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700;
-        font-family: 'Montserrat', 'Cinzel', sans-serif; font-size: 11px;
-        transition: filter 0.3s ease;
-    }
-    .gy-passport-edit:hover { filter: brightness(1.1); }
-</style>
-</head>
-<body>
+export function update() {
+    renderBadge();
+}
 
-<div class="header-right">GY-GY</div>
-<div class="ui-nav-arrows">
-    <a class="back-arrow" id="btn-back" title="Назад">&lt;</a>
-    <a class="back-arrow" id="btn-home" title="На вход">&lt;&lt;</a>
-</div>
-<div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+export function destroy() {
+    unsubscribers.forEach(({ event, handler }) => off(event, handler));
+    unsubscribers = [];
+    boundContainer = null;
 
-<div class="quote-text" data-translate="hall_quote">In every joke there is a share of whisky</div>
+    emit('MODULE_DESTROY', { module: MODULE_NAME, at: Date.now() });
+}
 
-<div class="hall-zone zone-ai-room" id="zone-ai-room">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_ai_room">AI ROOM</span>
-</div>
-
-<div class="hall-zone zone-office" id="zone-office">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_office">OFFICE</span>
-</div>
-
-<div class="hall-zone zone-studio" id="zone-studio">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_studio">STUDIO</span>
-</div>
-
-<div class="hall-zone zone-bar" id="zone-bar">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_bar">BAR</span>
-</div>
-
-<script type="module">
-    import { init as initLocalization } from './core/localization.js';
-    import { init as initPassport } from './modules/passport.js';
-    import { init as initNav, registerSound, goToPage } from './modules/navigation.js';
-
-    initLocalization(document.body);
-    initPassport(document.getElementById('passport-badge-container'));
-    initNav(document.body);
-    registerSound('door', 'door_open.mp3');
-
-    document.getElementById('zone-ai-room').addEventListener('click', () => goToPage('verses.html'));
-    document.getElementById('zone-office').addEventListener('click', () => goToPage('office.html'));
-    document.getElementById('zone-studio').addEventListener('click', () => goToPage('studio.html'));
-    document.getElementById('zone-bar').addEventListener('click', () => goToPage('bar.html', { sound: 'door' }));
-
-    document.getElementById('btn-back').addEventListener('click', () => history.back());
-    document.getElementById('btn-home').addEventListener('click', () => window.location.href = 'index.html');
-</script>
-
-</body>
-</html>
+export const Passport = {
+    hasPassport, getPassport, saveProfile, openModal, closeModal, init, update, destroy
+};
+export default Passport;
