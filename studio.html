@@ -1,172 +1,80 @@
 <!DOCTYPE html>
-<html lang="ru">
+<!-- studio.html v1.0.0 — 2026-08-26. Хаб "гаражного производства": вход в гаражи. -->
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GY-GY Club v4.5.3 - STUDIO 024</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    
-    <style>
-        :root { 
-            --gold: #d4af37; 
-            --violet: #8A2BE2; 
-        }
-        * { -webkit-tap-highlight-color: transparent !important; box-sizing: border-box; }
-        
-        html, body { 
-            width: 100%; 
-            height: 100%; 
-            background: #000; 
-            color: var(--gold); 
-            font-family: 'Share Tech Mono', monospace; 
-            overflow: hidden; 
-            position: fixed; 
-            margin: 0; 
-        }
-
-        /* Фоновое изображение Студии */
-        .studio-page {
-            position: fixed;
-            inset: 0;
-            background: url('studio_bg.jpg') center/95% no-repeat #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        /* НАВИГАЦИЯ (СЛЕВА) — Выход в Холл (<) и ко Входу (<<) */
-        .ui-nav-arrows {
-            position: fixed; top: 18px; left: 20px; z-index: 9999999; 
-            display: flex; gap: 25px; font-size: 26px; font-weight: 900 !important; 
-            cursor: pointer; color: var(--gold); 
-            line-height: 1; letter-spacing: -2px; 
-            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-            user-select: none;
-        }
-        .back-arrow { transition: opacity 0.2s; text-decoration: none; color: var(--gold); }
-        .back-arrow:hover { opacity: 0.8; }
-
-        /* СКВОЗНОЙ АВАТАР */
-        .ui-header-center {
-            position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1000000;
-            display: flex; align-items: center; justify-content: center;
-            user-select: none;
-            pointer-events: none;
-        }
-        .user-avatar {
-            width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--gold);
-            object-fit: cover; background: #fff !important; display: block;
-            box-shadow: 0 0 0 1px #000, inset 0 0 5px rgba(0,0,0,0.8);
-        }
-
-        /* ЛОГОТИП GY-GY */
-        .ui-header-right { 
-            position: fixed; top: 18px; right: 25px; z-index: 1000000; 
-            font-size: 24px; letter-spacing: 5px; font-weight: bold; 
-            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, -1px 1px 0 #000;
-            user-select: none;
-            pointer-events: none;
-        }
-
-        /* АКТИВНЫЕ ЗОНЫ (ФИОЛЕТОВЫЕ СТРЕЛКИ ВНУТРИ СТУДИИ) */
-        .studio-zone {
-            position: absolute;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0);
-        }
-
-        .cue-arrow-studio { 
-            color: var(--violet); 
-            font-size: 38px; 
-            font-weight: 900; 
-            font-family: 'Share Tech Mono', monospace;
-            text-shadow: 0 0 12px var(--violet), 0 0 20px var(--violet); 
-            pointer-events: none; 
-            user-select: none;
-            z-index: 10;
-            transition: opacity 0.2s, transform 0.2s;
-        }
-
-        .studio-zone:hover .cue-arrow-studio { 
-            opacity: 0.8; 
-            transform: scale(1.1);
-        }
-
-        /* КООРДИНАТЫ ЛОКАЦИЙ */
-        .zone-wear { top: 24vh; left: 29vw; width: 120px; height: 90px; }
-        .zone-gifts { top: 11vh; left: 55vw; width: 120px; height: 90px; }
-        .zone-vintage { top: 4vh; left: 78vw; width: 120px; height: 90px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Studio v1.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<style>
+    :root { --gold: #FFD700; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        width: 100%; height: 100%; background: #000; color: var(--gold);
+        overflow: hidden; position: fixed; font-family: 'Share Tech Mono', monospace;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .header-right { position: fixed; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; }
+    .ui-nav-arrows { position: fixed; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; }
+    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
+    .gy-user-badge { position: fixed; top: 4px; left: 50%; transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; display: none; }
+    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
+    .section-title { font-family: 'Cinzel', serif; font-size: 20px; letter-spacing: 4px; margin-bottom: 24px; }
+    .garage-grid { display: flex; gap: 16px; }
+    .garage-card {
+        width: 160px; padding: 20px 14px; border: 2px solid var(--gold);
+        text-align: center; cursor: pointer; transition: filter 0.2s;
+    }
+    .garage-card:hover { filter: brightness(1.15); }
+    .garage-card.locked { opacity: 0.35; cursor: not-allowed; }
+    .garage-icon { font-size: 32px; margin-bottom: 8px; }
+    .garage-name { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px; margin-bottom: 4px; }
+    .garage-desc { font-size: 9px; opacity: 0.7; }
+</style>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
-    <div class="studio-page">
-        <!-- НАВИГАЦИЯ СЛЕВА -->
-        <div class="notranslate ui-nav-arrows">
-            <!-- Одинарная стрелка — Шаг назад в Холл -->
-            <a href="hall.html" class="back-arrow" title="В Холл">&lt;</a>
-            <!-- Двойная стрелка — Ко входу в клуб -->
-            <a href="index.html" class="back-arrow" title="Ко входу в клуб">&lt;&lt;</a>
-        </div>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-hall">&lt;&lt;</a>
+</div>
+<div id="passport-badge-container"></div>
 
-        <!-- АВАТАР -->
-        <div class="ui-header-center notranslate">
-            <img id="header-avatar" class="user-avatar" src="" alt="Avatar" style="display:none;">
-        </div>
-
-        <!-- ЛОГОТИП -->
-        <div class="ui-header-right notranslate">GY-GY</div>
-
-        <!-- ИНТЕРАКТИВНЫЕ ФИОЛЕТОВЫЕ СТРЕЛКИ (ЛОКАЦИИ СТУДИИ) -->
-        <div id="zone-wear" class="studio-zone zone-wear" onclick="goToLocation('wear')" title="Переход в Ателье">
-            <span class="cue-arrow-studio">↑</span>
-        </div>
-
-        <div id="zone-gifts" class="studio-zone zone-gifts" onclick="goToLocation('gifts')" title="Подарки">
-            <span class="cue-arrow-studio">↑</span>
-        </div>
-
-        <div id="zone-vintage" class="studio-zone zone-vintage" onclick="goToLocation('vintage')" title="Винтаж">
-            <span class="cue-arrow-studio">↑</span>
-        </div>
+<div class="section-title">GARAGE STUDIO</div>
+<div class="garage-grid">
+    <div class="garage-card" id="garage-atelier">
+        <div class="garage-icon">🧥</div>
+        <div class="garage-name">ATELIER</div>
+        <div class="garage-desc">Street clothing</div>
     </div>
+    <div class="garage-card locked" id="garage-souvenirs">
+        <div class="garage-icon">🎁</div>
+        <div class="garage-name">SOUVENIRS</div>
+        <div class="garage-desc">Coming soon</div>
+    </div>
+</div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Загрузка аватара из localStorage
-            const savedAvatar = localStorage.getItem('gygy_avatar') || 
-                                localStorage.getItem('gy_user_img') || 
-                                localStorage.getItem('user_avatar');
-                                
-            const avatarEl = document.getElementById('header-avatar');
-            
-            if (savedAvatar && avatarEl) {
-                avatarEl.src = savedAvatar;
-                avatarEl.style.display = 'block';
-            } else if (avatarEl) {
-                avatarEl.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='42' height='42' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23fff'/><circle cx='16' cy='12' r='5' fill='%23d4af37'/><path d='M6 28 c0-6 5-10 10-10 s10 4 10 10' fill='%23d4af37'/></svg>";
-                avatarEl.style.display = 'block';
-            }
-        });
+<script type="module">
+    import { init as initLocalization } from './core/localization.js';
+    import { init as initPassport } from './modules/passport.js';
 
-        // Навигация по локациям Студии
-        function goToLocation(type) {
-            if (type === 'wear') {
-                window.location.href = 'atelier.html';
-            } else if (type === 'gifts') {
-                alert('Модуль GIFTS в разработке');
-            } else if (type === 'vintage') {
-                alert('Модуль VINTAGE в разработке');
-            }
-        }
-    </script>
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
+
+    document.getElementById('garage-atelier').addEventListener('click', () => {
+        window.location.href = 'atelier.html';
+    });
+    document.getElementById('garage-souvenirs').addEventListener('click', () => {
+        console.log('[Studio] Мастерская сувениров: гараж 2, ещё не построен.');
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+</script>
+
 </body>
 </html>
-
