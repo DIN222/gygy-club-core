@@ -1,1 +1,321 @@
 
+<!DOCTYPE html>
+<!--
+  atelier.html
+  v1.0.0 — 2026-08-26
+  Ателье: одна локация, два внутренних блока (не отдельные файлы — по объёму
+  сопоставимо с index.html: дверь+приветствие). Схема данных заказа заложена
+  с полем type:'blank' на будущее масштабирование (индивидуальный пошив и т.д.),
+  без переписывания уже готовой логики бланковых заказов (см. CONTRACT.md).
+
+  #block-gallery — система обмена принтами (экономика вклада: 5 принтов
+  открыто, следующие 5 — в обмен на один свой).
+  #block-workshop — форма заказа (форма/цвет + выбранные принты), расчёт
+  цены-ЗАГЛУШКА (простая формула, реальная логика — позже), отчёт в Офис
+  через core/storage.js (Офис читает при своём следующем визите).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>GY-GY Club — Atelier v1.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Montserrat:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<style>
+    :root { --gold: #FFD700; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+        width: 100%; height: 100%;
+        background: #000000; color: var(--gold);
+        overflow: hidden; position: fixed;
+        font-family: 'Share Tech Mono', monospace;
+    }
+
+    .nav-block {
+        position: fixed; inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 1.2s ease-in-out;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    .nav-block.active { display: flex; opacity: 1; }
+
+    .header-right {
+        position: fixed; top: 18px; right: 25px; z-index: 1000;
+        font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif;
+    }
+    .ui-nav-arrows {
+        position: fixed; top: 18px; left: 20px; z-index: 1000;
+        display: flex; gap: 15px; font-size: 24px; font-weight: 900;
+        font-family: 'Share Tech Mono', monospace;
+    }
+    .back-arrow {
+        color: var(--gold); background: transparent; border: none; text-decoration: none;
+        cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+    }
+    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
+
+    .gy-user-badge {
+        position: fixed; top: 4px; left: 50%; transform: translateX(-50%);
+        width: 36px; height: 36px; border-radius: 50%;
+        border: 2px solid var(--gold); background: #111;
+        z-index: 1000; cursor: pointer; display: none;
+    }
+    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .gy-user-badge .badge-flag {
+        position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover;
+        border: 1px solid var(--gold);
+    }
+
+    .quote-text {
+        font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px;
+        text-align: center; max-width: 85%; margin-bottom: 16px;
+    }
+    .section-title {
+        font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
+        letter-spacing: 4px; margin-bottom: 14px; text-align: center;
+    }
+
+    .print-grid {
+        display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+        max-width: 420px; margin-bottom: 16px;
+    }
+    .print-slot {
+        width: 60px; height: 60px; border: 2px solid var(--gold);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 26px; cursor: pointer; background: #0a0a0a;
+        transition: filter 0.2s, transform 0.2s; position: relative;
+    }
+    .print-slot:hover { filter: brightness(1.2); transform: scale(1.05); }
+    .print-slot.selected { border-color: #fff; box-shadow: 0 0 10px var(--gold); }
+    .print-slot.locked { opacity: 0.3; cursor: not-allowed; font-size: 16px; }
+    .print-slot .contributed-badge {
+        position: absolute; top: -6px; right: -6px; font-size: 10px;
+        background: var(--gold); color: #000; border-radius: 50%;
+        width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+    }
+
+    .btn-gy {
+        min-width: 220px; padding: 10px 18px; background: #000; border: 2px solid var(--gold);
+        color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700;
+        margin: 6px 0; font-family: 'Montserrat', 'Cinzel', sans-serif; font-size: 12px;
+        transition: filter 0.3s ease;
+    }
+    .btn-gy:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-gy:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .contribute-box {
+        display: flex; gap: 8px; align-items: center; margin: 10px 0 16px;
+    }
+    .contribute-box input {
+        background: #0a0a0a; border: 1px solid var(--gold); color: var(--gold);
+        padding: 6px; font-family: 'Share Tech Mono', monospace; font-size: 12px;
+        width: 60px; text-align: center;
+    }
+
+    .workshop-form { display: flex; flex-direction: column; gap: 10px; width: 260px; }
+    .form-row { display: flex; flex-direction: column; gap: 4px; }
+    .form-row label { font-size: 10px; letter-spacing: 1px; opacity: 0.8; }
+    .form-row select {
+        background: #0a0a0a; border: 1px solid var(--gold); color: var(--gold);
+        padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 12px;
+    }
+    .selected-prints-preview {
+        display: flex; gap: 6px; margin: 4px 0;
+        min-height: 36px; align-items: center;
+    }
+    .selected-prints-preview span { font-size: 22px; }
+    .price-display {
+        font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
+        text-align: center; margin: 12px 0;
+    }
+    .price-display small {
+        display: block; font-family: 'Share Tech Mono', monospace;
+        font-size: 10px; opacity: 0.6; font-weight: 400; letter-spacing: 1px;
+    }
+    .order-status {
+        font-size: 12px; text-align: center; margin-top: 10px; min-height: 16px;
+        color: #7CFC00;
+    }
+</style>
+</head>
+<body>
+
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back" title="Назад">&lt;</a>
+    <a class="back-arrow" id="btn-hall" title="В Холл">&lt;&lt;</a>
+</div>
+<div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+
+<section id="block-gallery" class="nav-block active">
+    <div class="section-title">GALLERY</div>
+    <div class="quote-text" data-translate="atelier_gallery_quote">Give one, unlock five more.</div>
+
+    <div class="print-grid" id="print-grid"><!-- рендерится скриптом --></div>
+
+    <div class="contribute-box">
+        <input type="text" id="contribute-input" placeholder="🎨" maxlength="2">
+        <button class="btn-gy" id="btn-contribute" style="min-width: auto; margin:0;">CONTRIBUTE</button>
+    </div>
+
+    <button class="btn-gy" id="btn-to-workshop" disabled data-translate="btn_to_workshop">TO WORKSHOP</button>
+</section>
+
+<section id="block-workshop" class="nav-block">
+    <div class="section-title">WORKSHOP</div>
+
+    <div class="selected-prints-preview" id="selected-prints-preview"></div>
+
+    <div class="workshop-form">
+        <div class="form-row">
+            <label data-translate="form_type">FORM</label>
+            <select id="select-form">
+                <option value="tshirt">T-SHIRT</option>
+                <option value="hoodie">HOODIE</option>
+                <option value="longsleeve">LONGSLEEVE</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label data-translate="form_color">COLOR</label>
+            <select id="select-color">
+                <option value="black">BLACK</option>
+                <option value="white">WHITE</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="price-display" id="price-display">
+        —
+        <small data-translate="price_note">estimate, not final</small>
+    </div>
+
+    <button class="btn-gy" id="btn-place-order" data-translate="btn_place_order">PLACE ORDER</button>
+    <div class="order-status" id="order-status"></div>
+</section>
+
+<script type="module">
+    import { init as initLocalization } from './core/localization.js';
+    import { init as initPassport } from './modules/passport.js';
+    import { get, set } from './core/storage.js';
+
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
+
+    const BASE_PRICE = { tshirt: 15, hoodie: 35, longsleeve: 25 };
+    const PRICE_PER_PRINT = 5;
+
+    const ALL_PRINTS = ['🔥','⚡','🌹','💀','🎭','🃏','🦁','⚓','🗿','🌊','🎲','🕶️','🧿','🪬','⚜️'];
+
+    function getUnlockedCount() {
+        return get('atelierUnlockedPrints', 5);
+    }
+
+    function getSelectedPrints() {
+        return get('atelierSelectedPrints', []);
+    }
+
+    function setSelectedPrints(arr) {
+        set('atelierSelectedPrints', arr);
+    }
+
+    function renderPrintGrid() {
+        const grid = document.getElementById('print-grid');
+        const unlocked = getUnlockedCount();
+        const selected = getSelectedPrints();
+        grid.innerHTML = '';
+
+        for (let i = 0; i < 15; i++) {
+            const slot = document.createElement('div');
+            const isLocked = i >= unlocked;
+            slot.className = 'print-slot' + (isLocked ? ' locked' : '') +
+                (selected.includes(i) && !isLocked ? ' selected' : '');
+            slot.textContent = isLocked ? '🔒' : ALL_PRINTS[i % ALL_PRINTS.length];
+
+            if (!isLocked) {
+                slot.addEventListener('click', () => {
+                    const current = getSelectedPrints();
+                    const idx = current.indexOf(i);
+                    if (idx === -1) current.push(i);
+                    else current.splice(idx, 1);
+                    setSelectedPrints(current);
+                    renderPrintGrid();
+                    updateWorkshopButton();
+                });
+            }
+            grid.appendChild(slot);
+        }
+    }
+
+    function updateWorkshopButton() {
+        const btn = document.getElementById('btn-to-workshop');
+        btn.disabled = getSelectedPrints().length === 0;
+    }
+
+    document.getElementById('btn-contribute').addEventListener('click', () => {
+        const input = document.getElementById('contribute-input');
+        if (!input.value.trim()) return;
+        const unlocked = getUnlockedCount();
+        set('atelierUnlockedPrints', Math.min(unlocked + 5, ALL_PRINTS.length));
+        input.value = '';
+        renderPrintGrid();
+    });
+
+    renderPrintGrid();
+    updateWorkshopButton();
+
+    document.getElementById('btn-to-workshop').addEventListener('click', () => {
+        document.getElementById('block-gallery').classList.remove('active');
+        document.getElementById('block-workshop').classList.add('active');
+        renderSelectedPreview();
+        updatePrice();
+    });
+
+    function renderSelectedPreview() {
+        const preview = document.getElementById('selected-prints-preview');
+        const selected = getSelectedPrints();
+        preview.innerHTML = selected.map(i => `<span>${ALL_PRINTS[i % ALL_PRINTS.length]}</span>`).join('');
+    }
+
+    function calculatePrice() {
+        const form = document.getElementById('select-form').value;
+        const printsCount = getSelectedPrints().length;
+        return BASE_PRICE[form] + printsCount * PRICE_PER_PRINT;
+    }
+
+    function updatePrice() {
+        const priceEl = document.getElementById('price-display');
+        const price = calculatePrice();
+        priceEl.innerHTML = `$${price}<small data-translate="price_note">estimate, not final</small>`;
+    }
+
+    document.getElementById('select-form').addEventListener('change', updatePrice);
+
+    document.getElementById('btn-place-order').addEventListener('click', () => {
+        const order = {
+            type: 'blank',
+            form: document.getElementById('select-form').value,
+            color: document.getElementById('select-color').value,
+            prints: getSelectedPrints(),
+            price: calculatePrice(),
+            createdAt: Date.now()
+        };
+        const reports = get('officeAtelierReports', []);
+        reports.push(order);
+        set('officeAtelierReports', reports.slice(-50));
+
+        document.getElementById('order-status').textContent = 'Order sent to Office.';
+        setSelectedPrints([]);
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+</script>
+
+</body>
+</html>
