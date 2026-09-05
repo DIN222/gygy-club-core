@@ -1,1 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GY-GY Club — AI Room Core v8.1.25</title>
+    <style>
+        /* --- БАЗОВАЯ СТРОГАЯ СЕТКА КЛУБА (NOIR MINIMALISM) --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0f0f11;
+            color: #f5f5f7;
+            font-family: monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            top: 0 !important; position: fixed !important;
+        }
+
+        /* ТОТАЛЬНЫЙ ДЕМОНТАЖ ГУГЛ-ПАНЕЛИ И ЛИШНИХ СТИЛЕЙ */
+        #google_translate_element, .skiptranslate, .goog-te-banner-frame, #goog-gt-tt, .goog-te-balloon-frame { 
+            display: none !important; visibility: hidden !important; opacity: 0 !important; position: fixed !important; top: -9000px !important;
+        }
+
+        /* НОВАЯ ЭТАЛОННАЯ ВЕРХНЯЯ ПАНЕЛЬ v5.0 — В ОДНУ ЛИНИЮ БЕЗ ПОДЧЕРКИВАНИЙ */
+        .gy-top-bar-v5 {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            padding: 25px 40px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        /* 1. Стрелки навигации — СЛЕВА */
+        .nav-group {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+        .nav-arrow {
+            color: #6e6e73;
+            text-decoration: none;
+            font-size: 22px;
+            font-weight: bold;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: monospace;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .nav-arrow:hover {
+            color: #f5f5f7;
+            transform: scale(1.1);
+        }
+
+        /* 2. Аватар Юзера с флагом — ПО ЦЕНТРУ */
+        .user-center-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(22, 22, 26, 0.7);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid #2c2c35;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .user-center-profile:hover { border-color: #f5f5f7; }
+        .user-avatar-mini {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #2c2c35;
+            border: 1px solid #6e6e73;
+            object-fit: cover;
+        }
+        .user-id-text { font-size: 12px; color: #6e6e73; }
+        .lang-flag { width: 16px; height: 11px; object-fit: cover; }
+
+        /* 3. Логотип — СПРАВА */
+        .logo-group { display: flex; justify-content: flex-end; }
+        .logo-box {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #f5f5f7;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .logo-box span { color: #6e6e73; }
+
+        /* --- СХЕМА CH-AI: ТРИ ГОЛОГРАФИЧЕСКИХ ЭКРАНА v8.1.24 --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            padding: 10px 40px 40px 40px;
+            gap: 25px;
+            position: relative;
+        }
+
+        .holo-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #2c2c35;
+            background-color: #121215;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+        }
+
+        .screen-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #2c2c35;
+            font-size: 11px;
+            color: #6e6e73;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: #141418;
+        }
+
+        .screen-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+
+        /* Экран 1: Абсурдные стихи Чарли */
+        .chat-output { display: flex; flex-direction: column; gap: 12px; height: calc(100% - 55px); overflow-y: auto; }
+        .msg-text { padding: 12px; background: #16161a; border: 1px solid #2c2c35; line-height: 1.4; }
+        .terminal-input-zone { display: flex; border-top: 1px solid #2c2c35; background: #141418; }
+        .terminal-input { flex: 1; background: none; border: none; color: #f5f5f7; padding: 15px; font-family: monospace; outline: none; }
+        .btn-send { background: none; border: none; border-left: 1px solid #2c2c35; color: #6e6e73; padding: 0 20px; cursor: pointer; font-family: monospace; text-transform: uppercase; font-size: 11px; }
+        .btn-send:hover { color: #f5f5f7; background: #2c2c35; }
+        .rhyme-selector { display: flex; gap: 5px; padding: 10px 15px; border-bottom: 1px solid #2c2c35; background: #141418; }
+        .rhyme-btn { flex: 1; background: none; border: 1px solid #2c2c35; color: #6e6e73; padding: 6px; cursor: pointer; font-size: 11px; font-family: monospace; }
+        .rhyme-btn.active { border-color: #f5f5f7; color: #f5f5f7; background-color: #1c1c22; }
+
+        /* Экран 2: Лунная база */
+        .telemetry-table { width: 100%; border-collapse: collapse; }
+        .telemetry-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #1c1c22; font-size: 12px; }
+        .telemetry-label { color: #6e6e73; }
+        .telemetry-val { color: #00ff66; font-weight: bold; font-family: monospace; text-shadow: 0 0 4px rgba(0,255,102,0.2); }
+
+        /* Экран 3: Привет Вселенная */
+        .manifest-log { font-size: 11px; color: #8a8a93; line-height: 1.6; }
+        .manifest-item { margin-bottom: 10px; border-left: 2px solid #2c2c35; padding-left: 8px; }
+        .manifest-item.accent { border-color: #f5f5f7; color: #f5f5f7; }
+    </style>
+</head>
+<body>
+
+    <div class="gy-top-bar-v5">
+        <div class="nav-group">
+            <button class="nav-arrow" onclick="navRoom('block-server')" title="Step Back to Server Room">←</button>
+            <button class="nav-arrow" onclick="navRoom('block-hall')" title="Fast Return to Hall">≪</button>
+        </div>
+
+        <div class="user-center-profile" title="Digital Trace ID Authenticated">
+            <img id="core-avatar-img" class="user-avatar-mini" src="" alt="•">
+            <span class="user-id-text" id="core-id-label">GY-000-0000</span>
+            <img src="https://flagcdn.com/w20/gb.png" class="lang-flag" id="core-flag-img">
+        </div>
+
+        <div class="logo-group">
+            <a href="index.html" class="logo-box">GY-GY <span>CLUB</span></a>
+        </div>
+    </div>
+
+    <main>
+        <section class="holo-screen">
+            <div class="screen-header">MONITOR_01 // GY-GY_VERSES // CHARLIE_CORE</div>
+            <div class="rhyme-selector">
+                <button class="rhyme-btn active" id="scheme-aabb" onclick="setRhymeScheme('AABB')">AABB</button>
+                <button class="rhyme-btn" id="scheme-abab" onclick="setRhymeScheme('ABAB')">ABAB</button>
+            </div>
+            <div class="screen-content">
+                <div class="chat-output" id="chat-output">
+                    <div class="msg-text" style="color:#6e6e73;">[Charlie]: Контуры стихов замкнуты на ИИ-комнату. Эмбиент активен. Задавай параметры или ритм.</div>
+                </div>
+            </div>
+            <div class="terminal-input-zone">
+                <input type="text" class="terminal-input" id="terminal-input" placeholder="Извлечь смысл..." onkeydown="if(event.key === 'Enter') sendToCharlie()">
+                <button class="btn-send" onclick="sendToCharlie()">Send</button>
+            </div>
+        </section>
+
+        <section class="holo-screen">
+            <div class="screen-header">MONITOR_02 // LUNAR_BASE_STATUS // TELEMETRY</div>
+            <div class="screen-content">
+                <div class="telemetry-row"><span class="telemetry-label">LUNAR_MODULE_POWER:</span><span class="telemetry-val" id="lunar-pwr">98.7%</span></div>
+                <div class="telemetry-row"><span class="telemetry-label">LIFE_SUPPORT_GRID:</span><span class="telemetry-val" style="color:#00ff66;">STABLE</span></div>
+                <div class="telemetry-row"><span class="telemetry-label">HE_3_HARVEST_RATE:</span><span class="telemetry-val" id="lunar-nrg">415 kW</span></div>
+                <div class="telemetry-row"><span class="telemetry-label">DOME_PRESSURE_VAL:</span><span class="telemetry-val">0.98 ATM</span></div>
+                <div class="telemetry-row"><span class="telemetry-label">METEOR_SHIELD_INT:</span><span class="telemetry-val" style="color:#00ff66;">100%</span></div>
+                <div class="telemetry-row" style="margin-top:25px;"><span class="telemetry-label">STATION_TIME_LUNAR:</span><span class="telemetry-val" style="color:#6e6e73;" id="lunar-time">00:00:00</span></div>
+            </div>
+        </section>
+
+        <section class="holo-screen">
+            <div class="screen-header">MONITOR_03 // COSMIC_MANIFESTS // HELLO_UNIVERSE</div>
+            <div class="screen-content">
+                <div class="manifest-log" id="manifest-box">
+                    <div class="manifest-item">[BROADCAST]: Клубный передатчик активирован. Инициализация вещания в глубокий космос...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let currentRhyme = "AABB";
+
+        function safeGet(key, fallback = "") {
+            try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
+        }
+
+        function initProfile() {
+            const traceId = safeGet("gy_trace") || safeGet("gygy_id") || "GY-TRACE-EMPTY";
+            const avatarData = safeGet("gy_user_avatar") || safeGet("gygy_avatar");
+
+            document.getElementById('core-id-label').innerText = traceId;
+            
+            const avatarImg = document.getElementById('core-avatar-img');
+            if (avatarImg && avatarData) {
+                avatarImg.src = avatarData;
+            } else if (avatarImg) {
+                avatarImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="20" height="20"><circle cx="50" cy="50" r="40" fill="%232c2c35"/></svg>';
+            }
+
+            // Логируем прибытие Солиста в Манифест Вселенной
+            const box = document.getElementById('manifest-box');
+            box.innerHTML += `<div class="manifest-item accent">[MANIFEST]: Digital trace ${traceId} транслируется на частоте Клуба. Сигнал ушел за пределы Солнечной системы.</div>`;
+        }
+
+        function setRhymeScheme(scheme) {
+            currentRhyme = scheme;
+            document.querySelectorAll('.rhyme-btn').forEach(btn => btn.classList.remove('active'));
+            if(scheme === 'AABB') document.getElementById('scheme-aabb').classList.add('active');
+            if(scheme === 'ABAB') document.getElementById('scheme-abab').classList.add('active');
+        }
+
+        function sendToCharlie() {
+            const input = document.getElementById('terminal-input');
+            if (!input || !input.value.trim()) return;
+            const out = document.getElementById('chat-output');
+            
+            out.innerHTML += `<div class="msg-text" style="align-self: flex-end; border-color:#3a3a44;">${input.value}</div>`;
+            
+            const userText = input.value;
+            input.value = "";
+            
+            setTimeout(() => {
+                out.innerHTML += `<div class="msg-text" style="color:#00ff66; border-color:#1c4228;">[Charlie]: Смысл извлечен, рифма по матрице ${currentRhyme} уложена в буфер. Серверный гул стабилен.</div>`;
+                out.scrollTop = out.scrollHeight;
+            }, 600);
+            out.scrollTop = out.scrollHeight;
+        }
+
+        function runLiveTelemetry() {
+            setInterval(() => {
+                if(document.getElementById('lunar-pwr')) {
+                    document.getElementById('lunar-pwr').innerText = (98.3 + Math.random() * 0.4).toFixed(1) + "%";
+                }
+                if(document.getElementById('lunar-nrg')) {
+                    document.getElementById('lunar-nrg').innerText = Math.floor(413 + Math.random() * 6) + " kW";
+                }
+                if(document.getElementById('lunar-time')) {
+                    document.getElementById('lunar-time').innerText = new Date().toLocaleTimeString();
+                }
+            }, 1000);
+        }
+
+        function navRoom(targetBlockId) {
+            if (typeof window.portalTransition === 'function') {
+                window.portalTransition(targetBlockId);
+            } else if (typeof window.parent.portalTransition === 'function') {
+                window.parent.portalTransition(targetBlockId);
+            } else {
+                window.location.href = targetBlockId === 'block-server' ? "server.html" : "index.html"; 
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initProfile();
+            runLiveTelemetry();
+        });
+    </script>
+</body>
+</html>
 
