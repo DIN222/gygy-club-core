@@ -1,203 +1,164 @@
-
-<!DOCTYPE html>
-<!--
-  atelier.html
-  v1.0.0 — 2026-08-26
-  Ателье: одна локация, два внутренних блока (не отдельные файлы — по объёму
-  сопоставимо с index.html: дверь+приветствие). Схема данных заказа заложена
-  с полем type:'blank' на будущее масштабирование (индивидуальный пошив и т.д.),
-  без переписывания уже готовой логики бланковых заказов (см. CONTRACT.md).
-
-  #block-gallery — система обмена принтами (экономика вклада: 5 принтов
-  открыто, следующие 5 — в обмен на один свой).
-  #block-workshop — форма заказа (форма/цвет + выбранные принты), расчёт
-  цены-ЗАГЛУШКА (простая формула, реальная логика — позже), отчёт в Офис
-  через core/storage.js (Офис читает при своём следующем визите).
+ atelier.html
+  v2.0.0 — 2026-08-26
+  ПОЛНАЯ ПЕРЕСБОРКА: одна картинка (Ателье_92.png) со всем функционалом
+  через активные зоны, по образцу hall.html. Отменяет v1.0.0 (два HTML-блока
+  Gallery/Workshop с формами) — та версия больше не актуальна.
+  Зоны: вешалка (выбор формы), 3 книги-каталога (PRINTS/EMBROIDERY/COMBINED),
+  PLACE ORDER (оформление), консультант (Telegram-помощь), монитор (пасхалка).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>GY-GY Club — Atelier v1.0.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Montserrat:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Atelier v2.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
     :root { --gold: #FFD700; }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-        width: 100%; height: 100%;
-        background: #000000; color: var(--gold);
-        overflow: hidden; position: fixed;
-        font-family: 'Share Tech Mono', monospace;
+        width: 100%; height: 100%; background: #000; color: var(--gold);
+        overflow: hidden; position: fixed; font-family: 'Share Tech Mono', monospace;
     }
-
-    .nav-block {
-        position: fixed; inset: 0;
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 1.2s ease-in-out;
-        padding: 20px;
-        overflow-y: auto;
+    body { background: #000; }
+    #atelier-bg {
+        position: fixed; inset: 0; z-index: 0;
+        background: url('Ателье_92.png') center/cover no-repeat;
     }
-    .nav-block.active { display: flex; opacity: 1; }
-
-    .header-right {
-        position: fixed; top: 18px; right: 25px; z-index: 1000;
-        font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif;
-    }
-    .ui-nav-arrows {
-        position: fixed; top: 18px; left: 20px; z-index: 1000;
-        display: flex; gap: 15px; font-size: 24px; font-weight: 900;
-        font-family: 'Share Tech Mono', monospace;
-    }
-    .back-arrow {
-        color: var(--gold); background: transparent; border: none; text-decoration: none;
-        cursor: pointer; transition: opacity 0.2s, transform 0.2s;
-    }
+    .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; }
+    .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; }
     .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
-
-    .gy-user-badge {
-        position: fixed; top: 4px; left: 50%; transform: translateX(-50%);
-        width: 36px; height: 36px; border-radius: 50%;
-        border: 2px solid var(--gold); background: #111;
-        z-index: 1000; cursor: pointer; display: none;
-    }
+    .gy-user-badge { position: fixed; top: 4px; left: 50%; transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; display: none; z-index: 1000; }
     .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-    .gy-user-badge .badge-flag {
-        position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover;
-        border: 1px solid var(--gold);
-    }
+    .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
 
-    .quote-text {
-        font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px;
-        text-align: center; max-width: 85%; margin-bottom: 16px;
+    .zone {
+        position: absolute; cursor: pointer; z-index: 5;
+        border-radius: 6px; transition: box-shadow 0.2s;
     }
-    .section-title {
-        font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
-        letter-spacing: 4px; margin-bottom: 14px; text-align: center;
+    .zone:hover { box-shadow: 0 0 0 3px rgba(255,215,0,0.7), 0 0 20px rgba(255,215,0,0.5); }
+    .zone-label {
+        position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+        margin-bottom: 4px; font-size: 10px; font-weight: 700; letter-spacing: 1px;
+        color: var(--gold); text-shadow: 1px 1px 0 #000, -1px -1px 0 #000;
+        white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none;
     }
+    .zone:hover .zone-label { opacity: 1; }
 
-    .print-grid {
-        display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
-        max-width: 420px; margin-bottom: 16px;
-    }
-    .print-slot {
-        width: 60px; height: 60px; border: 2px solid var(--gold);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 26px; cursor: pointer; background: #0a0a0a;
-        transition: filter 0.2s, transform 0.2s; position: relative;
-    }
-    .print-slot:hover { filter: brightness(1.2); transform: scale(1.05); }
-    .print-slot.selected { border-color: #fff; box-shadow: 0 0 10px var(--gold); }
-    .print-slot.locked { opacity: 0.3; cursor: not-allowed; font-size: 16px; }
-    .print-slot .contributed-badge {
-        position: absolute; top: -6px; right: -6px; font-size: 10px;
-        background: var(--gold); color: #000; border-radius: 50%;
-        width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
-    }
+    /* Координаты — по визуальной оценке картинки, ПРИБЛИЗИТЕЛЬНО, уточнить
+       через tools/hall-zone-picker.html (тот же принцип, другая картинка). */
+    .zone-rack        { top: 42vh; left: 16vw; width: 24vw; height: 32vh; }
+    .zone-prints      { top: 55vh; left: 44vw; width: 20vw; height: 6vh; }
+    .zone-embroidery  { top: 61.5vh; left: 44vw; width: 20vw; height: 6vh; }
+    .zone-combined    { top: 68vh; left: 44vw; width: 20vw; height: 6vh; }
+    .zone-place-order { top: 68vh; left: 62vw; width: 22vw; height: 8vh; }
+    .zone-consultant  { top: 30vh; left: 73vw; width: 15vw; height: 40vh; }
+    .zone-monitor     { top: 15vh; left: 8vw; width: 10vw; height: 15vh; }
 
-    .btn-gy {
-        min-width: 220px; padding: 10px 18px; background: #000; border: 2px solid var(--gold);
-        color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700;
-        margin: 6px 0; font-family: 'Montserrat', 'Cinzel', sans-serif; font-size: 12px;
-        transition: filter 0.3s ease;
+    /* ===== Модалка (переиспользуется для каталогов/заказа) ===== */
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
+        display: none; align-items: center; justify-content: center; opacity: 0;
+        transition: opacity 0.3s ease;
     }
-    .btn-gy:hover:not(:disabled) { filter: brightness(1.1); }
-    .btn-gy:disabled { opacity: 0.3; cursor: not-allowed; }
+    .modal-card {
+        background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
+        padding: 24px; width: 320px; max-width: 90vw; color: #000; text-align: center;
+        position: relative; font-family: 'Share Tech Mono', monospace; max-height: 80vh; overflow-y: auto;
+    }
+    .modal-close { position: absolute; top: 8px; right: 12px; font-size: 26px; cursor: pointer; }
+    .modal-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; margin-bottom: 12px; }
 
-    .contribute-box {
-        display: flex; gap: 8px; align-items: center; margin: 10px 0 16px;
-    }
-    .contribute-box input {
-        background: #0a0a0a; border: 1px solid var(--gold); color: var(--gold);
-        padding: 6px; font-family: 'Share Tech Mono', monospace; font-size: 12px;
-        width: 60px; text-align: center;
-    }
+    .print-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+    .print-slot { width: 48px; height: 48px; border: 2px solid #000; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; background: #fff; }
+    .print-slot.selected { border-color: var(--gold); box-shadow: 0 0 8px var(--gold); }
+    .print-slot.locked { opacity: 0.3; cursor: not-allowed; font-size: 14px; }
+    .contribute-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
+    .contribute-row input { width: 50px; text-align: center; border: 1px solid #000; padding: 4px; }
 
-    .workshop-form { display: flex; flex-direction: column; gap: 10px; width: 260px; }
-    .form-row { display: flex; flex-direction: column; gap: 4px; }
-    .form-row label { font-size: 10px; letter-spacing: 1px; opacity: 0.8; }
-    .form-row select {
-        background: #0a0a0a; border: 1px solid var(--gold); color: var(--gold);
-        padding: 8px; font-family: 'Share Tech Mono', monospace; font-size: 12px;
+    .form-row { margin-bottom: 10px; text-align: left; }
+    .form-row label { font-size: 10px; font-weight: 700; display: block; margin-bottom: 3px; }
+    .form-row select { width: 100%; padding: 6px; border: 1px solid #000; font-family: inherit; }
+
+    .btn-modal {
+        background: #000; color: var(--gold); border: 2px solid var(--gold);
+        padding: 8px 16px; cursor: pointer; font-weight: 700; text-transform: uppercase;
+        font-family: 'Share Tech Mono', monospace; font-size: 11px; margin-top: 8px;
     }
-    .selected-prints-preview {
-        display: flex; gap: 6px; margin: 4px 0;
-        min-height: 36px; align-items: center;
-    }
-    .selected-prints-preview span { font-size: 22px; }
-    .price-display {
-        font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
-        text-align: center; margin: 12px 0;
-    }
-    .price-display small {
-        display: block; font-family: 'Share Tech Mono', monospace;
-        font-size: 10px; opacity: 0.6; font-weight: 400; letter-spacing: 1px;
-    }
-    .order-status {
-        font-size: 12px; text-align: center; margin-top: 10px; min-height: 16px;
-        color: #7CFC00;
-    }
+    .btn-modal:hover { filter: brightness(1.2); }
+    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 18px; margin: 10px 0; }
+    .status-line { font-size: 11px; color: #2a6; min-height: 14px; margin-top: 6px; }
 </style>
 </head>
 <body>
 
+<div id="atelier-bg"></div>
 <div class="header-right">GY-GY</div>
 <div class="ui-nav-arrows">
-    <a class="back-arrow" id="btn-back" title="Назад">&lt;</a>
-    <a class="back-arrow" id="btn-hall" title="В Холл">&lt;&lt;</a>
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-hall">&lt;&lt;</a>
 </div>
-<div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+<div id="passport-badge-container"></div>
 
-<section id="block-gallery" class="nav-block active">
-    <div class="section-title">GALLERY</div>
-    <div class="quote-text" data-translate="atelier_gallery_quote">Give one, unlock five more.</div>
+<div class="zone zone-rack" id="zone-rack"><span class="zone-label">CHOOSE GARMENT</span></div>
+<div class="zone zone-prints" id="zone-prints"><span class="zone-label">PRINTS CATALOG</span></div>
+<div class="zone zone-embroidery" id="zone-embroidery"><span class="zone-label">EMBROIDERY</span></div>
+<div class="zone zone-combined" id="zone-combined"><span class="zone-label">COMBINED</span></div>
+<div class="zone zone-place-order" id="zone-place-order"><span class="zone-label">PLACE ORDER</span></div>
+<div class="zone zone-consultant" id="zone-consultant"><span class="zone-label">ASK FOR HELP</span></div>
+<div class="zone zone-monitor" id="zone-monitor"><span class="zone-label">???</span></div>
 
-    <div class="print-grid" id="print-grid"><!-- рендерится скриптом --></div>
-
-    <div class="contribute-box">
-        <input type="text" id="contribute-input" placeholder="🎨" maxlength="2">
-        <button class="btn-gy" id="btn-contribute" style="min-width: auto; margin:0;">CONTRIBUTE</button>
-    </div>
-
-    <button class="btn-gy" id="btn-to-workshop" disabled data-translate="btn_to_workshop">TO WORKSHOP</button>
-</section>
-
-<section id="block-workshop" class="nav-block">
-    <div class="section-title">WORKSHOP</div>
-
-    <div class="selected-prints-preview" id="selected-prints-preview"></div>
-
-    <div class="workshop-form">
-        <div class="form-row">
-            <label data-translate="form_type">FORM</label>
-            <select id="select-form">
-                <option value="tshirt">T-SHIRT</option>
-                <option value="hoodie">HOODIE</option>
-                <option value="longsleeve">LONGSLEEVE</option>
-            </select>
+<!-- Модалка: выбор формы/цвета -->
+<div class="modal-overlay" id="modal-rack">
+    <div class="modal-card">
+        <span class="modal-close" data-close>&times;</span>
+        <div class="modal-title">CHOOSE YOUR GARMENT</div>
+        <div class="form-row"><label>FORM</label>
+            <select id="select-form"><option value="tshirt">T-SHIRT</option><option value="hoodie">HOODIE</option><option value="longsleeve">LONGSLEEVE</option></select>
         </div>
-        <div class="form-row">
-            <label data-translate="form_color">COLOR</label>
-            <select id="select-color">
-                <option value="black">BLACK</option>
-                <option value="white">WHITE</option>
-            </select>
+        <div class="form-row"><label>COLOR</label>
+            <select id="select-color"><option value="black">BLACK</option><option value="white">WHITE</option></select>
         </div>
+        <button class="btn-modal" data-close>SAVE</button>
     </div>
+</div>
 
-    <div class="price-display" id="price-display">
-        —
-        <small data-translate="price_note">estimate, not final</small>
+<!-- Модалка: каталог принтов -->
+<div class="modal-overlay" id="modal-prints">
+    <div class="modal-card">
+        <span class="modal-close" data-close>&times;</span>
+        <div class="modal-title">PRINTS CATALOG</div>
+        <div class="print-grid" id="print-grid"></div>
+        <div class="contribute-row">
+            <input type="text" id="contribute-input" placeholder="🎨" maxlength="2">
+            <button class="btn-modal" id="btn-contribute" style="margin:0;">CONTRIBUTE +5</button>
+        </div>
+        <button class="btn-modal" data-close>DONE</button>
     </div>
+</div>
 
-    <button class="btn-gy" id="btn-place-order" data-translate="btn_place_order">PLACE ORDER</button>
-    <div class="order-status" id="order-status"></div>
-</section>
+<!-- Модалка: заглушки Embroidery/Combined -->
+<div class="modal-overlay" id="modal-placeholder">
+    <div class="modal-card">
+        <span class="modal-close" data-close>&times;</span>
+        <div class="modal-title" id="placeholder-title">COMING SOON</div>
+        <p style="font-size:12px;">This catalog is not ready yet.</p>
+        <button class="btn-modal" data-close>OK</button>
+    </div>
+</div>
+
+<!-- Модалка: оформление заказа -->
+<div class="modal-overlay" id="modal-order">
+    <div class="modal-card">
+        <span class="modal-close" data-close>&times;</span>
+        <div class="modal-title">PLACE ORDER</div>
+        <div id="order-summary" style="font-size:12px; margin-bottom:8px;"></div>
+        <div class="price-line" id="order-price">—</div>
+        <button class="btn-modal" id="btn-confirm-order">CONFIRM</button>
+        <div class="status-line" id="order-status"></div>
+    </div>
+</div>
 
 <script type="module">
     import { init as initLocalization } from './core/localization.js';
@@ -209,108 +170,128 @@
 
     const BASE_PRICE = { tshirt: 15, hoodie: 35, longsleeve: 25 };
     const PRICE_PER_PRINT = 5;
-
     const ALL_PRINTS = ['🔥','⚡','🌹','💀','🎭','🃏','🦁','⚓','🗿','🌊','🎲','🕶️','🧿','🪬','⚜️'];
+    const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: заменить на реальный юзернейм
 
-    function getUnlockedCount() {
-        return get('atelierUnlockedPrints', 5);
+    function openModal(id) {
+        const m = document.getElementById(id);
+        m.style.display = 'flex';
+        requestAnimationFrame(() => m.style.opacity = '1');
     }
+    function closeModal(m) {
+        m.style.opacity = '0';
+        setTimeout(() => m.style.display = 'none', 300);
+    }
+    document.querySelectorAll('[data-close]').forEach(el => {
+        el.addEventListener('click', () => closeModal(el.closest('.modal-overlay')));
+    });
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        m.addEventListener('click', e => { if (e.target === m) closeModal(m); });
+    });
 
-    function getSelectedPrints() {
-        return get('atelierSelectedPrints', []);
-    }
+    // --- Вешалка: выбор формы/цвета ---
+    document.getElementById('zone-rack').addEventListener('click', () => {
+        const g = get('atelierGarment', {});
+        if (g.form) document.getElementById('select-form').value = g.form;
+        if (g.color) document.getElementById('select-color').value = g.color;
+        openModal('modal-rack');
+    });
+    document.querySelector('#modal-rack .btn-modal').addEventListener('click', () => {
+        set('atelierGarment', {
+            form: document.getElementById('select-form').value,
+            color: document.getElementById('select-color').value
+        });
+    });
 
-    function setSelectedPrints(arr) {
-        set('atelierSelectedPrints', arr);
-    }
+    // --- Каталог принтов (экономика вклада 5+5) ---
+    function getUnlocked() { return get('atelierUnlockedPrints', 5); }
+    function getSelectedPrints() { return get('atelierSelectedPrints', []); }
+    function setSelectedPrints(a) { set('atelierSelectedPrints', a); }
 
     function renderPrintGrid() {
         const grid = document.getElementById('print-grid');
-        const unlocked = getUnlockedCount();
+        const unlocked = getUnlocked();
         const selected = getSelectedPrints();
         grid.innerHTML = '';
-
         for (let i = 0; i < 15; i++) {
+            const locked = i >= unlocked;
             const slot = document.createElement('div');
-            const isLocked = i >= unlocked;
-            slot.className = 'print-slot' + (isLocked ? ' locked' : '') +
-                (selected.includes(i) && !isLocked ? ' selected' : '');
-            slot.textContent = isLocked ? '🔒' : ALL_PRINTS[i % ALL_PRINTS.length];
-
-            if (!isLocked) {
+            slot.className = 'print-slot' + (locked ? ' locked' : '') + (selected.includes(i) && !locked ? ' selected' : '');
+            slot.textContent = locked ? '🔒' : ALL_PRINTS[i % ALL_PRINTS.length];
+            if (!locked) {
                 slot.addEventListener('click', () => {
-                    const current = getSelectedPrints();
-                    const idx = current.indexOf(i);
-                    if (idx === -1) current.push(i);
-                    else current.splice(idx, 1);
-                    setSelectedPrints(current);
+                    const cur = getSelectedPrints();
+                    const idx = cur.indexOf(i);
+                    if (idx === -1) cur.push(i); else cur.splice(idx, 1);
+                    setSelectedPrints(cur);
                     renderPrintGrid();
-                    updateWorkshopButton();
                 });
             }
             grid.appendChild(slot);
         }
     }
-
-    function updateWorkshopButton() {
-        const btn = document.getElementById('btn-to-workshop');
-        btn.disabled = getSelectedPrints().length === 0;
-    }
-
+    document.getElementById('zone-prints').addEventListener('click', () => {
+        renderPrintGrid();
+        openModal('modal-prints');
+    });
     document.getElementById('btn-contribute').addEventListener('click', () => {
         const input = document.getElementById('contribute-input');
         if (!input.value.trim()) return;
-        const unlocked = getUnlockedCount();
-        set('atelierUnlockedPrints', Math.min(unlocked + 5, ALL_PRINTS.length));
+        set('atelierUnlockedPrints', Math.min(getUnlocked() + 5, ALL_PRINTS.length));
         input.value = '';
         renderPrintGrid();
     });
 
-    renderPrintGrid();
-    updateWorkshopButton();
-
-    document.getElementById('btn-to-workshop').addEventListener('click', () => {
-        document.getElementById('block-gallery').classList.remove('active');
-        document.getElementById('block-workshop').classList.add('active');
-        renderSelectedPreview();
-        updatePrice();
+    // --- Заглушки Embroidery / Combined ---
+    document.getElementById('zone-embroidery').addEventListener('click', () => {
+        document.getElementById('placeholder-title').textContent = 'EMBROIDERY CATALOG';
+        openModal('modal-placeholder');
+    });
+    document.getElementById('zone-combined').addEventListener('click', () => {
+        document.getElementById('placeholder-title').textContent = 'COMBINED CATALOG';
+        openModal('modal-placeholder');
     });
 
-    function renderSelectedPreview() {
-        const preview = document.getElementById('selected-prints-preview');
-        const selected = getSelectedPrints();
-        preview.innerHTML = selected.map(i => `<span>${ALL_PRINTS[i % ALL_PRINTS.length]}</span>`).join('');
-    }
-
-    function calculatePrice() {
-        const form = document.getElementById('select-form').value;
-        const printsCount = getSelectedPrints().length;
-        return BASE_PRICE[form] + printsCount * PRICE_PER_PRINT;
-    }
-
-    function updatePrice() {
-        const priceEl = document.getElementById('price-display');
-        const price = calculatePrice();
-        priceEl.innerHTML = `$${price}<small data-translate="price_note">estimate, not final</small>`;
-    }
-
-    document.getElementById('select-form').addEventListener('change', updatePrice);
-
-    document.getElementById('btn-place-order').addEventListener('click', () => {
-        const order = {
-            type: 'blank',
-            form: document.getElementById('select-form').value,
-            color: document.getElementById('select-color').value,
-            prints: getSelectedPrints(),
-            price: calculatePrice(),
-            createdAt: Date.now()
-        };
+    // --- Place Order ---
+    document.getElementById('zone-place-order').addEventListener('click', () => {
+        const garment = get('atelierGarment', {});
+        const prints = getSelectedPrints();
+        const summary = document.getElementById('order-summary');
+        if (!garment.form) {
+            summary.textContent = 'Choose a garment first (rack).';
+            document.getElementById('order-price').textContent = '—';
+        } else {
+            summary.textContent = `${garment.form.toUpperCase()} / ${garment.color?.toUpperCase() || '?'} / ${prints.length} print(s)`;
+            const price = (BASE_PRICE[garment.form] || 0) + prints.length * PRICE_PER_PRINT;
+            document.getElementById('order-price').textContent = `$${price}`;
+        }
+        document.getElementById('order-status').textContent = '';
+        openModal('modal-order');
+    });
+    document.getElementById('btn-confirm-order').addEventListener('click', () => {
+        const garment = get('atelierGarment', {});
+        if (!garment.form) {
+            document.getElementById('order-status').textContent = 'Choose a garment first.';
+            return;
+        }
+        const prints = getSelectedPrints();
+        const price = (BASE_PRICE[garment.form] || 0) + prints.length * PRICE_PER_PRINT;
+        const order = { type: 'blank', form: garment.form, color: garment.color, prints, price, createdAt: Date.now() };
         const reports = get('officeAtelierReports', []);
         reports.push(order);
         set('officeAtelierReports', reports.slice(-50));
-
-        document.getElementById('order-status').textContent = 'Order sent to Office.';
+        document.getElementById('order-status').textContent = 'Order sent to Office!';
         setSelectedPrints([]);
+    });
+
+    // --- Консультант: помощь через Telegram ---
+    document.getElementById('zone-consultant').addEventListener('click', () => {
+        window.open(TELEGRAM_HELP_URL, '_blank');
+    });
+
+    // --- Монитор: пасхалка-заглушка ---
+    document.getElementById('zone-monitor').addEventListener('click', () => {
+        console.log('[Atelier] LAUNCH SYSTEM: пока просто красивая деталь интерьера.');
     });
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
