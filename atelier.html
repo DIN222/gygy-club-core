@@ -1,4 +1,6 @@
- atelier.html
+<!DOCTYPE html>
+<!--
+  atelier.html
   v2.0.0 — 2026-08-26
   ПОЛНАЯ ПЕРЕСБОРКА: одна картинка (Ателье_92.png) со всем функционалом
   через активные зоны, по образцу hall.html. Отменяет v1.0.0 (два HTML-блока
@@ -46,8 +48,6 @@
     }
     .zone:hover .zone-label { opacity: 1; }
 
-    /* Координаты — по визуальной оценке картинки, ПРИБЛИЗИТЕЛЬНО, уточнить
-       через tools/hall-zone-picker.html (тот же принцип, другая картинка). */
     .zone-rack        { top: 42vh; left: 16vw; width: 24vw; height: 32vh; }
     .zone-prints      { top: 55vh; left: 44vw; width: 20vw; height: 6vh; }
     .zone-embroidery  { top: 61.5vh; left: 44vw; width: 20vw; height: 6vh; }
@@ -56,7 +56,6 @@
     .zone-consultant  { top: 30vh; left: 73vw; width: 15vw; height: 40vh; }
     .zone-monitor     { top: 15vh; left: 8vw; width: 10vw; height: 15vh; }
 
-    /* ===== Модалка (переиспользуется для каталогов/заказа) ===== */
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
         display: none; align-items: center; justify-content: center; opacity: 0;
@@ -109,7 +108,6 @@
 <div class="zone zone-consultant" id="zone-consultant"><span class="zone-label">ASK FOR HELP</span></div>
 <div class="zone zone-monitor" id="zone-monitor"><span class="zone-label">???</span></div>
 
-<!-- Модалка: выбор формы/цвета -->
 <div class="modal-overlay" id="modal-rack">
     <div class="modal-card">
         <span class="modal-close" data-close>&times;</span>
@@ -124,7 +122,6 @@
     </div>
 </div>
 
-<!-- Модалка: каталог принтов -->
 <div class="modal-overlay" id="modal-prints">
     <div class="modal-card">
         <span class="modal-close" data-close>&times;</span>
@@ -138,7 +135,6 @@
     </div>
 </div>
 
-<!-- Модалка: заглушки Embroidery/Combined -->
 <div class="modal-overlay" id="modal-placeholder">
     <div class="modal-card">
         <span class="modal-close" data-close>&times;</span>
@@ -148,7 +144,6 @@
     </div>
 </div>
 
-<!-- Модалка: оформление заказа -->
 <div class="modal-overlay" id="modal-order">
     <div class="modal-card">
         <span class="modal-close" data-close>&times;</span>
@@ -189,7 +184,6 @@
         m.addEventListener('click', e => { if (e.target === m) closeModal(m); });
     });
 
-    // --- Вешалка: выбор формы/цвета ---
     document.getElementById('zone-rack').addEventListener('click', () => {
         const g = get('atelierGarment', {});
         if (g.form) document.getElementById('select-form').value = g.form;
@@ -203,7 +197,6 @@
         });
     });
 
-    // --- Каталог принтов (экономика вклада 5+5) ---
     function getUnlocked() { return get('atelierUnlockedPrints', 5); }
     function getSelectedPrints() { return get('atelierSelectedPrints', []); }
     function setSelectedPrints(a) { set('atelierSelectedPrints', a); }
@@ -242,7 +235,6 @@
         renderPrintGrid();
     });
 
-    // --- Заглушки Embroidery / Combined ---
     document.getElementById('zone-embroidery').addEventListener('click', () => {
         document.getElementById('placeholder-title').textContent = 'EMBROIDERY CATALOG';
         openModal('modal-placeholder');
@@ -252,7 +244,6 @@
         openModal('modal-placeholder');
     });
 
-    // --- Place Order ---
     document.getElementById('zone-place-order').addEventListener('click', () => {
         const garment = get('atelierGarment', {});
         const prints = getSelectedPrints();
@@ -284,12 +275,10 @@
         setSelectedPrints([]);
     });
 
-    // --- Консультант: помощь через Telegram ---
     document.getElementById('zone-consultant').addEventListener('click', () => {
         window.open(TELEGRAM_HELP_URL, '_blank');
     });
 
-    // --- Монитор: пасхалка-заглушка ---
     document.getElementById('zone-monitor').addEventListener('click', () => {
         console.log('[Atelier] LAUNCH SYSTEM: пока просто красивая деталь интерьера.');
     });
