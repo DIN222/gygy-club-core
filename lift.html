@@ -1,1 +1,160 @@
+bash
 
+cat > /mnt/user-data/outputs/lift.html << 'LIFTEOF'
+<!DOCTYPE html>
+<!--
+  lift.html
+  v1.0.0 — 2026-08-26
+  Лифт — замена studio.html-хаба. Из Холла кнопка "Студио" ведёт сюда.
+  Кнопки лифта (с числами, генератор дал странную нумерацию — не суть важно,
+  функция важнее внешнего сходства с настоящими кнопками) ведут на этажи:
+  сейчас 2 рабочих (Ателье, Сувениры), остальные — заготовки будущих этажей.
+  Переключатели LANGUAGE/HOME с самой картинки стали настоящей функцией:
+  LANGUAGE открывает языковой список (core/localization.js), HOME — в Холл.
+  Единый принцип маркировки активных зон — ромашки (см. hall.html).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Lift v1.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<style>
+    :root { --gold: #FFD700; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        width: 100%; height: 100%; background: #000; color: var(--gold);
+        overflow: hidden; position: fixed; font-family: 'Share Tech Mono', monospace;
+    }
+    #lift-bg {
+        position: fixed; inset: 0; z-index: 0;
+        background: url('Lift.jpg') center/cover no-repeat;
+    }
+    .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; }
+    .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; }
+    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
+    .gy-user-badge { position: fixed; top: 4px; left: 50%; transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; display: none; z-index: 1000; }
+    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
+
+    /* Единый принцип маркировки активных зон — ромашки (см. hall.html) */
+    .zone { position: absolute; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
+    .hotspot {
+        font-size: 18px; display: inline-block;
+        filter: drop-shadow(0 0 4px rgba(255,215,0,0.7));
+        animation: hotspot-pulse 2.4s ease-in-out infinite;
+        transition: transform 0.2s, filter 0.2s; pointer-events: none; line-height: 1;
+    }
+    @keyframes hotspot-pulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+    .zone:hover .hotspot { transform: scale(1.3); filter: drop-shadow(0 0 10px rgba(255,215,0,1)); animation-play-state: paused; opacity: 1; }
+    .zone.locked .hotspot { opacity: 0.25; animation: none; filter: grayscale(1); }
+    .zone-label {
+        position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 2px;
+        font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--gold);
+        text-shadow: 1px 1px 0 #000, -1px -1px 0 #000; white-space: nowrap;
+        opacity: 0; transition: opacity 0.2s; pointer-events: none;
+    }
+    .zone:hover .zone-label { opacity: 1; }
+
+    /* Координаты — по визуальной оценке картинки, уточнить через
+       tools/hall-zone-picker.html (вписать Lift.jpg в поле). */
+    .btn-1  { top: 20vh; left: 40vw; width: 4vw; height: 6vh; }
+    .btn-2  { top: 29vh; left: 40vw; width: 4vw; height: 6vh; }
+    .btn-3  { top: 38vh; left: 40vw; width: 4vw; height: 6vh; }
+    .btn-4  { top: 46vh; left: 40vw; width: 4vw; height: 6vh; }
+    .btn-5  { top: 54vh; left: 40vw; width: 4vw; height: 6vh; }
+    .btn-6  { top: 20vh; left: 53vw; width: 4vw; height: 6vh; }
+    .btn-7  { top: 29vh; left: 53vw; width: 4vw; height: 6vh; }
+    .btn-8  { top: 38vh; left: 53vw; width: 4vw; height: 6vh; }
+    .btn-9  { top: 46vh; left: 53vw; width: 4vw; height: 6vh; }
+    .btn-10 { top: 54vh; left: 53vw; width: 4vw; height: 6vh; }
+    .btn-language { top: 68vh; left: 38vw; width: 5vw; height: 6vh; }
+    .btn-home     { top: 68vh; left: 58vw; width: 5vw; height: 6vh; }
+
+    .lang-float-list {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.95); border: 2px solid var(--gold); border-radius: 10px;
+        max-height: 300px; overflow-y: auto; z-index: 2000; display: none; min-width: 180px;
+    }
+    .lang-float-list.open { display: block; }
+    .club-lang-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,215,0,0.15); }
+    .club-lang-item:hover { background: rgba(255,215,0,0.15); }
+    .club-lang-item .item-flag { width: 18px; height: 12px; object-fit: cover; border: 1px solid var(--gold); }
+    .club-lang-item .item-text { color: var(--gold); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div id="lift-bg"></div>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-hall">&lt;&lt;</a>
+</div>
+<div id="passport-badge-container"></div>
+
+<div class="zone btn-1" id="zone-atelier"><span class="hotspot">🌼</span><span class="zone-label">ATELIER</span></div>
+<div class="zone btn-2" id="zone-souvenirs"><span class="hotspot">🌼</span><span class="zone-label">SOUVENIRS</span></div>
+<div class="zone locked btn-3" id="zone-3"><span class="hotspot">🌼</span><span class="zone-label">FLOOR 3</span></div>
+<div class="zone locked btn-4" id="zone-4"><span class="hotspot">🌼</span><span class="zone-label">FLOOR 4</span></div>
+<div class="zone locked btn-5" id="zone-5"><span class="hotspot">🌼</span><span class="zone-label">FLOOR 5</span></div>
+<div class="zone locked btn-6" id="zone-6"><span class="hotspot">🌼</span><span class="zone-label">FLOOR 6</span></div>
+<div class="zone locked btn-7" id="zone-7"><span class="hotspot">🌼</span><span class="zone-label">FLOOR 7</span></div>
+<div class="zone locked btn-8" id="zone-8"><span class="hotspot">🌼</span><span class="zone-label">FLOOR 8</span></div>
+<div class="zone locked btn-9" id="zone-9"><span class="hotspot">🌼</span><span class="zone-label">FLOOR 9</span></div>
+<div class="zone locked btn-10" id="zone-10"><span class="hotspot">🌼</span><span class="zone-label">FLOOR 10</span></div>
+
+<div class="zone btn-language" id="zone-language"><span class="hotspot">🌼</span><span class="zone-label">LANGUAGE</span></div>
+<div class="zone btn-home" id="zone-home"><span class="hotspot">🌼</span><span class="zone-label">HOME</span></div>
+
+<div class="lang-float-list" id="lang-float-list"></div>
+
+<script type="module">
+    import { init as initLocalization, renderLanguageList } from './core/localization.js';
+    import { init as initPassport } from './modules/passport.js';
+
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
+
+    // --- Рабочие этажи ---
+    document.getElementById('zone-atelier').addEventListener('click', () => {
+        window.location.href = 'atelier.html';
+    });
+    document.getElementById('zone-souvenirs').addEventListener('click', () => {
+        console.log('[Lift] Мастерская сувениров: этаж ещё не построен.');
+    });
+
+    // --- Заготовки будущих этажей ---
+    [3,4,5,6,7,8,9,10].forEach(n => {
+        document.getElementById('zone-' + n).addEventListener('click', () => {
+            console.log(`[Lift] Этаж ${n}: пока не задействован.`);
+        });
+    });
+
+    // --- LANGUAGE: открывает список языков прямо здесь ---
+    const langList = document.getElementById('lang-float-list');
+    renderLanguageList(langList);
+    document.getElementById('zone-language').addEventListener('click', (e) => {
+        e.stopPropagation();
+        langList.classList.toggle('open');
+    });
+    document.addEventListener('click', () => langList.classList.remove('open'));
+
+    // --- HOME: в Холл ---
+    document.getElementById('zone-home').addEventListener('click', () => {
+        window.location.href = 'hall.html';
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+</script>
+
+</body>
+</html>
+LIFTEOF
+echo "lift.html written"
+Output
+
+lift.html written
