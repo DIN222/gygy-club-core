@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <!--
   tools/hall-zone-picker.html
-  v2.0.0 — 2026-08-26
-  Изменения: инструмент теперь УНИВЕРСАЛЬНЫЙ — работает с любой картинкой,
-  не только с Холлом. Вписываете имя файла в поле — фон переключается.
-  Клик по фото → готовые top/left в vh/vw для вставки в CSS любой комнаты.
+  v2.1.0 — 2026-08-26
+  Изменения: панель теперь ПЕРЕТАСКИВАЕМАЯ (тяните за заголовок) — раньше
+  фиксированная позиция могла перекрывать нужные точки на картинке.
 -->
 <html lang="ru">
 <head>
@@ -29,7 +28,14 @@
         border: 2px solid #FFD700; border-radius: 8px; max-width: 340px;
         font-size: 12px; white-space: pre-wrap;
     }
-    #panel h3 { margin: 0 0 8px; font-size: 13px; }
+    #panel-header {
+        cursor: move; margin: -12px -12px 8px; padding: 8px 12px;
+        background: rgba(255,215,0,0.15); border-bottom: 1px solid #FFD700;
+        font-size: 13px; font-weight: bold; user-select: none;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    #minimize-btn { cursor: pointer; padding: 0 6px; }
+    #panel.minimized #panel-body { display: none; }
     #img-name-input {
         width: 100%; padding: 6px; margin-bottom: 6px;
         background: #000; color: #FFD700; border: 1px solid #FFD700;
@@ -58,26 +64,54 @@
 <div id="bg-layer"></div>
 
 <div id="panel">
-    <h3>Universal Zone Picker</h3>
-    <input type="text" id="img-name-input" placeholder="напр. atelier92.png">
-    <button id="load-btn">LOAD IMAGE</button>
-
-    <div class="size-controls">
-        <label>size %:</label>
-        <input type="number" id="size-input" value="75">
-        <label>pos %:</label>
-        <input type="number" id="pos-input" value="12">
-        <button id="apply-size-btn">APPLY</button>
+    <div id="panel-header">
+        <span>⠿ Zone Picker (drag me)</span>
+        <span id="minimize-btn">▁</span>
     </div>
+    <div id="panel-body">
+        <input type="text" id="img-name-input" placeholder="напр. atelier92.png">
+        <button id="load-btn">LOAD IMAGE</button>
 
-    <div id="output" style="margin-top:8px;">Загрузите картинку, затем кликните по нужным точкам.</div>
-    <button id="clear-btn">Очистить точки</button>
+        <div class="size-controls">
+            <label>size %:</label>
+            <input type="number" id="size-input" value="75">
+            <label>pos %:</label>
+            <input type="number" id="pos-input" value="12">
+            <button id="apply-size-btn">APPLY</button>
+        </div>
+
+        <div id="output" style="margin-top:8px;">Загрузите картинку, затем кликните по нужным точкам.</div>
+        <button id="clear-btn">Очистить точки</button>
+    </div>
 </div>
 
 <script>
     const bgLayer = document.getElementById('bg-layer');
     const output = document.getElementById('output');
+    const panel = document.getElementById('panel');
+    const panelHeader = document.getElementById('panel-header');
     const points = [];
+
+    // --- Перетаскивание панели ---
+    let isDragging = false, offsetX = 0, offsetY = 0;
+    panelHeader.addEventListener('mousedown', (e) => {
+        if (e.target.id === 'minimize-btn') return;
+        isDragging = true;
+        offsetX = e.clientX - panel.offsetLeft;
+        offsetY = e.clientY - panel.offsetTop;
+        panel.style.right = 'auto';
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        panel.style.left = (e.clientX - offsetX) + 'px';
+        panel.style.top = (e.clientY - offsetY) + 'px';
+    });
+    document.addEventListener('mouseup', () => isDragging = false);
+
+    // --- Сворачивание панели ---
+    document.getElementById('minimize-btn').addEventListener('click', () => {
+        panel.classList.toggle('minimized');
+    });
 
     document.getElementById('load-btn').addEventListener('click', () => {
         const name = document.getElementById('img-name-input').value.trim();
