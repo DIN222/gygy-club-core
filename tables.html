@@ -1,1 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GY-GY Club | Tables v1.5.16</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --violet: #8A2BE2; --neon-glow: rgba(138, 43, 226, 0.6); }
+        * { -webkit-tap-highlight-color: transparent !important; box-sizing: border-box; }
+        
+        /* ЭФФЕКТ ПЛАВНОГО НАПЛЫВА ИЗ ТЕМНОТЫ */
+        body { 
+            margin: 0; padding: 0; width: 100%; height: 100%; background: #000; 
+            font-family: 'Share Tech Mono', monospace; overflow: hidden; position: fixed; 
+            opacity: 0; transition: opacity 0.5s ease-in-out;
+        }
+        body.page-loaded { opacity: 1; }
+
+        /* СТРЕЛКИ НАВИГАЦИИ (ФЛЕКС-БЛИЗНЕЦЫ С КОМФОРТНЫМ ЗАЗОРОМ) */
+        .ui-nav-arrows {
+            position: fixed; top: 15px; left: 20px; z-index: 6000; 
+            display: flex; gap: 20px; align-items: center; user-select: none;
+        }
+        .arrow-item { 
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 26px; 
+            font-weight: 900; 
+            color: var(--gold); 
+            cursor: pointer; 
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            transition: opacity 0.2s; 
+        }
+        .arrow-item:hover { opacity: 0.8; }
+        
+        /* Зазор внутри двойной стрелки */
+        .arrow-item span:nth-child(2) {
+            margin-left: -4px; 
+        }
+
+        /* КЛУБНЫЙ ЛОГОТИП GY-GY */
+        #ui-logo { position: fixed; top: 15px; right: 25px; z-index: 5000; color: var(--gold); font-size: 24px; font-weight: bold; letter-spacing: 5px; }
+
+        /* РОДИТЕЛЬСКИЙ ЦЕНТРИРУЮЩИЙ СЛОЙ */
+        #hall-layer { 
+            width: 100vw; height: 100vh; 
+            position: relative; 
+            display: flex; justify-content: center; align-items: center; 
+            overflow: hidden;
+        }
+        
+        /* МОНОЛИТНАЯ ВЕКТОРНАЯ МАТРИЦА */
+        .table-scene {
+            position: relative;
+            width: 1000px; 
+            height: 562.5px; 
+            background: url('lounge.jpg') no-repeat center center / contain;
+            z-index: 10;
+            flex-shrink: 0;
+            transform: scale(min(100vw / 1000, 100vh / 562.5));
+            transform-origin: center center;
+        }
+        
+        /* ФИОЛЕТОВЫЕ НЕОНОВЫЕ КОЛЬЦА */
+        .lamp-zone { 
+            position: absolute; 
+            width: 44px; height: 44px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            z-index: 100; 
+            background: radial-gradient(circle, var(--neon-glow) 0%, transparent 75%); 
+            border: 1px solid var(--violet); 
+            box-shadow: 0 0 18px var(--neon-glow);
+            transition: 0.3s;
+            transform: translate(-50%, -50%); 
+        }
+        .lamp-zone:hover { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 0 28px var(--violet); z-index: 500; }
+
+        /* КООРДИНАТЫ АБАЖУРОВ СТОЛОВ И СЦЕНЫ */
+        #table-1 { top: 396px; left: 330px; }   
+        #table-2 { top: 344px; left: 419px; }   
+        #table-3 { top: 303px; left: 438px; }   
+        #table-4 { top: 303px; left: 575px; }   
+        #table-5 { top: 341px; left: 603px; }   
+        #table-6 { top: 396px; left: 659px; }   
+        #mic-zone { top: 234px; left: 503px; } 
+
+        /* СЕРАЯ ДЫМЧАТАЯ ПОДСВЕТКА НАДПИСЕЙ */
+        .lamp-zone::after {
+            content: attr(data-label);
+            position: absolute; bottom: 100%; left: 50%; 
+            transform: translateX(-50%) translateY(-14px); 
+            background: rgba(10, 10, 10, 0.98); 
+            border: 1px solid #444; 
+            color: var(--gold);
+            padding: 6px 12px; 
+            font-size: 13px; 
+            white-space: nowrap; 
+            border-radius: 4px;
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.25s ease, transform 0.25s ease; 
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.9);
+            text-shadow: 0 0 4px rgba(150, 150, 150, 0.6), 0 0 8px rgba(100, 100, 100, 0.4); 
+            z-index: 999999 !important;
+        }
+        
+        .lamp-zone:hover::after { 
+            opacity: 1 !important; 
+            transform: translateX(-50%) translateY(-20px); 
+        }
+
+        /* ТОТАЛЬНЫЙ ДЕМОНТАЖ ГУГЛ-ПАНЕЛИ */
+        #google_translate_element, 
+        .skiptranslate, 
+        .goog-te-banner-frame, 
+        #goog-gt-tt, 
+        .goog-te-balloon-frame { 
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important; 
+            position: fixed !important; 
+            top: -9000px !important;
+            left: -9000px !important;
+            z-index: -99999 !important; 
+            pointer-events: none !important;
+        }
+        
+        body { top: 0 !important; position: fixed !important; }
+        .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+
+        /* СКВОЗНОЙ АВАТАР */
+        .ui-user-badge {
+            position: fixed; top: 12px; left: 50% !important; transform: translateX(-50%) !important;
+            margin: 0 !important; width: 42px; height: 42px; border-radius: 50%;
+            border: 2px solid var(--gold); background: #111;
+            box-shadow: 0 0 0 1px #000, inset 0 0 5px rgba(0,0,0,0.8);
+            z-index: 1000000; cursor: pointer; display: none;
+        }
+        .ui-user-badge img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; background-color: #fff; }
+        
+        .ui-user-badge .badge-flag {
+            position: absolute; bottom: -2px; right: -4px;
+            width: 17px; height: 12px; object-fit: cover;
+            border: 1px solid var(--gold); box-shadow: 0 0 0 1px #000;
+            border-radius: 0 !important;
+        }
+
+        #google_translate_element { display: none !important; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="google_translate_element"></div>
+    
+    <audio id="snd-ambient" loop><source src="bar_ambient.mp3"></audio>
+    
+    <!-- НАВИГАЦИЯ С КОМФОРТНЫМ ЗАЗОРОМ ДЛЯ СТРЕЛОК -->
+    <div class="notranslate ui-nav-arrows" id="global-nav">
+        <div class="arrow-item" onclick="Core.backToBar()">&lt;</div>
+        <div class="arrow-item" onclick="Core.exitToEntrance()">
+            <span>&lt;</span><span>&lt;</span>
+        </div>
+    </div>
+    
+    <div id="ui-logo" class="notranslate">GY-GY</div>
+
+    <div id="hall-layer">
+        <div id="global-user-badge" class="ui-user-badge notranslate">
+            <img id="badge-avatar-img" src="">
+            <img id="badge-flag-img" class="badge-flag" src="">
+        </div>
+
+        <div class="table-scene">
+            <div id="table-1" class="lamp-zone" data-label="TABLE 1: «Риск» (Стратегия)" onclick="Core.loadZone('risk.html')"></div>
+            
+            <!-- СТОЛ 2: Дуэль на цитатах (Баттл) -->
+            <div id="table-2" class="lamp-zone" data-label="TABLE 2: «Дуэль на цитатах» (Баттл)" onclick="Core.loadZone('battle.html')"></div>
+            
+            <!-- СТОЛ 3: Стихи (Поэзия) — файл сохранили старый (anon.html), меняем только вывеску -->
+            <div id="table-3" class="lamp-zone" data-label="TABLE 3: «Стихи» (Поэзия)" onclick="Core.loadZone('anon.html')"></div>
+            
+            <div id="table-4" class="lamp-zone" data-label="TABLE 4: «Переводчик М / Ж»" onclick="Core.loadZone('translator.html')"></div>
+            <div id="table-5" class="lamp-zone" data-label="TABLE 5: «Дуэль Комплиментов»" onclick="Core.loadZone('compliments.html')"></div>
+            <div id="table-6" class="lamp-zone" data-label="TABLE 6: «Тень Барона» (vs ИИ)" onclick="Core.loadZone('baron.html')"></div>
+            
+            <div id="mic-zone" class="lamp-zone" data-label="MIC ZONE: «Open Mic»" onclick="Core.loadZone('openmic.html')"></div>
+        </div>
+    </div>
+
+<script>
+        const Core = {
+            init() {
+                document.body.classList.add('page-loaded');
+
+                const amb = document.getElementById('snd-ambient');
+                if (amb) {
+                    amb.volume = 0.8;
+                    amb.play().catch(() => {
+                        document.body.addEventListener('click', () => { amb.play(); }, { once: true });
+                    });
+                }
+
+                let savedFlag = localStorage.getItem('gygy_flag') || localStorage.getItem('gy_user_flag') || 'gb';
+                if (savedFlag.includes('/')) {
+                    savedFlag = savedFlag.split('/').pop().replace('.png', '');
+                }
+                
+                const badgeFlag = document.getElementById('badge-flag-img') || document.getElementById('badge-flag');
+                if (badgeFlag) {
+                    badgeFlag.src = `https://flagcdn.com/w20/${savedFlag.toLowerCase()}.png`;
+                }
+
+                const savedAvatar = localStorage.getItem('gy_user_img') || localStorage.getItem('gygy_avatar');
+                const badgeContainer = document.getElementById('global-user-badge');
+                
+                if (savedAvatar) {
+                    const badgeImg = document.getElementById('badge-avatar-img') || document.getElementById('badge-avatar');
+                    if (badgeImg) badgeImg.src = savedAvatar;
+                }
+
+                if (badgeContainer) {
+                    badgeContainer.style.display = 'block';
+                }
+            },
+
+            loadZone(url) {
+                document.body.classList.remove('page-loaded');
+                setTimeout(() => {
+                    location.href = url;
+                }, 500);
+            },
+
+            backToBar() {
+                document.body.classList.remove('page-loaded');
+                setTimeout(() => {
+                    location.href = 'bar.html'; 
+                }, 500);
+            },
+            
+            exitToEntrance() {
+                document.body.classList.remove('page-loaded');
+                setTimeout(() => {
+                    location.href = 'index.html'; 
+                }, 500);
+            }
+        };
+
+        function applySavedLanguageForPage() {
+            let savedLang = (localStorage.getItem('gy_lang') || localStorage.getItem('gygy_lang') || 'en').toLowerCase();
+            if (savedLang === 'ua') savedLang = 'uk';
+
+            console.log(`[GY-GY Столики] Активация языка из памяти: ${savedLang}`);
+
+            document.cookie = "googtrans=/en/" + savedLang + "; path=/";
+            document.cookie = "googtrans=/en/" + savedLang + "; domain=" + window.location.hostname + "; path=/";
+
+            let attempts = 0;
+            const checkSelectInterval = setInterval(() => {
+                const selectEl = document.querySelector('.goog-te-combo');
+                if (selectEl) {
+                    clearInterval(checkSelectInterval);
+                    if (selectEl.value !== savedLang) {
+                        selectEl.value = savedLang;
+                        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+                        console.log(`[GY-GY Столики] Виджет принудительно переключен на: ${savedLang}`);
+                    }
+                }
+                if (++attempts > 100) clearInterval(checkSelectInterval);
+            }, 100);
+        }
+
+        window.onload = () => { 
+            applySavedLanguageForPage();
+            Core.init(); 
+        };
+        
+        function googleTranslateElementInit() { 
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,de,es,fr,it,pl,pt,ru,tr,uk,zh-CN,ja',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element'); 
+        }
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>
 
