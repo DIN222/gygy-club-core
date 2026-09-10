@@ -2,13 +2,11 @@
 <!--
   identity.html
   v1.3.0 — 2026-08-26
-  Изменения: (1) ID и QR объединены в вертикальный блок "Служебная инфо" с
-  лёгкой заливкой — визуально отделены от полей, требующих действия
-  пользователя (раньше все 6 боксов выглядели одинаково важными, что могло
-  вызывать замешательство: "что здесь вообще нужно делать"); (2) исправлен
-  баг, при котором оба варианта ника (свой/клубный) могли выглядеть
-  одновременно выбранными — теперь состояние выбора устанавливается явно
-  при каждой загрузке страницы, не полагаясь на совпадение с HTML-разметкой.
+  Изменения: (1) ID и QR остались в общем ряду сетки, но с лёгкой заливкой
+  и подписью "Служебная инфо" — сигнал "не нужно вмешиваться, это автоматика";
+  (2) исправлен баг, при котором оба варианта ника (свой/клубный) могли
+  выглядеть одновременно выбранными — состояние выбора устанавливается явно
+  при каждой загрузке страницы.
 -->
 <html lang="en">
 <head>
@@ -93,9 +91,6 @@
     .id-box .value { font-size: 8px; margin-top: 4px; font-weight: 700; pointer-events: none; }
     .id-box img { width: 100%; height: 100%; object-fit: cover; }
 
-    .service-info-block {
-        display: flex; flex-direction: column; align-items: center; gap: 6px;
-    }
     .service-info-label {
         font-size: 7px; font-weight: 900; letter-spacing: 1px;
         color: rgba(255,215,0,0.6); text-transform: uppercase;
@@ -152,34 +147,33 @@
 
 <div class="quote-text" data-translate="identity_quote">There is never too much champagne</div>
 
-<div style="display:flex; gap:14px; margin-bottom:12px; align-items:flex-start;">
-    <div class="identity-grid" style="margin-bottom:0;">
-        <div class="identity-row">
-            <div class="id-box selected" id="box-own-nick">
-                <span class="label" data-translate="nick_own">YOUR NICK</span>
-                <input type="text" id="input-own-nick" placeholder="Enter nick">
-            </div>
-            <div class="id-box" id="box-club-nick">
-                <button class="reroll-btn" id="btn-reroll-nick" title="Другой вариант">⟳</button>
-                <span class="label" data-translate="nick_club">CLUB NICK</span>
-                <span class="value" id="club-nick-label"></span>
-            </div>
+<div class="identity-grid">
+    <div class="identity-row">
+        <div class="id-box selected" id="box-own-nick">
+            <span class="label" data-translate="nick_own">YOUR NICK</span>
+            <input type="text" id="input-own-nick" placeholder="Enter nick">
         </div>
-        <div class="identity-row">
-            <div class="id-box" id="box-photo">
-                <input type="file" id="file-input" accept="image/*">
-                <img id="photo-preview" style="display:none;">
-                <span class="label" id="txt-photo" data-translate="txt_photo">OR PHOTO</span>
-            </div>
-            <div class="id-box" id="box-avatar">
-                <img id="avatar-preview" style="display:none;">
-                <span class="label" id="txt-avatar" data-translate="txt_avatar">OR AVATAR</span>
-            </div>
+        <div class="id-box" id="box-club-nick">
+            <button class="reroll-btn" id="btn-reroll-nick" title="Другой вариант">⟳</button>
+            <span class="label" data-translate="nick_club">CLUB NICK</span>
+            <span class="value" id="club-nick-label"></span>
         </div>
     </div>
-
-    <div class="service-info-block">
-        <span class="service-info-label">Служебная инфо</span>
+    <div class="identity-row">
+        <div class="id-box" id="box-photo">
+            <input type="file" id="file-input" accept="image/*">
+            <img id="photo-preview" style="display:none;">
+            <span class="label" id="txt-photo" data-translate="txt_photo">OR PHOTO</span>
+        </div>
+        <div class="id-box" id="box-avatar">
+            <img id="avatar-preview" style="display:none;">
+            <span class="label" id="txt-avatar" data-translate="txt_avatar">OR AVATAR</span>
+        </div>
+    </div>
+    <div class="identity-row">
+        <span class="service-info-label" style="width:100%; text-align:center; margin-bottom:2px;">Служебная инфо</span>
+    </div>
+    <div class="identity-row">
         <div class="id-box service-info readonly" id="id-label">#ID</div>
         <div class="id-box service-info readonly" id="qr-box"></div>
     </div>
