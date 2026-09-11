@@ -1,22 +1,18 @@
-cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
 <!DOCTYPE html>
 <!--
   atelier.html
-  v2.1.0 — 2026-08-26
-  Изменения: (1) единый принцип маркировки зон — ромашки (было чистое
-  свечение без иконки, теперь как в hall.html/lift.html); (2) процесс
-  конфигурации заказа переделан в ПОШАГОВЫЙ МАСТЕР (Одежда → Принт+чат →
-  Стоимость и подтверждение) вместо трёх разрозненных модалок — плотный
-  функционал требует связного интерфейса, не отдельных всплывающих окон
-  (см. CONTEXT, раздел 3.1). Входная сцена (фото + зоны) остаётся как была
-  для навигационных объектов (вешалка запускает мастер, каталоги/телефон/
-  консультант/монитор — как раньше).
+  v3.0.0 — 2026-08-26
+  ПОЛНАЯ РЕАЛИЗАЦИЯ спецификации: единый экран конфигурации (не мастер из
+  отдельных шагов — та версия отменена). SVG-силуэты одежды (лёгкие, не
+  фото), рамка = силуэт+принт, 5 кнопок сбоку, категории принтов скрыты от
+  UI но пишутся в данные заказа для Офиса, конструктор промпта (Режим А,
+  без API), дискретные пресеты масштаба принта с переводом в см.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v2.1.0</title>
+<title>GY-GY Club — Atelier v3.0.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -28,7 +24,7 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
     }
     #atelier-bg {
         position: fixed; inset: 0; z-index: 0;
-        background: url('Ателье_94.png') center/cover no-repeat;
+        background: url('Ателье_92.png') center/cover no-repeat;
     }
     .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; }
     .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
@@ -38,7 +34,6 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
     .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
 
-    /* Единый принцип маркировки активных зон — ромашки */
     .zone { position: absolute; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
     .hotspot {
         font-size: 20px; display: inline-block;
@@ -63,63 +58,69 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
     .zone-monitor     { top: 15vh; left: 8vw; width: 10vw; height: 15vh; }
     .zone-phone       { top: 65vh; left: 88vw; width: 8vw; height: 12vh; }
 
-    /* ===== Пошаговый мастер конфигурации (без фото-фона — плотный функционал) ===== */
-    .wizard-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000;
+    /* ===== Единый экран конфигурации ===== */
+    .config-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 2000;
         display: none; align-items: center; justify-content: center; opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.3s ease; overflow-y: auto; padding: 20px;
     }
-    .wizard-card {
+    .config-card {
         background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
-        padding: 24px; width: 360px; max-width: 92vw; color: #000; position: relative;
-        font-family: 'Share Tech Mono', monospace; max-height: 85vh; overflow-y: auto;
+        padding: 20px; width: 640px; max-width: 95vw; color: #000; position: relative;
+        font-family: 'Share Tech Mono', monospace;
     }
-    .wizard-close { position: absolute; top: 8px; right: 12px; font-size: 26px; cursor: pointer; }
-    .wizard-steps { display: flex; justify-content: center; gap: 6px; margin-bottom: 14px; }
-    .wizard-step-dot {
-        width: 8px; height: 8px; border-radius: 50%; background: #ccc;
-        transition: background 0.2s;
+    .config-close { position: absolute; top: 8px; right: 12px; font-size: 26px; cursor: pointer; }
+    .config-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; margin-bottom: 12px; text-align: center; }
+
+    .garment-picker { display: flex; gap: 8px; margin-bottom: 10px; }
+    .garment-picker select { flex: 1; padding: 6px; border: 1px solid #000; font-family: inherit; font-size: 11px; }
+
+    .config-body { display: flex; gap: 14px; margin-top: 10px; }
+    .frame-col { flex: 0 0 200px; }
+    .buttons-col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+    .preview-frame {
+        width: 200px; height: 240px; border: 2px solid #000; background: #fff;
+        position: relative; display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
     }
-    .wizard-step-dot.active { background: var(--gold); }
-    .wizard-step-dot.done { background: #2a6; }
-    .wizard-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; margin-bottom: 12px; text-align: center; }
-
-    .wizard-panel { display: none; }
-    .wizard-panel.active { display: block; }
-
-    .form-row { margin-bottom: 10px; text-align: left; }
-    .form-row label { font-size: 10px; font-weight: 700; display: block; margin-bottom: 3px; }
-    .form-row select { width: 100%; padding: 6px; border: 1px solid #000; font-family: inherit; }
-
-    .print-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
-    .print-slot { width: 48px; height: 48px; border: 2px solid #000; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; background: #fff; }
-    .print-slot.selected { border-color: var(--gold); box-shadow: 0 0 8px var(--gold); }
-    .print-slot.locked { opacity: 0.3; cursor: not-allowed; font-size: 14px; }
-    .contribute-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
-    .contribute-row input { width: 50px; text-align: center; border: 1px solid #000; padding: 4px; }
-
-    .chat-help-btn {
-        display: block; width: 100%; margin: 8px 0 4px; padding: 8px;
-        background: #000; color: var(--gold); border: 1px dashed var(--gold);
-        cursor: pointer; font-size: 10px; text-align: center; font-family: inherit;
+    .preview-frame svg { width: 140px; height: 200px; }
+    .size-badge {
+        position: absolute; top: 6px; right: 6px; background: var(--gold);
+        color: #000; font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px;
     }
-    .chat-help-btn:hover { filter: brightness(1.2); }
+    .print-overlay-img {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+    .print-overlay-emoji {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
 
-    .order-summary { font-size: 12px; margin-bottom: 8px; text-align: left; background: #fff; padding: 8px; border: 1px solid #000; }
-    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 20px; margin: 10px 0; text-align: center; }
-    .status-line { font-size: 11px; color: #2a6; min-height: 14px; margin-top: 6px; text-align: center; }
-
-    .wizard-nav { display: flex; justify-content: space-between; margin-top: 14px; gap: 8px; }
-    .btn-modal {
+    .btn-cfg {
         background: #000; color: var(--gold); border: 2px solid var(--gold);
-        padding: 8px 16px; cursor: pointer; font-weight: 700; text-transform: uppercase;
-        font-family: 'Share Tech Mono', monospace; font-size: 11px;
+        padding: 7px 10px; cursor: pointer; font-weight: 700; text-transform: uppercase;
+        font-family: 'Share Tech Mono', monospace; font-size: 10px; text-align: left;
     }
-    .btn-modal:hover:not(:disabled) { filter: brightness(1.2); }
-    .btn-modal:disabled { opacity: 0.3; cursor: not-allowed; }
-    .btn-modal.secondary { background: transparent; }
+    .btn-cfg:hover:not(:disabled) { filter: brightness(1.2); }
+    .btn-cfg:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-cfg.confirm { background: #1a4; border-color: #1a4; color: #fff; text-align: center; }
 
-    /* Простые заглушки-каталоги (Embroidery/Combined) — не входят в мастер */
+    .scale-row, .position-row { display: flex; gap: 6px; margin-top: 4px; }
+    .scale-row select, .position-row select { flex: 1; padding: 4px; font-size: 10px; border: 1px solid #000; }
+    .small-label { font-size: 8px; font-weight: 700; opacity: 0.7; }
+
+    .order-info { font-size: 10px; margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #000; }
+    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 18px; text-align: center; margin-top: 8px; }
+    .status-line { font-size: 11px; color: #2a6; text-align: center; margin-top: 6px; min-height: 14px; }
+
+    /* Конструктор промпта — вложенная под-панель */
+    .prompt-builder { display: none; margin-top: 10px; padding: 10px; background: #fff; border: 1px dashed #000; }
+    .prompt-builder.open { display: block; }
+    .prompt-builder select, .prompt-builder input { width: 100%; padding: 5px; margin-bottom: 6px; font-size: 10px; border: 1px solid #000; }
+    .prompt-output { font-size: 10px; background: #eee; padding: 8px; margin-top: 6px; word-break: break-word; user-select: all; }
+
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
         display: none; align-items: center; justify-content: center; opacity: 0;
@@ -144,7 +145,6 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
 </div>
 <div id="passport-badge-container"></div>
 
-<!-- Вешалка теперь запускает ВЕСЬ мастер целиком, начиная с шага "Одежда" -->
 <div class="zone zone-rack" id="zone-rack"><span class="hotspot">🌼</span><span class="zone-label">START ORDER</span></div>
 <div class="zone zone-embroidery" id="zone-embroidery"><span class="hotspot">🌼</span><span class="zone-label">EMBROIDERY</span></div>
 <div class="zone zone-combined" id="zone-combined"><span class="hotspot">🌼</span><span class="zone-label">COMBINED</span></div>
@@ -152,78 +152,84 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
 <div class="zone zone-phone" id="zone-phone"><span class="hotspot">🌼</span><span class="zone-label">CALL FOR HELP</span></div>
 <div class="zone zone-monitor" id="zone-monitor"><span class="hotspot">🌼</span><span class="zone-label">???</span></div>
 
-<!-- ===== ПОШАГОВЫЙ МАСТЕР: Одежда -> Принт+чат -> Стоимость и подтверждение ===== -->
-<div class="wizard-overlay" id="wizard-overlay">
-    <div class="wizard-card">
-        <span class="wizard-close" data-close-wizard>&times;</span>
+<!-- ===== ЕДИНЫЙ ЭКРАН КОНФИГУРАЦИИ ===== -->
+<div class="config-overlay" id="config-overlay">
+    <div class="config-card">
+        <span class="config-close" data-close>&times;</span>
+        <div class="config-title">CONFIGURE YOUR ORDER</div>
 
-        <div class="wizard-steps">
-            <div class="wizard-step-dot" id="dot-1"></div>
-            <div class="wizard-step-dot" id="dot-2"></div>
-            <div class="wizard-step-dot" id="dot-3"></div>
+        <div class="garment-picker">
+            <select id="select-type">
+                <option value="tshirt">T-SHIRT (UNISEX)</option>
+                <option value="hoodie">HOODIE (UNISEX)</option>
+                <option value="sweatshirt">SWEATSHIRT (UNISEX)</option>
+            </select>
+            <select id="select-size">
+                <option value="S">S</option><option value="M" selected>M</option>
+                <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+            </select>
+            <select id="select-color">
+                <option value="black">BLACK</option><option value="white">WHITE</option>
+            </select>
         </div>
 
-        <!-- Шаг 1: Одежда -->
-        <div class="wizard-panel" id="panel-1">
-            <div class="wizard-title">STEP 1 — GARMENT</div>
-            <div class="form-row"><label>FORM</label>
-                <select id="select-form">
-                    <option value="tshirt">T-SHIRT</option>
-                    <option value="hoodie">HOODIE</option>
-                    <option value="longsleeve">LONGSLEEVE</option>
-                </select>
+        <div class="config-body">
+            <div class="frame-col">
+                <div class="preview-frame" id="preview-frame">
+                    <span class="size-badge" id="size-badge">M</span>
+                    <!-- SVG силуэта рендерится сюда скриптом -->
+                </div>
+                <div class="position-row">
+                    <select id="select-position">
+                        <option value="front">FRONT</option>
+                        <option value="back">BACK</option>
+                    </select>
+                    <select id="select-scale">
+                        <option value="a3">A3 (30x40cm)</option>
+                        <option value="a4">A4 (21x30cm)</option>
+                        <option value="logo-chest">LOGO CHEST (10x10cm)</option>
+                        <option value="logo-sleeve">LOGO SLEEVE (7x7cm)</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-row"><label>SIZE</label>
-                <select id="select-size">
-                    <option value="S">S</option>
-                    <option value="M" selected>M</option>
-                    <option value="L">L</option>
-                    <option value="XL">XL</option>
-                    <option value="XXL">XXL</option>
-                </select>
+
+            <div class="buttons-col">
+                <button class="btn-cfg" id="btn-cycle-club">① CYCLE 5 CLUB PRINTS</button>
+                <button class="btn-cfg" id="btn-upload-own">② UPLOAD YOUR OWN</button>
+                <button class="btn-cfg" id="btn-open-prompt">③ GENERATE PROMPT HERE</button>
+                <button class="btn-cfg" id="btn-exchange" disabled>④ SPEND → UNLOCK NEXT 5</button>
+                <button class="btn-cfg confirm" id="btn-confirm">⑤ CONFIRM ORDER</button>
+
+                <div class="prompt-builder" id="prompt-builder">
+                    <span class="small-label">PROMPT BUILDER (no API — copy result to any external AI image tool)</span>
+                    <select id="pb-mood">
+                        <option value="rebellion">Rebellion / Bold</option>
+                        <option value="motivation">Motivation</option>
+                        <option value="intellect">Intellect</option>
+                        <option value="aesthetic">Aesthetic</option>
+                        <option value="nostalgia">Nostalgia</option>
+                    </select>
+                    <input type="text" id="pb-idea" placeholder="Describe your idea in a few words...">
+                    <button class="btn-cfg" id="btn-build-prompt" style="width:100%;">BUILD PROMPT</button>
+                    <div class="prompt-output" id="prompt-output" style="display:none;"></div>
+                </div>
+
+                <input type="file" id="file-input" accept="image/*" style="display:none;">
             </div>
-            <div class="form-row"><label>COLOR</label>
-                <select id="select-color">
-                    <option value="black">BLACK</option>
-                    <option value="white">WHITE</option>
-                </select>
-            </div>
-            <p style="font-size:9px; opacity:0.6;">Cut: unisex (standard for launch)</p>
         </div>
 
-        <!-- Шаг 2: Принт + чат -->
-        <div class="wizard-panel" id="panel-2">
-            <div class="wizard-title">STEP 2 — PRINT</div>
-            <div class="print-grid" id="print-grid"></div>
-            <div class="contribute-row">
-                <input type="text" id="contribute-input" placeholder="🎨" maxlength="2">
-                <button class="btn-modal" id="btn-contribute" style="margin:0;">CONTRIBUTE +5</button>
-            </div>
-            <button class="chat-help-btn" id="btn-chat-help">💬 Not sure what to pick? Ask for help</button>
-        </div>
-
-        <!-- Шаг 3: Стоимость и подтверждение -->
-        <div class="wizard-panel" id="panel-3">
-            <div class="wizard-title">STEP 3 — CONFIRM</div>
-            <div class="order-summary" id="order-summary"></div>
-            <div class="price-line" id="order-price">—</div>
-            <div class="status-line" id="order-status"></div>
-        </div>
-
-        <div class="wizard-nav">
-            <button class="btn-modal secondary" id="btn-prev">&larr; BACK</button>
-            <button class="btn-modal" id="btn-next">NEXT &rarr;</button>
-        </div>
+        <div class="order-info" id="order-info"></div>
+        <div class="price-line" id="order-price">—</div>
+        <div class="status-line" id="order-status"></div>
     </div>
 </div>
 
-<!-- Заглушки-каталоги (не входят в мастер) -->
 <div class="modal-overlay" id="modal-placeholder">
     <div class="modal-card">
         <span class="modal-close" data-close>&times;</span>
         <div class="modal-title" id="placeholder-title">COMING SOON</div>
         <p style="font-size:12px;">This catalog is not ready yet.</p>
-        <button class="btn-modal" data-close>OK</button>
+        <button class="btn-cfg" data-close style="display:inline-block;">OK</button>
     </div>
 </div>
 
@@ -235,12 +241,200 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
-    const BASE_PRICE = { tshirt: 15, hoodie: 35, longsleeve: 25 };
-    const PRICE_PER_PRINT = 5;
-    const ALL_PRINTS = ['🔥','⚡','🌹','💀','🎭','🃏','🦁','⚓','🗿','🌊','🎲','🕶️','🧿','🪬','⚜️'];
+    const BASE_PRICE = { tshirt: 15, hoodie: 35, sweatshirt: 28 };
+    const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3 };
     const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: заменить на реальный юзернейм
 
-    // --- Простые заглушки-модалки (Embroidery/Combined) ---
+    // Клубные принты — КАЖДЫЙ помечен КАТЕГОРИЕЙ (скрыто от UI, для Офиса).
+    // Категории: rebellion, motivation, intellect, aesthetic, nostalgia
+    const CLUB_PRINTS = [
+        { emoji: '🔥', category: 'rebellion' },
+        { emoji: '⚡', category: 'rebellion' },
+        { emoji: '🏆', category: 'motivation' },
+        { emoji: '🚀', category: 'motivation' },
+        { emoji: '🧠', category: 'intellect' },
+        { emoji: '♟️', category: 'intellect' },
+        { emoji: '🌹', category: 'aesthetic' },
+        { emoji: '🦋', category: 'aesthetic' },
+        { emoji: '📻', category: 'nostalgia' },
+        { emoji: '🎞️', category: 'nostalgia' },
+        { emoji: '💀', category: 'rebellion' },
+        { emoji: '🎯', category: 'motivation' },
+        { emoji: '🗿', category: 'intellect' },
+        { emoji: '🎭', category: 'aesthetic' },
+        { emoji: '📼', category: 'nostalgia' }
+    ];
+
+    // --- SVG-силуэты одежды: простые плоские формы, перекрашиваемые ---
+    const SILHOUETTES = {
+        tshirt: `<path d="M30 20 L45 10 L60 20 L70 15 L85 30 L75 42 L68 38 L68 100 L32 100 L32 38 L25 42 L15 30 L30 20 Z" />`,
+        hoodie: `<path d="M35 22 Q50 5 65 22 L70 15 L85 30 L75 42 L68 38 L68 100 L32 100 L32 38 L25 42 L15 30 L30 15 L35 22 Z M42 18 Q50 25 58 18" style="fill:none;stroke:#00000055;stroke-width:1.5;" />`,
+        sweatshirt: `<path d="M32 18 L45 10 L60 18 L72 12 L88 28 L78 40 L68 34 L68 100 L32 100 L32 34 L22 40 L12 28 L28 12 L32 18 Z" />`
+    };
+
+    function renderSilhouette(type, color) {
+        const frame = document.getElementById('preview-frame');
+        let svgEl = frame.querySelector('svg.garment-svg');
+        if (!svgEl) {
+            frame.insertAdjacentHTML('afterbegin', `<svg class="garment-svg" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg"></svg>`);
+            svgEl = frame.querySelector('svg.garment-svg');
+        }
+        const fillColor = color === 'white' ? '#f0f0f0' : '#1a1a1a';
+        const strokeColor = color === 'white' ? '#999' : '#000';
+        svgEl.innerHTML = SILHOUETTES[type].replace('<path', `<path fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"`);
+    }
+
+    // --- Состояние текущего заказа (в памяти, до подтверждения) ---
+    let state = {
+        type: 'tshirt', size: 'M', color: 'black',
+        position: 'front', scale: 'a3',
+        currentPrint: null,      // { source: 'club'|'own', design, category|null }
+        clubCycleIndex: 0
+    };
+
+    function getUnlocked() { return get('atelierUnlockedPrints', 5); }
+    function unlockedPrints() { return CLUB_PRINTS.slice(0, getUnlocked()); }
+
+    function renderPreview() {
+        renderSilhouette(state.type, state.color);
+        document.getElementById('size-badge').textContent = state.size;
+
+        // Убрать старый оверлей принта
+        document.querySelectorAll('.print-overlay-img, .print-overlay-emoji').forEach(el => el.remove());
+
+        if (state.currentPrint) {
+            const scaleSizePx = { a3: 90, a4: 60, 'logo-chest': 28, 'logo-sleeve': 18 }[state.scale];
+            if (state.currentPrint.source === 'own') {
+                const img = document.createElement('img');
+                img.className = 'print-overlay-img';
+                img.src = state.currentPrint.design;
+                img.style.width = scaleSizePx + 'px';
+                img.style.height = scaleSizePx + 'px';
+                img.style.objectFit = 'cover';
+                document.getElementById('preview-frame').appendChild(img);
+            } else {
+                const span = document.createElement('span');
+                span.className = 'print-overlay-emoji';
+                span.textContent = state.currentPrint.design;
+                span.style.fontSize = scaleSizePx + 'px';
+                document.getElementById('preview-frame').appendChild(span);
+            }
+        }
+
+        document.getElementById('btn-exchange').disabled = !(state.currentPrint && state.currentPrint.source === 'own');
+        updateOrderInfo();
+    }
+
+    function scaleCm(scaleId) {
+        return { a3: '30x40cm', a4: '21x30cm', 'logo-chest': '10x10cm', 'logo-sleeve': '7x7cm' }[scaleId];
+    }
+
+    function calculatePrice() {
+        let p = BASE_PRICE[state.type] || 0;
+        if (state.currentPrint) p += SCALE_PRICE[state.scale] || 0;
+        return p;
+    }
+
+    function updateOrderInfo() {
+        document.getElementById('order-info').innerHTML =
+            `${state.type.toUpperCase()} (unisex) / ${state.size} / ${state.color.toUpperCase()}<br>` +
+            `Print: ${state.currentPrint ? state.currentPrint.design : '— none —'} | ` +
+            `${state.position.toUpperCase()} | ${scaleCm(state.scale)}`;
+        document.getElementById('order-price').textContent = `$${calculatePrice()}`;
+    }
+
+    // --- Слушатели выбора одежды ---
+    ['select-type', 'select-size', 'select-color', 'select-position', 'select-scale'].forEach(id => {
+        document.getElementById(id).addEventListener('change', (e) => {
+            const map = { 'select-type': 'type', 'select-size': 'size', 'select-color': 'color', 'select-position': 'position', 'select-scale': 'scale' };
+            state[map[id]] = e.target.value;
+            renderPreview();
+        });
+    });
+
+    // --- Кнопка ①: цикл по разблокированным клубным принтам ---
+    document.getElementById('btn-cycle-club').addEventListener('click', () => {
+        const pool = unlockedPrints();
+        state.clubCycleIndex = (state.clubCycleIndex + 1) % pool.length;
+        const p = pool[state.clubCycleIndex];
+        state.currentPrint = { source: 'club', design: p.emoji, category: p.category };
+        renderPreview();
+    });
+
+    // --- Кнопка ②: загрузить свой файл ---
+    document.getElementById('btn-upload-own').addEventListener('click', () => {
+        document.getElementById('file-input').click();
+    });
+    document.getElementById('file-input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            state.currentPrint = { source: 'own', design: ev.target.result, category: null };
+            renderPreview();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // --- Кнопка ③: конструктор промпта (Режим А, без API) ---
+    document.getElementById('btn-open-prompt').addEventListener('click', () => {
+        document.getElementById('prompt-builder').classList.toggle('open');
+    });
+    document.getElementById('btn-build-prompt').addEventListener('click', () => {
+        const moodMap = {
+            rebellion: 'bold rebellious streetwear graphic, high contrast, graffiti-inspired',
+            motivation: 'motivational typography-driven design, dynamic composition, energetic colors',
+            intellect: 'intellectual minimalist symbolic illustration, clean lines, thoughtful composition',
+            aesthetic: 'elegant aesthetic illustration, refined color palette, artistic linework',
+            nostalgia: 'nostalgic vintage-style illustration, retro color grading, aged texture'
+        };
+        const mood = document.getElementById('pb-mood').value;
+        const idea = document.getElementById('pb-idea').value.trim() || 'an abstract emblem';
+        const prompt = `A t-shirt print design of ${idea}, ${moodMap[mood]}, professional print-ready vector-style artwork, ` +
+            `centered composition, transparent background, high detail, studio lighting, print-safe color palette.`;
+        const out = document.getElementById('prompt-output');
+        out.textContent = prompt;
+        out.style.display = 'block';
+    });
+
+    // --- Кнопка ④: потратить своё изображение → открыть следующие 5 клубных ---
+    document.getElementById('btn-exchange').addEventListener('click', () => {
+        // Валидация: должно реально быть изображение, не пустое место
+        if (!state.currentPrint || state.currentPrint.source !== 'own' || !state.currentPrint.design) {
+            document.getElementById('order-status').textContent = 'Nothing to exchange — upload or generate an image first.';
+            return;
+        }
+        const unlocked = getUnlocked();
+        set('atelierUnlockedPrints', Math.min(unlocked + 5, CLUB_PRINTS.length));
+        state.currentPrint = null;
+        state.clubCycleIndex = -1;
+        document.getElementById('order-status').textContent = 'Unlocked next 5 club prints!';
+        renderPreview();
+    });
+
+    // --- Кнопка ⑤: подтвердить заказ ---
+    document.getElementById('btn-confirm').addEventListener('click', () => {
+        const order = {
+            type: 'blank',
+            garment: state.type, size: state.size, color: state.color,
+            decoration: state.currentPrint ? {
+                source: state.currentPrint.source,
+                design: state.currentPrint.source === 'club' ? state.currentPrint.design : '[uploaded image]',
+                category: state.currentPrint.category, // скрыто от UI, для аналитики Офиса
+                position: state.position,
+                scalePreset: state.scale,
+                scaleCm: scaleCm(state.scale)
+            } : null,
+            price: calculatePrice(),
+            createdAt: Date.now()
+        };
+        const reports = get('officeAtelierReports', []);
+        reports.push(order);
+        set('officeAtelierReports', reports.slice(-50));
+        document.getElementById('order-status').textContent = 'Order sent to Office!';
+    });
+
+    // --- Открытие/закрытие экрана конфигурации ---
     function openModal(id) {
         const m = document.getElementById(id);
         m.style.display = 'flex';
@@ -251,8 +445,14 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
         setTimeout(() => m.style.display = 'none', 300);
     }
     document.querySelectorAll('[data-close]').forEach(el => {
-        el.addEventListener('click', () => closeModal(el.closest('.modal-overlay')));
+        el.addEventListener('click', () => closeModal(el.closest('.config-overlay, .modal-overlay')));
     });
+
+    document.getElementById('zone-rack').addEventListener('click', () => {
+        renderPreview();
+        openModal('config-overlay');
+    });
+
     document.getElementById('zone-embroidery').addEventListener('click', () => {
         document.getElementById('placeholder-title').textContent = 'EMBROIDERY CATALOG';
         openModal('modal-placeholder');
@@ -261,8 +461,6 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
         document.getElementById('placeholder-title').textContent = 'COMBINED CATALOG';
         openModal('modal-placeholder');
     });
-
-    // --- Прочие заготовки-зоны ---
     document.getElementById('zone-phone').addEventListener('click', () => {
         window.open(TELEGRAM_HELP_URL, '_blank');
     });
@@ -273,129 +471,9 @@ cat > /mnt/user-data/outputs/atelier.html << 'ATELIEREOF'
         console.log('[Atelier] LAUNCH SYSTEM: пока просто красивая деталь интерьера.');
     });
 
-    // ===== ПОШАГОВЫЙ МАСТЕР =====
-    let currentStep = 1;
-    const TOTAL_STEPS = 3;
-    const wizardOverlay = document.getElementById('wizard-overlay');
-
-    function getUnlocked() { return get('atelierUnlockedPrints', 5); }
-    function getSelectedPrints() { return get('atelierSelectedPrints', []); }
-    function setSelectedPrints(a) { set('atelierSelectedPrints', a); }
-
-    function renderPrintGrid() {
-        const grid = document.getElementById('print-grid');
-        const unlocked = getUnlocked();
-        const selected = getSelectedPrints();
-        grid.innerHTML = '';
-        for (let i = 0; i < 15; i++) {
-            const locked = i >= unlocked;
-            const slot = document.createElement('div');
-            slot.className = 'print-slot' + (locked ? ' locked' : '') + (selected.includes(i) && !locked ? ' selected' : '');
-            slot.textContent = locked ? '🔒' : ALL_PRINTS[i % ALL_PRINTS.length];
-            if (!locked) {
-                slot.addEventListener('click', () => {
-                    const cur = getSelectedPrints();
-                    const idx = cur.indexOf(i);
-                    if (idx === -1) cur.push(i); else cur.splice(idx, 1);
-                    setSelectedPrints(cur);
-                    renderPrintGrid();
-                });
-            }
-            grid.appendChild(slot);
-        }
-    }
-    document.getElementById('btn-contribute').addEventListener('click', () => {
-        const input = document.getElementById('contribute-input');
-        if (!input.value.trim()) return;
-        set('atelierUnlockedPrints', Math.min(getUnlocked() + 5, ALL_PRINTS.length));
-        input.value = '';
-        renderPrintGrid();
-    });
-    document.getElementById('btn-chat-help').addEventListener('click', () => {
-        window.open(TELEGRAM_HELP_URL, '_blank');
-    });
-
-    function calculatePrice() {
-        const garment = get('atelierGarment', {});
-        const prints = getSelectedPrints();
-        return (BASE_PRICE[garment.form] || 0) + prints.length * PRICE_PER_PRINT;
-    }
-
-    function renderStep() {
-        for (let i = 1; i <= TOTAL_STEPS; i++) {
-            document.getElementById('panel-' + i).classList.toggle('active', i === currentStep);
-            const dot = document.getElementById('dot-' + i);
-            dot.classList.toggle('active', i === currentStep);
-            dot.classList.toggle('done', i < currentStep);
-        }
-        document.getElementById('btn-prev').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
-        document.getElementById('btn-next').textContent = currentStep === TOTAL_STEPS ? 'CONFIRM ORDER' : 'NEXT →';
-
-        if (currentStep === 2) renderPrintGrid();
-        if (currentStep === 3) {
-            const garment = get('atelierGarment', {});
-            const prints = getSelectedPrints();
-            document.getElementById('order-summary').innerHTML =
-                `${garment.form?.toUpperCase() || '?'} / ${garment.size || '?'} / ${garment.color?.toUpperCase() || '?'}<br>${prints.length} print(s) selected`;
-            document.getElementById('order-price').textContent = `$${calculatePrice()}`;
-            document.getElementById('order-status').textContent = '';
-        }
-    }
-
-    function openWizard() {
-        currentStep = 1;
-        const g = get('atelierGarment', {});
-        if (g.form) document.getElementById('select-form').value = g.form;
-        if (g.size) document.getElementById('select-size').value = g.size;
-        if (g.color) document.getElementById('select-color').value = g.color;
-        renderStep();
-        openModal('wizard-overlay');
-    }
-    document.getElementById('zone-rack').addEventListener('click', openWizard);
-    document.querySelector('[data-close-wizard]').addEventListener('click', () => closeModal(wizardOverlay));
-
-    document.getElementById('btn-prev').addEventListener('click', () => {
-        if (currentStep > 1) { currentStep--; renderStep(); }
-    });
-
-    document.getElementById('btn-next').addEventListener('click', () => {
-        if (currentStep === 1) {
-            set('atelierGarment', {
-                form: document.getElementById('select-form').value,
-                size: document.getElementById('select-size').value,
-                color: document.getElementById('select-color').value
-            });
-        }
-        if (currentStep < TOTAL_STEPS) {
-            currentStep++;
-            renderStep();
-        } else {
-            // Финальное подтверждение заказа
-            const garment = get('atelierGarment', {});
-            const prints = getSelectedPrints();
-            const order = {
-                type: 'blank',
-                form: garment.form, size: garment.size, color: garment.color,
-                decorations: prints.map(i => ({ type: 'print', design: ALL_PRINTS[i % ALL_PRINTS.length] })),
-                price: calculatePrice(),
-                createdAt: Date.now()
-            };
-            const reports = get('officeAtelierReports', []);
-            reports.push(order);
-            set('officeAtelierReports', reports.slice(-50));
-            document.getElementById('order-status').textContent = 'Order sent to Office!';
-            setSelectedPrints([]);
-        }
-    });
-
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
 </script>
 
 </body>
 </html>
-ATELIEREOF
-echo "atelier v2.1.0 written"
-Output
-
-atelier v2.1.0 written
