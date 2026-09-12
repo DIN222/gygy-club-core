@@ -1,1 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GY-GY Club | The Laughing Horse Artifacts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #5a3e1b; --accent-gold: #c59b27; --parchment-bg: #f4ebd0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: #111;
+            background-image: url('6635e3b2-dee3-49ad-8366-bc7f338ef50.png'); /* Фоновое изображение макета */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Share Tech Mono', monospace;
+            color: #2b1d0c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
+        /* Основной контейнер-окна под стиль пергамента */
+        .store-wrapper {
+            width: 95%;
+            max-width: 1000px;
+            height: 90vh;
+            max-height: 650px;
+            position: relative;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 220px 1fr 240px;
+            grid-template-rows: 60px 50px 1fr 40px;
+            gap: 15px;
+        }
+
+        /* Шапка */
+        .store-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 5px;
+        }
+        .brand-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand-title {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a1105;
+            line-height: 1.1;
+        }
+        .brand-sub {
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .top-nav {
+            display: flex;
+            gap: 10px;
+        }
+        .nav-pill {
+            background: rgba(120, 40, 20, 0.15);
+            border: 2px solid #5a3e1b;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .nav-pill:hover {
+            background: rgba(120, 40, 20, 0.3);
+        }
+
+        /* Поиск и название выбранного артефакта */
+        .search-row {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .search-box {
+            flex: 1;
+            background: rgba(255,255,255,0.4);
+            border: 2px solid #5a3e1b;
+            border-radius: 4px;
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            width: 100%;
+            font-size: 12px;
+            color: #000;
+        }
+        .current-artifact-name {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            font-weight: bold;
+            width: 240px;
+            text-align: right;
+        }
+
+        /* Левая панель: Категории + Кнопка выставления товара */
+        .sidebar-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .category-title {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: bold;
+            border-bottom: 2px solid #5a3e1b;
+            padding-bottom: 3px;
+            margin-bottom: 2px;
+        }
+        .cat-btn {
+            background: rgba(90, 62, 27, 0.08);
+            border: 1px solid rgba(90, 62, 27, 0.4);
+            padding: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: left;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .cat-btn:hover, .cat-btn.active {
+            background: #5a3e1b;
+            color: #f4ebd0;
+        }
+        .btn-sell-item {
+            margin-top: auto;
+            background: #3a2205;
+            color: #ffd700;
+            border: 2px solid #5a3e1b;
+            padding: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 4px;
+        }
+        .btn-sell-item:hover {
+            background: #5a3e1b;
+        }
+
+        /* Центральная область: Витрина товара */
+        .showcase-center {
+            border: 2px solid #5a3e1b;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            position: relative;
+            text-align: center;
+        }
+        .showcase-img {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border: 1px solid #5a3e1b;
+            margin-bottom: 10px;
+            background: #fff;
+        }
+        .showcase-desc {
+            font-size: 11px;
+            color: #442d13;
+        }
+
+        /* Правая панель: Действия и Цены */
+        .sidebar-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 12px;
+            padding-left: 10px;
+        }
+        .price-label {
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .action-btn {
+            background: linear-gradient(to bottom, #782814, #4a180b);
+            color: #ffd700;
+            border: 2px solid #5a3e1b;
+            padding: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .action-btn:active { transform: scale(0.98); }
+        .btn-reviews {
+            background: linear-gradient(to bottom, #2b3a4a, #151e26);
+            color: #ffd700;
+        }
+
+        /* Нижняя панель-теги */
+        .footer-tags {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+        }
+        .tag-pill {
+            background: #5a3e1b;
+            color: #f4ebd0;
+            padding: 4px 15px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* Модальные окна (для выставления товара и отзывов) */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: #f4ebd0;
+            border: 3px solid #5a3e1b;
+            padding: 20px;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 8px;
+            color: #2b1d0c;
+        }
+        .modal-card h3 {
+            font-family: 'Cinzel', serif;
+            margin-bottom: 10px;
+            font-size: 15px;
+            border-bottom: 1px solid #5a3e1b;
+            padding-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 3px; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #5a3e1b;
+            background: #fff;
+            font-family: inherit;
+            font-size: 11px;
+            border-radius: 3px;
+        }
+        .modal-close {
+            float: right;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="store-wrapper">
+        <!-- Шапка -->
+        <header class="store-header">
+            <div class="brand-area">
+                <div class="brand-title">GY-GY CLUB</div>
+                <div class="brand-sub">Exclusive Online Store</div>
+            </div>
+            <div class="top-nav">
+                <div class="nav-pill" onclick="alert('Вы в каталоге артефактов')">CATALOG</div>
+                <div class="nav-pill" onclick="location.href='identity.html'">MEMBERSHIP</div>
+                <div class="nav-pill" onclick="alert('Связь с Мастером Юмора активна')">SPEAKING PANEL</div>
+                <div class="nav-pill" onclick="alert('Закрытый клуб ценителей винтажа и юмора')">ABOUT CLUB</div>
+            </div>
+        </header>
+
+        <!-- Поиск -->
+        <div class="search-row">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search artifact..." oninput="filterArtifacts()">
+                <span>🔍</span>
+            </div>
+            <div class="current-artifact-name" id="displayArtifactTitle">Artifact Name</div>
+        </div>
+
+        <!-- Левое меню (Категории) -->
+        <aside class="sidebar-left">
+            <div class="category-title">KATEGORIY ARTEGORTES</div>
+            <button class="cat-btn active" onclick="selectCategory('all', this)">⚡ ВСЕ ТОВАРЫ</button>
+            <button class="cat-btn" onclick="selectCategory('glass', this)">🥃 GLASS</button>
+            <button class="cat-btn" onclick="selectCategory('porcelain', this)">🏺 PORCELAIN</button>
+            <button class="cat-btn" onclick="selectCategory('fabric', this)">📜 FABRIC</button>
+            <button class="cat-btn" onclick="selectCategory('metal', this)">⚙️ METAL</button>
+            <button class="cat-btn" onclick="selectCategory('tech', this)">💻 TECHNO-JUNK</button>
+            
+            <button class="btn-sell-item" onclick="openSellModal()">+ ВЫСТАВИТЬ ТОВАР (10% комиссия)</button>
+        </aside>
+
+        <!-- Центр (Витрина товара) -->
+        <main class="showcase-center" id="showcaseArea">
+            <img id="itemImage" class="showcase-img" src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300" alt="Artifact">
+            <div id="itemDesc" class="showcase-desc">Загрузка реликвии... Выберите лот из каталога.</div>
+        </main>
+
+        <!-- Правая панель (Цены и Кнопки) -->
+        <aside class="sidebar-right">
+            <div>
+                <div style="font-size: 10px; font-weight: bold;">Price:</div>
+                <div class="price-label" id="itemPrice">150 🪙</div>
+            </div>
+            <button class="action-btn" onclick="addToCart()">Add to Cart!</button>
+            <button class="action-btn" onclick="location.href='identity.html'">Become a Member<br><span style="font-size:9px; color:#ffd700;">XXX GY-GY Coins</span></button>
+            <button class="action-btn btn-reviews" onclick="openReviewsModal()">💬 Отзывы покупателей</button>
+            <button class="action-btn" style="background:#111; color:#ffd700; margin-top:auto;" onclick="location.href='hall.html'">BACK TO PREVIOUS LEVEL</button>
+        </aside>
+
+        <!-- Нижняя панель с тегами -->
+        <footer class="footer-tags">
+            <div class="tag-pill">Hand-Crafted</div>
+            <div class="tag-pill">Members Only</div>
+            <div class="tag-pill">Family-Crafted</div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно: Выставить товар (с контролем винтажности) -->
+    <div class="modal-overlay" id="sellModal">
+        <div class="modal-card">
+            <span class="modal-close" onclick="closeSellModal()">&times;</span>
+            <h3>Выставить реликвию на комиссию</h3>
+            <p style="font-size: 10px; margin-bottom: 10px; color: #555;">
+                ⚠️ <b>Контроль винтажности:</b> Клуб принимает строго антиквариат и винтаж, созданные **до 1990 года**. Проверка автоматическая.
+            </p>
+            <div class="form-group">
+                <label>Название артефакта:</label>
+                <input type="text" id="newName" placeholder="Напр. Подстаканник царский">
+            </div>
+            <div class="form-group">
+                <label>Категория:</label>
+                <select id="newCategory">
+                    <option value="glass">Glass (Стекло)</option>
+                    <option value="porcelain">Porcelain (Фарфор)</option>
+                    <option value="fabric">Fabric (Текстиль/Бумага)</option>
+                    <option value="metal">Metal (Металл)</option>
+                    <option value="tech">Techno-Junk (Ретро-техника)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Год создания (строго < 1990):</label>
+                <input type="number" id="newYear" placeholder="Напр. 1974" max="1989">
+            </div>
+            <div class="form-group">
+                <label>Цена в монетах GY-GY:</label>
+                <input type="number" id="newPrice" placeholder="100">
+            </div>
+            <div class="form-group">
+                <label>Ссылка на фото (URL):</label>
+                <input type="text" id="newImg" placeholder="https://...">
+            </div>
+            <button class="action-btn" style="width:100%; margin-top:5px;" onclick="submitArtifact()">Отправить на модерацию Чарли</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Отзывы покупателей -->
+    <div class="modal-overlay" id="reviewsModal">
+        <div class="modal-card">
+            <span class="modal-close" onclick="closeReviewsModal()">&times;</span>
+            <h3>💬 Отзывы резидентов о Лавке</h3>
+            <div style="max-height: 250px; overflow-y: auto; font-size: 11px; margin-bottom: 10px;" id="reviewsList">
+                <div style="border-bottom:1px solid #ccc; padding-bottom:5px; margin-bottom:5px;">
+                    <b>#4092 (Капитан):</b> «Купил винтажную флягу 1965 года. Патина идеальна, виски в ней вкуснее!»
+                </div>
+                <div style="border-bottom:1px solid #ccc; padding-bottom:5px; margin-bottom:5px;">
+                    <b>#1204 (Шампань):</b> «Выставила старинный сервиз бабушки, комиссию в 10% удержали честно, улетел за вечер.»
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="text" id="newReviewText" placeholder="Ваш отзыв о покупке...">
+            </div>
+            <button class="action-btn" style="width:100%;" onclick="addReview()">Оставить отзыв</button>
+        </div>
+    </div>
+
+    <script>
+        // База данных товаров (хранится в localStorage, включая пользовательские)
+        let defaultArtifacts = [
+            { id: 1, name: "Хрустальный бокал Чарли", category: "glass", year: 1978, price: 120, img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300", desc: "Ретро-бокал из бара основателей клуба. Сохранил легкий дух 70-х." },
+            { id: 2, name: "Фарфоровый конь", category: "porcelain", year: 1965, price: 340, img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300", desc: "Статуэтка смеющегося коня. Тончайшая работа мастеров старой школы." },
+            { id: 3, name: "Карта подземелий клуба", category: "fabric", year: 1950, price: 95, img: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=300", desc: "Бумажный артефакт на пожелтевшем пергаменте с метками тайных ходов." }
+        ];
+
+        let userArtifacts = JSON.parse(localStorage.getItem('gy_custom_artifacts') || '[]');
+        let allArtifacts = [...defaultArtifacts, ...userArtifacts];
+        let currentFilter = 'all';
+        let activeItem = allArtifacts[0];
+
+        function renderArtifact(item) {
+            if (!item) return;
+            activeItem = item;
+            document.getElementById('displayArtifactTitle').textContent = item.name;
+            document.getElementById('itemImage').src = item.img || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300';
+            document.getElementById('itemDesc').textContent = `${item.desc} (Год выпуска: ${item.year})`;
+            document.getElementById('itemPrice').textContent = `${item.price} 🪙`;
+        }
+
+        function selectCategory(cat, btn) {
+            currentFilter = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            let filtered = currentFilter === 'all' ? allArtifacts : allArtifacts.filter(i => i.category === currentFilter);
+            if (filtered.length > 0) renderArtifact(filtered[0]);
+        }
+
+        function filterArtifacts() {
+            let query = document.getElementById('searchInput').value.toLowerCase();
+            let found = allArtifacts.find(i => i.name.toLowerCase().includes(query));
+            if (found) renderArtifact(found);
+        }
+
+        function addToCart() {
+            alert(`Артефакт "${activeItem.name}" добавлен в вашу корзину резидента!`);
+        }
+
+        // Логика модальных окон
+        function openSellModal() { document.getElementById('sellModal').style.display = 'flex'; }
+        function closeSellModal() { document.getElementById('sellModal').style.display = 'none'; }
+        function openReviewsModal() { document.getElementById('reviewsModal').style.display = 'flex'; }
+        function closeReviewsModal() { document.getElementById('reviewsModal').style.display = 'none'; }
+
+        // Важная функция: контроль винтажности (строго до 1990 года)
+        function submitArtifact() {
+            let name = document.getElementById('newName').value.trim();
+            let cat = document.getElementById('newCategory').value;
+            let year = parseInt(document.getElementById('newYear').value);
+            let price = parseInt(document.getElementById('newPrice').value);
+            let img = document.getElementById('newImg').value.trim();
+
+            if (!name || !year || !price) {
+                alert('Заполните все обязательные поля!');
+                return;
+            }
+
+            // Жесткий контроль винтажности по правилам клуба
+            if (year >= 1990) {
+                alert(`⚠️ Ошибка проверки антиквариата!\nГод создания ${year} слишком нов для Лавки древностей. Клуб принимает исключительно винтаж и раритеты старше 1990 года!`);
+                return;
+            }
+
+            let newLot = {
+                id: Date.now(),
+                name: name,
+                category: cat,
+                year: year,
+                price: price,
+                img: img || "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300",
+                desc: `Пользовательский лот резидента. Проверен на подлинность (эпоха до 1990 г.). Комиссия клуба: 10%.`
+            };
+
+            userArtifacts.push(newLot);
+            localStorage.setItem('gy_custom_artifacts', JSON.stringify(userArtifacts));
+            allArtifacts = [...defaultArtifacts, ...userArtifacts];
+
+            alert('✅ Лот успешно прошел проверку Мастера Чарли и выставлен на витрину за комиссию!');
+            closeSellModal();
+            renderArtifact(newLot);
+        }
+
+        function addReview() {
+            let text = document.getElementById('newReviewText').value.trim();
+            if (!text) return;
+            let list = document.getElementById('reviewsList');
+            list.innerHTML += `<div style="border-bottom:1px solid #ccc; padding-bottom:5px; margin-bottom:5px;"><b>Вы (Резидент):</b> «${text}»</div>`;
+            document.getElementById('newReviewText').value = '';
+        }
+
+        // Инициализация при старте
+        renderArtifact(allArtifacts[0]);
+    </script>
+</body>
+</html>
