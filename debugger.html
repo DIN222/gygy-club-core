@@ -1,1 +1,196 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GY-GY Club | Hotspot Debugger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #FFD700; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #000;
+            color: var(--gold);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { font-size: 18px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; }
+        .instructions { font-size: 12px; margin-bottom: 15px; color: #aaa; text-align: center; max-width: 650px; }
+        
+        .controls-top {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 13px;
+        }
+        input[type="text"] {
+            background: #111;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 6px 10px;
+            font-family: inherit;
+            border-radius: 4px;
+        }
+        .btn {
+            background: #000;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 6px 14px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-family: inherit;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn:hover {
+            background: var(--gold);
+            color: #000;
+        }
+
+        /* Контейнер картинки */
+        .debugger-container {
+            position: relative;
+            max-width: 900px;
+            width: 100%;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            cursor: crosshair;
+            overflow: hidden;
+            background: #111;
+        }
+        .debugger-container img {
+            display: block;
+            width: 100%;
+            height: auto;
+            pointer-events: none;
+        }
+        
+        /* Маркер клика */
+        .marker {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #b026ff; /* Фиолетовая стрелка/точка под стать вашим холлам */
+            border: 2px solid #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 0 10px #b026ff;
+            z-index: 10;
+        }
+
+        /* Панель вывода результатов */
+        .panel {
+            margin-top: 20px;
+            background: #111;
+            border: 1px solid var(--gold);
+            padding: 15px;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 6px;
+        }
+        .output-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            color: var(--gold);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>GY-GY Club | Hotspot Coordinate Debugger</h1>
+    <div class="instructions">
+        Кликните в любую точку на изображении ниже. На месте клика появится фиолетовый маркер, а в поле снизу автоматически сформируются готовые CSS-стили в процентах (`left` / `top` / `bottom`).
+    </div>
+
+    <div class="controls-top">
+        <label>Файл фона:</label>
+        <input type="text" id="bg-path" value="hall_bg.jpg">
+        <button class="btn" onclick="updateImage()">Загрузить</button>
+        <button class="btn" onclick="clearMarkers()">Очистить точки</button>
+    </div>
+
+    <div class="debugger-container" id="debuggerBox">
+        <img id="targetImage" src="hall_bg.jpg" alt="Background">
+    </div>
+
+    <div class="panel">
+        <div class="output-row">
+            <span>Сгенерированный CSS-код для точек:</span>
+            <button class="btn" onclick="copyToClipboard()">Копировать всё</button>
+        </div>
+        <textarea id="coordsOutput" readonly placeholder="Кликайте по картинке для получения координат..."></textarea>
+    </div>
+
+    <script>
+        const box = document.getElementById('debuggerBox');
+        const img = document.getElementById('targetImage');
+        const output = document.getElementById('coordsOutput');
+        const bgInput = document.getElementById('bg-path');
+        
+        let points = [];
+
+        function updateImage() {
+            img.src = bgInput.value;
+            clearMarkers();
+        }
+
+        box.addEventListener('click', function(e) {
+            const rect = box.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            // Вычисляем проценты (адаптивно к размеру экрана)
+            const percentX = ((clickX / rect.width) * 100).toFixed(2);
+            const percentY = ((clickY / rect.height) * 100).toFixed(2);
+            const percentBottom = (((rect.height - clickY) / rect.height) * 100).toFixed(2);
+
+            // Визуальный маркер
+            const marker = document.createElement('div');
+            marker.className = 'marker';
+            marker.style.left = `${clickX}px`;
+            marker.style.top = `${clickY}px`;
+            box.appendChild(marker);
+
+            // Формируем сниппет
+            const snippet = `/* Точка #${points.length + 1} */\nleft: ${percentX}%;\ntop: ${percentY}%; /* или bottom: ${percentBottom}% */\n\n`;
+            
+            points.push(snippet);
+            output.value = points.join('');
+            output.scrollTop = output.scrollHeight;
+        });
+
+        function clearMarkers() {
+            document.querySelectorAll('.marker').forEach(m => m.remove());
+            points = [];
+            output.value = '';
+        }
+
+        function copyToClipboard() {
+            output.select();
+            document.execCommand('copy');
+            alert('Координаты скопированы в буфер обмена!');
+        }
+    </script>
+</body>
+</html>
