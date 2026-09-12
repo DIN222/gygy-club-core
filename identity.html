@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <!--
   identity.html
-  v1.3.0 — 2026-08-26
-  Изменения: (1) ID и QR остались в общем ряду сетки, но с лёгкой заливкой
-  и подписью "Служебная инфо" — сигнал "не нужно вмешиваться, это автоматика";
-  (2) исправлен баг, при котором оба варианта ника (свой/клубный) могли
-  выглядеть одновременно выбранными — состояние выбора устанавливается явно
-  при каждой загрузке страницы.
+  v1.4.0 — 2026-08-26
+  Изменения: верхние блоки с никами приведены к единому паттерну поведения
+  с блоками фото/аватара (активный показывает поле/значение и скрывает метку,
+  неактивный — наоборот).
 -->
 <html lang="en">
 <head>
@@ -149,14 +147,14 @@
 
 <div class="identity-grid">
     <div class="identity-row">
-        <div class="id-box selected" id="box-own-nick">
-            <span class="label" data-translate="nick_own">OR YOUR NICK</span>
-            <input type="text" id="input-own-nick" placeholder="Enter nick">
+        <div class="id-box" id="box-own-nick">
+            <span class="label" id="txt-own-nick" data-translate="nick_own">OR YOUR NICK</span>
+            <input type="text" id="input-own-nick" placeholder="Enter nick" style="display:none;">
         </div>
         <div class="id-box" id="box-club-nick">
             <button class="reroll-btn" id="btn-reroll-nick" title="Другой вариант">⟳</button>
-            <span class="label" data-translate="nick_club">OR CLUB NICK</span>
-            <span class="value" id="club-nick-label"></span>
+            <span class="label" id="txt-club-nick" data-translate="nick_club">OR CLUB NICK</span>
+            <span class="value" id="club-nick-label" style="display:none;"></span>
         </div>
     </div>
     <div class="identity-row">
@@ -206,6 +204,8 @@
     const boxOwnNick = document.getElementById('box-own-nick');
     const boxClubNick = document.getElementById('box-club-nick');
     const inputOwnNick = document.getElementById('input-own-nick');
+    const txtOwnNick = document.getElementById('txt-own-nick');
+    const txtClubNick = document.getElementById('txt-club-nick');
     const clubNickLabel = document.getElementById('club-nick-label');
     const idLabel = document.getElementById('id-label');
     const qrBox = document.getElementById('qr-box');
@@ -217,9 +217,28 @@
 
     clubNickLabel.textContent = previewClubNick;
 
+    function setNickType(type) {
+        selectedNickType = type;
+        boxOwnNick.classList.toggle('selected', type === 'own');
+        boxClubNick.classList.toggle('selected', type === 'club');
+
+        if (type === 'own') {
+            inputOwnNick.style.display = 'block';
+            txtOwnNick.style.display = 'none';
+            clubNickLabel.style.display = 'none';
+            txtClubNick.style.display = 'block';
+        } else {
+            inputOwnNick.style.display = 'none';
+            txtOwnNick.style.display = 'block';
+            clubNickLabel.style.display = 'block';
+            txtClubNick.style.display = 'none';
+        }
+    }
+
     if (existing) {
         idLabel.textContent = existing.id;
         inputOwnNick.value = existing.nickname || '';
+        selectedNickType = existing.nicknameType || 'own';
         if (existing.avatar) {
             const target = currentAvatarSource === 'generated' ? avatarPreview : photoPreview;
             const targetTxt = currentAvatarSource === 'generated' ? txtAvatar : txtPhoto;
@@ -228,9 +247,9 @@
             targetTxt.style.display = 'none';
         }
         renderQr(existing.id);
-    } else {
-        idLabel.textContent = '#ID';
     }
+
+    setNickType(selectedNickType);
 
     function renderQr(id) {
         qrBox.innerHTML = '';
@@ -239,20 +258,15 @@
         }
     }
 
-    function setNickType(type) {
-        selectedNickType = type;
-        boxOwnNick.classList.toggle('selected', type === 'own');
-        boxClubNick.classList.toggle('selected', type === 'club');
-    }
-
-    setNickType(selectedNickType);
-
     boxOwnNick.addEventListener('click', (e) => {
         if (e.target === inputOwnNick) return;
         setNickType('own');
         inputOwnNick.focus();
     });
-    boxClubNick.addEventListener('click', () => setNickType('club'));
+    boxClubNick.addEventListener('click', (e) => {
+        if (e.target.id === 'btn-reroll-nick') return;
+        setNickType('club');
+    });
 
     document.getElementById('btn-reroll-nick').addEventListener('click', (e) => {
         e.stopPropagation();
