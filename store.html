@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GY-GY Club | Antique Store 001 </title>
+    <title>GY-GY Club | Antique Store 002 </title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #FFD700; }
@@ -16,12 +16,13 @@
             font-family: 'Share Tech Mono', monospace;
         }
 
-        /* Фоновый слой магазина */
+        /* Фоновый слой во весь экран с точным покрытием 100% x 100% */
         #store-bg {
             position: fixed;
             inset: 0;
             z-index: 0;
-            background: url('Store 0.png') center/contain no-repeat;
+            background: url('Store 0.png') no-repeat;
+            background-size: 100% 100%; /* Растягивает картинку ровно на весь экран */
             background-color: #000;
         }
 
@@ -33,7 +34,7 @@
             z-index: 10;
         }
 
-        /* Анимация пульсации ромашек (как в hall.html) */
+        /* Анимация пульсации ромашек */
         .hotspot {
             font-size: 20px;
             display: inline-block;
@@ -54,14 +55,14 @@
             opacity: 1;
         }
 
-        /* --- КООРДИНАТЫ ЗОН И РОМАШЕК НА МАКЕТЕ --- */
+        /* --- КООРДИНАТЫ ЗОН НА ПОЛНОЭКРАННОЙ КАРТИНКЕ --- */
         /* Верхнее меню */
         .zone-catalog    { top: 11%; left: 28%; width: 9%; height: 6%; }
         .zone-membership { top: 11%; left: 39%; width: 12%; height: 6%; }
         .zone-speaking   { top: 11%; left: 54%; width: 13%; height: 6%; }
         .zone-about      { top: 11%; left: 69%; width: 11%; height: 6%; }
 
-        /* Левые категории (KATEGORIY ARTEGORTES) */
+        /* Левые категории */
         .zone-glass      { top: 35%; left: 4%; width: 18%; height: 9%; }
         .zone-porcelain  { top: 47%; left: 4%; width: 18%; height: 9%; }
         .zone-fabric     { top: 59%; left: 4%; width: 18%; height: 9%; }
@@ -81,10 +82,10 @@
 </head>
 <body>
 
-    <!-- Фоновый слой -->
+    <!-- Фоновый слой на весь экран -->
     <div id="store-bg"></div>
 
-    <!-- Интерактивные зоны с пульсирующими ромашками -->
+    <!-- Интерактивные зоны с ромашками -->
     <div class="store-zone zone-catalog" onclick="alert('Вы в каталоге реликвий Лавки древностей')">
         <span class="hotspot">🌼</span>
     </div>
