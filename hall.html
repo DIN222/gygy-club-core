@@ -1,16 +1,9 @@
 <!DOCTYPE html>
 <!--
   hall.html
-  v1.4.0 — 2026-08-26
-  Изменения: фон вынесен в отдельный слой (#hall-bg) с CSS-фильтром
-  contrast/saturate/brightness — картинка выглядит контрастнее и живее без
-  замены самого файла. Если проблема была в размытости (а не в тусклости) —
-  фильтром это не лечится, нужен исходник более высокого качества.
-
-  Холл клуба: винтажная фотография как фон, поверх которой минимальное ядро —
-  4 навигационные зоны (AI Room, Office, Studio, вход в Bar). Остальные элементы
-  фотографии (табло, проектор и т.д.) — задел на будущее, станут интерактивными
-  по мере развития, без изменения этого ядра (см. CONTRACT.md п.7 — тонкие страницы).
+  v1.5.2 — 2026-09-13
+  Изменения: добавлена зона zone-store (Лавка древностей) и переход на store.html.
+  Ромашки возвращены к оригинальному стилю анимации.
 -->
 <html lang="en">
 <head>
@@ -34,16 +27,9 @@
         background: #000000;
     }
 
-    /* Фон вынесен в отдельный слой (для будущей гибкости — при желании можно
-       снова добавить фильтр). Картинка заменена на Halld1.png — новая,
-       уже отредактированная пользователем версия. Обычный cover вместо
-       прежнего зумирования 75%: старая хитрость была нужна только чтобы
-       "отодвинуть" СТАРУЮ обрезанную картинку и открыть потолок с проектором.
-       Фильтр contrast/saturate убран — он был подобран под старое тусклое
-       фото и давал красноватый оттенок на уже хорошо откорректированном новом. */
     #hall-bg {
         position: fixed; inset: 0; z-index: 0;
-       background: url('Нalld2.png') center/85% auto no-repeat;;
+        background: url('Нalld2.png') center/85% auto no-repeat;
     }
 
     .header-right {
@@ -90,6 +76,7 @@
         z-index: 6;
     }
 
+    /* Оригинальный стиль хотспотов (ромашек) */
     .hotspot {
         font-size: 22px;
         display: inline-block;
@@ -122,18 +109,16 @@
     }
     .hall-zone:hover .zone-label { opacity: 1; }
 
+    /* Координаты зон */
     .zone-ai-room   { top: 28.41%; left: 41.43%; width: 6vw; height: 10vh; }
     .zone-office    { top: 45.45%; left: 41.54%; width: 6vw; height: 10vh; }
-    .zone-studio    { top: 31.68%; ; left: 61.54%;; width: 6vw; height: 10vh; }
+    .zone-studio    { top: 31.68%; left: 61.54%; width: 6vw; height: 10vh; }
     .zone-lift-door { top: 30.87%; left: 58.99%; width: 8vw; height: 20vh; }
-    .zone-bar {
-        bottom: 3vh; left: 50%; transform: translateX(-50%);
-        width: 10vw; height: 8vh;
-    }
-    .zone-projector {
-        top: 6vh; left: 50%; transform: translateX(-50%);
-        width: 8vw; height: 6vh;
-    }
+    .zone-bar       { bottom: 3vh; left: 50%; transform: translateX(-50%); width: 10vw; height: 8vh; }
+    .zone-projector { top: 6vh; left: 50%; transform: translateX(-50%); width: 8vw; height: 6vh; }
+    
+    /* Зона Лавки древностей */
+    .zone-store     { top: 55.00%; left: 25.00%; width: 8vw; height: 12vh; }
 
     .gy-passport-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
@@ -206,6 +191,12 @@
     <span class="zone-label">LIFT</span>
 </div>
 
+<!-- Лавка древностей -->
+<div class="hall-zone zone-store" id="zone-store">
+    <span class="hotspot">🌼</span>
+    <span class="zone-label">ANTIQUE STORE</span>
+</div>
+
 <script type="module">
     import { init as initLocalization } from './core/localization.js';
     import { init as initPassport } from './modules/passport.js';
@@ -223,6 +214,9 @@
     });
     document.getElementById('zone-bar').addEventListener('click', () => goToPage('bar.html', { sound: 'door' }));
     document.getElementById('zone-lift-door').addEventListener('click', () => goToPage('lift.html'));
+    
+    // Переход в Лавку древностей
+    document.getElementById('zone-store').addEventListener('click', () => goToPage('store.html'));
 
     document.getElementById('zone-projector').addEventListener('click', () => {
         console.log('[Hall] Проектор: содержимое табло пока не определено.');
