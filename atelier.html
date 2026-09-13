@@ -78,7 +78,7 @@
     .config-body { display: flex; gap: 14px; margin-top: 10px; }
     .frame-col { flex: 0 0 200px; }
     .buttons-col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-
+  
     .preview-frame {
         width: 200px; height: 240px; border: 2px solid #000; background: #fff;
         position: relative; display: flex; align-items: center; justify-content: center;
@@ -175,7 +175,7 @@
 
         <div class="config-body">
             <div class="frame-col">
-                <div class="preview-frame" id="preview-frame">
+               <div class="preview-frame" id="preview-frame">
                     <span class="size-badge" id="size-badge">M</span>
                     <!-- SVG силуэта рендерится сюда скриптом -->
                 </div>
@@ -193,7 +193,7 @@
                 </div>
             </div>
 
-            <div class="buttons-col">
+             <div class="buttons-col">
                 <button class="btn-cfg" id="btn-cycle-club">① CYCLE 5 CLUB PRINTS</button>
                 <button class="btn-cfg" id="btn-upload-own">② UPLOAD YOUR OWN</button>
                 <button class="btn-cfg" id="btn-open-prompt">③ GENERATE PROMPT HERE</button>
@@ -273,7 +273,7 @@
     };
 
     function renderSilhouette(type, color) {
-        const frame = document.getElementById('preview-frame');
+        const frame = document.getElementById('preview-frame');  const frame = document.getElementById('preview-frame');
         let svgEl = frame.querySelector('svg.garment-svg');
         if (!svgEl) {
             frame.insertAdjacentHTML('afterbegin', `<svg class="garment-svg" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg"></svg>`);
@@ -317,7 +317,7 @@
                 span.className = 'print-overlay-emoji';
                 span.textContent = state.currentPrint.design;
                 span.style.fontSize = scaleSizePx + 'px';
-                document.getElementById('preview-frame').appendChild(span);
+                document.getElementById('preview-frame').appendChild(span);   
             }
         }
 
@@ -330,7 +330,7 @@
     }
 
     function calculatePrice() {
-        let p = BASE_PRICE[state.type] || 0;
+        let p = BASE_PRICE[state.type] || 0;    
         if (state.currentPrint) p += SCALE_PRICE[state.scale] || 0;
         return p;
     }
