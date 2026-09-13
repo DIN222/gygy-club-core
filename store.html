@@ -125,7 +125,7 @@
         .zone-speaking   { top: 11%; left: 54%; width: 13%; height: 6%; }
         .zone-about      { top: 11%; left: 69%; width: 11%; height: 6%; }
 
-        /* Категории слева (вход в базу пользователя) */
+        /* Категории слева */
         .zone-glass      { top: 35%; left: 4%; width: 18%; height: 9%; }
         .zone-porcelain  { top: 47%; left: 4%; width: 18%; height: 9%; }
         .zone-fabric     { top: 59%; left: 4%; width: 18%; height: 9%; }
@@ -175,27 +175,6 @@
             border: 2px solid #5a3e1b; padding: 8px; font-size: 11px; font-weight: bold;
             cursor: pointer; border-radius: 4px; text-align: center; width: 100%; margin-top: 5px;
         }
-        
-        /* Сетка выбора фото из базы данных папки */
-        .db-folder-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            max-height: 120px;
-            overflow-y: auto;
-            border: 1px solid #5a3e1b;
-            padding: 5px;
-            background: #fff;
-            border-radius: 3px;
-        }
-        .db-folder-thumb {
-            width: 100%; height: 50px; object-fit: cover; cursor: pointer;
-            border: 2px solid transparent; border-radius: 2px;
-        }
-        .db-folder-thumb:hover, .db-folder-thumb.selected {
-            border-color: #782814;
-            transform: scale(1.03);
-        }
     </style>
 </head>
 <body>
@@ -207,7 +186,7 @@
     <div class="central-display" id="centralDisplay">
         <img id="artifactImg" src="" alt="Artifact" style="display:none;">
         <h3 id="artifactTitle">Выберите реликвию слева</h3>
-        <p id="artifactDesc">Нажмите на любую ромашку в левой колонке «KATEGORIY ARTEGORTES», чтобы открыть вашу базу артефактов.</p>
+        <p id="artifactDesc">Нажмите на любую ромашку в левой колонке «KATEGORIY ARTEGORTES», чтобы выбрать артефакт из базы.</p>
     </div>
 
     <!-- Оверлей названия -->
@@ -225,7 +204,7 @@
     <div class="store-zone zone-speaking" onclick="alert('Связь с Мастером Юмора активна')"><span class="hotspot">🌼</span></div>
     <div class="store-zone zone-about" onclick="alert('Строго винтаж до 1990 года.')"><span class="hotspot">🌼</span></div>
 
-    <!-- КАТЕГОРИИ СЛЕВА (Вход в базу пользователя) -->
+    <!-- КАТЕГОРИИ СЛЕВА (Вход в базу) -->
     <div class="store-zone zone-glass" onclick="openDatabaseModal('glass')"><span class="hotspot">🌼</span></div>
     <div class="store-zone zone-porcelain" onclick="openDatabaseModal('porcelain')"><span class="hotspot">🌼</span></div>
     <div class="store-zone zone-fabric" onclick="openDatabaseModal('fabric')"><span class="hotspot">🌼</span></div>
@@ -238,21 +217,21 @@
     <div class="store-zone zone-reviews" onclick="openReviewsModal()"><span class="hotspot">🌼</span></div>
     <div class="store-zone zone-back" onclick="location.href='hall.html'" title="В Холл"><span class="hotspot">🌼</span></div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: БАЗА АРТЕФАКТОВ ПОЛЬЗОВАТЕЛЯ -->
+    <!-- МОДАЛЬНОЕ ОКНО: БАЗА АРТЕФАКТОВ -->
     <div class="modal-overlay" id="dbModal">
         <div class="modal-card">
             <span class="modal-close" onclick="closeDbModal()">&times;</span>
-            <h3 id="dbModalTitle">Ваша база артефактов</h3>
+            <h3 id="dbModalTitle">База артефактов</h3>
             <div id="dbItemsList" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px;"></div>
-            <button class="action-btn" onclick="openSellModal(); closeDbModal();">+ Добавить новый артефакт в базу</button>
+            <button class="action-btn" onclick="openSellModal(); closeDbModal();">+ Добавить свой артефакт</button>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ДОБАВИТЬ В БАЗУ С ВЫБОРОМ ФОТО ИЗ ПАПОК БАЗЫ -->
+    <!-- МОДАЛЬНОЕ ОКНО: ДОБАВИТЬ В БАЗУ -->
     <div class="modal-overlay" id="sellModal">
         <div class="modal-card">
             <span class="modal-close" onclick="closeSellModal()">&times;</span>
-            <h3>Добавить реликвию в свою базу</h3>
+            <h3>Добавить реликвию в базу</h3>
             <p style="font-size: 10px; margin-bottom: 8px; color: #555;">⚠️ Винтажный контроль: создание строго до 1990 года.</p>
             <div class="form-group"><label>Название:</label><input type="text" id="newName" placeholder="Напр. Подстаканник"></div>
             <div class="form-group"><label>Категория:</label>
@@ -266,18 +245,9 @@
             </div>
             <div class="form-group"><label>Год создания (&lt; 1990):</label><input type="number" id="newYear" placeholder="1975"></div>
             <div class="form-group"><label>Цена:</label><input type="number" id="newPrice" placeholder="100"></div>
-            <div class="form-group"><label>Описание:</label><textarea id="newDesc" rows="2" placeholder="Историческая справка..."></textarea></div>
-            
-            <!-- Выбор фото из папок базы данных пользователя -->
-            <div class="form-group">
-                <label>Выберите фото из папки базы данных:</label>
-                <input type="hidden" id="selectedDbImgPath" value="database/artifacts/default.png">
-                <div class="db-folder-grid" id="dbFolderGrid">
-                    <!-- Заполняется скриптом из папки базы -->
-                </div>
-            </div>
-
-            <button class="action-btn" onclick="saveArtifactToDatabase()">Сохранить в базу</button>
+            <div class="form-group"><label>Описание (система сгенерирует или ваше):</label><textarea id="newDesc" rows="2" placeholder="Историческая справка..."></textarea></div>
+            <div class="form-group"><label>Ссылка на картинку (URL):</label><input type="text" id="newImg" placeholder="https://..."></div>
+            <button class="action-btn" onclick="saveArtifactToDatabase()">Сохранить</button>
         </div>
     </div>
 
@@ -295,37 +265,28 @@
     </div>
 
     <script>
-        // Предустановленные пути к фото в папках базы данных артефактов
-        const databaseFolderImages = [
-            "database/artifacts/glass_1.png",
-            "database/artifacts/porcelain_1.png",
-            "database/artifacts/fabric_1.png",
-            "database/artifacts/metal_1.png",
-            "database/artifacts/tech_1.png",
-            "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300",
-            "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300",
-            "https://images.unsplash.com/photo-1544816155-12df9643f363?w=300"
+        // Встроенная база данных реликвий (работает сразу без внешних папок)
+        const defaultDatabase = [
+            { id: 1, name: "Хрустальный бокал Чарли", category: "glass", year: 1978, price: 120, img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300", desc: "Ретро-бокал из бара основателей клуба. Сохранил легкий дух 70-х." },
+            { id: 2, name: "Граненый стакан СССР", category: "glass", year: 1980, price: 45, img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300", desc: "Классика советского общепита повышенной прочности." },
+            { id: 3, name: "Фарфоровый конь", category: "porcelain", year: 1965, price: 340, img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300", desc: "Статуэтка смеющегося коня. Тончайшая работа мастеров старой школы." },
+            { id: 4, name: "Чайный сервиз 'Мальвина'", category: "porcelain", year: 1975, price: 280, img: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=300", desc: "Костяной фарфор с золотым ручным тиснением." },
+            { id: 5, name: "Карта подземелий клуба", category: "fabric", year: 1950, price: 95, img: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=300", desc: "Бумажный артефакт на пожелтевшем пергаменте с метками тайных ходов." },
+            { id: 6, name: "Винтажный гобелен", category: "fabric", year: 1972, price: 180, img: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=300", desc: "Тканевый артефакт с вышивкой эпохи развитого гаражного соцреализма." },
+            { id: 7, name: "Шестеренка от паровоза", category: "metal", year: 1920, price: 210, img: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=300", desc: "Надежная сталь начала века. Выдержала испытание временем." },
+            { id: 8, name: "Медный подстаканник", category: "metal", year: 1968, price: 110, img: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=300", desc: "С заводским клеймом. Идеален под горячий чай." },
+            { id: 9, name: "Ламповый процессор", category: "tech", year: 1985, price: 500, img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300", desc: "Ретро-микросхема с ручной пайкой. Теплый ламповый разум." },
+            { id: 10, name: "Калькулятор Электроника", category: "tech", year: 1988, price: 150, img: "https://images.unsplash.com/photo-1592659762303-90081d34b277?w=300", desc: "Легендарный советский калькулятор на ярких индикаторах." }
         ];
+
+        // Инициализация базы в localStorage при первом запуске
+        if (!localStorage.getItem('gy_user_artifacts')) {
+            localStorage.setItem('gy_user_artifacts', JSON.stringify(defaultDatabase));
+        }
 
         let activeItem = null;
 
-        // Инициализация сетки выбора фото из папок базы при загрузке модалки
-        function initFolderGrid() {
-            let grid = document.getElementById('dbFolderGrid');
-            grid.innerHTML = '';
-            databaseFolderImages.forEach((path, index) => {
-                grid.innerHTML += `<img src="${path}" class="db-folder-thumb ${index === 0 ? 'selected' : ''}" onclick="selectFolderImage('${path}', this)" alt="db img" onerror="this.src='https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300'">`;
-            });
-            document.getElementById('selectedDbImgPath').value = databaseFolderImages[0];
-        }
-
-        function selectFolderImage(path, el) {
-            document.querySelectorAll('.db-folder-thumb').forEach(t => t.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('selectedDbImgPath').value = path;
-        }
-
-        // Открытие базы пользователя через левую ромашку категории
+        // Открытие базы через ромашку категории слева
         function openDatabaseModal(category) {
             let userBase = JSON.parse(localStorage.getItem('gy_user_artifacts') || '[]');
             let filtered = userBase.filter(i => i.category === category);
@@ -337,7 +298,7 @@
             listContainer.innerHTML = '';
 
             if (filtered.length === 0) {
-                listContainer.innerHTML = `<p style="text-align:center; padding:15px; color:#555;">В этой категории пока нет артефактов.<br>Нажмите кнопку ниже, чтобы добавить.</p>`;
+                listContainer.innerHTML = `<p style="text-align:center; padding:15px; color:#555;">В этой категории пока нет артефактов.</p>`;
             } else {
                 filtered.forEach(item => {
                     listContainer.innerHTML += `
@@ -357,7 +318,7 @@
 
         function closeDbModal() { document.getElementById('dbModal').style.display = 'none'; }
 
-        // Выбор артефакта из базы -> демонстрация в большом окне
+        // Выбор артефакта -> демонстрация в большом окне, системе выдает название и описание
         function selectArtifactFromDb(item) {
             activeItem = item;
             
@@ -374,30 +335,27 @@
             closeDbModal();
         }
 
-        // Назначение цены юзером
+        // Пользователь сам назначает цену
         function updateUserPrice(newPrice) {
             if (activeItem) {
                 activeItem.price = parseInt(newPrice) || 0;
             }
         }
 
-        function openSellModal() { 
-            initFolderGrid();
-            document.getElementById('sellModal').style.display = 'flex'; 
-        }
+        function openSellModal() { document.getElementById('sellModal').style.display = 'flex'; }
         function closeSellModal() { document.getElementById('sellModal').style.display = 'none'; }
         
         function openReviewsModal() { document.getElementById('reviewsModal').style.display = 'flex'; }
         function closeReviewsModal() { document.getElementById('reviewsModal').style.display = 'none'; }
 
-        // Сохранение нового артефакта с фото из базы данных папок
+        // Сохранение нового артефакта с проверкой до 1990 г.
         function saveArtifactToDatabase() {
             let name = document.getElementById('newName').value.trim();
             let cat = document.getElementById('newCategory').value;
             let year = parseInt(document.getElementById('newYear').value);
             let price = parseInt(document.getElementById('newPrice').value) || 100;
-            let desc = document.getElementById('newDesc').value.trim() || "Винтажный раритет из личной базы резидента.";
-            let imgPath = document.getElementById('selectedDbImgPath').value;
+            let desc = document.getElementById('newDesc').value.trim() || "Винтажный раритет из личной коллекции.";
+            let img = document.getElementById('newImg').value.trim();
 
             if (!name || !year) {
                 alert('Заполните название и год создания!');
@@ -415,7 +373,7 @@
                 category: cat,
                 year: year,
                 price: price,
-                img: imgPath,
+                img: img || "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300",
                 desc: desc
             };
 
@@ -423,7 +381,7 @@
             userBase.push(newItem);
             localStorage.setItem('gy_user_artifacts', JSON.stringify(userBase));
 
-            alert('✅ Артефакт успешно сохранен в вашу базу!');
+            alert('✅ Артефакт успешно сохранен в базу!');
             closeSellModal();
             selectArtifactFromDb(newItem);
         }
