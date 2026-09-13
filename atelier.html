@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v3.0.0 — 2026-08-26
-  ПОЛНАЯ РЕАЛИЗАЦИЯ спецификации: единый экран конфигурации (не мастер из
-  отдельных шагов — та версия отменена). SVG-силуэты одежды (лёгкие, не
-  фото), рамка = силуэт+принт, 5 кнопок сбоку, категории принтов скрыты от
-  UI но пишутся в данные заказа для Офиса, конструктор промпта (Режим А,
-  без API), дискретные пресеты масштаба принта с переводом в см.
+  v3.1.0 — 2026-08-26
+  Изменения: (1) исправлена кликабельность зон (явный pointer-events:auto,
+  проверенная структура слоёв); (2) круглый classic crew-neck вырез вместо
+  модного; (3) более узнаваемые силуэты одежды; (4) добавлена плотность
+  ткани (160-180 г/м²) и состав (100% хлопок / 95% хлопок+5% эластан);
+  (5) масштаб принта синхронизирован с размером одежды (визуальный
+  коэффициент по S/M/L/XL/XXL); (6) кнопки сжаты по содержимому, свободное
+  место отдано под увеличенное превью одежды+принта; (7) Atelier94.png.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v3.0.0</title>
+<title>GY-GY Club — Atelier v3.1.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -23,18 +25,23 @@
         overflow: hidden; position: fixed; font-family: 'Share Tech Mono', monospace;
     }
     #atelier-bg {
-        position: fixed; inset: 0; z-index: 0;
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
         background: url('Atelier94.png') center/cover no-repeat;
     }
-    .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; }
+    .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
     .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
-    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; }
+    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; pointer-events: auto; }
     .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
     .gy-user-badge { position: fixed; top: 4px; left: 50%; transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; display: none; z-index: 1000; }
     .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
 
-    .zone { position: absolute; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
+    /* Активные зоны — явный pointer-events:auto и z-index выше фона */
+    .zone {
+        position: absolute; cursor: pointer; z-index: 10;
+        display: flex; align-items: center; justify-content: center;
+        pointer-events: auto;
+    }
     .hotspot {
         font-size: 20px; display: inline-block;
         filter: drop-shadow(0 0 4px rgba(255,215,0,0.7));
@@ -61,70 +68,68 @@
     /* ===== Единый экран конфигурации ===== */
     .config-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 2000;
-        display: none; align-items: center; justify-content: center; opacity: 0;
-        transition: opacity 0.3s ease; overflow-y: auto; padding: 20px;
+        display: none; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.3s ease; overflow-y: auto; padding: 16px;
+        pointer-events: auto;
     }
     .config-card {
         background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
-        padding: 20px; width: 640px; max-width: 95vw; color: #000; position: relative;
+        padding: 16px; width: 600px; max-width: 96vw; color: #000; position: relative;
         font-family: 'Share Tech Mono', monospace;
     }
-    .config-close { position: absolute; top: 8px; right: 12px; font-size: 26px; cursor: pointer; }
-    .config-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; margin-bottom: 12px; text-align: center; }
+    .config-close { position: absolute; top: 6px; right: 10px; font-size: 24px; cursor: pointer; }
+    .config-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 14px; margin-bottom: 8px; text-align: center; }
 
-    .garment-picker { display: flex; gap: 8px; margin-bottom: 10px; }
-    .garment-picker select { flex: 1; padding: 6px; border: 1px solid #000; font-family: inherit; font-size: 11px; }
+    .garment-picker { display: flex; gap: 6px; margin-bottom: 6px; }
+    .garment-picker select { flex: 1; padding: 5px; border: 1px solid #000; font-family: inherit; font-size: 10px; }
 
-    .config-body { display: flex; gap: 14px; margin-top: 10px; }
-    .frame-col { flex: 0 0 200px; }
-    .buttons-col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-  
+    .fabric-info { font-size: 9px; opacity: 0.7; margin-bottom: 8px; text-align: center; }
+
+    .config-body { display: flex; gap: 10px; margin-top: 6px; }
+    /* Кнопки сжаты по содержимому (flex:0 0 auto), свободное место — рамке */
+    .buttons-col { flex: 0 0 150px; display: flex; flex-direction: column; gap: 5px; }
+    .frame-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+
     .preview-frame {
-        width: 200px; height: 240px; border: 2px solid #000; background: #fff;
+        width: 100%; max-width: 320px; height: 320px; border: 2px solid #000; background: #fff;
         position: relative; display: flex; align-items: center; justify-content: center;
         overflow: hidden;
     }
-    .preview-frame svg { width: 140px; height: 200px; }
+    .preview-frame svg.garment-svg { width: 220px; height: 300px; }
     .size-badge {
         position: absolute; top: 6px; right: 6px; background: var(--gold);
         color: #000; font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px;
     }
-    .print-overlay-img {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        pointer-events: none;
-    }
-    .print-overlay-emoji {
+    .print-overlay-img, .print-overlay-emoji {
         position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         pointer-events: none;
     }
 
     .btn-cfg {
         background: #000; color: var(--gold); border: 2px solid var(--gold);
-        padding: 7px 10px; cursor: pointer; font-weight: 700; text-transform: uppercase;
-        font-family: 'Share Tech Mono', monospace; font-size: 10px; text-align: left;
+        padding: 6px 8px; cursor: pointer; font-weight: 700; text-transform: uppercase;
+        font-family: 'Share Tech Mono', monospace; font-size: 9px; text-align: left;
     }
     .btn-cfg:hover:not(:disabled) { filter: brightness(1.2); }
     .btn-cfg:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-cfg.confirm { background: #1a4; border-color: #1a4; color: #fff; text-align: center; }
 
-    .scale-row, .position-row { display: flex; gap: 6px; margin-top: 4px; }
-    .scale-row select, .position-row select { flex: 1; padding: 4px; font-size: 10px; border: 1px solid #000; }
-    .small-label { font-size: 8px; font-weight: 700; opacity: 0.7; }
+    .position-row { display: flex; gap: 6px; margin-top: 6px; width: 100%; max-width: 320px; }
+    .position-row select { flex: 1; padding: 4px; font-size: 10px; border: 1px solid #000; }
 
-    .order-info { font-size: 10px; margin-top: 10px; padding: 8px; background: #fff; border: 1px solid #000; }
-    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 18px; text-align: center; margin-top: 8px; }
-    .status-line { font-size: 11px; color: #2a6; text-align: center; margin-top: 6px; min-height: 14px; }
+    .order-info { font-size: 10px; margin-top: 8px; padding: 6px; background: #fff; border: 1px solid #000; }
+    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 16px; text-align: center; margin-top: 6px; }
+    .status-line { font-size: 10px; color: #2a6; text-align: center; margin-top: 4px; min-height: 14px; }
 
-    /* Конструктор промпта — вложенная под-панель */
-    .prompt-builder { display: none; margin-top: 10px; padding: 10px; background: #fff; border: 1px dashed #000; }
+    .prompt-builder { display: none; margin-top: 6px; padding: 8px; background: #fff; border: 1px dashed #000; }
     .prompt-builder.open { display: block; }
-    .prompt-builder select, .prompt-builder input { width: 100%; padding: 5px; margin-bottom: 6px; font-size: 10px; border: 1px solid #000; }
-    .prompt-output { font-size: 10px; background: #eee; padding: 8px; margin-top: 6px; word-break: break-word; user-select: all; }
+    .prompt-builder select, .prompt-builder input { width: 100%; padding: 4px; margin-bottom: 5px; font-size: 9px; border: 1px solid #000; }
+    .prompt-output { font-size: 9px; background: #eee; padding: 6px; margin-top: 5px; word-break: break-word; user-select: all; }
 
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
         display: none; align-items: center; justify-content: center; opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.3s ease; pointer-events: auto;
     }
     .modal-card {
         background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
@@ -152,7 +157,6 @@
 <div class="zone zone-phone" id="zone-phone"><span class="hotspot">🌼</span><span class="zone-label">CALL FOR HELP</span></div>
 <div class="zone zone-monitor" id="zone-monitor"><span class="hotspot">🌼</span><span class="zone-label">???</span></div>
 
-<!-- ===== ЕДИНЫЙ ЭКРАН КОНФИГУРАЦИИ ===== -->
 <div class="config-overlay" id="config-overlay">
     <div class="config-card">
         <span class="config-close" data-close>&times;</span>
@@ -173,11 +177,44 @@
             </select>
         </div>
 
+        <div class="garment-picker">
+            <select id="select-fabric-density">
+                <option value="160-180">FABRIC: 160–180 g/m² (standard weight)</option>
+            </select>
+            <select id="select-fabric-composition">
+                <option value="cotton100">100% COTTON</option>
+                <option value="stretch">STRETCH (95% cotton / 5% elastane)</option>
+            </select>
+        </div>
+
         <div class="config-body">
+            <div class="buttons-col">
+                <button class="btn-cfg" id="btn-cycle-club">① CYCLE 5 CLUB PRINTS</button>
+                <button class="btn-cfg" id="btn-upload-own">② UPLOAD OWN</button>
+                <button class="btn-cfg" id="btn-open-prompt">③ GENERATE PROMPT</button>
+                <button class="btn-cfg" id="btn-exchange" disabled>④ SPEND → +5 CLUB</button>
+                <button class="btn-cfg confirm" id="btn-confirm">⑤ CONFIRM ORDER</button>
+
+                <div class="prompt-builder" id="prompt-builder">
+                    <span style="font-size:8px; font-weight:700; opacity:0.7;">PROMPT BUILDER (no API — copy to any AI image tool)</span>
+                    <select id="pb-mood">
+                        <option value="rebellion">Rebellion / Bold</option>
+                        <option value="motivation">Motivation</option>
+                        <option value="intellect">Intellect</option>
+                        <option value="aesthetic">Aesthetic</option>
+                        <option value="nostalgia">Nostalgia</option>
+                    </select>
+                    <input type="text" id="pb-idea" placeholder="Describe your idea...">
+                    <button class="btn-cfg" id="btn-build-prompt" style="width:100%; text-align:center;">BUILD PROMPT</button>
+                    <div class="prompt-output" id="prompt-output" style="display:none;"></div>
+                </div>
+
+                <input type="file" id="file-input" accept="image/*" style="display:none;">
+            </div>
+
             <div class="frame-col">
-               <div class="preview-frame" id="preview-frame">
+                <div class="preview-frame" id="preview-frame">
                     <span class="size-badge" id="size-badge">M</span>
-                    <!-- SVG силуэта рендерится сюда скриптом -->
                 </div>
                 <div class="position-row">
                     <select id="select-position">
@@ -192,30 +229,6 @@
                     </select>
                 </div>
             </div>
-
-             <div class="buttons-col">
-                <button class="btn-cfg" id="btn-cycle-club">① CYCLE 5 CLUB PRINTS</button>
-                <button class="btn-cfg" id="btn-upload-own">② UPLOAD YOUR OWN</button>
-                <button class="btn-cfg" id="btn-open-prompt">③ GENERATE PROMPT HERE</button>
-                <button class="btn-cfg" id="btn-exchange" disabled>④ SPEND → UNLOCK NEXT 5</button>
-                <button class="btn-cfg confirm" id="btn-confirm">⑤ CONFIRM ORDER</button>
-
-                <div class="prompt-builder" id="prompt-builder">
-                    <span class="small-label">PROMPT BUILDER (no API — copy result to any external AI image tool)</span>
-                    <select id="pb-mood">
-                        <option value="rebellion">Rebellion / Bold</option>
-                        <option value="motivation">Motivation</option>
-                        <option value="intellect">Intellect</option>
-                        <option value="aesthetic">Aesthetic</option>
-                        <option value="nostalgia">Nostalgia</option>
-                    </select>
-                    <input type="text" id="pb-idea" placeholder="Describe your idea in a few words...">
-                    <button class="btn-cfg" id="btn-build-prompt" style="width:100%;">BUILD PROMPT</button>
-                    <div class="prompt-output" id="prompt-output" style="display:none;"></div>
-                </div>
-
-                <input type="file" id="file-input" accept="image/*" style="display:none;">
-            </div>
         </div>
 
         <div class="order-info" id="order-info"></div>
@@ -229,7 +242,7 @@
         <span class="modal-close" data-close>&times;</span>
         <div class="modal-title" id="placeholder-title">COMING SOON</div>
         <p style="font-size:12px;">This catalog is not ready yet.</p>
-        <button class="btn-cfg" data-close style="display:inline-block;">OK</button>
+        <button class="btn-cfg" data-close style="display:inline-block; text-align:center;">OK</button>
     </div>
 </div>
 
@@ -245,51 +258,51 @@
     const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3 };
     const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: заменить на реальный юзернейм
 
-    // Клубные принты — КАЖДЫЙ помечен КАТЕГОРИЕЙ (скрыто от UI, для Офиса).
-    // Категории: rebellion, motivation, intellect, aesthetic, nostalgia
+    // Синхронизация масштаба принта с размером одежды — визуальный
+    // коэффициент (реальные см в заказе остаются по пресету, это только
+    // для правдоподобного превью)
+    const SIZE_SCALE_FACTOR = { S: 0.82, M: 1, L: 1.1, XL: 1.2, XXL: 1.3 };
+
     const CLUB_PRINTS = [
-        { emoji: '🔥', category: 'rebellion' },
-        { emoji: '⚡', category: 'rebellion' },
-        { emoji: '🏆', category: 'motivation' },
-        { emoji: '🚀', category: 'motivation' },
-        { emoji: '🧠', category: 'intellect' },
-        { emoji: '♟️', category: 'intellect' },
-        { emoji: '🌹', category: 'aesthetic' },
-        { emoji: '🦋', category: 'aesthetic' },
-        { emoji: '📻', category: 'nostalgia' },
-        { emoji: '🎞️', category: 'nostalgia' },
-        { emoji: '💀', category: 'rebellion' },
-        { emoji: '🎯', category: 'motivation' },
-        { emoji: '🗿', category: 'intellect' },
-        { emoji: '🎭', category: 'aesthetic' },
+        { emoji: '🔥', category: 'rebellion' }, { emoji: '⚡', category: 'rebellion' },
+        { emoji: '🏆', category: 'motivation' }, { emoji: '🚀', category: 'motivation' },
+        { emoji: '🧠', category: 'intellect' }, { emoji: '♟️', category: 'intellect' },
+        { emoji: '🌹', category: 'aesthetic' }, { emoji: '🦋', category: 'aesthetic' },
+        { emoji: '📻', category: 'nostalgia' }, { emoji: '🎞️', category: 'nostalgia' },
+        { emoji: '💀', category: 'rebellion' }, { emoji: '🎯', category: 'motivation' },
+        { emoji: '🗿', category: 'intellect' }, { emoji: '🎭', category: 'aesthetic' },
         { emoji: '📼', category: 'nostalgia' }
     ];
 
-    // --- SVG-силуэты одежды: простые плоские формы, перекрашиваемые ---
+    // Более узнаваемые силуэты + классический круглый (crew) вырез горловины.
+    // Вырез: плавный дугообразный "провал" в верхней линии (Q-кривая),
+    // без острого V-образного модного выреза.
     const SILHOUETTES = {
-        tshirt: `<path d="M30 20 L45 10 L60 20 L70 15 L85 30 L75 42 L68 38 L68 100 L32 100 L32 38 L25 42 L15 30 L30 20 Z" />`,
-        hoodie: `<path d="M35 22 Q50 5 65 22 L70 15 L85 30 L75 42 L68 38 L68 100 L32 100 L32 38 L25 42 L15 30 L30 15 L35 22 Z M42 18 Q50 25 58 18" style="fill:none;stroke:#00000055;stroke-width:1.5;" />`,
-        sweatshirt: `<path d="M32 18 L45 10 L60 18 L72 12 L88 28 L78 40 L68 34 L68 100 L32 100 L32 34 L22 40 L12 28 L28 12 L32 18 Z" />`
+        tshirt: `<path d="M22,20 L38,9 Q50,22 62,9 L78,20 L94,38 L80,50 L72,43 L72,104 L28,104 L28,43 L20,50 L6,38 Z" />`,
+        hoodie: `
+            <path d="M22,24 L38,12 Q50,24 62,12 L78,24 L96,42 L82,54 L74,47 L74,104 L26,104 L26,47 L18,54 L4,42 Z" />
+            <path d="M36,11 Q50,-6 64,11 Q57,17 50,14 Q43,17 36,11 Z" fill="#00000030" />
+        `,
+        sweatshirt: `<path d="M20,20 L36,9 Q50,23 64,9 L80,20 L100,44 L84,58 L74,48 L74,104 L26,104 L26,48 L16,58 L0,44 Z" />`
     };
 
     function renderSilhouette(type, color) {
-        const frame = document.getElementById('preview-frame');  const frame = document.getElementById('preview-frame');
+        const frame = document.getElementById('preview-frame');
         let svgEl = frame.querySelector('svg.garment-svg');
         if (!svgEl) {
-            frame.insertAdjacentHTML('afterbegin', `<svg class="garment-svg" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg"></svg>`);
+            frame.insertAdjacentHTML('afterbegin', `<svg class="garment-svg" viewBox="0 0 104 110" xmlns="http://www.w3.org/2000/svg"></svg>`);
             svgEl = frame.querySelector('svg.garment-svg');
         }
         const fillColor = color === 'white' ? '#f0f0f0' : '#1a1a1a';
         const strokeColor = color === 'white' ? '#999' : '#000';
-        svgEl.innerHTML = SILHOUETTES[type].replace('<path', `<path fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"`);
+        svgEl.innerHTML = SILHOUETTES[type].replace(/<path/g, `<path fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"`);
     }
 
-    // --- Состояние текущего заказа (в памяти, до подтверждения) ---
     let state = {
         type: 'tshirt', size: 'M', color: 'black',
         position: 'front', scale: 'a3',
-        currentPrint: null,      // { source: 'club'|'own', design, category|null }
-        clubCycleIndex: 0
+        fabricDensity: '160-180', fabricComposition: 'cotton100',
+        currentPrint: null, clubCycleIndex: -1
     };
 
     function getUnlocked() { return get('atelierUnlockedPrints', 5); }
@@ -298,61 +311,60 @@
     function renderPreview() {
         renderSilhouette(state.type, state.color);
         document.getElementById('size-badge').textContent = state.size;
-
-        // Убрать старый оверлей принта
         document.querySelectorAll('.print-overlay-img, .print-overlay-emoji').forEach(el => el.remove());
 
         if (state.currentPrint) {
-            const scaleSizePx = { a3: 90, a4: 60, 'logo-chest': 28, 'logo-sleeve': 18 }[state.scale];
+            const baseSizePx = { a3: 90, a4: 60, 'logo-chest': 28, 'logo-sleeve': 18 }[state.scale];
+            const sizePx = Math.round(baseSizePx * SIZE_SCALE_FACTOR[state.size]);
             if (state.currentPrint.source === 'own') {
                 const img = document.createElement('img');
                 img.className = 'print-overlay-img';
                 img.src = state.currentPrint.design;
-                img.style.width = scaleSizePx + 'px';
-                img.style.height = scaleSizePx + 'px';
+                img.style.width = sizePx + 'px';
+                img.style.height = sizePx + 'px';
                 img.style.objectFit = 'cover';
                 document.getElementById('preview-frame').appendChild(img);
             } else {
                 const span = document.createElement('span');
                 span.className = 'print-overlay-emoji';
                 span.textContent = state.currentPrint.design;
-                span.style.fontSize = scaleSizePx + 'px';
-                document.getElementById('preview-frame').appendChild(span);   
+                span.style.fontSize = sizePx + 'px';
+                document.getElementById('preview-frame').appendChild(span);
             }
         }
-
         document.getElementById('btn-exchange').disabled = !(state.currentPrint && state.currentPrint.source === 'own');
         updateOrderInfo();
     }
 
-    function scaleCm(scaleId) {
-        return { a3: '30x40cm', a4: '21x30cm', 'logo-chest': '10x10cm', 'logo-sleeve': '7x7cm' }[scaleId];
+    function scaleCm(id) {
+        return { a3: '30x40cm', a4: '21x30cm', 'logo-chest': '10x10cm', 'logo-sleeve': '7x7cm' }[id];
     }
-
     function calculatePrice() {
-        let p = BASE_PRICE[state.type] || 0;    
+        let p = BASE_PRICE[state.type] || 0;
         if (state.currentPrint) p += SCALE_PRICE[state.scale] || 0;
         return p;
     }
-
     function updateOrderInfo() {
+        const fabricLabel = state.fabricComposition === 'cotton100' ? '100% cotton' : 'stretch 95/5';
         document.getElementById('order-info').innerHTML =
             `${state.type.toUpperCase()} (unisex) / ${state.size} / ${state.color.toUpperCase()}<br>` +
-            `Print: ${state.currentPrint ? state.currentPrint.design : '— none —'} | ` +
-            `${state.position.toUpperCase()} | ${scaleCm(state.scale)}`;
+            `Fabric: ${state.fabricDensity} g/m², ${fabricLabel}<br>` +
+            `Print: ${state.currentPrint ? state.currentPrint.design : '— none —'} | ${state.position.toUpperCase()} | ${scaleCm(state.scale)}`;
         document.getElementById('order-price').textContent = `$${calculatePrice()}`;
     }
 
-    // --- Слушатели выбора одежды ---
-    ['select-type', 'select-size', 'select-color', 'select-position', 'select-scale'].forEach(id => {
+    ['select-type','select-size','select-color','select-position','select-scale','select-fabric-density','select-fabric-composition'].forEach(id => {
         document.getElementById(id).addEventListener('change', (e) => {
-            const map = { 'select-type': 'type', 'select-size': 'size', 'select-color': 'color', 'select-position': 'position', 'select-scale': 'scale' };
+            const map = {
+                'select-type':'type','select-size':'size','select-color':'color',
+                'select-position':'position','select-scale':'scale',
+                'select-fabric-density':'fabricDensity','select-fabric-composition':'fabricComposition'
+            };
             state[map[id]] = e.target.value;
             renderPreview();
         });
     });
 
-    // --- Кнопка ①: цикл по разблокированным клубным принтам ---
     document.getElementById('btn-cycle-club').addEventListener('click', () => {
         const pool = unlockedPrints();
         state.clubCycleIndex = (state.clubCycleIndex + 1) % pool.length;
@@ -361,7 +373,6 @@
         renderPreview();
     });
 
-    // --- Кнопка ②: загрузить свой файл ---
     document.getElementById('btn-upload-own').addEventListener('click', () => {
         document.getElementById('file-input').click();
     });
@@ -376,7 +387,6 @@
         reader.readAsDataURL(file);
     });
 
-    // --- Кнопка ③: конструктор промпта (Режим А, без API) ---
     document.getElementById('btn-open-prompt').addEventListener('click', () => {
         document.getElementById('prompt-builder').classList.toggle('open');
     });
@@ -390,43 +400,36 @@
         };
         const mood = document.getElementById('pb-mood').value;
         const idea = document.getElementById('pb-idea').value.trim() || 'an abstract emblem';
-        const prompt = `A t-shirt print design of ${idea}, ${moodMap[mood]}, professional print-ready vector-style artwork, ` +
-            `centered composition, transparent background, high detail, studio lighting, print-safe color palette.`;
+        const prompt = `A t-shirt print design of ${idea}, ${moodMap[mood]}, professional print-ready vector-style artwork, centered composition, transparent background, high detail, print-safe color palette.`;
         const out = document.getElementById('prompt-output');
         out.textContent = prompt;
         out.style.display = 'block';
     });
 
-    // --- Кнопка ④: потратить своё изображение → открыть следующие 5 клубных ---
     document.getElementById('btn-exchange').addEventListener('click', () => {
-        // Валидация: должно реально быть изображение, не пустое место
         if (!state.currentPrint || state.currentPrint.source !== 'own' || !state.currentPrint.design) {
             document.getElementById('order-status').textContent = 'Nothing to exchange — upload or generate an image first.';
             return;
         }
-        const unlocked = getUnlocked();
-        set('atelierUnlockedPrints', Math.min(unlocked + 5, CLUB_PRINTS.length));
+        set('atelierUnlockedPrints', Math.min(getUnlocked() + 5, CLUB_PRINTS.length));
         state.currentPrint = null;
         state.clubCycleIndex = -1;
         document.getElementById('order-status').textContent = 'Unlocked next 5 club prints!';
         renderPreview();
     });
 
-    // --- Кнопка ⑤: подтвердить заказ ---
     document.getElementById('btn-confirm').addEventListener('click', () => {
         const order = {
             type: 'blank',
             garment: state.type, size: state.size, color: state.color,
+            fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
             decoration: state.currentPrint ? {
                 source: state.currentPrint.source,
                 design: state.currentPrint.source === 'club' ? state.currentPrint.design : '[uploaded image]',
-                category: state.currentPrint.category, // скрыто от UI, для аналитики Офиса
-                position: state.position,
-                scalePreset: state.scale,
-                scaleCm: scaleCm(state.scale)
+                category: state.currentPrint.category,
+                position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale)
             } : null,
-            price: calculatePrice(),
-            createdAt: Date.now()
+            price: calculatePrice(), createdAt: Date.now()
         };
         const reports = get('officeAtelierReports', []);
         reports.push(order);
@@ -434,7 +437,6 @@
         document.getElementById('order-status').textContent = 'Order sent to Office!';
     });
 
-    // --- Открытие/закрытие экрана конфигурации ---
     function openModal(id) {
         const m = document.getElementById(id);
         m.style.display = 'flex';
@@ -452,7 +454,6 @@
         renderPreview();
         openModal('config-overlay');
     });
-
     document.getElementById('zone-embroidery').addEventListener('click', () => {
         document.getElementById('placeholder-title').textContent = 'EMBROIDERY CATALOG';
         openModal('modal-placeholder');
@@ -465,10 +466,10 @@
         window.open(TELEGRAM_HELP_URL, '_blank');
     });
     document.getElementById('zone-consultant').addEventListener('click', () => {
-        console.log('[Atelier] Консультант: заготовка под бота, назначение прояснится по ходу строительства.');
+        console.log('[Atelier] Консультант: заготовка под бота.');
     });
     document.getElementById('zone-monitor').addEventListener('click', () => {
-        console.log('[Atelier] LAUNCH SYSTEM: пока просто красивая деталь интерьера.');
+        console.log('[Atelier] LAUNCH SYSTEM: декоративная деталь.');
     });
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
