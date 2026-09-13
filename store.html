@@ -175,6 +175,27 @@
             border: 2px solid #5a3e1b; padding: 8px; font-size: 11px; font-weight: bold;
             cursor: pointer; border-radius: 4px; text-align: center; width: 100%; margin-top: 5px;
         }
+        
+        /* Сетка выбора фото из базы данных папки */
+        .db-folder-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid #5a3e1b;
+            padding: 5px;
+            background: #fff;
+            border-radius: 3px;
+        }
+        .db-folder-thumb {
+            width: 100%; height: 50px; object-fit: cover; cursor: pointer;
+            border: 2px solid transparent; border-radius: 2px;
+        }
+        .db-folder-thumb:hover, .db-folder-thumb.selected {
+            border-color: #782814;
+            transform: scale(1.03);
+        }
     </style>
 </head>
 <body>
@@ -227,7 +248,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ДОБАВИТЬ В БАЗУ (С ЗАГРУЗКОЙ ФОТО С УСТРОЙСТВА) -->
+    <!-- МОДАЛЬНОЕ ОКНО: ДОБАВИТЬ В БАЗУ С ВЫБОРОМ ФОТО ИЗ ПАПОК БАЗЫ -->
     <div class="modal-overlay" id="sellModal">
         <div class="modal-card">
             <span class="modal-close" onclick="closeSellModal()">&times;</span>
@@ -246,7 +267,16 @@
             <div class="form-group"><label>Год создания (&lt; 1990):</label><input type="number" id="newYear" placeholder="1975"></div>
             <div class="form-group"><label>Цена:</label><input type="number" id="newPrice" placeholder="100"></div>
             <div class="form-group"><label>Описание:</label><textarea id="newDesc" rows="2" placeholder="Историческая справка..."></textarea></div>
-            <div class="form-group"><label>Фото из вашей базы (файл с устройства):</label><input type="file" id="newImgFile" accept="image/*"></div>
+            
+            <!-- Выбор фото из папок базы данных пользователя -->
+            <div class="form-group">
+                <label>Выберите фото из папки базы данных:</label>
+                <input type="hidden" id="selectedDbImgPath" value="database/artifacts/default.png">
+                <div class="db-folder-grid" id="dbFolderGrid">
+                    <!-- Заполняется скриптом из папки базы -->
+                </div>
+            </div>
+
             <button class="action-btn" onclick="saveArtifactToDatabase()">Сохранить в базу</button>
         </div>
     </div>
@@ -265,7 +295,35 @@
     </div>
 
     <script>
+        // Предустановленные пути к фото в папках базы данных артефактов
+        const databaseFolderImages = [
+            "database/artifacts/glass_1.png",
+            "database/artifacts/porcelain_1.png",
+            "database/artifacts/fabric_1.png",
+            "database/artifacts/metal_1.png",
+            "database/artifacts/tech_1.png",
+            "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300",
+            "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300",
+            "https://images.unsplash.com/photo-1544816155-12df9643f363?w=300"
+        ];
+
         let activeItem = null;
+
+        // Инициализация сетки выбора фото из папок базы при загрузке модалки
+        function initFolderGrid() {
+            let grid = document.getElementById('dbFolderGrid');
+            grid.innerHTML = '';
+            databaseFolderImages.forEach((path, index) => {
+                grid.innerHTML += `<img src="${path}" class="db-folder-thumb ${index === 0 ? 'selected' : ''}" onclick="selectFolderImage('${path}', this)" alt="db img" onerror="this.src='https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300'">`;
+            });
+            document.getElementById('selectedDbImgPath').value = databaseFolderImages[0];
+        }
+
+        function selectFolderImage(path, el) {
+            document.querySelectorAll('.db-folder-thumb').forEach(t => t.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('selectedDbImgPath').value = path;
+        }
 
         // Открытие базы пользователя через левую ромашку категории
         function openDatabaseModal(category) {
@@ -284,7 +342,7 @@
                 filtered.forEach(item => {
                     listContainer.innerHTML += `
                         <div class="item-row">
-                            <img src="${item.img}" alt="img">
+                            <img src="${item.img}" alt="img" onerror="this.src='https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300'">
                             <div style="flex:1;">
                                 <b>${item.name}</b> (${item.year} г.)<br>
                                 <span style="font-size:10px; color:#555;">${item.desc ? item.desc.substring(0, 35) + '...' : ''}</span>
@@ -299,7 +357,7 @@
 
         function closeDbModal() { document.getElementById('dbModal').style.display = 'none'; }
 
-        // Выбор артефакта из базы -> появление фото, названия и описания в большом окне
+        // Выбор артефакта из базы -> демонстрация в большом окне
         function selectArtifactFromDb(item) {
             activeItem = item;
             
@@ -316,27 +374,30 @@
             closeDbModal();
         }
 
-        // Юзер сам назначает цену прямо на экране
+        // Назначение цены юзером
         function updateUserPrice(newPrice) {
             if (activeItem) {
                 activeItem.price = parseInt(newPrice) || 0;
             }
         }
 
-        function openSellModal() { document.getElementById('sellModal').style.display = 'flex'; }
+        function openSellModal() { 
+            initFolderGrid();
+            document.getElementById('sellModal').style.display = 'flex'; 
+        }
         function closeSellModal() { document.getElementById('sellModal').style.display = 'none'; }
         
         function openReviewsModal() { document.getElementById('reviewsModal').style.display = 'flex'; }
         function closeReviewsModal() { document.getElementById('reviewsModal').style.display = 'none'; }
 
-        // Сохранение нового артефакта и его фото в базу юзера с проверкой до 1990 г.
+        // Сохранение нового артефакта с фото из базы данных папок
         function saveArtifactToDatabase() {
             let name = document.getElementById('newName').value.trim();
             let cat = document.getElementById('newCategory').value;
             let year = parseInt(document.getElementById('newYear').value);
             let price = parseInt(document.getElementById('newPrice').value) || 100;
-            let desc = document.getElementById('newDesc').value.trim() || "Винтажный раритет из личной коллекции резидента.";
-            let fileInput = document.getElementById('newImgFile');
+            let desc = document.getElementById('newDesc').value.trim() || "Винтажный раритет из личной базы резидента.";
+            let imgPath = document.getElementById('selectedDbImgPath').value;
 
             if (!name || !year) {
                 alert('Заполните название и год создания!');
@@ -348,28 +409,13 @@
                 return;
             }
 
-            // Читаем файл локальной фотографии через FileReader
-            if (fileInput.files && fileInput.files[0]) {
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    let base64Image = e.target.result;
-                    pushItemToStorage(name, cat, year, price, desc, base64Image);
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                // Если файл не выбран, сохраняем заглушку
-                pushItemToStorage(name, cat, year, price, desc, "");
-            }
-        }
-
-        function pushItemToStorage(name, cat, year, price, desc, img) {
             let newItem = {
                 id: Date.now(),
                 name: name,
                 category: cat,
                 year: year,
                 price: price,
-                img: img,
+                img: imgPath,
                 desc: desc
             };
 
@@ -377,7 +423,7 @@
             userBase.push(newItem);
             localStorage.setItem('gy_user_artifacts', JSON.stringify(userBase));
 
-            alert('✅ Артефакт и его фото успешно сохранены в вашу базу!');
+            alert('✅ Артефакт успешно сохранен в вашу базу!');
             closeSellModal();
             selectArtifactFromDb(newItem);
         }
