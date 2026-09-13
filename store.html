@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GY-GY Club | Antique Store 004 </title>
+    <title>GY-GY Club | Antique Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #FFD700; }
@@ -125,7 +125,7 @@
         .zone-speaking   { top: 11%; left: 54%; width: 13%; height: 6%; }
         .zone-about      { top: 11%; left: 69%; width: 11%; height: 6%; }
 
-        /* Категории слева (связь с базой юзера) */
+        /* Категории слева (вход в базу пользователя) */
         .zone-glass      { top: 35%; left: 4%; width: 18%; height: 9%; }
         .zone-porcelain  { top: 47%; left: 4%; width: 18%; height: 9%; }
         .zone-fabric     { top: 59%; left: 4%; width: 18%; height: 9%; }
@@ -158,7 +158,7 @@
             padding: 8px; border-bottom: 1px solid rgba(90,62,27,0.2);
             font-size: 12px; gap: 10px;
         }
-        .item-row img { width: 40px; height: 40px; object-fit: cover; border: 1px solid #5a3e1b; }
+        .item-row img { width: 40px; height: 40px; object-fit: cover; border: 1px solid #5a3e1b; background:#fff; }
         .btn-select {
             background: #5a3e1b; color: #ffd700; border: none; padding: 5px 10px;
             cursor: pointer; font-weight: bold; font-size: 10px; border-radius: 3px;
@@ -184,9 +184,9 @@
 
     <!-- Центральное окно демонстрации -->
     <div class="central-display" id="centralDisplay">
-        <img id="artifactImg" src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300" alt="Artifact">
+        <img id="artifactImg" src="" alt="Artifact" style="display:none;">
         <h3 id="artifactTitle">Выберите реликвию слева</h3>
-        <p id="artifactDesc">Нажмите на любую ромашку в колонке «KATEGORIY ARTEGORTES», чтобы открыть вашу базу артефактов.</p>
+        <p id="artifactDesc">Нажмите на любую ромашку в левой колонке «KATEGORIY ARTEGORTES», чтобы открыть вашу базу артефактов.</p>
     </div>
 
     <!-- Оверлей названия -->
@@ -222,14 +222,12 @@
         <div class="modal-card">
             <span class="modal-close" onclick="closeDbModal()">&times;</span>
             <h3 id="dbModalTitle">Ваша база артефактов</h3>
-            <div id="dbItemsList" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px;">
-                <!-- Динамический список артефактов юзера -->
-            </div>
+            <div id="dbItemsList" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px;"></div>
             <button class="action-btn" onclick="openSellModal(); closeDbModal();">+ Добавить новый артефакт в базу</button>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ВЫСТАВИТЬ / ДОБАВИТЬ В БАЗУ -->
+    <!-- МОДАЛЬНОЕ ОКНО: ДОБАВИТЬ В БАЗУ (С ЗАГРУЗКОЙ ФОТО С УСТРОЙСТВА) -->
     <div class="modal-overlay" id="sellModal">
         <div class="modal-card">
             <span class="modal-close" onclick="closeSellModal()">&times;</span>
@@ -246,9 +244,9 @@
                 </select>
             </div>
             <div class="form-group"><label>Год создания (&lt; 1990):</label><input type="number" id="newYear" placeholder="1975"></div>
-            <div class="form-group"><label>Цена по умолчанию:</label><input type="number" id="newPrice" placeholder="100"></div>
-            <div class="form-group"><label>Описание (система/AI генерирует или вы):</label><textarea id="newDesc" rows="2" placeholder="Историческая справка..."></textarea></div>
-            <div class="form-group"><label>Ссылка на фото (URL):</label><input type="text" id="newImg" placeholder="https://..."></div>
+            <div class="form-group"><label>Цена:</label><input type="number" id="newPrice" placeholder="100"></div>
+            <div class="form-group"><label>Описание:</label><textarea id="newDesc" rows="2" placeholder="Историческая справка..."></textarea></div>
+            <div class="form-group"><label>Фото из вашей базы (файл с устройства):</label><input type="file" id="newImgFile" accept="image/*"></div>
             <button class="action-btn" onclick="saveArtifactToDatabase()">Сохранить в базу</button>
         </div>
     </div>
@@ -267,15 +265,6 @@
     </div>
 
     <script>
-        // Инициализация базы данных в localStorage (если пуста, создаем тестовый образец)
-        if (!localStorage.getItem('gy_user_artifacts')) {
-            let initialBase = [
-                { id: 1, name: "Хрустальный бокал Чарли", category: "glass", year: 1978, price: 120, img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300", desc: "Ретро-бокал из бара основателей клуба. Сохранил легкий дух 70-х." },
-                { id: 2, name: "Фарфоровый конь", category: "porcelain", year: 1965, price: 340, img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300", desc: "Статуэтка смеющегося коня. Тончайшая работа мастеров старой школы." }
-            ];
-            localStorage.setItem('gy_user_artifacts', JSON.stringify(initialBase));
-        }
-
         let activeItem = null;
 
         // Открытие базы пользователя через левую ромашку категории
@@ -295,26 +284,29 @@
                 filtered.forEach(item => {
                     listContainer.innerHTML += `
                         <div class="item-row">
-                            <img src="${item.img}" alt="">
+                            <img src="${item.img}" alt="img">
                             <div style="flex:1;">
                                 <b>${item.name}</b> (${item.year} г.)<br>
-                                <span style="font-size:10px; color:#555;">${item.desc.substring(0, 45)}...</span>
+                                <span style="font-size:10px; color:#555;">${item.desc ? item.desc.substring(0, 35) + '...' : ''}</span>
                             </div>
                             <button class="btn-select" onclick='selectArtifactFromDb(${JSON.stringify(item)})'>Выбрать</button>
                         </div>
                     `;
                 });
             }
-            document.getElementById('dbModalTitle').setAttribute('data-current-cat', category);
             document.getElementById('dbModal').style.display = 'flex';
         }
 
         function closeDbModal() { document.getElementById('dbModal').style.display = 'none'; }
 
-        // Выбор артефакта из базы -> появление в большом окне
+        // Выбор артефакта из базы -> появление фото, названия и описания в большом окне
         function selectArtifactFromDb(item) {
             activeItem = item;
-            document.getElementById('artifactImg').src = item.img;
+            
+            let imgEl = document.getElementById('artifactImg');
+            imgEl.src = item.img;
+            imgEl.style.display = 'block';
+
             document.getElementById('artifactTitle').textContent = item.name;
             document.getElementById('artifactDesc').textContent = `${item.desc} (Создано: ${item.year} г.)`;
             
@@ -324,7 +316,7 @@
             closeDbModal();
         }
 
-        // Пользователь сам назначает цену
+        // Юзер сам назначает цену прямо на экране
         function updateUserPrice(newPrice) {
             if (activeItem) {
                 activeItem.price = parseInt(newPrice) || 0;
@@ -337,33 +329,47 @@
         function openReviewsModal() { document.getElementById('reviewsModal').style.display = 'flex'; }
         function closeReviewsModal() { document.getElementById('reviewsModal').style.display = 'none'; }
 
-        // Сохранение нового артефакта в базу юзера с проверкой до 1990 г.
+        // Сохранение нового артефакта и его фото в базу юзера с проверкой до 1990 г.
         function saveArtifactToDatabase() {
             let name = document.getElementById('newName').value.trim();
             let cat = document.getElementById('newCategory').value;
             let year = parseInt(document.getElementById('newYear').value);
             let price = parseInt(document.getElementById('newPrice').value) || 100;
-            let desc = document.getElementById('newDesc').value.trim() || "Винтажный раритет из закрытой коллекции резидента.";
-            let img = document.getElementById('newImg').value.trim();
+            let desc = document.getElementById('newDesc').value.trim() || "Винтажный раритет из личной коллекции резидента.";
+            let fileInput = document.getElementById('newImgFile');
 
             if (!name || !year) {
                 alert('Заполните название и год создания!');
                 return;
             }
 
-            // Жесткий контроль винтажности (строго до 1990)
             if (year >= 1990) {
                 alert(`⚠️ Ошибка антикварного контроля!\nГод ${year} слишком современный. Клуб принимает исключительно реликвии до 1990 года!`);
                 return;
             }
 
+            // Читаем файл локальной фотографии через FileReader
+            if (fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let base64Image = e.target.result;
+                    pushItemToStorage(name, cat, year, price, desc, base64Image);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                // Если файл не выбран, сохраняем заглушку
+                pushItemToStorage(name, cat, year, price, desc, "");
+            }
+        }
+
+        function pushItemToStorage(name, cat, year, price, desc, img) {
             let newItem = {
                 id: Date.now(),
                 name: name,
                 category: cat,
                 year: year,
                 price: price,
-                img: img || "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300",
+                img: img,
                 desc: desc
             };
 
@@ -371,7 +377,7 @@
             userBase.push(newItem);
             localStorage.setItem('gy_user_artifacts', JSON.stringify(userBase));
 
-            alert('✅ Артефакт успешно добавлен в вашу базу!');
+            alert('✅ Артефакт и его фото успешно сохранены в вашу базу!');
             closeSellModal();
             selectArtifactFromDb(newItem);
         }
