@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GY-GY Club | Antique Store 002 </title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>GY-GY Club | Antique Store 003 </title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #FFD700; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -16,13 +16,13 @@
             font-family: 'Share Tech Mono', monospace;
         }
 
-        /* Фоновый слой во весь экран с точным покрытием 100% x 100% */
+        /* Фоновый слой во весь экран */
         #store-bg {
             position: fixed;
             inset: 0;
             z-index: 0;
             background: url('Store 0.png') no-repeat;
-            background-size: 100% 100%; /* Растягивает картинку ровно на весь экран */
+            background-size: 100% 100%;
             background-color: #000;
         }
 
@@ -55,21 +55,90 @@
             opacity: 1;
         }
 
-        /* --- КООРДИНАТЫ ЗОН НА ПОЛНОЭКРАННОЙ КАРТИНКЕ --- */
-        /* Верхнее меню */
+        /* --- БОЛЬШОЕ ЦЕНТРАЛЬНОЕ ОКНО ДЕМОНСТРАЦИИ АРТЕФАКТА --- */
+        .central-display {
+            position: absolute;
+            top: 29%;
+            left: 28%;
+            width: 36%;
+            height: 57%;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 15px;
+            pointer-events: none;
+        }
+        .central-display img {
+            max-width: 85%;
+            max-height: 52%;
+            object-fit: contain;
+            border: 2px solid #5a3e1b;
+            background: #fff;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .central-display h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2b1d0c;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .central-display p {
+            font-size: 11px;
+            color: #442d13;
+            line-height: 1.4;
+            max-width: 90%;
+        }
+
+        /* Наложенные элементы интерфейса под нарисованные поля макета */
+        .ui-overlay-top-title {
+            position: absolute;
+            top: 19%;
+            right: 8%;
+            width: 24%;
+            text-align: right;
+            font-family: 'Cinzel', serif;
+            font-size: 15px;
+            font-weight: bold;
+            color: #2b1d0c;
+            z-index: 5;
+            pointer-events: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ui-overlay-price {
+            position: absolute;
+            top: 53%;
+            right: 14%;
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            font-weight: bold;
+            color: #782814;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* --- КООРДИНАТЫ ЗОН --- */
         .zone-catalog    { top: 11%; left: 28%; width: 9%; height: 6%; }
         .zone-membership { top: 11%; left: 39%; width: 12%; height: 6%; }
         .zone-speaking   { top: 11%; left: 54%; width: 13%; height: 6%; }
         .zone-about      { top: 11%; left: 69%; width: 11%; height: 6%; }
 
-        /* Левые категории */
+        /* Категории слева */
         .zone-glass      { top: 35%; left: 4%; width: 18%; height: 9%; }
         .zone-porcelain  { top: 47%; left: 4%; width: 18%; height: 9%; }
         .zone-fabric     { top: 59%; left: 4%; width: 18%; height: 9%; }
         .zone-metal      { top: 71%; left: 4%; width: 18%; height: 9%; }
         .zone-tech       { top: 83%; left: 4%; width: 18%; height: 9%; }
 
-        /* Правые кнопки действий */
+        /* Кнопки управления справа */
         .zone-add-cart      { top: 62%; left: 66%; width: 24%; height: 7%; }
         .zone-become-member { top: 71%; left: 66%; width: 24%; height: 8%; }
         .zone-back          { top: 81%; left: 66%; width: 24%; height: 7%; }
@@ -82,13 +151,25 @@
 </head>
 <body>
 
-    <!-- Фоновый слой на весь экран -->
+    <!-- Фоновый слой -->
     <div id="store-bg"></div>
 
-    <!-- Интерактивные зоны с ромашками -->
-    <div class="store-zone zone-catalog" onclick="alert('Вы в каталоге реликвий Лавки древностей')">
-        <span class="hotspot">🌼</span>
+    <!-- Большое окно демонстрации артефакта в центре -->
+    <div class="central-display" id="centralDisplay">
+        <img id="artifactImg" src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300" alt="Artifact">
+        <h3 id="artifactTitle">Хрустальный бокал Чарли</h3>
+        <p id="artifactDesc">Ретро-бокал из бара основателей клуба. Сохранил легкий дух 70-х. (Год: 1978)</p>
     </div>
+
+    <!-- Текстовые оверлеи под дизайн макета -->
+    <div class="ui-overlay-top-title" id="topTitleDisplay">Хрустальный бокал Чарли</div>
+    <div class="ui-overlay-price" id="priceDisplay">120 🪙</div>
+
+    <!-- Интерактивные зоны с ромашками -->
+    <div class="zone-zone zone-catalog" style="position:absolute; top:11%; left:28%; width:9%; height:6%; z-index:10; cursor:pointer;" onclick="alert('База данных клуба синхронизирована.')">
+        <span class="hotspot" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">🌼</span>
+    </div>
+    
     <div class="store-zone zone-membership" onclick="location.href='identity.html'" title="Паспорт резидента">
         <span class="hotspot">🌼</span>
     </div>
@@ -99,20 +180,20 @@
         <span class="hotspot">🌼</span>
     </div>
 
-    <!-- Категории товаров -->
-    <div class="store-zone zone-glass" onclick="selectCategory('glass')">
+    <!-- КАТЕГОРИИ СЛЕВА (Связь с базой компьютера) -->
+    <div class="store-zone zone-glass" onclick="selectCategory('glass')" title="Категория: Стекло">
         <span class="hotspot">🌼</span>
     </div>
-    <div class="store-zone zone-porcelain" onclick="selectCategory('porcelain')">
+    <div class="store-zone zone-porcelain" onclick="selectCategory('porcelain')" title="Категория: Фарфор">
         <span class="hotspot">🌼</span>
     </div>
-    <div class="store-zone zone-fabric" onclick="selectCategory('fabric')">
+    <div class="store-zone zone-fabric" onclick="selectCategory('fabric')" title="Категория: Текстиль/Бумага">
         <span class="hotspot">🌼</span>
     </div>
-    <div class="store-zone zone-metal" onclick="selectCategory('metal')">
+    <div class="store-zone zone-metal" onclick="selectCategory('metal')" title="Категория: Металл">
         <span class="hotspot">🌼</span>
     </div>
-    <div class="store-zone zone-tech" onclick="selectCategory('tech')">
+    <div class="store-zone zone-tech" onclick="selectCategory('tech')" title="Категория: Ретро-техника">
         <span class="hotspot">🌼</span>
     </div>
 
@@ -139,12 +220,60 @@
     </div>
 
     <script>
+        // База данных артефактов клуба (строго до 1990 года)
+        const artifactsDatabase = {
+            glass: [
+                { name: "Хрустальный бокал Чарли", year: 1978, price: 120, img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300", desc: "Ретро-бокал из бара основателей клуба. Сохранил легкий дух 70-х." },
+                { name: "Граненый стакан СССР", year: 1980, price: 45, img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=300", desc: "Классика советского общепита повышенной прочности и надежности." }
+            ],
+            porcelain: [
+                { name: "Фарфоровый конь", year: 1965, price: 340, img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300", desc: "Статуэтка смеющегося коня. Тончайшая работа мастеров старой школы." },
+                { name: "Чайный сервиз 'Мальвина'", year: 1975, price: 280, img: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=300", desc: "Костяной фарфор с золотым ручным тиснением. Проверен на винтажность." }
+            ],
+            fabric: [
+                { name: "Карта подземелий клуба", year: 1950, price: 95, img: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=300", desc: "Бумажный артефакт на пожелтевшем пергаменте с метками тайных ходов." },
+                { name: "Винтажный гобелен", year: 1972, price: 180, img: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=300", desc: "Тканевый артефакт с вышивкой эпохи развитого гаражного соцреализма." }
+            ],
+            metal: [
+                { name: "Шестеренка от паровоза", year: 1920, price: 210, img: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=300", desc: "Надежная сталь начала века. Выдержала две мировые войны." },
+                { name: "Медный подстаканник", year: 1968, price: 110, img: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=300", desc: "С заводским клеймом. Идеален под горячий чай в долгие зимние вечера." }
+            ],
+            tech: [
+                { name: "Ламповый процессор", year: 1985, price: 500, img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300", desc: "Ретро-микросхема с ручной пайкой. Теплый ламповый разум." },
+                { name: "Калькулятор Электроника", year: 1988, price: 150, img: "https://images.unsplash.com/photo-1592659762303-90081d34b277?w=300", desc: "Легендарный советский калькулятор на ярких индикаторах." }
+            ]
+        };
+
+        let currentCategoryIndex = {};
+        let activeItem = artifactsDatabase.glass[0];
+
         function selectCategory(category) {
-            alert(`Активирована категория артефактов: ${category.toUpperCase()}`);
+            let items = artifactsDatabase[category];
+            if (!items || items.length === 0) return;
+
+            // Циклическое переключение по предметам категории при повторном клике на ромашку
+            if (currentCategoryIndex[category] === undefined) {
+                currentCategoryIndex[category] = 0;
+            } else {
+                currentCategoryIndex[category] = (currentCategoryIndex[category] + 1) % items.length;
+            }
+
+            activeItem = items[currentCategoryIndex[category]];
+
+            // Обновляем центральное окно
+            document.getElementById('artifactImg').src = activeItem.img;
+            document.getElementById('artifactTitle').textContent = activeItem.name;
+            document.getElementById('artifactDesc').textContent = `${activeItem.desc} (Год создания: ${activeItem.year})`;
+
+            // Обновляем плашки в дизайне макета
+            document.getElementById('topTitleDisplay').textContent = activeItem.name;
+            document.getElementById('priceDisplay').textContent = `${activeItem.price} 🪙`;
         }
 
         function addToCart() {
-            alert('Артефакт успешно добавлен в вашу корзину!');
+            if (activeItem) {
+                alert(`🛒 Артефакт "${activeItem.name}" успешно добавлен в корзину за ${activeItem.price} GY-GY монет!`);
+            }
         }
     </script>
 </body>
