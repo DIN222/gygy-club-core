@@ -9,10 +9,11 @@
         :root { --gold: #5a3e1b; --accent-gold: #c59b27; --parchment-bg: #f4ebd0; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        body {
+  body {
             background-color: #111;
-            background-image: url('Store 0.png'); /* Фоновое изображение макета */
-            background-size: cover;
+            /* Убедитесь, что имя файла указано точно, и используйте contain вместо cover */
+            background-image: url('Store 0.png'); 
+            background-size: contain; /* Картинка полностью помещается в экран */
             background-position: center;
             background-repeat: no-repeat;
             width: 100vw;
