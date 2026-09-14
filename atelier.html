@@ -1,20 +1,36 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v3.1.0 — 2026-08-26
-  Изменения: (1) исправлена кликабельность зон (явный pointer-events:auto,
-  проверенная структура слоёв); (2) круглый classic crew-neck вырез вместо
-  модного; (3) более узнаваемые силуэты одежды; (4) добавлена плотность
-  ткани (160-180 г/м²) и состав (100% хлопок / 95% хлопок+5% эластан);
-  (5) масштаб принта синхронизирован с размером одежды (визуальный
-  коэффициент по S/M/L/XL/XXL); (6) кнопки сжаты по содержимому, свободное
-  место отдано под увеличенное превью одежды+принта; (7) Atelier94.png.
+  v3.2.0 — 2026-09-14
+  Изменения относительно v3.1.0:
+  (1) Полная перекомпоновка CONFIGURE YOUR ORDER: все селекторы и кнопки
+      сведены в единую узкую левую колонку, вся освободившаяся ширина
+      отдана под увеличенное превью (до 460×460), адаптивная раскладка
+      (колонка под колонкой) ниже 700px.
+  (2) Силуэты пересобраны с нуля: футболка — короткий рукав + круглый
+      вырез; худи — длинный рукав, капюшон со шнурками, накладной карман-
+      кенгуру; свитшот — длинный рукав, круглый вырез, ребристые манжеты/
+      низ/ворот. Устранён баг предыдущей версии: капюшон рендерился тем же
+      цветом, что и корпус, из-за дублирующегося атрибута fill при
+      regex-замене — теперь используются токены {{FILL}}/{{STROKE}}/
+      {{ACCENT}} с точечной заменой.
+  (3) Введено разделение БАЗА ЮЗЕРА / БАЗА АТЕЛЬЕ: индикатор владельца
+      базы (из паспорта), модалка "MY BASE" с личными загрузками + кнопка
+      переноса каждого изображения в общую "ATELIER BASE".
+  (4) Загружаемые изображения теперь автоматически уменьшаются
+      (canvas, max 500px, JPEG q=0.85) перед сохранением — экономия
+      localStorage.
+  (5) Интеграция с паспортом — через ДИНАМИЧЕСКИЙ import core/eventBus.js
+      с защитой try/catch (не роняет страницу, если модуль/метод не
+      совпадает). ТРЕБУЕТ ПРОВЕРКИ реального имени события и формы данных
+      — см. комментарий в блоке <script>.
+  (6) Atelier94.png — без изменений.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v3.1.0</title>
+<title>GY-GY Club — Atelier v3.2.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -36,7 +52,6 @@
     .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
 
-    /* Активные зоны — явный pointer-events:auto и z-index выше фона */
     .zone {
         position: absolute; cursor: pointer; z-index: 10;
         display: flex; align-items: center; justify-content: center;
@@ -74,28 +89,51 @@
     }
     .config-card {
         background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
-        padding: 16px; width: 600px; max-width: 96vw; color: #000; position: relative;
+        padding: 18px; width: 760px; max-width: 98vw; color: #000; position: relative;
         font-family: 'Share Tech Mono', monospace;
     }
     .config-close { position: absolute; top: 6px; right: 10px; font-size: 24px; cursor: pointer; }
-    .config-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 14px; margin-bottom: 8px; text-align: center; }
+    .config-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; margin-bottom: 10px; text-align: center; }
 
-    .garment-picker { display: flex; gap: 6px; margin-bottom: 6px; }
-    .garment-picker select { flex: 1; padding: 5px; border: 1px solid #000; font-family: inherit; font-size: 10px; }
+    /* ---- База юзера / база ателье ---- */
+    .base-indicator {
+        display: flex; align-items: center; justify-content: space-between; gap: 6px;
+        background: #fff; border: 1px solid #000; padding: 5px 8px; margin-bottom: 8px;
+        font-size: 9px; font-weight: 700;
+    }
+    .base-indicator .btn-cfg { padding: 3px 7px; font-size: 8px; }
+    .base-tabs { display: flex; gap: 6px; margin: 10px 0 4px; }
+    .base-tab { flex: 1; text-align: center; }
+    .base-tab.active { background: var(--gold); color: #000; }
+    .base-gallery {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+        max-height: 280px; overflow-y: auto; margin-top: 6px;
+    }
+    .base-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .base-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid #000; background: #eee; }
+    .base-cell-actions { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
+    .base-cell-actions .btn-cfg { padding: 2px 4px; font-size: 7px; }
+    .modal-card.wide { width: 360px; }
 
-    .fabric-info { font-size: 9px; opacity: 0.7; margin-bottom: 8px; text-align: center; }
+    /* ---- Поля конфигурации (в левой колонке) ---- */
+    .field-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .field-row select { flex: 1; padding: 5px; border: 1px solid #000; font-family: inherit; font-size: 9px; }
 
-    .config-body { display: flex; gap: 10px; margin-top: 6px; }
-    /* Кнопки сжаты по содержимому (flex:0 0 auto), свободное место — рамке */
-    .buttons-col { flex: 0 0 150px; display: flex; flex-direction: column; gap: 5px; }
-    .frame-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .config-body { display: flex; gap: 14px; margin-top: 4px; align-items: flex-start; }
+    .buttons-col { flex: 0 0 220px; display: flex; flex-direction: column; gap: 6px; }
+    .frame-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+
+    @media (max-width: 700px) {
+        .config-body { flex-direction: column; align-items: center; }
+        .buttons-col { flex: 1 1 auto; width: 100%; max-width: 460px; }
+    }
 
     .preview-frame {
-        width: 100%; max-width: 320px; height: 320px; border: 2px solid #000; background: #fff;
+        width: 100%; max-width: 460px; height: min(56vh, 460px); border: 2px solid #000; background: #fff;
         position: relative; display: flex; align-items: center; justify-content: center;
         overflow: hidden;
     }
-    .preview-frame svg.garment-svg { width: 220px; height: 300px; }
+    .preview-frame svg.garment-svg { height: 92%; width: auto; }
     .size-badge {
         position: absolute; top: 6px; right: 6px; background: var(--gold);
         color: #000; font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px;
@@ -114,7 +152,7 @@
     .btn-cfg:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-cfg.confirm { background: #1a4; border-color: #1a4; color: #fff; text-align: center; }
 
-    .position-row { display: flex; gap: 6px; margin-top: 6px; width: 100%; max-width: 320px; }
+    .position-row { display: flex; gap: 6px; margin-top: 8px; width: 100%; max-width: 460px; }
     .position-row select { flex: 1; padding: 4px; font-size: 10px; border: 1px solid #000; }
 
     .order-info { font-size: 10px; margin-top: 8px; padding: 6px; background: #fff; border: 1px solid #000; }
@@ -162,33 +200,40 @@
         <span class="config-close" data-close>&times;</span>
         <div class="config-title">CONFIGURE YOUR ORDER</div>
 
-        <div class="garment-picker">
-            <select id="select-type">
-                <option value="tshirt">T-SHIRT (UNISEX)</option>
-                <option value="hoodie">HOODIE (UNISEX)</option>
-                <option value="sweatshirt">SWEATSHIRT (UNISEX)</option>
-            </select>
-            <select id="select-size">
-                <option value="S">S</option><option value="M" selected>M</option>
-                <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
-            </select>
-            <select id="select-color">
-                <option value="black">BLACK</option><option value="white">WHITE</option>
-            </select>
-        </div>
-
-        <div class="garment-picker">
-            <select id="select-fabric-density">
-                <option value="160-180">FABRIC: 160–180 g/m² (standard weight)</option>
-            </select>
-            <select id="select-fabric-composition">
-                <option value="cotton100">100% COTTON</option>
-                <option value="stretch">STRETCH (95% cotton / 5% elastane)</option>
-            </select>
-        </div>
-
         <div class="config-body">
             <div class="buttons-col">
+
+                <div class="base-indicator">
+                    <span id="base-owner-label">BASE: GUEST</span>
+                    <button class="btn-cfg" id="btn-my-base">MY BASE</button>
+                </div>
+
+                <div class="field-row">
+                    <select id="select-type">
+                        <option value="tshirt">T-SHIRT (UNISEX)</option>
+                        <option value="hoodie">HOODIE (UNISEX)</option>
+                        <option value="sweatshirt">SWEATSHIRT (UNISEX)</option>
+                    </select>
+                </div>
+                <div class="field-row">
+                    <select id="select-size">
+                        <option value="S">S</option><option value="M" selected>M</option>
+                        <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+                    </select>
+                    <select id="select-color">
+                        <option value="black">BLACK</option><option value="white">WHITE</option>
+                    </select>
+                </div>
+                <div class="field-row">
+                    <select id="select-fabric-density">
+                        <option value="160-180">160–180 g/m²</option>
+                    </select>
+                    <select id="select-fabric-composition">
+                        <option value="cotton100">100% COTTON</option>
+                        <option value="stretch">STRETCH 95/5</option>
+                    </select>
+                </div>
+
                 <button class="btn-cfg" id="btn-cycle-club">① CYCLE 5 CLUB PRINTS</button>
                 <button class="btn-cfg" id="btn-upload-own">② UPLOAD OWN</button>
                 <button class="btn-cfg" id="btn-open-prompt">③ GENERATE PROMPT</button>
@@ -228,12 +273,24 @@
                         <option value="logo-sleeve">LOGO SLEEVE (7x7cm)</option>
                     </select>
                 </div>
+                <div class="order-info" id="order-info" style="width:100%; max-width:460px;"></div>
+                <div class="price-line" id="order-price">—</div>
+                <div class="status-line" id="order-status"></div>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="order-info" id="order-info"></div>
-        <div class="price-line" id="order-price">—</div>
-        <div class="status-line" id="order-status"></div>
+<div class="modal-overlay" id="modal-base">
+    <div class="modal-card wide">
+        <span class="modal-close" data-close>&times;</span>
+        <div class="modal-title" id="base-modal-title">MY BASE</div>
+        <div class="base-tabs">
+            <button class="btn-cfg base-tab active" data-tab="user">MY BASE</button>
+            <button class="btn-cfg base-tab" data-tab="club">ATELIER BASE</button>
+        </div>
+        <div class="base-gallery" id="base-gallery"></div>
+        <div class="status-line" id="base-status"></div>
     </div>
 </div>
 
@@ -257,10 +314,8 @@
     const BASE_PRICE = { tshirt: 15, hoodie: 35, sweatshirt: 28 };
     const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3 };
     const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: заменить на реальный юзернейм
+    const MAX_BASE_ITEMS = 8; // ограничение размера базы (localStorage не резиновый)
 
-    // Синхронизация масштаба принта с размером одежды — визуальный
-    // коэффициент (реальные см в заказе остаются по пресету, это только
-    // для правдоподобного превью)
     const SIZE_SCALE_FACTOR = { S: 0.82, M: 1, L: 1.1, XL: 1.2, XXL: 1.3 };
 
     const CLUB_PRINTS = [
@@ -274,30 +329,182 @@
         { emoji: '📼', category: 'nostalgia' }
     ];
 
-    // Более узнаваемые силуэты + классический круглый (crew) вырез горловины.
-    // Вырез: плавный дугообразный "провал" в верхней линии (Q-кривая),
-    // без острого V-образного модного выреза.
+    // ===== СИЛУЭТЫ =====
+    // Каждый силуэт — набор <path>/<rect>/<circle> в общем viewBox 0 0 110 145.
+    // {{FILL}} / {{STROKE}} — цвет корпуса одежды (зависит от select-color).
+    // {{ACCENT}} — цвет деталей (капюшон, карман, ребро), полупрозрачный,
+    // рассчитывается отдельно, чтобы был виден и на чёрном, и на белом.
+    // Торс + вырез (crew-neck, круглый) — общий для всех трёх видов.
     const SILHOUETTES = {
-        tshirt: `<path d="M22,20 L38,9 Q50,22 62,9 L78,20 L94,38 L80,50 L72,43 L72,104 L28,104 L28,43 L20,50 L6,38 Z" />`,
-        hoodie: `
-            <path d="M22,24 L38,12 Q50,24 62,12 L78,24 L96,42 L82,54 L74,47 L74,104 L26,104 L26,47 L18,54 L4,42 Z" />
-            <path d="M36,11 Q50,-6 64,11 Q57,17 50,14 Q43,17 36,11 Z" fill="#00000030" />
+        tshirt: `
+            <path d="M32,24 L46,12 Q54,24 62,12 L76,24 L76,138 L32,138 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
+            <path d="M32,24 L14,34 L24,50 L32,44 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
+            <path d="M76,24 L94,34 L84,50 L76,44 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
         `,
-        sweatshirt: `<path d="M20,20 L36,9 Q50,23 64,9 L80,20 L100,44 L84,58 L74,48 L74,104 L26,104 L26,48 L16,58 L0,44 Z" />`
+        hoodie: `
+            <path d="M32,24 L46,12 Q54,24 62,12 L76,24 L76,138 L32,138 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
+            <path d="M32,24 L10,40 L18,112 L30,108 L32,50 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
+            <path d="M76,24 L98,40 L90,112 L78,108 L76,50 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
+            <path d="M40,14 Q54,-8 68,14 Q61,23 54,19 Q47,23 40,14 Z" fill="{{ACCENT}}" stroke="{{STROKE}}" stroke-width="1"/>
+            <circle cx="51" cy="27" r="1.6" fill="{{STROKE}}"/>
+            <circle cx="57" cy="27" r="1.6" fill="{{STROKE}}"/>
+            <path d="M40,92 L68,92 L64,112 L44,112 Z" fill="{{ACCENT}}" stroke="{{STROKE}}" stroke-width="1"/>
+            <path d="M46,92 Q54,98 62,92" fill="none" stroke="{{STROKE}}" stroke-width="1"/>
+        `,
+        sweatshirt: `
+            <path d="M32,24 L46,12 Q54,24 62,12 L76,24 L76,138 L32,138 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
+            <path d="M32,24 L10,40 L18,112 L30,108 L32,50 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
+            <path d="M76,24 L98,40 L90,112 L78,108 L76,50 Z" fill="{{FILL}}" stroke="{{STROKE}}" stroke-width="1.5"/>
+            <rect x="43" y="10" width="26" height="4" rx="2" fill="{{ACCENT}}"/>
+            <rect x="32" y="132" width="44" height="6" fill="{{ACCENT}}"/>
+            <rect x="12" y="106" width="12" height="6" fill="{{ACCENT}}" transform="rotate(-10 18 109)"/>
+            <rect x="84" y="106" width="12" height="6" fill="{{ACCENT}}" transform="rotate(10 90 109)"/>
+        `
     };
 
     function renderSilhouette(type, color) {
         const frame = document.getElementById('preview-frame');
         let svgEl = frame.querySelector('svg.garment-svg');
         if (!svgEl) {
-            frame.insertAdjacentHTML('afterbegin', `<svg class="garment-svg" viewBox="0 0 104 110" xmlns="http://www.w3.org/2000/svg"></svg>`);
+            frame.insertAdjacentHTML('afterbegin', `<svg class="garment-svg" viewBox="0 0 110 145" xmlns="http://www.w3.org/2000/svg"></svg>`);
             svgEl = frame.querySelector('svg.garment-svg');
         }
-        const fillColor = color === 'white' ? '#f0f0f0' : '#1a1a1a';
-        const strokeColor = color === 'white' ? '#999' : '#000';
-        svgEl.innerHTML = SILHOUETTES[type].replace(/<path/g, `<path fill="${fillColor}" stroke="${strokeColor}" stroke-width="1"`);
+        const fillColor = color === 'white' ? '#f2f2f2' : '#161616';
+        const strokeColor = color === 'white' ? '#8a8a8a' : '#000';
+        const accentColor = color === 'white' ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.14)';
+        svgEl.innerHTML = SILHOUETTES[type]
+            .replaceAll('{{FILL}}', fillColor)
+            .replaceAll('{{STROKE}}', strokeColor)
+            .replaceAll('{{ACCENT}}', accentColor);
     }
 
+    // ===== БАЗА ЮЗЕРА / БАЗА АТЕЛЬЕ =====
+    // currentUser заполняется через паспорт (см. блок интеграции ниже).
+    // Пока паспорт не откликнулся — база работает как GUEST.
+    let currentUser = { id: 'guest', name: 'Guest' };
+
+    function userBaseKey() { return `atelierUserBase:${currentUser.id}`; }
+    function getUserBase() { return get(userBaseKey(), []); }
+    function setUserBase(arr) {
+        try { set(userBaseKey(), arr.slice(-MAX_BASE_ITEMS)); }
+        catch (e) { console.warn('[Atelier] Не удалось сохранить личную базу (квота localStorage?).', e); }
+    }
+    function getClubBase() { return get('atelierClubBase', []); }
+    function setClubBase(arr) {
+        try { set('atelierClubBase', arr.slice(-MAX_BASE_ITEMS)); }
+        catch (e) { console.warn('[Atelier] Не удалось сохранить базу ателье (квота localStorage?).', e); }
+    }
+
+    function updateBaseLabel() {
+        document.getElementById('base-owner-label').textContent = `BASE: ${currentUser.name.toUpperCase()}`;
+    }
+
+    function resizeImageDataUrl(dataUrl, maxDim = 500, quality = 0.85) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                let { width, height } = img;
+                if (width > maxDim || height > maxDim) {
+                    const ratio = Math.min(maxDim / width, maxDim / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width; canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = () => resolve(dataUrl);
+            img.src = dataUrl;
+        });
+    }
+
+    let activeBaseTab = 'user';
+    function renderBaseGallery() {
+        const gallery = document.getElementById('base-gallery');
+        gallery.innerHTML = '';
+        document.getElementById('base-status').textContent = '';
+        const items = activeBaseTab === 'user' ? getUserBase() : getClubBase();
+        document.getElementById('base-modal-title').textContent =
+            activeBaseTab === 'user' ? `MY BASE — ${currentUser.name.toUpperCase()}` : 'ATELIER BASE (SHARED)';
+
+        if (!items.length) {
+            gallery.innerHTML = `<div style="font-size:10px; opacity:0.6; text-align:center; grid-column:1/-1;">Empty — upload a design to fill this base.</div>`;
+            return;
+        }
+        items.slice().reverse().forEach(item => {
+            const cell = document.createElement('div');
+            cell.className = 'base-cell';
+            cell.innerHTML = `
+                <img src="${item.dataUrl}" class="base-thumb">
+                <div class="base-cell-actions">
+                    <button class="btn-cfg base-use">USE</button>
+                    ${activeBaseTab === 'user' ? '<button class="btn-cfg base-send">→ATELIER</button><button class="btn-cfg base-del">×</button>' : ''}
+                </div>`;
+            cell.querySelector('.base-use').addEventListener('click', () => {
+                state.currentPrint = { source: 'own', design: item.dataUrl, category: null };
+                renderPreview();
+                closeModal(document.getElementById('modal-base'));
+            });
+            if (activeBaseTab === 'user') {
+                cell.querySelector('.base-send').addEventListener('click', () => {
+                    const club = getClubBase();
+                    club.push({ id: 'cb_' + Date.now(), dataUrl: item.dataUrl, addedAt: Date.now(), fromUser: currentUser.name });
+                    setClubBase(club);
+                    document.getElementById('base-status').textContent = 'Sent to Atelier Base!';
+                });
+                cell.querySelector('.base-del').addEventListener('click', () => {
+                    setUserBase(getUserBase().filter(i => i.id !== item.id));
+                    renderBaseGallery();
+                });
+            }
+            gallery.appendChild(cell);
+        });
+    }
+    document.querySelectorAll('.base-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.base-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeBaseTab = btn.dataset.tab;
+            renderBaseGallery();
+        });
+    });
+    document.getElementById('btn-my-base').addEventListener('click', () => {
+        activeBaseTab = 'user';
+        document.querySelectorAll('.base-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === 'user'));
+        renderBaseGallery();
+        openModal('modal-base');
+    });
+
+    // ---- Интеграция с паспортом (ДИНАМИЧЕСКИЙ import, безопасно к ошибкам) ----
+    // ⚠️ ПРОВЕРИТЬ: реальное имя события в вашем eventBus.js/passport.js и
+    // форму данных. Сейчас ожидается on('PASSPORT_READY'|'PASSPORT_UPDATED', data)
+    // с data.id/data.passportId и data.name/data.nickname. Если названия другие —
+    // поправьте строки внутри try{} ниже. Пока не подтверждено — база работает
+    // как GUEST и ничего не ломается.
+    function handlePassportData(data) {
+        currentUser = {
+            id: (data && (data.id || data.passportId)) || 'guest',
+            name: (data && (data.name || data.nickname)) || 'Guest'
+        };
+        updateBaseLabel();
+    }
+    (async () => {
+        try {
+            const eventBusModule = await import('./core/eventBus.js');
+            const onFn = eventBusModule.on || eventBusModule.subscribe || (eventBusModule.default && eventBusModule.default.on);
+            if (typeof onFn === 'function') {
+                onFn('PASSPORT_READY', handlePassportData);
+                onFn('PASSPORT_UPDATED', handlePassportData);
+            } else {
+                console.warn('[Atelier] eventBus.js загружен, но on()/subscribe() не найден — база останется GUEST, пока интеграция не будет уточнена.');
+            }
+        } catch (e) {
+            console.warn('[Atelier] Не удалось подключиться к core/eventBus.js для синхронизации с паспортом — база останется GUEST.', e);
+        }
+    })();
+
+    // ===== СОСТОЯНИЕ ЗАКАЗА =====
     let state = {
         type: 'tshirt', size: 'M', color: 'black',
         position: 'front', scale: 'a3',
@@ -314,7 +521,7 @@
         document.querySelectorAll('.print-overlay-img, .print-overlay-emoji').forEach(el => el.remove());
 
         if (state.currentPrint) {
-            const baseSizePx = { a3: 90, a4: 60, 'logo-chest': 28, 'logo-sleeve': 18 }[state.scale];
+            const baseSizePx = { a3: 130, a4: 88, 'logo-chest': 40, 'logo-sleeve': 26 }[state.scale];
             const sizePx = Math.round(baseSizePx * SIZE_SCALE_FACTOR[state.size]);
             if (state.currentPrint.source === 'own') {
                 const img = document.createElement('img');
@@ -349,7 +556,7 @@
         document.getElementById('order-info').innerHTML =
             `${state.type.toUpperCase()} (unisex) / ${state.size} / ${state.color.toUpperCase()}<br>` +
             `Fabric: ${state.fabricDensity} g/m², ${fabricLabel}<br>` +
-            `Print: ${state.currentPrint ? state.currentPrint.design : '— none —'} | ${state.position.toUpperCase()} | ${scaleCm(state.scale)}`;
+            `Print: ${state.currentPrint ? (state.currentPrint.source === 'own' ? '[image]' : state.currentPrint.design) : '— none —'} | ${state.position.toUpperCase()} | ${scaleCm(state.scale)}`;
         document.getElementById('order-price').textContent = `$${calculatePrice()}`;
     }
 
@@ -380,9 +587,13 @@
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => {
-            state.currentPrint = { source: 'own', design: ev.target.result, category: null };
+        reader.onload = async (ev) => {
+            const resized = await resizeImageDataUrl(ev.target.result, 500, 0.85);
+            state.currentPrint = { source: 'own', design: resized, category: null };
             renderPreview();
+            const base = getUserBase();
+            base.push({ id: 'ub_' + Date.now(), dataUrl: resized, addedAt: Date.now() });
+            setUserBase(base);
         };
         reader.readAsDataURL(file);
     });
@@ -451,6 +662,7 @@
     });
 
     document.getElementById('zone-rack').addEventListener('click', () => {
+        updateBaseLabel();
         renderPreview();
         openModal('config-overlay');
     });
