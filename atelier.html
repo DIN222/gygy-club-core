@@ -1,63 +1,28 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.0.0 — 2026-09-16
-  ПОЛНЫЙ ПЕРЕХОД: SVG-силуэт → реальные фото изделий (см. GARMENT_PHOTOS).
-  Изменения относительно v3.3.0:
-  (1) Манекен/SVG удалены. Превью — реальное фото изделия (перед/зад,
-      белый/чёрный), принт накладывается поверх через <img> с
-      mix-blend-mode: multiply на светлых изделиях (чтобы естественные
-      складки/тени ткани проступали сквозь принт — см. решение по
-      "волнистости" фото) и обычным наложением на тёмных (multiply на
-      почти-чёрном обнулил бы принт).
-  (2) Масштаб принта пересчитан под реальные фото: пиксельная ширина
-      каждого изделия на холсте измерена через альфа-канал (bbox),
-      физический размер груди — из реальных таблиц (Word-документ).
-      ⚠️ OUTSTRETCH_FACTOR — приблизительный коэффициент (изделие на
-      фото шире "плоской" ширины груди из таблицы за счёт рукавов) —
-      черновой, желательна проверка на реальной печати.
-  (3) База принтов клуба переведена на Supabase (core/clubBase.js) —
-      лента из 5 иконок (по одной на категорию), стрелки двигают общий
-      указатель глубины параллельно по всем 5 категориям, останавливаясь
-      на первой пустой ячейке (без зацикливания — по явному решению).
-      Категории при этом невидимы пользователю.
-  (4) Свой принт (загрузка/промпт) НИКОГДА не попадает в общую базу
-      автоматически. Только локальный предпросмотр + две кнопки:
-      "Поделиться с клубом" (выбор категории → загрузка в Supabase) и
-      "Удалить" (просто сброс локального состояния, в сеть не уходило).
-      Отменить уже расшаренный принт может только Модермех вручную
-      через консоль Supabase (RLS delete:false — уже опубликовано).
-  (5) Механика SPEND/обмена (④ из v3.3.0) полностью удалена — открытая
-      база компенсирует прежний смысл лимита.
-  (6) Все параметры — только выпадающие списки, единый визуальный
-      принцип, выбранное значение остаётся на месте.
-  (7) Название ателье вынесено в отдельную плашку с иконкой
-      horse_welcome.png. "Конь в пальто" — намеренно непереводимая
-      идиома, оставлена как есть (кандидат на локализацию per-locale
-      в будущем, не как буквальный перевод).
-  (8) Реальные размеры: футболка и лонгслив — 5 честных размеров из
-      документа. Худи — 3-блочная сетка из документа продублирована на
-      5 значений селектора (S,M → блок 1; L,XL → блок 2; XXL → блок 3),
-      по вашему решению ("у профи так принято").
-  (9) Чекбокс "Шнурки на капюшоне" (только для худи) — не влияет на
-      превью (фото остаётся как есть, БЕЗ шнурков), но передаётся в
-      order-info и в объект заказа для мастера.
-  (10) ⚠️ ЧЕРНОВЫЕ ЗНАЧЕНИЯ: плотность/состав ткани худи и лонгслива
-      (нет г/м² и % состава в исходном документе), наценка за состав,
-      OUTSTRETCH_FACTOR масштаба принта, вертикальная позиция принта на
-      фото (PRINT_ANCHOR_Y) — все помечены TODO в коде.
-  (11) Заказы пока по-прежнему пишутся в localStorage
-      (officeAtelierReports) — НЕ в Supabase. Это осознанный временный
-      компромисс: тот же аргумент "локально ≠ обще для всех устройств",
-      что был для базы принтов, применим и к заказам, но перенос заказов
-      в Supabase — отдельная задача на следующий заход, чтобы не
-      раздувать этот рефактор ещё сильнее.
+  v4.1.0 — 2026-09-16
+  Изменения относительно v4.0.0:
+  (1) Убран весь входной экран с фото-фоном и кликабельными зонами
+      (Atelier94.png + .zone/.hotspot). Причина: реально рабочей была
+      только одна зона из шести (START ORDER), остальные — заглушки
+      либо вообще без функции (bot/monitor были голым console.log).
+      Ради единственной рабочей точки заставлять человека проходить
+      через тот самый hover-only-label экран, который мы сами признали
+      неудобным — бессмысленно.
+  (2) Конфигуратор (бывший config-overlay) теперь открывается СРАЗУ при
+      заходе на страницу, как основной экран — не модалка поверх фона.
+  (3) EMBROIDERY / COMBINED (заглушки "Coming soon") и связь через
+      Telegram сохранены как три маленькие кнопки над конфигуратором,
+      а не как отдельные зоны на фоне.
+  (4) zone-consultant / zone-monitor удалены — не несли функции.
+  (5) Вся логика заказа/принтов/фото изделий — без изменений с v4.0.0.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.0.0</title>
+<title>GY-GY Club — Atelier v4.1.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -65,57 +30,29 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         width: 100%; height: 100%; background: #000; color: var(--gold);
-        overflow: hidden; position: fixed; font-family: 'Share Tech Mono', monospace;
+        overflow-y: auto; font-family: 'Share Tech Mono', monospace;
     }
     #atelier-bg {
         position: fixed; inset: 0; z-index: 0; pointer-events: none;
         background: url('Atelier94.png') center/cover no-repeat;
+        opacity: 0.35;
     }
     .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
     .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
     .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; pointer-events: auto; }
     .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
 
-    .zone {
-        position: absolute; cursor: pointer; z-index: 10;
-        display: flex; align-items: center; justify-content: center;
-        pointer-events: auto;
+    .page-wrap {
+        position: relative; z-index: 1;
+        min-height: 100%; display: flex; align-items: flex-start; justify-content: center;
+        padding: 70px 16px 30px;
     }
-    .hotspot {
-        font-size: 20px; display: inline-block;
-        filter: drop-shadow(0 0 4px rgba(255,215,0,0.7));
-        animation: hotspot-pulse 2.4s ease-in-out infinite;
-        transition: transform 0.2s, filter 0.2s; pointer-events: none; line-height: 1;
-    }
-    @keyframes hotspot-pulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
-    .zone:hover .hotspot { transform: scale(1.3); filter: drop-shadow(0 0 10px rgba(255,215,0,1)); animation-play-state: paused; opacity: 1; }
-    .zone-label {
-        position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-        margin-bottom: 4px; font-size: 10px; font-weight: 700; letter-spacing: 1px;
-        color: var(--gold); text-shadow: 1px 1px 0 #000, -1px -1px 0 #000;
-        white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none;
-    }
-    .zone:hover .zone-label { opacity: 1; }
 
-    .zone-rack        { top: 42vh; left: 16vw; width: 24vw; height: 32vh; }
-    .zone-embroidery  { top: 61.5vh; left: 44vw; width: 20vw; height: 6vh; }
-    .zone-combined    { top: 68vh; left: 44vw; width: 20vw; height: 6vh; }
-    .zone-consultant  { top: 30vh; left: 73vw; width: 15vw; height: 40vh; }
-    .zone-monitor     { top: 15vh; left: 8vw; width: 10vw; height: 15vh; }
-    .zone-phone       { top: 65vh; left: 88vw; width: 8vw; height: 12vh; }
-
-    .config-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 2000;
-        display: none; align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.3s ease; overflow-y: auto; padding: 16px;
-        pointer-events: auto;
-    }
     .config-card {
         background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
         padding: 18px; width: 780px; max-width: 98vw; color: #000; position: relative;
         font-family: 'Share Tech Mono', monospace;
     }
-    .config-close { position: absolute; top: 6px; right: 10px; font-size: 24px; cursor: pointer; }
 
     .atelier-title-badge {
         display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -125,7 +62,15 @@
     .atelier-title-badge .title-text {
         font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; text-align: center;
     }
-    .config-subtitle { font-size: 9px; text-align: center; opacity: 0.65; margin-bottom: 10px; letter-spacing: 1px; }
+    .config-subtitle { font-size: 9px; text-align: center; opacity: 0.65; margin-bottom: 8px; letter-spacing: 1px; }
+
+    .top-links-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
+    .top-link-btn {
+        background: #000; color: var(--gold); border: 1px solid var(--gold);
+        padding: 5px 8px; font-size: 8px; font-weight: 700; text-transform: uppercase;
+        cursor: pointer; font-family: 'Share Tech Mono', monospace;
+    }
+    .top-link-btn:hover { filter: brightness(1.2); }
 
     .field-row { display: flex; gap: 6px; margin-bottom: 6px; }
     .field-row select { flex: 1; padding: 5px; border: 1px solid #000; font-family: inherit; font-size: 9px; }
@@ -220,117 +165,115 @@
 </div>
 <div id="passport-badge-container"></div>
 
-<div class="zone zone-rack" id="zone-rack"><span class="hotspot">🌼</span><span class="zone-label">START ORDER</span></div>
-<div class="zone zone-embroidery" id="zone-embroidery"><span class="hotspot">🌼</span><span class="zone-label">EMBROIDERY</span></div>
-<div class="zone zone-combined" id="zone-combined"><span class="hotspot">🌼</span><span class="zone-label">COMBINED</span></div>
-<div class="zone zone-consultant" id="zone-consultant"><span class="hotspot">🌼</span><span class="zone-label">BOT (SOON)</span></div>
-<div class="zone zone-phone" id="zone-phone"><span class="hotspot">🌼</span><span class="zone-label">CALL FOR HELP</span></div>
-<div class="zone zone-monitor" id="zone-monitor"><span class="hotspot">🌼</span><span class="zone-label">???</span></div>
+<div class="page-wrap">
+<div class="config-card">
 
-<div class="config-overlay" id="config-overlay">
-    <div class="config-card">
-        <span class="config-close" data-close>&times;</span>
+    <div class="atelier-title-badge">
+        <img src="horse_welcome.png" alt="">
+        <span class="title-text">Ателье «Конь в пальто»</span>
+    </div>
+    <div class="config-subtitle">CONFIGURE YOUR ORDER</div>
 
-        <div class="atelier-title-badge">
-            <img src="horse_welcome.png" alt="">
-            <span class="title-text">Ателье «Конь в пальто»</span>
+    <div class="top-links-row">
+        <button class="top-link-btn" id="link-embroidery">EMBROIDERY (SOON)</button>
+        <button class="top-link-btn" id="link-combined">COMBINED (SOON)</button>
+        <button class="top-link-btn" id="link-help">CALL FOR HELP</button>
+    </div>
+
+    <div class="config-body">
+        <div class="buttons-col">
+
+            <div class="field-row">
+                <select id="select-type">
+                    <option value="tshirt">T-SHIRT (UNISEX)</option>
+                    <option value="hoodie">HOODIE (UNISEX)</option>
+                    <option value="longsleeve">LONGSLEEVE (UNISEX)</option>
+                </select>
+            </div>
+            <div class="field-row">
+                <select id="select-size">
+                    <option value="S">S</option><option value="M" selected>M</option>
+                    <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+                </select>
+                <select id="select-color">
+                    <option value="black">BLACK</option><option value="white">WHITE</option>
+                </select>
+            </div>
+            <div class="field-row">
+                <select id="select-fabric-density"></select>
+                <select id="select-fabric-composition"></select>
+            </div>
+            <div class="checkbox-row" id="row-drawstring" style="display:none;">
+                <input type="checkbox" id="check-drawstring">
+                <label for="check-drawstring">Шнурки на капюшоне (визуал без изменений)</label>
+            </div>
+
+            <div class="print-strip-row">
+                <button class="print-arrow" id="print-prev">‹</button>
+                <div class="print-strip" id="print-strip"></div>
+                <button class="print-arrow" id="print-next">›</button>
+            </div>
+
+            <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
+
+            <div class="share-row" id="share-row">
+                <button class="btn-cfg small" id="btn-share">ПОДЕЛИТЬСЯ С КЛУБОМ</button>
+                <button class="btn-cfg small" id="btn-delete-own">УДАЛИТЬ</button>
+            </div>
+            <div class="category-picker" id="category-picker">
+                <select id="share-category">
+                    <option value="rebellion">Rebellion</option>
+                    <option value="motivation">Motivation</option>
+                    <option value="intellect">Intellect</option>
+                    <option value="aesthetic">Aesthetic</option>
+                    <option value="nostalgia">Nostalgia</option>
+                </select>
+                <button class="btn-cfg small" id="btn-share-confirm">OK</button>
+            </div>
+
+            <button class="btn-cfg" id="btn-open-prompt" style="margin-top:6px;">GENERATE PROMPT</button>
+            <div class="prompt-builder" id="prompt-builder">
+                <span style="font-size:8px; font-weight:700; opacity:0.7;">PROMPT BUILDER (no API — copy to any AI image tool)</span>
+                <select id="pb-mood">
+                    <option value="rebellion">Rebellion / Bold</option>
+                    <option value="motivation">Motivation</option>
+                    <option value="intellect">Intellect</option>
+                    <option value="aesthetic">Aesthetic</option>
+                    <option value="nostalgia">Nostalgia</option>
+                </select>
+                <input type="text" id="pb-idea" placeholder="Describe your idea...">
+                <button class="btn-cfg" id="btn-build-prompt" style="width:100%; text-align:center;">BUILD PROMPT</button>
+                <div class="prompt-output" id="prompt-output" style="display:none;"></div>
+            </div>
+
+            <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:6px;">CONFIRM ORDER</button>
+
+            <input type="file" id="file-input" accept="image/*" style="display:none;">
         </div>
-        <div class="config-subtitle">CONFIGURE YOUR ORDER</div>
 
-        <div class="config-body">
-            <div class="buttons-col">
-
-                <div class="field-row">
-                    <select id="select-type">
-                        <option value="tshirt">T-SHIRT (UNISEX)</option>
-                        <option value="hoodie">HOODIE (UNISEX)</option>
-                        <option value="longsleeve">LONGSLEEVE (UNISEX)</option>
-                    </select>
-                </div>
-                <div class="field-row">
-                    <select id="select-size">
-                        <option value="S">S</option><option value="M" selected>M</option>
-                        <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
-                    </select>
-                    <select id="select-color">
-                        <option value="black">BLACK</option><option value="white">WHITE</option>
-                    </select>
-                </div>
-                <div class="field-row">
-                    <select id="select-fabric-density"></select>
-                    <select id="select-fabric-composition"></select>
-                </div>
-                <div class="checkbox-row" id="row-drawstring" style="display:none;">
-                    <input type="checkbox" id="check-drawstring">
-                    <label for="check-drawstring">Шнурки на капюшоне (визуал без изменений)</label>
-                </div>
-
-                <div class="print-strip-row">
-                    <button class="print-arrow" id="print-prev">‹</button>
-                    <div class="print-strip" id="print-strip"></div>
-                    <button class="print-arrow" id="print-next">›</button>
-                </div>
-
-                <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
-
-                <div class="share-row" id="share-row">
-                    <button class="btn-cfg small" id="btn-share">ПОДЕЛИТЬСЯ С КЛУБОМ</button>
-                    <button class="btn-cfg small" id="btn-delete-own">УДАЛИТЬ</button>
-                </div>
-                <div class="category-picker" id="category-picker">
-                    <select id="share-category">
-                        <option value="rebellion">Rebellion</option>
-                        <option value="motivation">Motivation</option>
-                        <option value="intellect">Intellect</option>
-                        <option value="aesthetic">Aesthetic</option>
-                        <option value="nostalgia">Nostalgia</option>
-                    </select>
-                    <button class="btn-cfg small" id="btn-share-confirm">OK</button>
-                </div>
-
-                <button class="btn-cfg" id="btn-open-prompt" style="margin-top:6px;">GENERATE PROMPT</button>
-                <div class="prompt-builder" id="prompt-builder">
-                    <span style="font-size:8px; font-weight:700; opacity:0.7;">PROMPT BUILDER (no API — copy to any AI image tool)</span>
-                    <select id="pb-mood">
-                        <option value="rebellion">Rebellion / Bold</option>
-                        <option value="motivation">Motivation</option>
-                        <option value="intellect">Intellect</option>
-                        <option value="aesthetic">Aesthetic</option>
-                        <option value="nostalgia">Nostalgia</option>
-                    </select>
-                    <input type="text" id="pb-idea" placeholder="Describe your idea...">
-                    <button class="btn-cfg" id="btn-build-prompt" style="width:100%; text-align:center;">BUILD PROMPT</button>
-                    <div class="prompt-output" id="prompt-output" style="display:none;"></div>
-                </div>
-
-                <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:6px;">CONFIRM ORDER</button>
-
-                <input type="file" id="file-input" accept="image/*" style="display:none;">
+        <div class="frame-col">
+            <div class="preview-frame" id="preview-frame">
+                <span class="size-badge" id="size-badge">M</span>
+                <img class="garment-photo" id="garment-photo" src="" alt="">
             </div>
-
-            <div class="frame-col">
-                <div class="preview-frame" id="preview-frame">
-                    <span class="size-badge" id="size-badge">M</span>
-                    <img class="garment-photo" id="garment-photo" src="" alt="">
-                </div>
-                <div class="position-row">
-                    <select id="select-position">
-                        <option value="front">FRONT</option>
-                        <option value="back">BACK</option>
-                    </select>
-                    <select id="select-scale">
-                        <option value="a3">A3 (30x40cm)</option>
-                        <option value="a4">A4 (21x30cm)</option>
-                        <option value="logo-chest">LOGO CHEST (10x10cm)</option>
-                        <option value="logo-sleeve">LOGO SLEEVE (7x7cm)</option>
-                    </select>
-                </div>
-                <div class="order-info" id="order-info"></div>
-                <div class="price-line" id="order-price">—</div>
-                <div class="status-line" id="order-status"></div>
+            <div class="position-row">
+                <select id="select-position">
+                    <option value="front">FRONT</option>
+                    <option value="back">BACK</option>
+                </select>
+                <select id="select-scale">
+                    <option value="a3">A3 (30x40cm)</option>
+                    <option value="a4">A4 (21x30cm)</option>
+                    <option value="logo-chest">LOGO CHEST (10x10cm)</option>
+                    <option value="logo-sleeve">LOGO SLEEVE (7x7cm)</option>
+                </select>
             </div>
+            <div class="order-info" id="order-info"></div>
+            <div class="price-line" id="order-price">—</div>
+            <div class="status-line" id="order-status"></div>
         </div>
     </div>
+</div>
 </div>
 
 <div class="modal-overlay" id="modal-placeholder">
@@ -354,7 +297,6 @@
 
     const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: заменить на реальный юзернейм
 
-    // ===== РЕАЛЬНЫЕ ФОТО ИЗДЕЛИЙ =====
     const GARMENT_PHOTOS = {
         tshirt:     { white: { front: 'tshirt-white-front.png', back: 'tshirt-white-back.png' }, black: { front: 'tshirt-black-front.png', back: 'tshirt-black-back.png' } },
         hoodie:     { white: { front: 'hoodie-white-front.png', back: 'hoodie-white-back.png' }, black: { front: 'hoodie-black-front.png', back: 'hoodie-black-back.png' } },
@@ -370,9 +312,6 @@
         'logo-sleeve': { w: 7,  h: 7  }
     };
 
-    // Реальные размеры (см) из вашего документа.
-    // Худи: 3-блочная сетка продублирована на 5 значений селектора,
-    // по вашему решению ("у профи так принято").
     const GARMENT_CHEST_CM = {
         tshirt:     { S: 48, M: 51, L: 54, XL: 57, XXL: 60 },
         hoodie:     { S: 60, M: 60, L: 64, XL: 64, XXL: 68 },
@@ -384,25 +323,15 @@
         longsleeve: { S: 68, M: 70, L: 72, XL: 74, XXL: 76 }
     };
 
-    // Измеренная ширина изделия на фото (px, bbox по альфа-каналу,
-    // холст 567×559). Нужна для расчёта px-на-см.
     const GARMENT_PHOTO_BBOX_W = { tshirt: 492, hoodie: 435, longsleeve: 440 };
-    // ⚠️ TODO: коэффициент "растяжки" — изделие на фото раскинуто с рукавами
-    // шире, чем плоская ширина груди из таблицы. 1.5 — черновая оценка,
-    // стоит свериться на реальной печати.
-    const OUTSTRETCH_FACTOR = 1.5;
-    // ⚠️ TODO: вертикальный якорь принта относительно высоты preview-frame
-    // (0.5 = центр). Черновая оценка под "принт на груди/спине" примерно
-    // в верхней трети торса.
-    const PRINT_ANCHOR_Y = 0.42;
+    const OUTSTRETCH_FACTOR = 1.5; // ⚠️ TODO: черновая оценка, сверить вживую
+    const PRINT_ANCHOR_Y = 0.42;   // ⚠️ TODO: черновая оценка, сверить вживую
 
     function pxPerCm(type, size) {
         const basePxPerCm = GARMENT_PHOTO_BBOX_W[type] / (GARMENT_CHEST_CM[type].M * OUTSTRETCH_FACTOR);
         return basePxPerCm * (GARMENT_CHEST_CM[type].M / GARMENT_CHEST_CM[type][size]);
     }
 
-    // ⚠️ TODO: плотность/состав худи и лонгслива — черновые (в документе
-    // нет г/м² и % состава для них, только для футболки).
     const FABRIC_OPTIONS = {
         tshirt: {
             density:     [{ value: '160-180', label: '160–180 g/m² (standard weight)' }],
@@ -439,13 +368,12 @@
         state.fabricComposition = opts.composition[0].value;
     }
 
-    // ===== СОСТОЯНИЕ =====
     let state = {
         type: 'tshirt', size: 'M', color: 'black',
         position: 'front', scale: 'a3',
         fabricDensity: '160-180', fabricComposition: 'cotton100',
         drawstring: false,
-        currentPrint: null // { source: 'club'|'own', design: url/dataURL, category, shared: bool, blob? }
+        currentPrint: null
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
@@ -474,9 +402,6 @@
         img.style.left = '50%';
         img.style.top = (PRINT_ANCHOR_Y * 100) + '%';
         img.style.transform = 'translate(-50%, -50%)';
-        // multiply — на светлом изделии (чтобы складки/тени ткани
-        // проступали сквозь принт), обычное наложение — на тёмном
-        // (multiply на почти-чёрном обнулил бы принт).
         img.style.mixBlendMode = (state.color === 'white') ? 'multiply' : 'normal';
         frame.appendChild(img);
         updateOrderInfo();
@@ -510,7 +435,6 @@
         if (!isOwnUnshared) document.getElementById('category-picker').classList.remove('open');
     }
 
-    // ===== ЛЕНТА 5 ИКОНОК (Supabase clubBase, параллельный указатель) =====
     let depthPointer = 0;
     function renderPrintStrip() {
         const data = clubBase.getAll();
@@ -537,7 +461,6 @@
     document.getElementById('print-next').addEventListener('click', () => { depthPointer++; renderPrintStrip(); });
     document.getElementById('print-prev').addEventListener('click', () => { depthPointer = Math.max(0, depthPointer - 1); renderPrintStrip(); });
 
-    // ===== ЗАГРУЗКА СВОЕГО ИЗОБРАЖЕНИЯ (локально, не в базу) =====
     function resizeImageToBlobAndUrl(file, maxDim = 500, quality = 0.85) {
         return new Promise((resolve) => {
             const img = new Image();
@@ -575,7 +498,6 @@
     });
 
     document.getElementById('btn-delete-own').addEventListener('click', () => {
-        // Ничего не уходило в сеть — просто сбрасываем локальное состояние.
         state.currentPrint = null;
         renderPrintOverlay();
         updateShareRowVisibility();
@@ -602,7 +524,6 @@
         }
     });
 
-    // ===== ПРОМПТ-БИЛДЕР (Mode A, без API) =====
     document.getElementById('btn-open-prompt').addEventListener('click', () => {
         document.getElementById('prompt-builder').classList.toggle('open');
     });
@@ -620,10 +541,9 @@
         const out = document.getElementById('prompt-output');
         out.textContent = prompt;
         out.style.display = 'block';
-        document.getElementById('share-category').value = mood; // подсказка категории при будущем шаринге
+        document.getElementById('share-category').value = mood;
     });
 
-    // ===== ПАРАМЕТРЫ =====
     document.getElementById('select-type').addEventListener('change', (e) => {
         state.type = e.target.value;
         populateFabricOptions(state.type);
@@ -665,9 +585,6 @@
             } : null,
             price: calculatePrice(), createdAt: Date.now()
         };
-        // TODO: перенести в Supabase (таблица orders), как и базу принтов —
-        // localStorage не общий между устройствами. Пока временно так же,
-        // как было в v3.3.0.
         const reports = get('officeAtelierReports', []);
         reports.push(order);
         set('officeAtelierReports', reports.slice(-50));
@@ -684,40 +601,24 @@
         setTimeout(() => m.style.display = 'none', 300);
     }
     document.querySelectorAll('[data-close]').forEach(el => {
-        el.addEventListener('click', () => closeModal(el.closest('.config-overlay, .modal-overlay')));
+        el.addEventListener('click', () => closeModal(el.closest('.modal-overlay')));
     });
 
-    document.getElementById('zone-rack').addEventListener('click', () => {
-        populateFabricOptions(state.type);
-        document.getElementById('row-drawstring').style.display = (state.type === 'hoodie') ? 'flex' : 'none';
-        renderGarmentPhoto();
-        renderPrintOverlay();
-        renderPrintStrip();
-        updateShareRowVisibility();
-        openModal('config-overlay');
-    });
-    document.getElementById('zone-embroidery').addEventListener('click', () => {
+    document.getElementById('link-embroidery').addEventListener('click', () => {
         document.getElementById('placeholder-title').textContent = 'EMBROIDERY CATALOG';
         openModal('modal-placeholder');
     });
-    document.getElementById('zone-combined').addEventListener('click', () => {
+    document.getElementById('link-combined').addEventListener('click', () => {
         document.getElementById('placeholder-title').textContent = 'COMBINED CATALOG';
         openModal('modal-placeholder');
     });
-    document.getElementById('zone-phone').addEventListener('click', () => {
+    document.getElementById('link-help').addEventListener('click', () => {
         window.open(TELEGRAM_HELP_URL, '_blank');
-    });
-    document.getElementById('zone-consultant').addEventListener('click', () => {
-        console.log('[Atelier] Консультант: заготовка под бота.');
-    });
-    document.getElementById('zone-monitor').addEventListener('click', () => {
-        console.log('[Atelier] LAUNCH SYSTEM: декоративная деталь.');
     });
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
 
-    // ---- Паспорт (см. пояснение в предыдущих версиях) ----
     function handlePassportData(data) {
         currentUser = {
             id: (data && (data.id || data.passportId)) || 'guest',
@@ -734,14 +635,17 @@
         console.warn('[Atelier] Не удалось подключиться к eventBus для паспорта.', e);
     }
 
-    // ---- Инициализация базы клуба (Supabase) ----
     clubBase.init(eventBus).then(() => renderPrintStrip());
     try {
         const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
         if (typeof onFn === 'function') onFn('CLUBBASE_UPDATED', renderPrintStrip);
-    } catch (e) { /* eventBus недоступен — renderPrintStrip всё равно вызовется после init() */ }
+    } catch (e) { /* eventBus недоступен */ }
 
+    // Инициализация экрана сразу при загрузке — конфигуратор теперь
+    // основной экран Ателье, без промежуточного захода.
     populateFabricOptions(state.type);
+    renderGarmentPhoto();
+    renderPrintOverlay();
 </script>
 
 </body>
