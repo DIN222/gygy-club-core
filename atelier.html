@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.4.0 — 2026-09-16
-  Изменения относительно v4.3.0 — визуальный принцип "морской офицер":
-  чёрный китель, золотые галуны, белая рубашка выглядывает узкой
-  полосой (воротник/манжет), а не самостоятельным пятном.
-  (1) Новая переменная --ivory (#F0EAD6, тёплый слоновой кости) вместо
-      стерильного #fff везде, где белый остаётся по смыслу.
-  (2) preview-frame: убрана сплошная белая заливка. Теперь это чёрная
-      "витрина" (тонкий радиальный градиент для объёма) в золотой
-      рамке с тонким ivory-кантом между рамкой и чёрным полем —
-      имитация золотого галуна поверх белого канта кителя.
-  (3) order-info: было сплошное белое окно — стало тёмной табличкой
-      с тонкой золотой обводкой и текстом цвета ivory (как латунная
-      именная табличка/шеврон, а не белая карточка).
-  (4) Дропдауны и prompt-output/category-picker: чёрная окантовка
-      заменена на золотую (тоньше), заливка — ivory вместо чистого
-      белого. Текст внутри остаётся тёмным для читаемости мелкого
-      шрифта — это единственное место, где светлый фон нужен
-      функционально, не только эстетически.
-  (5) status-line оставлен функционально-зелёным (это семантический
-      индикатор успеха/ошибки, а не декоративный элемент — трогать
-      цепочку цветовой семантики не стал).
+  v4.5.0 — 2026-09-16
+  Визуальный пасс: "тихая роскошь" + "тактическая геометрия" вместо
+  буквальной формы морского офицера. Только CSS — структура/логика
+  без изменений с v4.4.0.
+  (1) Золото сведено к акцентам на действительно важных точках:
+      заголовок ателье, цена, состояние "выбрано" (активный print-icon),
+      кнопка подтверждения. Остальные элементы — тонкая линия --gold-dim
+      вместо яркой 2px рамки.
+  (2) Glow (text-shadow) убран везде, оставлен только на заголовке
+      ателье — единственный акцентный момент, а не фон-эффект на
+      каждой детали.
+  (3) preview-frame-outer: убрана толстая ivory-подложка ("галун"),
+      добавлен .hud-frame — четыре тонких уголка-засечки по углам
+      (чистый CSS через множественные background, без доп. разметки) —
+      как в прицельной сетке/интерфейсе прибора, а не в форменном каре.
+  (4) order-info: убрана рамка-карточка, оставлена тонкая верхняя
+      линия — данные читаются как сноска, а не как отдельная "табличка".
+  (5) Дропдауны/print-icon: рамки истончены (1px --gold-dim вместо
+      1.5-2px ярких), сама эстетика "формы" убрана, осталась
+      функциональная ivory-заливка только там, где нужна читаемость
+      мелкого текста.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.4.0</title>
+<title>GY-GY Club — Atelier v4.5.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
     :root {
         --gold: #FFD700;
-        --gold-dim: #a8862c;
+        --gold-dim: #8a6f24;
         --ivory: #F0EAD6;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -48,8 +48,8 @@
     }
     .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
     .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
-    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; pointer-events: auto; }
-    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
+    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s; pointer-events: auto; }
+    .back-arrow:hover { opacity: 0.6; }
 
     .page-wrap {
         position: relative; z-index: 1;
@@ -59,16 +59,16 @@
 
     .atelier-title-badge {
         display: flex; align-items: center; justify-content: center; gap: 10px;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
     }
     .atelier-title-badge img { width: 44px; height: 44px; object-fit: contain; }
     .atelier-title-badge .title-text {
         font-family: 'Cinzel', serif; font-weight: 900; font-size: 18px; text-align: center;
-        text-shadow: 0 0 10px rgba(255,215,0,0.4);
+        text-shadow: 0 0 8px rgba(255,215,0,0.35); /* единственный glow на всей странице */
     }
 
     .field-row { display: flex; gap: 6px; margin-bottom: 6px; }
-    .field-row select { flex: 1; padding: 5px; border: 1px solid var(--gold-dim); border-radius: 2px; background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 9px; }
+    .field-row select { flex: 1; padding: 5px; border: 1px solid var(--gold-dim); border-radius: 1px; background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 9px; }
 
     .config-body { display: flex; gap: 20px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 960px; }
     .buttons-col { flex: 0 0 220px; display: flex; flex-direction: column; gap: 6px; }
@@ -82,48 +82,63 @@
     .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 700; padding: 4px 2px; color: var(--gold); }
     .checkbox-row input { width: 14px; height: 14px; }
 
-    /* Витрина: золотой галун, тонкий ivory-кант, чёрное поле с объёмом */
+    /* Тактические уголки — чистый CSS, без доп. разметки */
+    .hud-frame {
+        position: relative;
+        --hc: 14px; --ht: 1px;
+        background:
+            linear-gradient(var(--gold-dim), var(--gold-dim)) top left / var(--hc) var(--ht) no-repeat,
+            linear-gradient(var(--gold-dim), var(--gold-dim)) top left / var(--ht) var(--hc) no-repeat,
+            linear-gradient(var(--gold-dim), var(--gold-dim)) top right / var(--hc) var(--ht) no-repeat,
+            linear-gradient(var(--gold-dim), var(--gold-dim)) top right / var(--ht) var(--hc) no-repeat,
+            linear-gradient(var(--gold-dim), var(--gold-dim)) bottom left / var(--hc) var(--ht) no-repeat,
+            linear-gradient(var(--gold-dim), var(--gold-dim)) bottom left / var(--ht) var(--hc) no-repeat,
+            linear-gradient(var(--gold-dim), var(--gold-dim)) bottom right / var(--hc) var(--ht) no-repeat,
+            linear-gradient(var(--gold-dim), var(--gold-dim)) bottom right / var(--ht) var(--hc) no-repeat;
+    }
+
     .preview-frame-outer {
-        width: 100%; max-width: 380px; padding: 4px;
-        background: var(--ivory); border: 2px solid var(--gold);
-        border-radius: 6px;
+        width: 100%; max-width: 380px; padding: 6px;
     }
     .preview-frame {
         width: 100%; height: 372px;
-        background: radial-gradient(ellipse at center, #202020 0%, #0a0a0a 100%);
+        background: radial-gradient(ellipse at center, #1c1c1c 0%, #050505 100%);
         position: relative; display: flex; align-items: center; justify-content: center;
-        overflow: hidden; border-radius: 3px;
+        overflow: hidden;
     }
     .garment-photo { width: 100%; height: 100%; object-fit: contain; user-select: none; pointer-events: none; }
     .size-badge {
         position: absolute; top: 6px; right: 6px; background: var(--gold);
-        color: #000; font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px; z-index: 5;
+        color: #000; font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 2px; z-index: 5;
     }
     .print-overlay-img {
         position: absolute; pointer-events: none; object-fit: cover;
     }
 
     .btn-cfg {
-        background: #000; color: var(--gold); border: 2px solid var(--gold);
+        background: #000; color: var(--gold); border: 1px solid var(--gold-dim);
         padding: 6px 8px; cursor: pointer; font-weight: 700; text-transform: uppercase;
         font-family: 'Share Tech Mono', monospace; font-size: 9px; text-align: left;
+        transition: border-color 0.2s, color 0.2s;
     }
-    .btn-cfg:hover:not(:disabled) { filter: brightness(1.2); }
+    .btn-cfg:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
     .btn-cfg:disabled { opacity: 0.3; cursor: not-allowed; }
-    .btn-cfg.confirm { background: #1a4; border-color: #1a4; color: #fff; text-align: center; }
+    .btn-cfg.confirm { background: #163d24; border-color: var(--gold); color: var(--ivory); text-align: center; }
+    .btn-cfg.confirm:hover { border-color: var(--gold); background: #1c4d2d; }
     .btn-cfg.small { padding: 4px 6px; font-size: 8px; flex: 1; text-align: center; }
     .btn-cfg.wide { text-align: center; }
 
     .print-strip-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
     .print-strip { display: flex; gap: 4px; flex: 1; }
     .print-icon {
-        flex: 1; aspect-ratio: 1; border: 1.5px solid var(--gold-dim); background: var(--ivory);
+        flex: 1; aspect-ratio: 1; border: 1px solid var(--gold-dim); background: var(--ivory);
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        overflow: hidden; position: relative; border-radius: 2px;
+        overflow: hidden; position: relative; transition: border-color 0.2s;
     }
+    .print-icon:hover { border-color: var(--gold); }
     .print-icon img { width: 100%; height: 100%; object-fit: cover; }
     .print-icon.empty { background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 4px, #1a1a1a 4px, #1a1a1a 8px); cursor: default; border-color: #333; }
-    .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold); width: 22px; height: 22px; cursor: pointer; font-weight: 900; font-size: 12px; flex-shrink: 0; }
+    .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); width: 22px; height: 22px; cursor: pointer; font-weight: 900; font-size: 12px; flex-shrink: 0; }
     .print-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
     .share-row { display: none; gap: 6px; margin-top: 4px; }
@@ -136,17 +151,17 @@
     .position-row select { flex: 1; padding: 4px; font-size: 10px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
 
     .order-info {
-        font-size: 10px; margin-top: 4px; padding: 8px;
-        background: #0a0a0a; color: var(--ivory);
-        border: 1px solid var(--gold); border-radius: 3px;
+        font-size: 10px; margin-top: 4px; padding: 8px 2px 4px;
+        color: var(--ivory);
+        border-top: 1px solid var(--gold-dim);
     }
-    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 16px; text-align: center; margin-top: 6px; }
+    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 17px; text-align: center; margin-top: 8px; color: var(--gold); }
     .status-line { font-size: 10px; color: #6fd48a; text-align: center; margin-top: 4px; min-height: 14px; }
 
-    .prompt-builder { display: none; margin-top: 6px; padding: 8px; background: #0a0a0a; border: 1px dashed var(--gold-dim); border-radius: 4px; }
+    .prompt-builder { display: none; margin-top: 6px; padding: 8px 0 0; border-top: 1px dashed var(--gold-dim); }
     .prompt-builder.open { display: block; }
     .prompt-builder select, .prompt-builder input { width: 100%; padding: 4px; margin-bottom: 5px; font-size: 9px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
-    .prompt-output { font-size: 9px; background: #1a1a1a; color: var(--ivory); border: 1px solid var(--gold-dim); padding: 6px; margin-top: 5px; word-break: break-word; user-select: all; }
+    .prompt-output { font-size: 9px; background: #141414; color: var(--ivory); border-left: 2px solid var(--gold-dim); padding: 6px 8px; margin-top: 5px; word-break: break-word; user-select: all; }
 
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
@@ -154,7 +169,7 @@
         transition: opacity 0.3s ease; pointer-events: auto;
     }
     .modal-card {
-        background: var(--ivory); border: 3px solid var(--gold); border-radius: 16px;
+        background: var(--ivory); border: 1px solid var(--gold); border-radius: 4px;
         padding: 24px; width: 300px; color: #1a1408; text-align: center; position: relative;
         font-family: 'Share Tech Mono', monospace;
     }
@@ -255,7 +270,7 @@
         </div>
 
         <div class="frame-col">
-            <div class="preview-frame-outer">
+            <div class="preview-frame-outer hud-frame">
                 <div class="preview-frame" id="preview-frame">
                     <span class="size-badge" id="size-badge">M</span>
                     <img class="garment-photo" id="garment-photo" src="" alt="">
