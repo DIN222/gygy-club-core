@@ -1,32 +1,41 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.1.0 — 2026-09-16
-  Изменения относительно v4.0.0:
-  (1) Убран весь входной экран с фото-фоном и кликабельными зонами
-      (Atelier94.png + .zone/.hotspot). Причина: реально рабочей была
-      только одна зона из шести (START ORDER), остальные — заглушки
-      либо вообще без функции (bot/monitor были голым console.log).
-      Ради единственной рабочей точки заставлять человека проходить
-      через тот самый hover-only-label экран, который мы сами признали
-      неудобным — бессмысленно.
-  (2) Конфигуратор (бывший config-overlay) теперь открывается СРАЗУ при
-      заходе на страницу, как основной экран — не модалка поверх фона.
-  (3) EMBROIDERY / COMBINED (заглушки "Coming soon") и связь через
-      Telegram сохранены как три маленькие кнопки над конфигуратором,
-      а не как отдельные зоны на фоне.
-  (4) zone-consultant / zone-monitor удалены — не несли функции.
-  (5) Вся логика заказа/принтов/фото изделий — без изменений с v4.0.0.
+  v4.4.0 — 2026-09-16
+  Изменения относительно v4.3.0 — визуальный принцип "морской офицер":
+  чёрный китель, золотые галуны, белая рубашка выглядывает узкой
+  полосой (воротник/манжет), а не самостоятельным пятном.
+  (1) Новая переменная --ivory (#F0EAD6, тёплый слоновой кости) вместо
+      стерильного #fff везде, где белый остаётся по смыслу.
+  (2) preview-frame: убрана сплошная белая заливка. Теперь это чёрная
+      "витрина" (тонкий радиальный градиент для объёма) в золотой
+      рамке с тонким ivory-кантом между рамкой и чёрным полем —
+      имитация золотого галуна поверх белого канта кителя.
+  (3) order-info: было сплошное белое окно — стало тёмной табличкой
+      с тонкой золотой обводкой и текстом цвета ivory (как латунная
+      именная табличка/шеврон, а не белая карточка).
+  (4) Дропдауны и prompt-output/category-picker: чёрная окантовка
+      заменена на золотую (тоньше), заливка — ivory вместо чистого
+      белого. Текст внутри остаётся тёмным для читаемости мелкого
+      шрифта — это единственное место, где светлый фон нужен
+      функционально, не только эстетически.
+  (5) status-line оставлен функционально-зелёным (это семантический
+      индикатор успеха/ошибки, а не декоративный элемент — трогать
+      цепочку цветовой семантики не стал).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.1.0</title>
+<title>GY-GY Club — Atelier v4.4.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
-    :root { --gold: #FFD700; }
+    :root {
+        --gold: #FFD700;
+        --gold-dim: #a8862c;
+        --ivory: #F0EAD6;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         width: 100%; height: 100%; background: #000; color: var(--gold);
@@ -44,53 +53,46 @@
 
     .page-wrap {
         position: relative; z-index: 1;
-        min-height: 100%; display: flex; align-items: flex-start; justify-content: center;
+        min-height: 100%; display: flex; flex-direction: column; align-items: center;
         padding: 70px 16px 30px;
     }
 
-    .config-card {
-        background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
-        padding: 18px; width: 780px; max-width: 98vw; color: #000; position: relative;
-        font-family: 'Share Tech Mono', monospace;
-    }
-
     .atelier-title-badge {
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-        margin-bottom: 4px;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        margin-bottom: 16px;
     }
-    .atelier-title-badge img { width: 26px; height: 26px; object-fit: contain; }
+    .atelier-title-badge img { width: 44px; height: 44px; object-fit: contain; }
     .atelier-title-badge .title-text {
-        font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; text-align: center;
+        font-family: 'Cinzel', serif; font-weight: 900; font-size: 18px; text-align: center;
+        text-shadow: 0 0 10px rgba(255,215,0,0.4);
     }
-    .config-subtitle { font-size: 9px; text-align: center; opacity: 0.65; margin-bottom: 8px; letter-spacing: 1px; }
-
-    .top-links-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
-    .top-link-btn {
-        background: #000; color: var(--gold); border: 1px solid var(--gold);
-        padding: 5px 8px; font-size: 8px; font-weight: 700; text-transform: uppercase;
-        cursor: pointer; font-family: 'Share Tech Mono', monospace;
-    }
-    .top-link-btn:hover { filter: brightness(1.2); }
 
     .field-row { display: flex; gap: 6px; margin-bottom: 6px; }
-    .field-row select { flex: 1; padding: 5px; border: 1px solid #000; font-family: inherit; font-size: 9px; }
+    .field-row select { flex: 1; padding: 5px; border: 1px solid var(--gold-dim); border-radius: 2px; background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 9px; }
 
-    .config-body { display: flex; gap: 14px; margin-top: 4px; align-items: flex-start; }
-    .buttons-col { flex: 0 0 230px; display: flex; flex-direction: column; gap: 6px; }
-    .frame-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+    .config-body { display: flex; gap: 20px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 960px; }
+    .buttons-col { flex: 0 0 220px; display: flex; flex-direction: column; gap: 6px; }
+    .frame-col { flex: 0 0 380px; display: flex; flex-direction: column; align-items: center; }
 
-    @media (max-width: 720px) {
+    @media (max-width: 900px) {
         .config-body { flex-direction: column; align-items: center; }
-        .buttons-col { flex: 1 1 auto; width: 100%; max-width: 460px; }
+        .buttons-col, .frame-col { flex: 1 1 auto; width: 100%; max-width: 400px; }
     }
 
-    .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 700; padding: 4px 2px; }
+    .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 700; padding: 4px 2px; color: var(--gold); }
     .checkbox-row input { width: 14px; height: 14px; }
 
+    /* Витрина: золотой галун, тонкий ivory-кант, чёрное поле с объёмом */
+    .preview-frame-outer {
+        width: 100%; max-width: 380px; padding: 4px;
+        background: var(--ivory); border: 2px solid var(--gold);
+        border-radius: 6px;
+    }
     .preview-frame {
-        width: 100%; max-width: 460px; height: min(52vh, 440px); border: 2px solid #000; background: #fff;
+        width: 100%; height: 372px;
+        background: radial-gradient(ellipse at center, #202020 0%, #0a0a0a 100%);
         position: relative; display: flex; align-items: center; justify-content: center;
-        overflow: hidden;
+        overflow: hidden; border-radius: 3px;
     }
     .garment-photo { width: 100%; height: 100%; object-fit: contain; user-select: none; pointer-events: none; }
     .size-badge {
@@ -110,16 +112,17 @@
     .btn-cfg:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-cfg.confirm { background: #1a4; border-color: #1a4; color: #fff; text-align: center; }
     .btn-cfg.small { padding: 4px 6px; font-size: 8px; flex: 1; text-align: center; }
+    .btn-cfg.wide { text-align: center; }
 
     .print-strip-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
     .print-strip { display: flex; gap: 4px; flex: 1; }
     .print-icon {
-        flex: 1; aspect-ratio: 1; border: 1.5px solid #000; background: #fff;
+        flex: 1; aspect-ratio: 1; border: 1.5px solid var(--gold-dim); background: var(--ivory);
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        overflow: hidden; position: relative;
+        overflow: hidden; position: relative; border-radius: 2px;
     }
     .print-icon img { width: 100%; height: 100%; object-fit: cover; }
-    .print-icon.empty { background: repeating-linear-gradient(45deg, #ddd, #ddd 4px, #eee 4px, #eee 8px); cursor: default; }
+    .print-icon.empty { background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 4px, #1a1a1a 4px, #1a1a1a 8px); cursor: default; border-color: #333; }
     .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold); width: 22px; height: 22px; cursor: pointer; font-weight: 900; font-size: 12px; flex-shrink: 0; }
     .print-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
@@ -127,19 +130,23 @@
     .share-row.visible { display: flex; }
     .category-picker { display: none; gap: 4px; margin-top: 4px; }
     .category-picker.open { display: flex; }
-    .category-picker select { flex: 1; padding: 4px; font-size: 8px; border: 1px solid #000; }
+    .category-picker select { flex: 1; padding: 4px; font-size: 8px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
 
-    .position-row { display: flex; gap: 6px; margin-top: 8px; width: 100%; max-width: 460px; }
-    .position-row select { flex: 1; padding: 4px; font-size: 10px; border: 1px solid #000; }
+    .position-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .position-row select { flex: 1; padding: 4px; font-size: 10px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
 
-    .order-info { font-size: 10px; margin-top: 8px; padding: 6px; background: #fff; border: 1px solid #000; width: 100%; max-width: 460px; }
+    .order-info {
+        font-size: 10px; margin-top: 4px; padding: 8px;
+        background: #0a0a0a; color: var(--ivory);
+        border: 1px solid var(--gold); border-radius: 3px;
+    }
     .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 16px; text-align: center; margin-top: 6px; }
-    .status-line { font-size: 10px; color: #2a6; text-align: center; margin-top: 4px; min-height: 14px; }
+    .status-line { font-size: 10px; color: #6fd48a; text-align: center; margin-top: 4px; min-height: 14px; }
 
-    .prompt-builder { display: none; margin-top: 6px; padding: 8px; background: #fff; border: 1px dashed #000; }
+    .prompt-builder { display: none; margin-top: 6px; padding: 8px; background: #0a0a0a; border: 1px dashed var(--gold-dim); border-radius: 4px; }
     .prompt-builder.open { display: block; }
-    .prompt-builder select, .prompt-builder input { width: 100%; padding: 4px; margin-bottom: 5px; font-size: 9px; border: 1px solid #000; }
-    .prompt-output { font-size: 9px; background: #eee; padding: 6px; margin-top: 5px; word-break: break-word; user-select: all; }
+    .prompt-builder select, .prompt-builder input { width: 100%; padding: 4px; margin-bottom: 5px; font-size: 9px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
+    .prompt-output { font-size: 9px; background: #1a1a1a; color: var(--ivory); border: 1px solid var(--gold-dim); padding: 6px; margin-top: 5px; word-break: break-word; user-select: all; }
 
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
@@ -147,8 +154,8 @@
         transition: opacity 0.3s ease; pointer-events: auto;
     }
     .modal-card {
-        background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
-        padding: 24px; width: 300px; color: #000; text-align: center; position: relative;
+        background: var(--ivory); border: 3px solid var(--gold); border-radius: 16px;
+        padding: 24px; width: 300px; color: #1a1408; text-align: center; position: relative;
         font-family: 'Share Tech Mono', monospace;
     }
     .modal-close { position: absolute; top: 8px; right: 12px; font-size: 26px; cursor: pointer; }
@@ -166,22 +173,15 @@
 <div id="passport-badge-container"></div>
 
 <div class="page-wrap">
-<div class="config-card">
 
     <div class="atelier-title-badge">
         <img src="horse_welcome.png" alt="">
         <span class="title-text">Ателье «Конь в пальто»</span>
     </div>
-    <div class="config-subtitle">CONFIGURE YOUR ORDER</div>
-
-    <div class="top-links-row">
-        <button class="top-link-btn" id="link-embroidery">EMBROIDERY (SOON)</button>
-        <button class="top-link-btn" id="link-combined">COMBINED (SOON)</button>
-        <button class="top-link-btn" id="link-help">CALL FOR HELP</button>
-    </div>
 
     <div class="config-body">
         <div class="buttons-col">
+            <button class="btn-cfg wide" id="link-help">ПОГОВОРИТЬ С ДРУЗЬЯМИ (TELEGRAM)</button>
 
             <div class="field-row">
                 <select id="select-type">
@@ -206,6 +206,13 @@
             <div class="checkbox-row" id="row-drawstring" style="display:none;">
                 <input type="checkbox" id="check-drawstring">
                 <label for="check-drawstring">Шнурки на капюшоне (визуал без изменений)</label>
+            </div>
+
+            <div class="field-row">
+                <select id="select-technique">
+                    <option value="dtf">DTF-ПЕЧАТЬ</option>
+                    <option value="embroidery">ВЫШИВКА</option>
+                </select>
             </div>
 
             <div class="print-strip-row">
@@ -245,17 +252,18 @@
                 <button class="btn-cfg" id="btn-build-prompt" style="width:100%; text-align:center;">BUILD PROMPT</button>
                 <div class="prompt-output" id="prompt-output" style="display:none;"></div>
             </div>
-
-            <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:6px;">CONFIRM ORDER</button>
-
-            <input type="file" id="file-input" accept="image/*" style="display:none;">
         </div>
 
         <div class="frame-col">
-            <div class="preview-frame" id="preview-frame">
-                <span class="size-badge" id="size-badge">M</span>
-                <img class="garment-photo" id="garment-photo" src="" alt="">
+            <div class="preview-frame-outer">
+                <div class="preview-frame" id="preview-frame">
+                    <span class="size-badge" id="size-badge">M</span>
+                    <img class="garment-photo" id="garment-photo" src="" alt="">
+                </div>
             </div>
+        </div>
+
+        <div class="buttons-col">
             <div class="position-row">
                 <select id="select-position">
                     <option value="front">FRONT</option>
@@ -271,9 +279,11 @@
             <div class="order-info" id="order-info"></div>
             <div class="price-line" id="order-price">—</div>
             <div class="status-line" id="order-status"></div>
+            <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:8px;">CONFIRM ORDER</button>
         </div>
     </div>
-</div>
+
+    <input type="file" id="file-input" accept="image/*" style="display:none;">
 </div>
 
 <div class="modal-overlay" id="modal-placeholder">
@@ -305,6 +315,7 @@
 
     const BASE_PRICE = { tshirt: 15, hoodie: 35, longsleeve: 22 };
     const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3 };
+    const TECH_PRICE_MOD = { dtf: 0, embroidery: 7 }; // ⚠️ TODO: черновая наценка за вышивку
     const SCALE_DIMENSIONS_CM = {
         'a3':          { w: 30, h: 40 },
         'a4':          { w: 21, h: 30 },
@@ -372,7 +383,7 @@
         type: 'tshirt', size: 'M', color: 'black',
         position: 'front', scale: 'a3',
         fabricDensity: '160-180', fabricComposition: 'cotton100',
-        drawstring: false,
+        drawstring: false, technique: 'dtf',
         currentPrint: null
     };
     let currentUser = { id: 'guest', name: 'Guest' };
@@ -413,7 +424,10 @@
     }
     function calculatePrice() {
         let p = BASE_PRICE[state.type] || 0;
-        if (state.currentPrint) p += SCALE_PRICE[state.scale] || 0;
+        if (state.currentPrint) {
+            p += SCALE_PRICE[state.scale] || 0;
+            p += TECH_PRICE_MOD[state.technique] || 0;
+        }
         p += FABRIC_PRICE_MOD[state.fabricComposition] || 0;
         return p;
     }
@@ -421,10 +435,11 @@
         const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
         const drawstringLine = (state.type === 'hoodie')
             ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА (визуал без изменений на превью)' : 'нет'}` : '';
+        const techLabel = state.technique === 'embroidery' ? 'ВЫШИВКА' : 'DTF-ПЕЧАТЬ';
         document.getElementById('order-info').innerHTML =
             `${state.type.toUpperCase()} (unisex) / ${state.size} / ${state.color.toUpperCase()}<br>` +
             `Fabric: ${state.fabricDensity} g/m², ${compLabel}${drawstringLine}<br>` +
-            `Print: ${state.currentPrint ? '[image]' : '— none —'} | ${state.position.toUpperCase()} | ${scaleCm(state.scale)}`;
+            `Print: ${state.currentPrint ? '[image] · ' + techLabel : '— none —'} | ${state.position.toUpperCase()} | ${scaleCm(state.scale)}`;
         document.getElementById('order-price').textContent = `$${calculatePrice()}`;
     }
 
@@ -555,6 +570,10 @@
         state.drawstring = e.target.checked;
         updateOrderInfo();
     });
+    document.getElementById('select-technique').addEventListener('change', (e) => {
+        state.technique = e.target.value;
+        updateOrderInfo();
+    });
     ['select-size','select-color','select-position','select-scale'].forEach(id => {
         document.getElementById(id).addEventListener('change', (e) => {
             const map = { 'select-size':'size','select-color':'color','select-position':'position','select-scale':'scale' };
@@ -581,6 +600,7 @@
                 source: state.currentPrint.source,
                 shared: !!state.currentPrint.shared,
                 category: state.currentPrint.category || null,
+                technique: state.technique,
                 position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale)
             } : null,
             price: calculatePrice(), createdAt: Date.now()
@@ -604,14 +624,6 @@
         el.addEventListener('click', () => closeModal(el.closest('.modal-overlay')));
     });
 
-    document.getElementById('link-embroidery').addEventListener('click', () => {
-        document.getElementById('placeholder-title').textContent = 'EMBROIDERY CATALOG';
-        openModal('modal-placeholder');
-    });
-    document.getElementById('link-combined').addEventListener('click', () => {
-        document.getElementById('placeholder-title').textContent = 'COMBINED CATALOG';
-        openModal('modal-placeholder');
-    });
     document.getElementById('link-help').addEventListener('click', () => {
         window.open(TELEGRAM_HELP_URL, '_blank');
     });
@@ -641,8 +653,6 @@
         if (typeof onFn === 'function') onFn('CLUBBASE_UPDATED', renderPrintStrip);
     } catch (e) { /* eventBus недоступен */ }
 
-    // Инициализация экрана сразу при загрузке — конфигуратор теперь
-    // основной экран Ателье, без промежуточного захода.
     populateFabricOptions(state.type);
     renderGarmentPhoto();
     renderPrintOverlay();
