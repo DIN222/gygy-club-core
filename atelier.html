@@ -1,33 +1,28 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.9.0 — 2026-09-16
-  Изменения относительно v4.8.0:
-  (1) КРИТИЧНО: импорт core/clubBase.js переведён с статического на
-      динамический (import() внутри try/catch с top-level await).
-      Причина: статический import в начале файла — если ХОТЯ БЫ ОДИН
-      импортируемый модуль отсутствует (404), весь скрипт не выполняется
-      целиком, включая логику, вообще не связанную с Supabase. Это,
-      судя по описанным симптомам (пустые dropdown плотности/состава,
-      незаполненный order-info, невставленная цена вместо "—"), и
-      произошло — вероятно, core/clubBase.js и/или core/supabase-init.js
-      ещё не залиты в репозиторий или лежат не по тому пути. Теперь при
-      отсутствии модуля используется заглушка (пустая база), остальной
-      конфигуратор работает независимо. ⚠️ Саму базу принтов клуба это
-      не чинит — файлы всё равно нужно подтвердить/залить.
-  (2) Навигационные стрелки "‹"/"«" возвращены к простому виду (текст
-      без кружка/рамки) — было временное экспериментальное изменение
-      в v4.8.0, откатываю.
-  (3) "UNISEX" убран из названий изделий (T-SHIRT/HOODIE/LONGSLEEVE).
-      Вместо этого в "Посадка" (для футболки/лонгслива) первый вариант
-      переименован из "Прямая" в "Унисекс" — так смысл сохраняется, но
-      как выбираемый параметр кроя, а не подпись к названию товара.
+  v4.11.0 — 2026-09-18
+  Изменения относительно v4.10.0:
+  (1) НОВОЕ: автоудаление фона при загрузке своего PNG — flood-fill
+      от краёв изображения по цветовой близости к цвету углов
+      (removeBackgroundFlood). Работает без внешних библиотек и без
+      сервера, прямо в браузере на canvas. ⚠️ Честно про ограничения:
+      хорошо работает для однотонного/плоского фона — типичный случай
+      для ИИ-сгенерированного принта (даже когда сам ИИ не дал настоящую
+      прозрачность). На сложном фото со множеством цветов по краям
+      сработает хуже или может задеть часть рисунка — порог
+      (BG_REMOVE_THRESHOLD) можно будет подстроить по факту использования.
+  (2) НОВОЕ: техника "ВЫШИВКА" теперь доступна только когда выбран
+      принт ИЗ БАЗЫ КЛУБА (currentPrint.source === 'club'). Для своего
+      загруженного/сгенерированного принта пункт вышивки заблокирован
+      в выпадающем списке с поясняющей подписью, а под селектором —
+      текстовая сноска о причине (нужна отдельная цифровка).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.9.0</title>
+<title>GY-GY Club — Atelier v4.11.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -50,6 +45,10 @@
     .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
     .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; pointer-events: auto; }
     .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
+
+    .gy-user-badge { position: fixed; top: 4px; left: 50%; transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; display: none; z-index: 1000; }
+    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
 
     .page-wrap {
         position: relative; z-index: 1; min-height: 100vh;
@@ -80,6 +79,7 @@
         background: #141414; color: var(--ivory); font-size: 10px; font-weight: 700;
         display: flex; align-items: center; letter-spacing: 0.5px;
     }
+    .tech-note { font-size: 8px; opacity: 0.7; color: var(--ivory); margin: -3px 0 6px 2px; line-height: 1.4; }
 
     .config-body { display: flex; gap: 22px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 1000px; }
     .buttons-col { flex: 0 0 240px; display: flex; flex-direction: column; gap: 8px; }
@@ -105,7 +105,20 @@
         position: absolute; top: 8px; right: 8px; background: var(--gold);
         color: #000; font-size: 11px; font-weight: 900; padding: 3px 7px; border-radius: 3px; z-index: 5;
     }
-    .print-overlay-img { position: absolute; pointer-events: none; object-fit: cover; }
+    .print-overlay-img {
+        position: absolute; object-fit: cover; cursor: move; touch-action: none;
+        outline: 1px dashed rgba(255,215,0,0.5);
+    }
+    .print-resize-handle {
+        position: absolute; width: 16px; height: 16px; background: var(--gold);
+        border: 1px solid #000; cursor: nwse-resize; touch-action: none; z-index: 6;
+        border-radius: 2px;
+    }
+    .drag-hint {
+        position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+        font-size: 8px; color: var(--ivory); background: rgba(0,0,0,0.6);
+        padding: 2px 6px; border-radius: 3px; pointer-events: none; z-index: 5;
+    }
 
     .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
     .spec-row { display: flex; justify-content: space-between; padding: 3px 0; }
@@ -238,6 +251,7 @@
                     <option value="embroidery">ВЫШИВКА</option>
                 </select>
             </div>
+            <div class="tech-note" id="tech-note">Вышивка требует отдельной цифровки — доступна только для готовых принтов из базы клуба.</div>
 
             <div class="print-strip-row">
                 <button class="print-arrow" id="print-prev">‹</button>
@@ -338,12 +352,6 @@
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
-    // ---- Защищённая (динамическая) загрузка базы клуба ----
-    // Статический import наверху файла роняет ВЕСЬ скрипт, если модуль
-    // отсутствует. Здесь — мягкая деградация: если core/clubBase.js
-    // (или его внутренний core/supabase-init.js) не найден, остальной
-    // конфигуратор всё равно работает, а лента клубных принтов просто
-    // остаётся пустой вместо падения страницы.
     let clubBase = {
         getAll: () => ({ rebellion: [], motivation: [], intellect: [], aesthetic: [], nostalgia: [] }),
         init: async () => {},
@@ -352,10 +360,10 @@
     try {
         clubBase = await import('./core/clubBase.js');
     } catch (e) {
-        console.warn('[Atelier] core/clubBase.js не загружен — проверьте, что файл (и core/supabase-init.js) реально залиты в репозиторий. Остальной конфигуратор работает без базы клуба.', e);
+        console.warn('[Atelier] core/clubBase.js не загружен — проверьте, что файл (и core/supabase-init.js) реально залиты в репозиторий.', e);
     }
 
-    const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: заменить на реальный юзернейм
+    const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO
 
     const GARMENT_PHOTOS = {
         tshirt:     { white: { front: 'tshirt-white-front.png', back: 'tshirt-white-back.png' }, black: { front: 'tshirt-black-front.png', back: 'tshirt-black-back.png' } },
@@ -365,9 +373,9 @@
 
     const BASE_PRICE = { tshirt: 15, hoodie: 35, longsleeve: 22 };
     const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3 };
-    const TECH_PRICE_MOD = { dtf: 0, embroidery: 7 }; // ⚠️ TODO: черновая наценка
-    const NECKLINE_PRICE_MOD = { round: 0, v: 3 };    // ⚠️ TODO: черновая наценка
-    const FIT_PRICE_MOD = { unisex: 0, slim: 2, oversize: 4 }; // ⚠️ TODO: черновая наценка
+    const TECH_PRICE_MOD = { dtf: 0, embroidery: 7 };
+    const NECKLINE_PRICE_MOD = { round: 0, v: 3 };
+    const FIT_PRICE_MOD = { unisex: 0, slim: 2, oversize: 4 };
     const SCALE_DIMENSIONS_CM = {
         'a3':          { w: 30, h: 40 },
         'a4':          { w: 21, h: 30 },
@@ -391,12 +399,48 @@
     };
 
     const GARMENT_PHOTO_BBOX_W = { tshirt: 492, hoodie: 435, longsleeve: 440 };
-    const OUTSTRETCH_FACTOR = 1.5; // ⚠️ TODO: черновая оценка, сверить вживую
-    const PRINT_ANCHOR_Y = 0.42;   // ⚠️ TODO: черновая оценка, сверить вживую
+    const OUTSTRETCH_FACTOR = 1.5;
+    const DEFAULT_ANCHOR_Y_PCT = 42;
+    const BG_REMOVE_THRESHOLD = 32; // ⚠️ TODO: подстроить по факту использования
 
-    function pxPerCm(type, size) {
+    function pxPerCmApprox(type, size) {
         const basePxPerCm = GARMENT_PHOTO_BBOX_W[type] / (GARMENT_CHEST_CM[type].M * OUTSTRETCH_FACTOR);
         return basePxPerCm * (GARMENT_CHEST_CM[type].M / GARMENT_CHEST_CM[type][size]);
+    }
+
+    // ===== АВТОУДАЛЕНИЕ ФОНА: flood-fill от краёв канваса =====
+    // Берём средний цвет 4 углов как "фон", затем итеративно (без рекурсии,
+    // чтобы не словить переполнение стека на больших картинках) заливаем
+    // прозрачностью всё, что связано с краем и близко по цвету к фону.
+    // Хорошо работает на плоском/однотонном фоне (типичный случай для
+    // ИИ-принта). На сложном фото по краям — сработает хуже.
+    function removeBackgroundFlood(imageData, threshold) {
+        const { width, height, data } = imageData;
+        const visited = new Uint8Array(width * height);
+        const corners = [0, width - 1, (height - 1) * width, (height - 1) * width + width - 1];
+        let br = 0, bg = 0, bb = 0;
+        corners.forEach(idx => { br += data[idx * 4]; bg += data[idx * 4 + 1]; bb += data[idx * 4 + 2]; });
+        br /= 4; bg /= 4; bb /= 4;
+
+        const stack = [];
+        for (let x = 0; x < width; x++) { stack.push(x); stack.push((height - 1) * width + x); }
+        for (let y = 0; y < height; y++) { stack.push(y * width); stack.push(y * width + width - 1); }
+
+        while (stack.length) {
+            const idx = stack.pop();
+            if (visited[idx]) continue;
+            const r = data[idx * 4], g = data[idx * 4 + 1], b = data[idx * 4 + 2];
+            const dist = Math.sqrt((r - br) ** 2 + (g - bg) ** 2 + (b - bb) ** 2);
+            if (dist > threshold) continue;
+            visited[idx] = 1;
+            data[idx * 4 + 3] = 0;
+            const x = idx % width, y = (idx / width) | 0;
+            if (x > 0) stack.push(idx - 1);
+            if (x < width - 1) stack.push(idx + 1);
+            if (y > 0) stack.push(idx - width);
+            if (y < height - 1) stack.push(idx + width);
+        }
+        return imageData;
     }
 
     function renderSpecPanel() {
@@ -482,7 +526,8 @@
         fabricDensity: '160-180', fabricComposition: 'cotton100',
         drawstring: false, technique: 'dtf',
         neckline: 'round', fit: 'unisex', quantity: 1,
-        currentPrint: null
+        currentPrint: null,
+        printBox: null
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
@@ -492,27 +537,99 @@
         document.getElementById('size-badge').textContent = state.size;
     }
 
-    function renderPrintOverlay() {
-        const frame = document.getElementById('preview-frame');
-        const existing = frame.querySelector('.print-overlay-img');
-        if (existing) existing.remove();
-        if (!state.currentPrint) { updateOrderInfo(); return; }
+    // ===== Доступность вышивки: только для принтов из базы клуба =====
+    function updateTechniqueAvailability() {
+        const sel = document.getElementById('select-technique');
+        const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
+        const embroideryOpt = sel.querySelector('option[value="embroidery"]');
+        embroideryOpt.disabled = !isClubPrint;
+        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА (только принты из базы клуба)';
+        if (!isClubPrint && state.technique === 'embroidery') {
+            state.technique = 'dtf';
+            sel.value = 'dtf';
+        }
+        document.getElementById('tech-note').style.display = isClubPrint ? 'none' : 'block';
+    }
 
+    function defaultPrintBox() {
+        const frame = document.getElementById('preview-frame');
         const dims = SCALE_DIMENSIONS_CM[state.scale];
-        const ratio = pxPerCm(state.type, state.size);
-        const wPx = Math.round(dims.w * ratio);
-        const hPx = Math.round(dims.h * ratio);
+        const ratio = pxPerCmApprox(state.type, state.size);
+        const w = Math.round(dims.w * ratio);
+        const h = Math.round(dims.h * ratio);
+        return {
+            left: Math.round(frame.clientWidth / 2 - w / 2),
+            top: Math.round(frame.clientHeight * (DEFAULT_ANCHOR_Y_PCT / 100) - h / 2),
+            width: w, height: h
+        };
+    }
+
+    function attachDragResize(img, handle) {
+        const frame = document.getElementById('preview-frame');
+        function clampBox(box) {
+            box.width = Math.max(20, box.width);
+            box.height = Math.max(20, box.height);
+            box.left = Math.max(0, Math.min(box.left, frame.clientWidth - box.width));
+            box.top = Math.max(0, Math.min(box.top, frame.clientHeight - box.height));
+            return box;
+        }
+        function applyBox() {
+            img.style.left = state.printBox.left + 'px';
+            img.style.top = state.printBox.top + 'px';
+            img.style.width = state.printBox.width + 'px';
+            img.style.height = state.printBox.height + 'px';
+            handle.style.left = (state.printBox.left + state.printBox.width - 8) + 'px';
+            handle.style.top = (state.printBox.top + state.printBox.height - 8) + 'px';
+        }
+        applyBox();
+        let dragging = null, startX, startY, startBox;
+        function onPointerDown(mode) {
+            return (e) => {
+                dragging = mode; startX = e.clientX; startY = e.clientY;
+                startBox = { ...state.printBox };
+                e.target.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            };
+        }
+        function onPointerMove(e) {
+            if (!dragging) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            if (dragging === 'move') state.printBox = clampBox({ ...startBox, left: startBox.left + dx, top: startBox.top + dy });
+            else state.printBox = clampBox({ ...startBox, width: startBox.width + dx, height: startBox.height + dy });
+            applyBox();
+        }
+        function onPointerUp() { if (dragging) { dragging = null; updateOrderInfo(); } }
+        img.addEventListener('pointerdown', onPointerDown('move'));
+        handle.addEventListener('pointerdown', onPointerDown('resize'));
+        frame.addEventListener('pointermove', onPointerMove);
+        frame.addEventListener('pointerup', onPointerUp);
+        frame.addEventListener('pointerleave', onPointerUp);
+    }
+
+    function renderPrintOverlay(resetPosition = false) {
+        const frame = document.getElementById('preview-frame');
+        frame.querySelectorAll('.print-overlay-img, .print-resize-handle, .drag-hint').forEach(el => el.remove());
+        updateTechniqueAvailability();
+        if (!state.currentPrint) { updateOrderInfo(); return; }
+        if (resetPosition || !state.printBox) state.printBox = defaultPrintBox();
 
         const img = document.createElement('img');
         img.className = 'print-overlay-img';
         img.src = state.currentPrint.design;
-        img.style.width = wPx + 'px';
-        img.style.height = hPx + 'px';
-        img.style.left = '50%';
-        img.style.top = (PRINT_ANCHOR_Y * 100) + '%';
-        img.style.transform = 'translate(-50%, -50%)';
         img.style.mixBlendMode = (state.color === 'white') ? 'multiply' : 'normal';
         frame.appendChild(img);
+
+        const handle = document.createElement('div');
+        handle.className = 'print-resize-handle';
+        frame.appendChild(handle);
+
+        const hint = document.createElement('div');
+        hint.className = 'drag-hint';
+        hint.textContent = 'Перетащите принт / потяните за уголок';
+        frame.appendChild(hint);
+        setTimeout(() => hint.remove(), 3000);
+
+        attachDragResize(img, handle);
         updateOrderInfo();
     }
 
@@ -533,8 +650,13 @@
         }
         return p;
     }
-    function calculatePrice() {
-        return unitPrice() * Math.max(1, state.quantity);
+    function calculatePrice() { return unitPrice() * Math.max(1, state.quantity); }
+    function actualPrintSizeLabel() {
+        if (!state.currentPrint || !state.printBox) return '';
+        const ratio = pxPerCmApprox(state.type, state.size);
+        const wCm = (state.printBox.width / ratio).toFixed(0);
+        const hCm = (state.printBox.height / ratio).toFixed(0);
+        return `~${wCm}x${hCm}cm (вручную, ориентировочно)`;
     }
     function updateOrderInfo() {
         const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
@@ -544,10 +666,13 @@
             ? `<br>Ворот: с капюшоном · Посадка: только oversize`
             : `<br>Ворот: ${state.neckline === 'v' ? 'V-образный' : 'круглый'} · Посадка: ${{unisex:'унисекс',slim:'приталенная',oversize:'oversize'}[state.fit]}`;
         const techLabel = state.technique === 'embroidery' ? 'ВЫШИВКА' : 'DTF-ПЕЧАТЬ';
+        const printLine = state.currentPrint
+            ? `[image] · ${techLabel} · формат заказа: ${scaleCm(state.scale)} · фактически на превью: ${actualPrintSizeLabel()}`
+            : '— none —';
         document.getElementById('order-info').innerHTML =
             `${state.type.toUpperCase()} / ${state.size} / ${state.color.toUpperCase()}<br>` +
             `Fabric: ${state.fabricDensity} g/m², ${compLabel}${drawstringLine}${shapeLine}<br>` +
-            `Print: ${state.currentPrint ? '[image] · ' + techLabel : '— none —'} | ${state.position.toUpperCase()} | ${scaleCm(state.scale)}<br>` +
+            `Print: ${printLine} | ${state.position.toUpperCase()}<br>` +
             `Кол-во: ${state.quantity} шт.`;
         document.getElementById('order-price').textContent = `$${calculatePrice()}`;
     }
@@ -572,7 +697,7 @@
                 cell.innerHTML = `<img src="${item.image_url}">`;
                 cell.addEventListener('click', () => {
                     state.currentPrint = { source: 'club', design: item.image_url, category: cat, shared: true };
-                    renderPrintOverlay();
+                    renderPrintOverlay(true);
                     updateShareRowVisibility();
                 });
             }
@@ -585,7 +710,7 @@
     document.getElementById('print-next').addEventListener('click', () => { depthPointer++; renderPrintStrip(); });
     document.getElementById('print-prev').addEventListener('click', () => { depthPointer = Math.max(0, depthPointer - 1); renderPrintStrip(); });
 
-    function resizeImageToBlobAndUrl(file, maxDim = 500, quality = 0.85) {
+    function resizeImageToBlobAndUrl(file, maxDim = 900) {
         return new Promise((resolve) => {
             const img = new Image();
             const reader = new FileReader();
@@ -598,10 +723,20 @@
                     }
                     const canvas = document.createElement('canvas');
                     canvas.width = width; canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    try {
+                        const imageData = ctx.getImageData(0, 0, width, height);
+                        removeBackgroundFlood(imageData, BG_REMOVE_THRESHOLD);
+                        ctx.putImageData(imageData, 0, 0);
+                    } catch (e) {
+                        console.warn('[Atelier] Автоудаление фона не выполнено — использую исходное изображение как есть.', e);
+                    }
+
                     canvas.toBlob((blob) => {
                         resolve({ blob, url: URL.createObjectURL(blob) });
-                    }, 'image/jpeg', quality);
+                    }, 'image/png');
                 };
                 img.src = ev.target.result;
             };
@@ -617,7 +752,7 @@
         if (!file) return;
         const { blob, url } = await resizeImageToBlobAndUrl(file);
         state.currentPrint = { source: 'own', design: url, blob, shared: false };
-        renderPrintOverlay();
+        renderPrintOverlay(true);
         updateShareRowVisibility();
     });
 
@@ -674,7 +809,7 @@
         document.getElementById('row-drawstring').style.display = (state.type === 'hoodie') ? 'flex' : 'none';
         renderNecklineFitFields();
         renderGarmentPhoto();
-        renderPrintOverlay();
+        renderPrintOverlay(true);
         renderSpecPanel();
     });
     document.getElementById('check-drawstring').addEventListener('change', (e) => {
@@ -688,16 +823,22 @@
     document.getElementById('select-size').addEventListener('change', (e) => {
         state.size = e.target.value;
         renderGarmentPhoto();
-        renderPrintOverlay();
+        renderPrintOverlay(true);
         renderSpecPanel();
     });
-    ['select-color','select-position','select-scale'].forEach(id => {
-        document.getElementById(id).addEventListener('change', (e) => {
-            const map = { 'select-color':'color','select-position':'position','select-scale':'scale' };
-            state[map[id]] = e.target.value;
-            renderGarmentPhoto();
-            renderPrintOverlay();
-        });
+    document.getElementById('select-position').addEventListener('change', (e) => {
+        state.position = e.target.value;
+        renderGarmentPhoto();
+        renderPrintOverlay(true);
+    });
+    document.getElementById('select-color').addEventListener('change', (e) => {
+        state.color = e.target.value;
+        renderGarmentPhoto();
+        renderPrintOverlay();
+    });
+    document.getElementById('select-scale').addEventListener('change', (e) => {
+        state.scale = e.target.value;
+        renderPrintOverlay(true);
     });
     ['select-fabric-density','select-fabric-composition'].forEach(id => {
         document.getElementById(id).addEventListener('change', (e) => {
@@ -723,7 +864,8 @@
                 shared: !!state.currentPrint.shared,
                 category: state.currentPrint.category || null,
                 technique: state.technique,
-                position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale)
+                position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
+                actualSizeOnPreview: actualPrintSizeLabel()
             } : null,
             unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now()
         };
