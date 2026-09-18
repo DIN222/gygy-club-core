@@ -1,33 +1,41 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.5.0 — 2026-09-16
-  Визуальный пасс: "тихая роскошь" + "тактическая геометрия" вместо
-  буквальной формы морского офицера. Только CSS — структура/логика
-  без изменений с v4.4.0.
-  (1) Золото сведено к акцентам на действительно важных точках:
-      заголовок ателье, цена, состояние "выбрано" (активный print-icon),
-      кнопка подтверждения. Остальные элементы — тонкая линия --gold-dim
-      вместо яркой 2px рамки.
-  (2) Glow (text-shadow) убран везде, оставлен только на заголовке
-      ателье — единственный акцентный момент, а не фон-эффект на
-      каждой детали.
-  (3) preview-frame-outer: убрана толстая ivory-подложка ("галун"),
-      добавлен .hud-frame — четыре тонких уголка-засечки по углам
-      (чистый CSS через множественные background, без доп. разметки) —
-      как в прицельной сетке/интерфейсе прибора, а не в форменном каре.
-  (4) order-info: убрана рамка-карточка, оставлена тонкая верхняя
-      линия — данные читаются как сноска, а не как отдельная "табличка".
-  (5) Дропдауны/print-icon: рамки истончены (1px --gold-dim вместо
-      1.5-2px ярких), сама эстетика "формы" убрана, осталась
-      функциональная ivory-заливка только там, где нужна читаемость
-      мелкого текста.
+  v4.7.0 — 2026-09-16
+  (Включает также правки, описанные, но не доставленные в прошлый раз:
+  перенос кнопки "Поговорить с друзьями" вниз, компактная вёрстка под
+  один экран, убраны декоративные HUD-уголки, подсветка аватарки коня —
+  прошу прощения, в прошлом ответе я на словах сказал, что внёс эти
+  правки, но не приложил код. Ниже — фактический полный файл.)
+
+  Изменения относительно v4.5.0:
+  (1) "ПОГОВОРИТЬ С ДРУЗЬЯМИ" перенесена в самый низ правой колонки,
+      прямо перед CONFIRM ORDER.
+  (2) Вёрстка уплотнена под один экран: html/body снова overflow:hidden,
+      .page-wrap на 100vh, отступы и gap уменьшены, preview-frame через
+      clamp() подстраивается под высоту вьюпорта. ⚠️ Честно: без живого
+      теста в браузере не могу гарантировать идеальную посадку на любом
+      экране — если где-то всё ещё съезжает, пришлите скриншот, поправлю
+      точечно.
+  (3) Декоративные HUD-уголки (.hud-frame) убраны — оставлен только
+      простой тонкий контур, никакой чисто декоративной геометрии без
+      функции.
+  (4) Аватарка коня — добавлена подсветка (glow), точечное исключение
+      из правила "glow только на заголовке".
+  (5) НОВОЕ: панель точных параметров изделия (ширина груди, длина по
+      спинке, ширина плеч, длина рукава) — пересчитывается под текущий
+      тип+размер. Ширина плеч нигде не встречалась в исходных данных —
+      показывается "уточняется", а не выдуманное число. Длина рукава
+      для футболки — то же самое (в документе не было).
+  (6) НОВОЕ: два фиксированных текста ухода — про усадку хлопка 2–3%
+      после первой стирки (учтено в лекалах) и про стирку наизнанку
+      при 40°C.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.5.0</title>
+<title>GY-GY Club — Atelier v4.7.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -39,97 +47,90 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
         width: 100%; height: 100%; background: #000; color: var(--gold);
-        overflow-y: auto; font-family: 'Share Tech Mono', monospace;
+        overflow: hidden; font-family: 'Share Tech Mono', monospace;
     }
     #atelier-bg {
         position: fixed; inset: 0; z-index: 0; pointer-events: none;
         background: url('Atelier94.png') center/cover no-repeat;
-        opacity: 0.35;
+        opacity: 0.3;
     }
-    .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
-    .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .header-right { position: fixed; top: 14px; right: 20px; z-index: 1000; font-size: 20px; letter-spacing: 4px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: fixed; top: 14px; left: 16px; z-index: 1000; display: flex; gap: 12px; font-size: 20px; font-weight: 900; }
     .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s; pointer-events: auto; }
     .back-arrow:hover { opacity: 0.6; }
 
     .page-wrap {
-        position: relative; z-index: 1;
-        min-height: 100%; display: flex; flex-direction: column; align-items: center;
-        padding: 70px 16px 30px;
+        position: relative; z-index: 1; height: 100vh;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 44px 12px 10px; overflow: hidden;
     }
 
     .atelier-title-badge {
-        display: flex; align-items: center; justify-content: center; gap: 10px;
-        margin-bottom: 20px;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        margin-bottom: 8px;
     }
-    .atelier-title-badge img { width: 44px; height: 44px; object-fit: contain; }
+    .atelier-title-badge img {
+        width: 38px; height: 38px; object-fit: contain; border-radius: 50%;
+        filter: drop-shadow(0 0 6px rgba(255,215,0,0.75)) drop-shadow(0 0 2px rgba(255,215,0,0.9));
+    }
     .atelier-title-badge .title-text {
-        font-family: 'Cinzel', serif; font-weight: 900; font-size: 18px; text-align: center;
-        text-shadow: 0 0 8px rgba(255,215,0,0.35); /* единственный glow на всей странице */
+        font-family: 'Cinzel', serif; font-weight: 900; font-size: 16px; text-align: center;
+        text-shadow: 0 0 8px rgba(255,215,0,0.35);
     }
 
-    .field-row { display: flex; gap: 6px; margin-bottom: 6px; }
-    .field-row select { flex: 1; padding: 5px; border: 1px solid var(--gold-dim); border-radius: 1px; background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 9px; }
+    .field-row { display: flex; gap: 5px; margin-bottom: 4px; }
+    .field-row select { flex: 1; padding: 4px; border: 1px solid var(--gold-dim); border-radius: 1px; background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 8px; }
 
-    .config-body { display: flex; gap: 20px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 960px; }
-    .buttons-col { flex: 0 0 220px; display: flex; flex-direction: column; gap: 6px; }
-    .frame-col { flex: 0 0 380px; display: flex; flex-direction: column; align-items: center; }
+    .config-body { display: flex; gap: 14px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 960px; }
+    .buttons-col { flex: 0 0 210px; display: flex; flex-direction: column; gap: 4px; }
+    .frame-col { flex: 0 0 clamp(220px, 30vh, 300px); display: flex; flex-direction: column; align-items: center; }
 
     @media (max-width: 900px) {
+        html, body { overflow-y: auto; overflow-x: hidden; }
+        .page-wrap { height: auto; min-height: 100vh; }
         .config-body { flex-direction: column; align-items: center; }
-        .buttons-col, .frame-col { flex: 1 1 auto; width: 100%; max-width: 400px; }
+        .buttons-col, .frame-col { flex: 1 1 auto; width: 100%; max-width: 380px; }
     }
 
-    .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 700; padding: 4px 2px; color: var(--gold); }
-    .checkbox-row input { width: 14px; height: 14px; }
-
-    /* Тактические уголки — чистый CSS, без доп. разметки */
-    .hud-frame {
-        position: relative;
-        --hc: 14px; --ht: 1px;
-        background:
-            linear-gradient(var(--gold-dim), var(--gold-dim)) top left / var(--hc) var(--ht) no-repeat,
-            linear-gradient(var(--gold-dim), var(--gold-dim)) top left / var(--ht) var(--hc) no-repeat,
-            linear-gradient(var(--gold-dim), var(--gold-dim)) top right / var(--hc) var(--ht) no-repeat,
-            linear-gradient(var(--gold-dim), var(--gold-dim)) top right / var(--ht) var(--hc) no-repeat,
-            linear-gradient(var(--gold-dim), var(--gold-dim)) bottom left / var(--hc) var(--ht) no-repeat,
-            linear-gradient(var(--gold-dim), var(--gold-dim)) bottom left / var(--ht) var(--hc) no-repeat,
-            linear-gradient(var(--gold-dim), var(--gold-dim)) bottom right / var(--hc) var(--ht) no-repeat,
-            linear-gradient(var(--gold-dim), var(--gold-dim)) bottom right / var(--ht) var(--hc) no-repeat;
-    }
+    .checkbox-row { display: flex; align-items: center; gap: 5px; font-size: 8px; font-weight: 700; padding: 2px; color: var(--gold); }
+    .checkbox-row input { width: 13px; height: 13px; }
 
     .preview-frame-outer {
-        width: 100%; max-width: 380px; padding: 6px;
+        width: 100%; padding: 3px; border: 1px solid var(--gold-dim);
     }
     .preview-frame {
-        width: 100%; height: 372px;
+        width: 100%; height: clamp(180px, 32vh, 260px);
         background: radial-gradient(ellipse at center, #1c1c1c 0%, #050505 100%);
         position: relative; display: flex; align-items: center; justify-content: center;
         overflow: hidden;
     }
     .garment-photo { width: 100%; height: 100%; object-fit: contain; user-select: none; pointer-events: none; }
     .size-badge {
-        position: absolute; top: 6px; right: 6px; background: var(--gold);
-        color: #000; font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 2px; z-index: 5;
+        position: absolute; top: 5px; right: 5px; background: var(--gold);
+        color: #000; font-size: 9px; font-weight: 900; padding: 2px 5px; border-radius: 2px; z-index: 5;
     }
-    .print-overlay-img {
-        position: absolute; pointer-events: none; object-fit: cover;
-    }
+    .print-overlay-img { position: absolute; pointer-events: none; object-fit: cover; }
+
+    .spec-panel { width: 100%; font-size: 8px; color: var(--ivory); margin-top: 6px; }
+    .spec-row { display: flex; justify-content: space-between; padding: 1px 0; border-bottom: 1px dotted #2a2a2a; }
+    .spec-row span:last-child { color: var(--gold); }
+    .care-notes { font-size: 7px; opacity: 0.75; margin-top: 5px; line-height: 1.35; color: var(--ivory); }
 
     .btn-cfg {
         background: #000; color: var(--gold); border: 1px solid var(--gold-dim);
-        padding: 6px 8px; cursor: pointer; font-weight: 700; text-transform: uppercase;
-        font-family: 'Share Tech Mono', monospace; font-size: 9px; text-align: left;
+        padding: 5px 7px; cursor: pointer; font-weight: 700; text-transform: uppercase;
+        font-family: 'Share Tech Mono', monospace; font-size: 8px; text-align: left;
         transition: border-color 0.2s, color 0.2s;
     }
     .btn-cfg:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
     .btn-cfg:disabled { opacity: 0.3; cursor: not-allowed; }
     .btn-cfg.confirm { background: #163d24; border-color: var(--gold); color: var(--ivory); text-align: center; }
-    .btn-cfg.confirm:hover { border-color: var(--gold); background: #1c4d2d; }
-    .btn-cfg.small { padding: 4px 6px; font-size: 8px; flex: 1; text-align: center; }
+    .btn-cfg.confirm:hover { background: #1c4d2d; }
+    .btn-cfg.small { padding: 3px 5px; font-size: 7px; flex: 1; text-align: center; }
     .btn-cfg.wide { text-align: center; }
 
-    .print-strip-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
-    .print-strip { display: flex; gap: 4px; flex: 1; }
+    .print-strip-row { display: flex; align-items: center; gap: 3px; margin-top: 1px; }
+    .print-strip { display: flex; gap: 3px; flex: 1; }
     .print-icon {
         flex: 1; aspect-ratio: 1; border: 1px solid var(--gold-dim); background: var(--ivory);
         cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -138,30 +139,26 @@
     .print-icon:hover { border-color: var(--gold); }
     .print-icon img { width: 100%; height: 100%; object-fit: cover; }
     .print-icon.empty { background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 4px, #1a1a1a 4px, #1a1a1a 8px); cursor: default; border-color: #333; }
-    .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); width: 22px; height: 22px; cursor: pointer; font-weight: 900; font-size: 12px; flex-shrink: 0; }
+    .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); width: 20px; height: 20px; cursor: pointer; font-weight: 900; font-size: 11px; flex-shrink: 0; }
     .print-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
-    .share-row { display: none; gap: 6px; margin-top: 4px; }
+    .share-row { display: none; gap: 5px; margin-top: 3px; }
     .share-row.visible { display: flex; }
-    .category-picker { display: none; gap: 4px; margin-top: 4px; }
+    .category-picker { display: none; gap: 4px; margin-top: 3px; }
     .category-picker.open { display: flex; }
-    .category-picker select { flex: 1; padding: 4px; font-size: 8px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
+    .category-picker select { flex: 1; padding: 3px; font-size: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
 
-    .position-row { display: flex; gap: 6px; margin-bottom: 6px; }
-    .position-row select { flex: 1; padding: 4px; font-size: 10px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
+    .position-row { display: flex; gap: 5px; margin-bottom: 4px; }
+    .position-row select { flex: 1; padding: 3px; font-size: 9px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
 
-    .order-info {
-        font-size: 10px; margin-top: 4px; padding: 8px 2px 4px;
-        color: var(--ivory);
-        border-top: 1px solid var(--gold-dim);
-    }
-    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 17px; text-align: center; margin-top: 8px; color: var(--gold); }
-    .status-line { font-size: 10px; color: #6fd48a; text-align: center; margin-top: 4px; min-height: 14px; }
+    .order-info { font-size: 8px; margin-top: 3px; padding: 5px 2px 3px; color: var(--ivory); border-top: 1px solid var(--gold-dim); }
+    .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 15px; text-align: center; margin-top: 4px; color: var(--gold); }
+    .status-line { font-size: 8px; color: #6fd48a; text-align: center; margin-top: 2px; min-height: 11px; }
 
-    .prompt-builder { display: none; margin-top: 6px; padding: 8px 0 0; border-top: 1px dashed var(--gold-dim); }
+    .prompt-builder { display: none; margin-top: 4px; padding: 5px 0 0; border-top: 1px dashed var(--gold-dim); }
     .prompt-builder.open { display: block; }
-    .prompt-builder select, .prompt-builder input { width: 100%; padding: 4px; margin-bottom: 5px; font-size: 9px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
-    .prompt-output { font-size: 9px; background: #141414; color: var(--ivory); border-left: 2px solid var(--gold-dim); padding: 6px 8px; margin-top: 5px; word-break: break-word; user-select: all; }
+    .prompt-builder select, .prompt-builder input { width: 100%; padding: 3px; margin-bottom: 4px; font-size: 8px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
+    .prompt-output { font-size: 8px; background: #141414; color: var(--ivory); border-left: 2px solid var(--gold-dim); padding: 5px 6px; margin-top: 4px; word-break: break-word; user-select: all; }
 
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
@@ -196,8 +193,6 @@
 
     <div class="config-body">
         <div class="buttons-col">
-            <button class="btn-cfg wide" id="link-help">ПОГОВОРИТЬ С ДРУЗЬЯМИ (TELEGRAM)</button>
-
             <div class="field-row">
                 <select id="select-type">
                     <option value="tshirt">T-SHIRT (UNISEX)</option>
@@ -236,7 +231,7 @@
                 <button class="print-arrow" id="print-next">›</button>
             </div>
 
-            <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
+            <button class="btn-cfg" id="btn-upload-own" style="margin-top:4px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
 
             <div class="share-row" id="share-row">
                 <button class="btn-cfg small" id="btn-share">ПОДЕЛИТЬСЯ С КЛУБОМ</button>
@@ -253,9 +248,9 @@
                 <button class="btn-cfg small" id="btn-share-confirm">OK</button>
             </div>
 
-            <button class="btn-cfg" id="btn-open-prompt" style="margin-top:6px;">GENERATE PROMPT</button>
+            <button class="btn-cfg" id="btn-open-prompt" style="margin-top:4px;">GENERATE PROMPT</button>
             <div class="prompt-builder" id="prompt-builder">
-                <span style="font-size:8px; font-weight:700; opacity:0.7;">PROMPT BUILDER (no API — copy to any AI image tool)</span>
+                <span style="font-size:7px; font-weight:700; opacity:0.7;">PROMPT BUILDER (no API — copy to any AI image tool)</span>
                 <select id="pb-mood">
                     <option value="rebellion">Rebellion / Bold</option>
                     <option value="motivation">Motivation</option>
@@ -270,11 +265,16 @@
         </div>
 
         <div class="frame-col">
-            <div class="preview-frame-outer hud-frame">
+            <div class="preview-frame-outer">
                 <div class="preview-frame" id="preview-frame">
                     <span class="size-badge" id="size-badge">M</span>
                     <img class="garment-photo" id="garment-photo" src="" alt="">
                 </div>
+            </div>
+            <div class="spec-panel" id="spec-panel"></div>
+            <div class="care-notes">
+                Хлопок имеет свойство давать усадку до 2–3% после первой стирки — учтено в лекалах.<br>
+                Стирать наизнанку при 40°C.
             </div>
         </div>
 
@@ -294,7 +294,8 @@
             <div class="order-info" id="order-info"></div>
             <div class="price-line" id="order-price">—</div>
             <div class="status-line" id="order-status"></div>
-            <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:8px;">CONFIRM ORDER</button>
+            <button class="btn-cfg wide" id="link-help" style="margin-top:6px;">ПОГОВОРИТЬ С ДРУЗЬЯМИ (TELEGRAM)</button>
+            <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:4px;">CONFIRM ORDER</button>
         </div>
     </div>
 
@@ -348,6 +349,18 @@
         hoodie:     { S: 64, M: 64, L: 72, XL: 72, XXL: 76 },
         longsleeve: { S: 68, M: 70, L: 72, XL: 74, XXL: 76 }
     };
+    // ⚠️ Ширина плеч НЕ встречалась ни в одной исходной таблице — пусто
+    // намеренно, чтобы не показывать выдуманные цифры. Заполнить, когда
+    // появятся реальные замеры.
+    const GARMENT_SHOULDER_CM = {
+        tshirt: {}, hoodie: {}, longsleeve: {}
+    };
+    // Длина рукава — есть в документе только для худи и лонгслива.
+    const GARMENT_SLEEVE_CM = {
+        tshirt: {}, // ⚠️ не документировано (короткий рукав)
+        hoodie:     { S: 57.5, M: 57.5, L: 58.5, XL: 58.5, XXL: 60.5 },
+        longsleeve: { S: 60, M: 62, L: 64, XL: 66, XXL: 68 }
+    };
 
     const GARMENT_PHOTO_BBOX_W = { tshirt: 492, hoodie: 435, longsleeve: 440 };
     const OUTSTRETCH_FACTOR = 1.5; // ⚠️ TODO: черновая оценка, сверить вживую
@@ -356,6 +369,22 @@
     function pxPerCm(type, size) {
         const basePxPerCm = GARMENT_PHOTO_BBOX_W[type] / (GARMENT_CHEST_CM[type].M * OUTSTRETCH_FACTOR);
         return basePxPerCm * (GARMENT_CHEST_CM[type].M / GARMENT_CHEST_CM[type][size]);
+    }
+
+    function specVal(table, type, size) {
+        const v = table[type] && table[type][size];
+        return (v !== undefined) ? `${v} cm` : 'уточняется';
+    }
+    function renderSpecPanel() {
+        const rows = [
+            ['Ширина по груди', specVal(GARMENT_CHEST_CM, state.type, state.size)],
+            ['Длина по спинке', specVal(GARMENT_LENGTH_CM, state.type, state.size)],
+            ['Ширина плеч', specVal(GARMENT_SHOULDER_CM, state.type, state.size)],
+            ['Длина рукава', specVal(GARMENT_SLEEVE_CM, state.type, state.size)]
+        ];
+        document.getElementById('spec-panel').innerHTML = rows.map(([label, val]) =>
+            `<div class="spec-row"><span>${label}</span><span>${val}</span></div>`
+        ).join('');
     }
 
     const FABRIC_OPTIONS = {
@@ -580,6 +609,7 @@
         document.getElementById('row-drawstring').style.display = (state.type === 'hoodie') ? 'flex' : 'none';
         renderGarmentPhoto();
         renderPrintOverlay();
+        renderSpecPanel();
     });
     document.getElementById('check-drawstring').addEventListener('change', (e) => {
         state.drawstring = e.target.checked;
@@ -589,9 +619,15 @@
         state.technique = e.target.value;
         updateOrderInfo();
     });
-    ['select-size','select-color','select-position','select-scale'].forEach(id => {
+    document.getElementById('select-size').addEventListener('change', (e) => {
+        state.size = e.target.value;
+        renderGarmentPhoto();
+        renderPrintOverlay();
+        renderSpecPanel();
+    });
+    ['select-color','select-position','select-scale'].forEach(id => {
         document.getElementById(id).addEventListener('change', (e) => {
-            const map = { 'select-size':'size','select-color':'color','select-position':'position','select-scale':'scale' };
+            const map = { 'select-color':'color','select-position':'position','select-scale':'scale' };
             state[map[id]] = e.target.value;
             renderGarmentPhoto();
             renderPrintOverlay();
@@ -671,6 +707,7 @@
     populateFabricOptions(state.type);
     renderGarmentPhoto();
     renderPrintOverlay();
+    renderSpecPanel();
 </script>
 
 </body>
