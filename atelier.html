@@ -1,42 +1,33 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.8.0 — 2026-09-16
-  Изменения относительно v4.7.0:
-  (1) НОВОЕ: вырез горловины (Круглая/V-образная — только для футболки
-      и лонгслива; у худи вместо выбора фиксированная надпись "С
-      КАПЮШОНОМ", т.к. капюшон заменяет ворот целиком).
-  (2) НОВОЕ: посадка (Прямая/Приталенная/Оверсайз — только для футболки
-      и лонгслива; у худи фиксировано "ТОЛЬКО OVERSIZE" — по вашему же
-      документу худи в принципе не бывает другой посадки).
-  (3) НОВОЕ: количество штук — влияет на итоговую цену (цена за
-      единицу × количество).
-  (4) Ширина плеч убрана из панели характеристик полностью (ни у кого
-      не было данных). Длина рукава убрана только для футболки
-      (для худи/лонгслива данные есть и остаются).
-  (5) Компактная "под один экран" вёрстка v4.7 отменена: html/body снова
-      overflow-y:auto, .page-wrap не зажат в 100vh — страница скроллится.
-      Все поля/кнопки увеличены (шрифты, отступы) под комфортное
-      нажатие на мобильном.
-  (6) preview-frame оставлен на месте как "большой экран для демонстрации"
-      — не уменьшается вместе с остальным интерфейсом.
-  (7) Дропдауны плотности/состава ткани переведены с "два в ряд" на
-      "каждый на всю ширину" — вероятная причина, почему они выглядели
-      "без надписей": длинный текст не помещался в половину строки при
-      мелком шрифте. Заодно увеличен шрифт этих полей.
-  (8) CONFIRM ORDER — чёрные буквы по золотой заливке (было: белые
-      буквы по зелёной).
-  (9) Кнопки навигации "‹"/"«" получили вид настоящих кнопок (кружок
-      с рамкой) — см. пояснение в чате, это моё предположение о том,
-      что имелось в виду под "линии без функционала".
-  (10) ⚠️ Наценки за вырез/посадку — черновые (NECKLINE_PRICE_MOD,
-      FIT_PRICE_MOD), согласовать с реальной себестоимостью.
+  v4.9.0 — 2026-09-16
+  Изменения относительно v4.8.0:
+  (1) КРИТИЧНО: импорт core/clubBase.js переведён с статического на
+      динамический (import() внутри try/catch с top-level await).
+      Причина: статический import в начале файла — если ХОТЯ БЫ ОДИН
+      импортируемый модуль отсутствует (404), весь скрипт не выполняется
+      целиком, включая логику, вообще не связанную с Supabase. Это,
+      судя по описанным симптомам (пустые dropdown плотности/состава,
+      незаполненный order-info, невставленная цена вместо "—"), и
+      произошло — вероятно, core/clubBase.js и/или core/supabase-init.js
+      ещё не залиты в репозиторий или лежат не по тому пути. Теперь при
+      отсутствии модуля используется заглушка (пустая база), остальной
+      конфигуратор работает независимо. ⚠️ Саму базу принтов клуба это
+      не чинит — файлы всё равно нужно подтвердить/залить.
+  (2) Навигационные стрелки "‹"/"«" возвращены к простому виду (текст
+      без кружка/рамки) — было временное экспериментальное изменение
+      в v4.8.0, откатываю.
+  (3) "UNISEX" убран из названий изделий (T-SHIRT/HOODIE/LONGSLEEVE).
+      Вместо этого в "Посадка" (для футболки/лонгслива) первый вариант
+      переименован из "Прямая" в "Унисекс" — так смысл сохраняется, но
+      как выбираемый параметр кроя, а не подпись к названию товара.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.8.0</title>
+<title>GY-GY Club — Atelier v4.9.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -55,15 +46,10 @@
         background: url('Atelier94.png') center/cover no-repeat;
         opacity: 0.3;
     }
-    .header-right { position: fixed; top: 16px; right: 22px; z-index: 1000; font-size: 22px; letter-spacing: 4px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
-    .ui-nav-arrows { position: fixed; top: 14px; left: 16px; z-index: 1000; display: flex; gap: 10px; }
-    .back-arrow {
-        color: var(--gold); cursor: pointer; pointer-events: auto;
-        width: 32px; height: 32px; border: 1px solid var(--gold-dim); border-radius: 50%;
-        display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900;
-        transition: border-color 0.2s, background 0.2s;
-    }
-    .back-arrow:hover { border-color: var(--gold); background: rgba(255,215,0,0.08); }
+    .header-right { position: fixed; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: fixed; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; pointer-events: auto; }
+    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
 
     .page-wrap {
         position: relative; z-index: 1; min-height: 100vh;
@@ -189,8 +175,8 @@
 <div id="atelier-bg"></div>
 <div class="header-right">GY-GY</div>
 <div class="ui-nav-arrows">
-    <a class="back-arrow" id="btn-back">‹</a>
-    <a class="back-arrow" id="btn-hall">«</a>
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-hall">&lt;&lt;</a>
 </div>
 <div id="passport-badge-container"></div>
 
@@ -205,9 +191,9 @@
         <div class="buttons-col">
             <div class="field-row">
                 <select id="select-type">
-                    <option value="tshirt">T-SHIRT (UNISEX)</option>
-                    <option value="hoodie">HOODIE (UNISEX)</option>
-                    <option value="longsleeve">LONGSLEEVE (UNISEX)</option>
+                    <option value="tshirt">T-SHIRT</option>
+                    <option value="hoodie">HOODIE</option>
+                    <option value="longsleeve">LONGSLEEVE</option>
                 </select>
             </div>
             <div class="field-row">
@@ -228,7 +214,7 @@
             </div>
             <div class="field-row" id="row-fit">
                 <select id="select-fit">
-                    <option value="straight">ПОСАДКА: ПРЯМАЯ</option>
+                    <option value="unisex">ПОСАДКА: УНИСЕКС</option>
                     <option value="slim">ПОСАДКА: ПРИТАЛЕННАЯ</option>
                     <option value="oversize">ПОСАДКА: OVERSIZE</option>
                 </select>
@@ -348,10 +334,26 @@
     import { init as initPassport } from './modules/passport.js';
     import { get, set } from './core/storage.js';
     import * as eventBus from './core/eventBus.js';
-    import * as clubBase from './core/clubBase.js';
 
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
+
+    // ---- Защищённая (динамическая) загрузка базы клуба ----
+    // Статический import наверху файла роняет ВЕСЬ скрипт, если модуль
+    // отсутствует. Здесь — мягкая деградация: если core/clubBase.js
+    // (или его внутренний core/supabase-init.js) не найден, остальной
+    // конфигуратор всё равно работает, а лента клубных принтов просто
+    // остаётся пустой вместо падения страницы.
+    let clubBase = {
+        getAll: () => ({ rebellion: [], motivation: [], intellect: [], aesthetic: [], nostalgia: [] }),
+        init: async () => {},
+        addPrint: async () => { throw new Error('Модуль базы клуба недоступен (core/clubBase.js не найден).'); }
+    };
+    try {
+        clubBase = await import('./core/clubBase.js');
+    } catch (e) {
+        console.warn('[Atelier] core/clubBase.js не загружен — проверьте, что файл (и core/supabase-init.js) реально залиты в репозиторий. Остальной конфигуратор работает без базы клуба.', e);
+    }
 
     const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: заменить на реальный юзернейм
 
@@ -365,7 +367,7 @@
     const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3 };
     const TECH_PRICE_MOD = { dtf: 0, embroidery: 7 }; // ⚠️ TODO: черновая наценка
     const NECKLINE_PRICE_MOD = { round: 0, v: 3 };    // ⚠️ TODO: черновая наценка
-    const FIT_PRICE_MOD = { straight: 0, slim: 2, oversize: 4 }; // ⚠️ TODO: черновая наценка
+    const FIT_PRICE_MOD = { unisex: 0, slim: 2, oversize: 4 }; // ⚠️ TODO: черновая наценка
     const SCALE_DIMENSIONS_CM = {
         'a3':          { w: 30, h: 40 },
         'a4':          { w: 21, h: 30 },
@@ -383,8 +385,6 @@
         hoodie:     { S: 64, M: 64, L: 72, XL: 72, XXL: 76 },
         longsleeve: { S: 68, M: 70, L: 72, XL: 74, XXL: 76 }
     };
-    // Длина рукава — только там, где реально есть данные (худи, лонгслив).
-    // Для футболки строка в панели просто не рендерится (см. renderSpecPanel).
     const GARMENT_SLEEVE_CM = {
         hoodie:     { S: 57.5, M: 57.5, L: 58.5, XL: 58.5, XXL: 60.5 },
         longsleeve: { S: 60, M: 62, L: 64, XL: 66, XXL: 68 }
@@ -412,9 +412,6 @@
         ).join('');
     }
 
-    // Вырез/посадка: у худи это не выбор, а зафиксированный факт (капюшон
-    // вместо ворота, только oversize по документу) — показываем плашку
-    // вместо активного select.
     function renderNecklineFitFields() {
         const necklineRow = document.getElementById('row-neckline');
         const fitRow = document.getElementById('row-fit');
@@ -430,16 +427,16 @@
                 </select>`;
             fitRow.innerHTML = `
                 <select id="select-fit">
-                    <option value="straight">ПОСАДКА: ПРЯМАЯ</option>
+                    <option value="unisex">ПОСАДКА: УНИСЕКС</option>
                     <option value="slim">ПОСАДКА: ПРИТАЛЕННАЯ</option>
                     <option value="oversize">ПОСАДКА: OVERSIZE</option>
                 </select>`;
-            document.getElementById('select-neckline').value = state.neckline in NECKLINE_PRICE_MOD ? state.neckline : 'round';
-            document.getElementById('select-fit').value = state.fit in FIT_PRICE_MOD ? state.fit : 'straight';
+            if (!(state.neckline in NECKLINE_PRICE_MOD)) state.neckline = 'round';
+            if (!(state.fit in FIT_PRICE_MOD)) state.fit = 'unisex';
+            document.getElementById('select-neckline').value = state.neckline;
+            document.getElementById('select-fit').value = state.fit;
             document.getElementById('select-neckline').addEventListener('change', (e) => { state.neckline = e.target.value; updateOrderInfo(); });
             document.getElementById('select-fit').addEventListener('change', (e) => { state.fit = e.target.value; updateOrderInfo(); });
-            if (!(state.neckline in NECKLINE_PRICE_MOD)) state.neckline = 'round';
-            if (!(state.fit in FIT_PRICE_MOD)) state.fit = 'straight';
         }
     }
 
@@ -484,7 +481,7 @@
         position: 'front', scale: 'a3',
         fabricDensity: '160-180', fabricComposition: 'cotton100',
         drawstring: false, technique: 'dtf',
-        neckline: 'round', fit: 'straight', quantity: 1,
+        neckline: 'round', fit: 'unisex', quantity: 1,
         currentPrint: null
     };
     let currentUser = { id: 'guest', name: 'Guest' };
@@ -545,10 +542,10 @@
             ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА (визуал без изменений на превью)' : 'нет'}` : '';
         const shapeLine = (state.type === 'hoodie')
             ? `<br>Ворот: с капюшоном · Посадка: только oversize`
-            : `<br>Ворот: ${state.neckline === 'v' ? 'V-образный' : 'круглый'} · Посадка: ${{straight:'прямая',slim:'приталенная',oversize:'oversize'}[state.fit]}`;
+            : `<br>Ворот: ${state.neckline === 'v' ? 'V-образный' : 'круглый'} · Посадка: ${{unisex:'унисекс',slim:'приталенная',oversize:'oversize'}[state.fit]}`;
         const techLabel = state.technique === 'embroidery' ? 'ВЫШИВКА' : 'DTF-ПЕЧАТЬ';
         document.getElementById('order-info').innerHTML =
-            `${state.type.toUpperCase()} (unisex) / ${state.size} / ${state.color.toUpperCase()}<br>` +
+            `${state.type.toUpperCase()} / ${state.size} / ${state.color.toUpperCase()}<br>` +
             `Fabric: ${state.fabricDensity} g/m², ${compLabel}${drawstringLine}${shapeLine}<br>` +
             `Print: ${state.currentPrint ? '[image] · ' + techLabel : '— none —'} | ${state.position.toUpperCase()} | ${scaleCm(state.scale)}<br>` +
             `Кол-во: ${state.quantity} шт.`;
@@ -647,7 +644,7 @@
             document.getElementById('order-status').textContent = `Отправлено в базу клуба → ${category}`;
         } catch (err) {
             console.error('[Atelier] Ошибка при отправке в базу клуба', err);
-            document.getElementById('order-status').textContent = 'Не удалось отправить в базу клуба — попробуйте ещё раз.';
+            document.getElementById('order-status').textContent = 'База клуба недоступна — попробуйте позже.';
         }
     });
 
@@ -772,7 +769,7 @@
         console.warn('[Atelier] Не удалось подключиться к eventBus для паспорта.', e);
     }
 
-    clubBase.init(eventBus).then(() => renderPrintStrip());
+    clubBase.init(eventBus).then(() => renderPrintStrip()).catch(() => renderPrintStrip());
     try {
         const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
         if (typeof onFn === 'function') onFn('CLUBBASE_UPDATED', renderPrintStrip);
