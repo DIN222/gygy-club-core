@@ -847,7 +847,13 @@
         updateOrderInfo();
     });
 
-    document.getElementById('btn-confirm').addEventListener('click', () => {
+      document.getElementById('btn-confirm').addEventListener('click', () => {
+        const summary = document.getElementById('order-info').innerHTML;
+        document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>$${calculatePrice()}</b>`;
+        openModal('modal-confirm-order');
+    });
+
+    document.getElementById('btn-confirm-final').addEventListener('click', () => {
         const order = {
             type: 'blank',
             garment: state.type, size: state.size, color: state.color,
@@ -867,6 +873,7 @@
         const reports = get('officeAtelierReports', []);
         reports.push(order);
         set('officeAtelierReports', reports.slice(-50));
+        closeModal(document.getElementById('modal-confirm-order'));
         document.getElementById('order-status').textContent = 'Order sent to Office!';
     });
 
