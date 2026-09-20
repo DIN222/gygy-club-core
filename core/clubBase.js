@@ -1,16 +1,22 @@
-
 // core/clubBase.js
-// v1.1.0 — 2026-09-14 (переход Firebase → Supabase)
+// v1.2.0 — 2026-09-18 (PNG вместо JPEG)
 // Общая база принтов клуба на Supabase (Postgres-таблица club_prints +
 // Storage bucket club-prints). Данные реально общие для всех посетителей
 // сайта — не по браузерам, как было в localStorage.
 //
+// ИЗМЕНЕНИЯ В v1.2.0: принты теперь сохраняются как .png с
+// contentType 'image/png', а не .jpg/'image/jpeg' — JPEG не хранит
+// прозрачность, а принты по определению нуждаются в прозрачном фоне
+// (см. атрибуцию бага в atelier.html: чёрный фон вместо прозрачного
+// при конвертации в JPEG). Клиентская сторона (atelier.html) уже
+// отправляет PNG-blob — эта версия просто перестаёт врать о формате.
+//
 // ЛИМИТ 20 НА КАТЕГОРИЮ (FIFO):
-//   Проверяется и применяется НА КЛИЕНТЕ перед добавлением нового принта.
-//   ⚠️ Проверка с клиента (без серверной функции) — при двух одновременных
-//   отправках в одну категорию возможна кратковременная гонка (лимит на
-//   миг может превыситься до следующей чистки). Для клубного масштаба
-//   не критично; при росте нагрузки стоит перенести в Supabase Edge Function.
+// Проверяется и применяется НА КЛИЕНТЕ перед добавлением нового принта.
+// ⚠️ Проверка с клиента (без серверной функции) — при двух одновременных
+// отправках в одну категорию возможна кратковременная гонка (лимит на
+// миг может превыситься до следующей чистки). Для клубного масштаба
+// не критично; при росте нагрузки стоит перенести в Supabase Edge Function.
 //
 // СОБЫТИЯ (через core/eventBus.js): CLUBBASE_INIT, CLUBBASE_UPDATED,
 // CLUBBASE_DESTROY — по конвенции CONTRACT.md.
@@ -81,15 +87,16 @@ async function enforceLimit(category) {
     }
 }
 
-// blob — File или Blob (уже уменьшенное изображение, см. resizeImageToBlob в atelier.html)
+// blob — PNG-blob (см. resizeImageToBlobAndUrl в atelier.html) — сохраняет
+// прозрачность принта, в отличие от прежнего JPEG.
 export async function addPrint(blob, category, meta = {}) {
     if (!CATEGORIES.includes(category)) throw new Error(`[clubBase] Неизвестная категория: ${category}`);
     await enforceLimit(category);
 
-    const storagePath = `${category}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
+    const storagePath = `${category}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.png`;
     const { error: uploadError } = await supabase.storage
         .from(BUCKET)
-        .upload(storagePath, blob, { contentType: 'image/jpeg' });
+        .upload(storagePath, blob, { contentType: 'image/png' });
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
