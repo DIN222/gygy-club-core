@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.12.0 — 2026-09-18
-  Изменения относительно v4.11.0:
-  (1) .header-right, .ui-nav-arrows, .gy-user-badge: position:fixed →
-      position:absolute. Раньше страница не скроллилась, и "прибитые"
-      к экрану навигация/лого/бейдж паспорта были нормой. После перехода
-      на скроллящуюся вёрстку (мобильное удобство кнопок) эти элементы
-      остались зафиксированы относительно ЭКРАНА, а не документа — из-за
-      этого зависали поверх контента при скролле вместо того, чтобы
-      уезжать вместе с ним, как обычная шапка страницы.
+  v4.13.0 — 2026-09-19
+  Полная сборка после серии точечных правок (во избежание рассинхронизации
+  после нескольких ручных вставок подряд — см. предыдущий Uncaught
+  TypeError на addEventListener(null), вызванный расхождением между
+  фрагментами и реальным файлом).
+  Включает относительно v4.12.0:
+  (1) Контрастная рамка вокруг перетаскиваемого принта (бело-чёрная
+      двойная окантовка вместо полупрозрачной золотой).
+  (2) Фон витрины подстраивается под цвет изделия: светло-серый для
+      чёрного изделия, тёмный — для белого (чтобы чёрная футболка не
+      проваливалась в чёрный фон).
+  (3) Кнопка "GENERATE PROMPT" переименована в "ОПИШИТЕ ВАШ ПРИНТ".
+  (4) Модалка подтверждения заказа: CONFIRM ORDER теперь не пишет заказ
+      сразу, а показывает текстовую сводку с кнопками "Да, оформить" /
+      "Назад, поправить" — реальная защита от ошибок перед производством
+      физического изделия.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.12.0</title>
+<title>GY-GY Club — Atelier v4.13.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -87,7 +94,7 @@
     .checkbox-row input { width: 16px; height: 16px; }
 
     .preview-frame-outer { width: 100%; padding: 4px; border: 1px solid var(--gold-dim); }
-     .preview-frame {
+    .preview-frame {
         width: 100%; height: 420px;
         background: radial-gradient(ellipse at center, #1c1c1c 0%, #050505 100%);
         position: relative; display: flex; align-items: center; justify-content: center;
@@ -106,7 +113,9 @@
     }
     .print-overlay-img {
         position: absolute; object-fit: cover; cursor: move; touch-action: none;
-        outline: 1px dashed rgba(255,215,0,0.5);
+        outline: 2px dashed #ffffff;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 1px #000000, 0 0 0 4px rgba(255,255,255,0.6);
     }
     .print-resize-handle {
         position: absolute; width: 16px; height: 16px; background: var(--gold);
@@ -275,7 +284,7 @@
                 <button class="btn-cfg small" id="btn-share-confirm">OK</button>
             </div>
 
-            <button class="btn-cfg" id="btn-open-prompt" style="margin-top:6px;">GENERATE PROMPT</button>
+            <button class="btn-cfg" id="btn-open-prompt" style="margin-top:6px;">ОПИШИТЕ ВАШ ПРИНТ</button>
             <div class="prompt-builder" id="prompt-builder">
                 <span style="font-size:9px; font-weight:700; opacity:0.7;">PROMPT BUILDER (no API — copy to any AI image tool)</span>
                 <select id="pb-mood">
@@ -339,6 +348,16 @@
         <div class="modal-title" id="placeholder-title">COMING SOON</div>
         <p style="font-size:12px;">This catalog is not ready yet.</p>
         <button class="btn-cfg" data-close style="display:inline-block; text-align:center;">OK</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-confirm-order">
+    <div class="modal-card" style="width:340px;">
+        <span class="modal-close" data-close>&times;</span>
+        <div class="modal-title">ПРОВЕРЬТЕ ЗАКАЗ</div>
+        <div id="confirm-order-summary" style="font-size:11px; text-align:left; line-height:1.6;"></div>
+        <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:14px;">ДА, ОФОРМИТЬ</button>
+        <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
     </div>
 </div>
 
@@ -847,7 +866,20 @@
         updateOrderInfo();
     });
 
-      document.getElementById('btn-confirm').addEventListener('click', () => {
+    function openModal(id) {
+        const m = document.getElementById(id);
+        m.style.display = 'flex';
+        requestAnimationFrame(() => m.style.opacity = '1');
+    }
+    function closeModal(m) {
+        m.style.opacity = '0';
+        setTimeout(() => m.style.display = 'none', 300);
+    }
+    document.querySelectorAll('[data-close]').forEach(el => {
+        el.addEventListener('click', () => closeModal(el.closest('.modal-overlay')));
+    });
+
+    document.getElementById('btn-confirm').addEventListener('click', () => {
         const summary = document.getElementById('order-info').innerHTML;
         document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>$${calculatePrice()}</b>`;
         openModal('modal-confirm-order');
@@ -875,19 +907,6 @@
         set('officeAtelierReports', reports.slice(-50));
         closeModal(document.getElementById('modal-confirm-order'));
         document.getElementById('order-status').textContent = 'Order sent to Office!';
-    });
-
-    function openModal(id) {
-        const m = document.getElementById(id);
-        m.style.display = 'flex';
-        requestAnimationFrame(() => m.style.opacity = '1');
-    }
-    function closeModal(m) {
-        m.style.opacity = '0';
-        setTimeout(() => m.style.display = 'none', 300);
-    }
-    document.querySelectorAll('[data-close]').forEach(el => {
-        el.addEventListener('click', () => closeModal(el.closest('.modal-overlay')));
     });
 
     document.getElementById('link-help').addEventListener('click', () => {
