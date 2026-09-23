@@ -1,44 +1,58 @@
 <!DOCTYPE html>
 <!--
   hall.html
-  v1.5.3 — 2026-09-13
-  Изменения: добавлена зона zone-store (Лавка древностей) и переход на store.html.
-  Ромашки возвращены к оригинальному стилю анимации.
+  v2.0.0 — 2026-09-22
+  Полная перестройка навигации: лифт убран целиком (lift.html больше
+  никуда не ведёт и может быть удалён из репозитория). Фото-фон Холла
+  остаётся приглушённой атмосферной подложкой (opacity вместо полной
+  непрозрачности), а поверх — прямая панель с кнопками, по тому же
+  принципу, что и в Ателье (никаких hover-only ромашек без подписи
+  на мобильном).
+  Пять реально рабочих направлений собраны в панель: AI ROOM, OFFICE,
+  BAR (все три уже были рабочими), АТЕЛЬЕ (заменяет мёртвую заглушку
+  "Студио"), ЛАВКА ДРЕВНОСТЕЙ (уже была рабочей зоной). Сувениры и
+  Проектор — ещё не построены, сознательно не показаны как заглушки
+  в панели (тот же принцип, что и с Embroidery/Combined в Ателье) —
+  добавятся отдельной правкой, когда будут готовы их страницы.
+  Стилистика приведена в соответствие с уже устоявшимся языком Ателье:
+  золото — только на важном (заголовок, кнопки), тонкие линии вместо
+  толстых рамок, ivory для читаемых участков, glow — только на
+  заголовке. Навигационные стрелки/лого/бейдж паспорта — position:
+  absolute (не fixed), чтобы корректно уезжали при скролле длинного
+  контента (тот же баг, что чинили в Ателье).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>GY-GY Club — Hall v1.1.0</title>
+<title>GY-GY Club — Hall v2.0.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
-    :root { --gold: #FFD700; }
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     html, body {
-        width: 100%; height: 100%;
+        width: 100%; min-height: 100%;
         background: #000000; color: var(--gold);
-        overflow: hidden; position: fixed;
+        overflow-y: auto; overflow-x: hidden;
         font-family: 'Share Tech Mono', monospace;
     }
 
-    body {
-        background: #000000;
-    }
-
     #hall-bg {
-        position: fixed; inset: 0; z-index: 0;
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
         background: url('Нalld2.png') center/85% auto no-repeat;
+        opacity: 0.3;
     }
 
     .header-right {
-        position: fixed; top: 18px; right: 25px; z-index: 1000;
+        position: absolute; top: 18px; right: 25px; z-index: 1000;
         font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif;
+        pointer-events: none;
     }
 
     .ui-nav-arrows {
-        position: fixed; top: 18px; left: 20px; z-index: 1000;
+        position: absolute; top: 18px; left: 20px; z-index: 1000;
         display: flex; gap: 15px; font-size: 24px; font-weight: 900;
         font-family: 'Share Tech Mono', monospace;
     }
@@ -49,7 +63,7 @@
     .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
 
     .gy-user-badge {
-        position: fixed; top: 4px; left: 50%; transform: translateX(-50%);
+        position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
         width: 36px; height: 36px; border-radius: 50%;
         border: 2px solid var(--gold); background: #111;
         z-index: 1000; cursor: pointer; display: none;
@@ -60,66 +74,36 @@
         border: 1px solid var(--gold);
     }
 
+    .page-wrap {
+        position: relative; z-index: 1; min-height: 100vh;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 70px 16px 40px;
+    }
+
+    .hall-title {
+        font-family: 'Cinzel', serif; font-weight: 900; font-size: 22px;
+        letter-spacing: 3px; text-align: center; margin-bottom: 8px;
+        text-shadow: 0 0 10px rgba(255,215,0,0.4);
+    }
+
     .quote-text {
-        position: absolute; top: 10vh; left: 50%; transform: translateX(-50%);
-        width: 85%; text-align: center;
+        text-align: center; max-width: 420px;
         font-family: 'Cormorant Garamond', serif; font-style: italic;
-        font-size: 22px; color: var(--gold);
-        -webkit-text-stroke: 1px #000000;
-        z-index: 5;
+        font-size: 18px; color: var(--ivory);
+        margin-bottom: 32px;
     }
 
-    .hall-zone {
-        position: absolute;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        z-index: 6;
+    .menu-grid {
+        display: flex; flex-direction: column; gap: 10px;
+        width: 100%; max-width: 300px;
     }
-
-    /* Оригинальный стиль хотспотов (ромашек) */
-    .hotspot {
-        font-size: 22px;
-        display: inline-block;
-        filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.7));
-        animation: hotspot-pulse 2.4s ease-in-out infinite;
-        transition: transform 0.2s, filter 0.2s;
-        pointer-events: none;
-        line-height: 1;
+    .menu-btn {
+        background: #000; color: var(--gold); border: 1px solid var(--gold-dim);
+        padding: 14px 16px; cursor: pointer; font-weight: 700; text-transform: uppercase;
+        font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 1px;
+        text-align: center; border-radius: 2px; transition: border-color 0.2s, color 0.2s;
     }
-    @keyframes hotspot-pulse {
-        0%, 100% { opacity: 0.5; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.08); }
-    }
-    .hall-zone:hover .hotspot {
-        transform: scale(1.3);
-        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 1));
-        animation-play-state: paused;
-        opacity: 1;
-    }
-
-    .zone-label {
-        position: absolute;
-        top: 100%; left: 50%; transform: translateX(-50%);
-        margin-top: 4px;
-        font-size: 10px; font-weight: 700; letter-spacing: 2px;
-        font-family: 'Cinzel', serif;
-        color: var(--gold); text-shadow: 1px 1px 0 #000, -1px -1px 0 #000;
-        white-space: nowrap; pointer-events: none;
-        opacity: 0; transition: opacity 0.2s;
-    }
-    .hall-zone:hover .zone-label { opacity: 1; }
-
-    /* Координаты зон */
-    .zone-ai-room   { top: 28.11%; left: 31.10%; width: 6vw; height: 10vh; }
-    .zone-office    { top: 48.21%; left: 31.43%; width: 6vw; height: 10vh; }
-    .zone-studio    { top: 27.91%; left: 56.00%; width: 6vw; height: 10vh; }
-    .zone-lift-door { top: 46.80%; left: 76.77%; width: 8vw; height: 20vh; }
-    .zone-bar       { top: 48.82%; left: 45.00%;  width: 10vw; height: 8vh; }
-    .zone-projector { top: 15,35%  left: 50.00%;  width: 8vw; height: 16vh; } 
-
-    
-    /* Зона Лавки древностей */
-    .zone-store     { top: 44.61%; left: 52.50%; width: 8vw; height: 12vh; }
+    .menu-btn:hover { border-color: var(--gold); filter: brightness(1.1); }
 
     .gy-passport-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000;
@@ -160,42 +144,17 @@
 </div>
 <div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
 
-<div class="quote-text" data-translate="hall_quote">In every joke there is a share of whisky</div>
+<div class="page-wrap">
+    <div class="hall-title">GY-GY CLUB — HALL</div>
+    <div class="quote-text" data-translate="hall_quote">In every joke there is a share of whisky</div>
 
-<div class="hall-zone zone-ai-room" id="zone-ai-room">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_ai_room">AI ROOM</span>
-</div>
-
-<div class="hall-zone zone-office" id="zone-office">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_office">OFFICE</span>
-</div>
-
-<div class="hall-zone zone-studio" id="zone-studio">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_studio">STUDIO</span>
-</div>
-
-<div class="hall-zone zone-bar" id="zone-bar">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_bar">BAR</span>
-</div>
-
-<div class="hall-zone zone-projector" id="zone-projector">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label" data-translate="zone_projector">SCREEN</span>
-</div>
-
-<div class="hall-zone zone-lift-door" id="zone-lift-door">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label">LIFT</span>
-</div>
-
-<!-- Лавка древностей -->
-<div class="hall-zone zone-store" id="zone-store">
-    <span class="hotspot">🌼</span>
-    <span class="zone-label">ANTIQUE STORE</span>
+    <div class="menu-grid">
+        <button class="menu-btn" id="btn-ai-room" data-translate="zone_ai_room">AI ROOM</button>
+        <button class="menu-btn" id="btn-office" data-translate="zone_office">OFFICE</button>
+        <button class="menu-btn" id="btn-bar" data-translate="zone_bar">BAR</button>
+        <button class="menu-btn" id="btn-atelier">АТЕЛЬЕ «КОНЬ В ПАЛЬТО»</button>
+        <button class="menu-btn" id="btn-store">ЛАВКА ДРЕВНОСТЕЙ</button>
+    </div>
 </div>
 
 <script type="module">
@@ -208,20 +167,11 @@
     initNav(document.body);
     registerSound('door', 'door_open.mp3');
 
-    document.getElementById('zone-ai-room').addEventListener('click', () => goToPage('verses.html'));
-    document.getElementById('zone-office').addEventListener('click', () => goToPage('office.html'));
-    document.getElementById('zone-studio').addEventListener('click', () => {
-        console.log('[Hall] Студио: функционал переехал в Лифт, эта зона временно заглушка.');
-    });
-    document.getElementById('zone-bar').addEventListener('click', () => goToPage('bar.html', { sound: 'door' }));
-    document.getElementById('zone-lift-door').addEventListener('click', () => goToPage('lift.html'));
-    
-    // Переход в Лавку древностей
-    document.getElementById('zone-store').addEventListener('click', () => goToPage('store.html'));
-
-    document.getElementById('zone-projector').addEventListener('click', () => {
-        console.log('[Hall] Проектор: содержимое табло пока не определено.');
-    });
+    document.getElementById('btn-ai-room').addEventListener('click', () => goToPage('verses.html'));
+    document.getElementById('btn-office').addEventListener('click', () => goToPage('office.html'));
+    document.getElementById('btn-bar').addEventListener('click', () => goToPage('bar.html', { sound: 'door' }));
+    document.getElementById('btn-atelier').addEventListener('click', () => goToPage('atelier.html'));
+    document.getElementById('btn-store').addEventListener('click', () => goToPage('store.html'));
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-home').addEventListener('click', () => window.location.href = 'index.html');
