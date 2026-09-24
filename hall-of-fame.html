@@ -1,1 +1,126 @@
+<!DOCTYPE html>
+<!--
+  hall-of-fame.html
+  v1.0.0 — 2026-09-24
+  Постоянная витрина принтов, набравших лайков не меньше порога
+  (LIKE_THRESHOLD). В отличие от новостей — не исчезает, не сдвигается
+  новыми записями. Лайк — 1 с браузера (localStorage), без входа,
+  осознанно "мягкое" ограничение (можно обойти инкогнито/другим
+  браузером) — тот же уровень риска, что принят и в других местах
+  проекта, соразмерно масштабу клуба.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Hall of Fame</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        width: 100%; min-height: 100%; background: #000; color: var(--gold);
+        overflow-y: auto; font-family: 'Share Tech Mono', monospace;
+    }
+    .header-right { position: absolute; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s; }
+    .back-arrow:hover { opacity: 0.6; }
 
+    .page-wrap { position: relative; min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 22px; text-align: center; margin-bottom: 6px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .subtitle { font-size: 11px; color: var(--ivory); opacity: 0.7; margin-bottom: 24px; text-align: center; max-width: 420px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; width: 100%; max-width: 960px; }
+    .card { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #fff; }
+    .card .author { font-size: 10px; color: var(--ivory); text-align: center; }
+    .card .likes-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .card .likes-count { font-size: 12px; color: var(--gold); font-weight: 700; }
+    .like-btn {
+        background: #000; color: var(--gold); border: 1px solid var(--gold-dim);
+        padding: 4px 10px; cursor: pointer; font-size: 11px; font-family: inherit;
+        transition: border-color 0.2s;
+    }
+    .like-btn:hover:not(:disabled) { border-color: var(--gold); }
+    .like-btn:disabled { opacity: 0.4; cursor: default; }
+    .empty-note { color: var(--ivory); opacity: 0.6; font-size: 12px; text-align: center; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-hall">&lt;&lt;</a>
+</div>
+
+<div class="page-wrap">
+    <div class="title">★ ЗАЛ СЛАВЫ</div>
+    <div class="subtitle">Принты клуба, набравшие признание. Останутся здесь навсегда — не только на день в новостях.</div>
+    <div class="grid" id="grid"></div>
+    <div class="empty-note" id="empty-note" style="display:none;">Пока пусто — будьте первым, чей принт наберёт признание.</div>
+</div>
+
+<script type="module">
+    const LIKE_THRESHOLD = 10; // ⚠️ TODO: черновое значение, уточнить опытным путём
+
+    let clubBase = { getFeatured: async () => [], incrementLikes: async () => {} };
+    try {
+        clubBase = await import('./core/clubBase.js');
+    } catch (e) {
+        console.warn('[HallOfFame] core/clubBase.js не загружен.', e);
+    }
+
+    function likedKey(id) { return `gygy_liked_${id}`; }
+
+    async function render() {
+        const items = await clubBase.getFeatured(LIKE_THRESHOLD);
+        const grid = document.getElementById('grid');
+        const emptyNote = document.getElementById('empty-note');
+        grid.innerHTML = '';
+        emptyNote.style.display = items.length ? 'none' : 'block';
+
+        items.forEach(item => {
+            const alreadyLiked = localStorage.getItem(likedKey(item.id)) === '1';
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <img src="${item.image_url}">
+                <div class="author">${item.from_user_name || 'Unknown'}</div>
+                <div class="likes-row">
+                    <span class="likes-count">👍 <span id="count-${item.id}">${item.likes}</span></span>
+                    <button class="like-btn" id="like-${item.id}" ${alreadyLiked ? 'disabled' : ''}>
+                        ${alreadyLiked ? 'Оценено' : 'Нравится'}
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        items.forEach(item => {
+            const btn = document.getElementById(`like-${item.id}`);
+            if (!btn) return;
+            btn.addEventListener('click', async () => {
+                btn.disabled = true;
+                try {
+                    const newLikes = await clubBase.incrementLikes(item.id);
+                    document.getElementById(`count-${item.id}`).textContent = newLikes;
+                    localStorage.setItem(likedKey(item.id), '1');
+                    btn.textContent = 'Оценено';
+                } catch (e) {
+                    console.error('[HallOfFame] Не удалось поставить лайк', e);
+                    btn.disabled = false;
+                }
+            });
+        });
+    }
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+
+    render();
+</script>
+
+</body>
+</html>
