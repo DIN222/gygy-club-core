@@ -1,25 +1,16 @@
 // core/clubBase.js
-// v1.2.0 — 2026-09-18 (PNG вместо JPEG)
-// Общая база принтов клуба на Supabase (Postgres-таблица club_prints +
-// Storage bucket club-prints). Данные реально общие для всех посетителей
-// сайта — не по браузерам, как было в localStorage.
-//
-// ИЗМЕНЕНИЯ В v1.2.0: принты теперь сохраняются как .png с
-// contentType 'image/png', а не .jpg/'image/jpeg' — JPEG не хранит
-// прозрачность, а принты по определению нуждаются в прозрачном фоне
-// (см. атрибуцию бага в atelier.html: чёрный фон вместо прозрачного
-// при конвертации в JPEG). Клиентская сторона (atelier.html) уже
-// отправляет PNG-blob — эта версия просто перестаёт врать о формате.
-//
-// ЛИМИТ 20 НА КАТЕГОРИЮ (FIFO):
-// Проверяется и применяется НА КЛИЕНТЕ перед добавлением нового принта.
-// ⚠️ Проверка с клиента (без серверной функции) — при двух одновременных
-// отправках в одну категорию возможна кратковременная гонка (лимит на
-// миг может превыситься до следующей чистки). Для клубного масштаба
-// не критично; при росте нагрузки стоит перенести в Supabase Edge Function.
-//
-// СОБЫТИЯ (через core/eventBus.js): CLUBBASE_INIT, CLUBBASE_UPDATED,
-// CLUBBASE_DESTROY — по конвенции CONTRACT.md.
+// v1.3.0 — 2026-09-24
+// Изменения относительно v1.2.0:
+// (1) addPrint принимает publicLikesAllowed (согласие автора на публичное
+//     обсуждение/лайки) — по умолчанию false, если явно не передано.
+// (2) Лайки теперь ограничены не браузером, а паспортом: таблица
+//     print_likes с первичным ключом (print_id, passport_id) —
+//     повторный лайк с того же паспорта отклоняется самой базой данных
+//     (ошибка 23505 unique_violation), а не JS-проверкой, которую
+//     легко обойти.
+// (3) getFeatured фильтрует только принты с public_likes_allowed=true —
+//     без согласия автора принт не попадёт в Зал славы, даже если
+//     как-то накопит лайки.
 
 import { supabase } from './supabase-init.js';
 
@@ -87,8 +78,6 @@ async function enforceLimit(category) {
     }
 }
 
-// blob — PNG-blob (см. resizeImageToBlobAndUrl в atelier.html) — сохраняет
-// прозрачность принта, в отличие от прежнего JPEG.
 export async function addPrint(blob, category, meta = {}) {
     if (!CATEGORIES.includes(category)) throw new Error(`[clubBase] Неизвестная категория: ${category}`);
     await enforceLimit(category);
@@ -101,18 +90,42 @@ export async function addPrint(blob, category, meta = {}) {
 
     const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
 
-      const { error: insertError } = await supabase.from(TABLE).insert({
-        category, imageUrl, storagePath,
-        fromUserId: meta.userId || 'unknown',
-        fromUserName: meta.userName || 'Unknown',
-        addedAt: serverTimestamp()
+    const { error: insertError } = await supabase.from(TABLE).insert({
+        category, image_url: publicUrl, storage_path: storagePath,
+        from_user_id: meta.userId || 'unknown',
+        from_user_name: meta.userName || 'Unknown',
+        public_likes_allowed: !!meta.publicLikesAllowed
     });
     if (insertError) throw insertError;
 }
 
-// Простой (не атомарный) инкремент — приемлемо для масштаба клуба,
-// та же логика допущения риска, что и в других местах проекта.
-export async function incrementLikes(printId) {
+export async function getFeatured(threshold = 10) {
+    const { data, error } = await supabase
+        .from(TABLE)
+        .select('*')
+        .eq('public_likes_allowed', true)
+        .gte('likes', threshold)
+        .order('likes', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+
+export async function hasLiked(printId, passportId) {
+    const { data, error } = await supabase
+        .from('print_likes').select('print_id')
+        .eq('print_id', printId).eq('passport_id', passportId).maybeSingle();
+    if (error) throw error;
+    return !!data;
+}
+
+export async function likePrint(printId, passportId) {
+    const { error: insertErr } = await supabase
+        .from('print_likes')
+        .insert({ print_id: printId, passport_id: passportId });
+    if (insertErr) {
+        if (insertErr.code === '23505') throw new Error('ALREADY_LIKED');
+        throw insertErr;
+    }
     const { data: current, error: fetchErr } = await supabase
         .from(TABLE).select('likes').eq('id', printId).single();
     if (fetchErr) throw fetchErr;
@@ -121,12 +134,4 @@ export async function incrementLikes(printId) {
         .from(TABLE).update({ likes: newLikes }).eq('id', printId);
     if (updateErr) throw updateErr;
     return newLikes;
-}
-
-// Все принты, набравшие лайков не меньше порога — для Зала славы.
-export async function getFeatured(threshold = 10) {
-    const { data, error } = await supabase
-        .from(TABLE).select('*').gte('likes', threshold).order('likes', { ascending: false });
-    if (error) throw error;
-    return data || [];
 }
