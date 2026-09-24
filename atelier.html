@@ -155,7 +155,14 @@
     }
     .print-icon:hover { border-color: var(--gold); }
     .print-icon img { width: 100%; height: 100%; object-fit: cover; }
-    .print-icon.empty { background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 4px, #1a1a1a 4px, #1a1a1a 8px); cursor: default; border-color: #333; }
+        .print-icon.empty { background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 4px, #1a1a1a 4px, #1a1a1a 8px); cursor: default; border-color: #333; }
+    .print-icon-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .print-author {
+        font-size: 7px; color: var(--ivory); opacity: 0.75; text-align: center;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .link-hall-of-fame { display: block; text-align: center; font-size: 8px; color: var(--gold-dim); margin-top: 4px; text-decoration: none; }
+    .link-hall-of-fame:hover { color: var(--gold); }
     .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); width: 30px; height: 30px; cursor: pointer; font-weight: 900; font-size: 14px; flex-shrink: 0; }
     .print-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
@@ -261,11 +268,12 @@
             </div>
             <div class="tech-note" id="tech-note">Вышивка требует отдельной цифровки — доступна только для готовых принтов из базы клуба.</div>
 
-            <div class="print-strip-row">
+                      <div class="print-strip-row">
                 <button class="print-arrow" id="print-prev">‹</button>
                 <div class="print-strip" id="print-strip"></div>
                 <button class="print-arrow" id="print-next">›</button>
             </div>
+            <a class="link-hall-of-fame" href="hall-of-fame.html">★ ЗАЛ СЛАВЫ</a>
 
             <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
 
@@ -742,12 +750,10 @@
     }
 
     let depthPointer = 0;
-    function renderPrintStrip() {
-        const data = clubBase.getAll();
-        const strip = document.getElementById('print-strip');
-        strip.innerHTML = '';
-        CATEGORIES.forEach(cat => {
-            const item = data[cat] && data[cat][depthPointer];
+  function  renderPrintStrip
+               const item = data[cat] && data[cat][depthPointer];
+            const wrap = document.createElement('div');
+            wrap.className = 'print-icon-wrap';
             const cell = document.createElement('div');
             cell.className = 'print-icon' + (item ? '' : ' empty');
             if (item) {
@@ -757,8 +763,15 @@
                     renderPrintOverlay(true);
                     updateShareRowVisibility();
                 });
+                const author = document.createElement('div');
+                author.className = 'print-author';
+                author.textContent = item.from_user_name || '';
+                wrap.appendChild(cell);
+                wrap.appendChild(author);
+            } else {
+                wrap.appendChild(cell);
             }
-            strip.appendChild(cell);
+            strip.appendChild(wrap);
         });
         const minLen = Math.min(...CATEGORIES.map(c => (data[c] || []).length));
         document.getElementById('print-next').disabled = (minLen === 0) || (depthPointer >= minLen - 1);
