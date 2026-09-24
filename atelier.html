@@ -448,14 +448,56 @@
             visited[idx] = 1;
             data[idx * 4 + 3] = 0;
             const x = idx % width, y = (idx / width) | 0;
-            if (x > 0) stack.push(idx - 1);
+                      if (x > 0) stack.push(idx - 1);
             if (x < width - 1) stack.push(idx + 1);
             if (y > 0) stack.push(idx - width);
             if (y < height - 1) stack.push(idx + width);
         }
-        return imageData;
+        return [br, bg, bb];
     }
 
+    // Сглаживание края (box-blur альфа-канала) + отбеливание цвета
+    // полупрозрачных граничных пикселей от примеси цвета фона.
+    function featherAndDecontaminate(imageData, bgColor, radius) {
+        const { width, height, data } = imageData;
+        const [br, bg, bb] = bgColor;
+        const n = width * height;
+        let alpha = new Float32Array(n);
+        for (let i = 0; i < n; i++) alpha[i] = data[i * 4 + 3];
+
+        function boxBlurPass(src, horizontal) {
+            const out = new Float32Array(n);
+            const len = horizontal ? width : height;
+            const stride = horizontal ? 1 : width;
+            const lineCount = horizontal ? height : width;
+            const lineStride = horizontal ? width : 1;
+            for (let line = 0; line < lineCount; line++) {
+                const base = line * lineStride;
+                for (let p = 0; p < len; p++) {
+                    let sum = 0, count = 0;
+                    for (let d = -radius; d <= radius; d++) {
+                        const q = p + d;
+                        if (q >= 0 && q < len) { sum += src[base + q * stride]; count++; }
+                    }
+                    out[base + p * stride] = sum / count;
+                }
+            }
+            return out;
+        }
+        alpha = boxBlurPass(alpha, true);
+        alpha = boxBlurPass(alpha, false);
+
+        for (let i = 0; i < n; i++) {
+            const a = alpha[i] / 255;
+            data[i * 4 + 3] = Math.round(alpha[i]);
+            if (a > 0.02 && a < 0.98) {
+                data[i * 4]     = Math.min(255, Math.max(0, Math.round((data[i * 4]     - (1 - a) * br) / a)));
+                data[i * 4 + 1] = Math.min(255, Math.max(0, Math.round((data[i * 4 + 1] - (1 - a) * bg) / a)));
+                data[i * 4 + 2] = Math.min(255, Math.max(0, Math.round((data[i * 4 + 2] - (1 - a) * bb) / a)));
+            }
+        }
+        return imageData;
+    }
     function renderSpecPanel() {
         const rows = [
             ['Ширина по груди', `${GARMENT_CHEST_CM[state.type][state.size]} cm`],
