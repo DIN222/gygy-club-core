@@ -26,10 +26,10 @@ import { supabase } from './supabase-init.js';
 const TABLE = 'club_prints';
 const BUCKET = 'club-prints';
 const MAX_PER_CATEGORY = 20;
-const CATEGORIES = ['rebellion', 'motivation', 'intellect', 'aesthetic', 'nostalgia'];
+const CATEGORIES = ['rebellion', 'motivation', 'intellect', 'aesthetic', 'humor'];
 
 let realtimeChannel = null;
-let cache = { rebellion: [], motivation: [], intellect: [], aesthetic: [], nostalgia: [] };
+let cache = { rebellion: [], motivation: [], intellect: [], aesthetic: [], humor: [] };
 let eventBus = null;
 
 async function refreshCache() {
@@ -41,7 +41,7 @@ async function refreshCache() {
         console.error('[clubBase] Ошибка чтения таблицы — проверьте RLS-политики.', error);
         return;
     }
-    const next = { rebellion: [], motivation: [], intellect: [], aesthetic: [], nostalgia: [] };
+    const next = { rebellion: [], motivation: [], intellect: [], aesthetic: [], humor: [] };
     (data || []).forEach(row => {
         if (next[row.category]) next[row.category].push(row);
     });
