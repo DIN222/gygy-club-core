@@ -101,12 +101,32 @@ export async function addPrint(blob, category, meta = {}) {
 
     const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
 
-    const { error: insertError } = await supabase.from(TABLE).insert({
-        category,
-        image_url: publicUrl,
-        storage_path: storagePath,
-        from_user_id: meta.userId || 'unknown',
-        from_user_name: meta.userName || 'Unknown'
+      const { error: insertError } = await supabase.from(TABLE).insert({
+        category, imageUrl, storagePath,
+        fromUserId: meta.userId || 'unknown',
+        fromUserName: meta.userName || 'Unknown',
+        addedAt: serverTimestamp()
     });
     if (insertError) throw insertError;
+}
+
+// Простой (не атомарный) инкремент — приемлемо для масштаба клуба,
+// та же логика допущения риска, что и в других местах проекта.
+export async function incrementLikes(printId) {
+    const { data: current, error: fetchErr } = await supabase
+        .from(TABLE).select('likes').eq('id', printId).single();
+    if (fetchErr) throw fetchErr;
+    const newLikes = (current.likes || 0) + 1;
+    const { error: updateErr } = await supabase
+        .from(TABLE).update({ likes: newLikes }).eq('id', printId);
+    if (updateErr) throw updateErr;
+    return newLikes;
+}
+
+// Все принты, набравшие лайков не меньше порога — для Зала славы.
+export async function getFeatured(threshold = 10) {
+    const { data, error } = await supabase
+        .from(TABLE).select('*').gte('likes', threshold).order('likes', { ascending: false });
+    if (error) throw error;
+    return data || [];
 }
