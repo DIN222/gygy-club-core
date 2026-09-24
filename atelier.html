@@ -372,7 +372,7 @@
     initPassport(document.getElementById('passport-badge-container'));
 
     let clubBase = {
-        getAll: () => ({ rebellion: [], motivation: [], intellect: [], aesthetic: [], nostalgia: [] }),
+        getAll: () => ({ rebellion: [], motivation: [], intellect: [], aesthetic: [], humor: [] }),
         init: async () => {},
         addPrint: async () => { throw new Error('Модуль базы клуба недоступен (core/clubBase.js не найден).'); }
     };
@@ -563,7 +563,7 @@
     };
     const FABRIC_PRICE_MOD = { cotton100: 0, stretch: 4, cotton80poly20: 0, cotton100fleece: 3 };
 
-    const CATEGORIES = ['rebellion', 'motivation', 'intellect', 'aesthetic', 'nostalgia'];
+    const CATEGORIES = ['rebellion', 'motivation', 'intellect', 'aesthetic', 'humor'];
 
     function populateFabricOptions(type) {
         const densitySel = document.getElementById('select-fabric-density');
