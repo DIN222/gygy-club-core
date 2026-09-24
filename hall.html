@@ -148,12 +148,13 @@
     <div class="hall-title">GY-GY CLUB — HALL</div>
     <div class="quote-text" data-translate="hall_quote">In every joke there is a share of whisky</div>
 
-    <div class="menu-grid">
+      <div class="menu-grid">
         <button class="menu-btn" id="btn-ai-room" data-translate="zone_ai_room">AI ROOM</button>
         <button class="menu-btn" id="btn-office" data-translate="zone_office">OFFICE</button>
         <button class="menu-btn" id="btn-bar" data-translate="zone_bar">BAR</button>
         <button class="menu-btn" id="btn-atelier">АТЕЛЬЕ «КОНЬ В ПАЛЬТО»</button>
         <button class="menu-btn" id="btn-store">ЛАВКА ДРЕВНОСТЕЙ</button>
+        <button class="menu-btn" id="btn-hall-of-fame">★ ЗАЛ СЛАВЫ</button>
     </div>
 </div>
 
@@ -171,8 +172,8 @@
     document.getElementById('btn-office').addEventListener('click', () => goToPage('office.html'));
     document.getElementById('btn-bar').addEventListener('click', () => goToPage('bar.html', { sound: 'door' }));
     document.getElementById('btn-atelier').addEventListener('click', () => goToPage('atelier.html'));
-    document.getElementById('btn-store').addEventListener('click', () => goToPage('store.html'));
-
+        document.getElementById('btn-store').addEventListener('click', () => goToPage('store.html'));
+    document.getElementById('btn-hall-of-fame').addEventListener('click', () => goToPage('hall-of-fame.html'));
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-home').addEventListener('click', () => window.location.href = 'index.html');
 </script>
