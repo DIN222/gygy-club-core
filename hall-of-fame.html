@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <!--
   hall-of-fame.html
-  v1.0.0 — 2026-09-24
-  Постоянная витрина принтов, набравших лайков не меньше порога
-  (LIKE_THRESHOLD). В отличие от новостей — не исчезает, не сдвигается
-  новыми записями. Лайк — 1 с браузера (localStorage), без входа,
-  осознанно "мягкое" ограничение (можно обойти инкогнито/другим
-  браузером) — тот же уровень риска, что принят и в других местах
-  проекта, соразмерно масштабу клуба.
+  v1.1.0 — 2026-09-24
+  Изменения относительно v1.0.0: лайк ограничен не браузером
+  (localStorage), а паспортом посетителя — через core/clubBase.js
+  likePrint()/hasLiked(), которые опираются на первичный ключ
+  (print_id, passport_id) в таблице print_likes. Показываются только
+  принты с явным согласием автора (public_likes_allowed=true) —
+  это уже фильтруется на уровне getFeatured().
 -->
 <html lang="en">
 <head>
@@ -44,7 +44,7 @@
     }
     .like-btn:hover:not(:disabled) { border-color: var(--gold); }
     .like-btn:disabled { opacity: 0.4; cursor: default; }
-    .empty-note { color: var(--ivory); opacity: 0.6; font-size: 12px; text-align: center; margin-top: 40px; }
+    .empty-note { color: var(--ivory); opacity: 0.6; font-size: 12px; text-align: center; margin-top: 40px; max-width: 420px; }
 </style>
 </head>
 <body>
@@ -63,16 +63,19 @@
 </div>
 
 <script type="module">
+    import { getPassport } from './modules/passport.js';
+
     const LIKE_THRESHOLD = 10; // ⚠️ TODO: черновое значение, уточнить опытным путём
 
-    let clubBase = { getFeatured: async () => [], incrementLikes: async () => {} };
+    let clubBase = { getFeatured: async () => [], likePrint: async () => {}, hasLiked: async () => false };
     try {
         clubBase = await import('./core/clubBase.js');
     } catch (e) {
         console.warn('[HallOfFame] core/clubBase.js не загружен.', e);
     }
 
-    function likedKey(id) { return `gygy_liked_${id}`; }
+    const passport = getPassport();
+    const passportId = passport?.id || null;
 
     async function render() {
         const items = await clubBase.getFeatured(LIKE_THRESHOLD);
@@ -81,8 +84,8 @@
         grid.innerHTML = '';
         emptyNote.style.display = items.length ? 'none' : 'block';
 
-        items.forEach(item => {
-            const alreadyLiked = localStorage.getItem(likedKey(item.id)) === '1';
+        for (const item of items) {
+            const alreadyLiked = passportId ? await clubBase.hasLiked(item.id, passportId).catch(() => false) : false;
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
@@ -90,30 +93,33 @@
                 <div class="author">${item.from_user_name || 'Unknown'}</div>
                 <div class="likes-row">
                     <span class="likes-count">👍 <span id="count-${item.id}">${item.likes}</span></span>
-                    <button class="like-btn" id="like-${item.id}" ${alreadyLiked ? 'disabled' : ''}>
-                        ${alreadyLiked ? 'Оценено' : 'Нравится'}
+                    <button class="like-btn" id="like-${item.id}" ${(alreadyLiked || !passportId) ? 'disabled' : ''}>
+                        ${alreadyLiked ? 'Оценено' : (passportId ? 'Нравится' : 'Нужен паспорт')}
                     </button>
                 </div>
             `;
             grid.appendChild(card);
-        });
+        }
 
-        items.forEach(item => {
+        for (const item of items) {
             const btn = document.getElementById(`like-${item.id}`);
-            if (!btn) return;
+            if (!btn || !passportId) continue;
             btn.addEventListener('click', async () => {
                 btn.disabled = true;
                 try {
-                    const newLikes = await clubBase.incrementLikes(item.id);
+                    const newLikes = await clubBase.likePrint(item.id, passportId);
                     document.getElementById(`count-${item.id}`).textContent = newLikes;
-                    localStorage.setItem(likedKey(item.id), '1');
                     btn.textContent = 'Оценено';
                 } catch (e) {
-                    console.error('[HallOfFame] Не удалось поставить лайк', e);
-                    btn.disabled = false;
+                    if (e.message === 'ALREADY_LIKED') {
+                        btn.textContent = 'Оценено';
+                    } else {
+                        console.error('[HallOfFame] Не удалось поставить лайк', e);
+                        btn.disabled = false;
+                    }
                 }
             });
-        });
+        }
     }
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
