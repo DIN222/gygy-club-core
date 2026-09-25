@@ -813,9 +813,13 @@ v4.15.0 — 2026-09-24
                     renderPrintOverlay(true);
                     updateShareRowVisibility();
                 });
-                const author = document.createElement('div');
+                                const author = document.createElement('div');
                 author.className = 'print-author';
-                author.textContent = item.from_user_name || '';
+                // Имя автора показываем только если он сам дал согласие на
+                // публичность (public_likes_allowed) — иначе принт уже
+                // собственность клуба, а не чья-то персональная работа,
+                // и подписывать его "Guest" смысла не имеет.
+                author.textContent = item.public_likes_allowed ? (item.from_user_name || '') : '';
                 wrap.appendChild(cell);
                 wrap.appendChild(author);
             } else {
