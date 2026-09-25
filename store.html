@@ -442,41 +442,48 @@
         }
 
         // Запуск единого процесса экспертной оценки
-        function runExpertAnalysis() {
-            let name = document.getElementById('expertName').value.trim();
-            let year = parseInt(document.getElementById('expertYear').value);
+      function runExpertAnalysis() {
+    let nameInput = document.getElementById('expertName');
+    let yearInput = document.getElementById('expertYear');
+    
+    let name = nameInput ? nameInput.value.trim() : "";
+    let yearVal = yearInput ? yearInput.value.trim() : "";
+    let year = parseInt(yearVal);
 
-            if (!name || !year) {
-                alert('Укажите название предмета и год его создания!');
-                return;
-            }
-            if (!tempBase64Image) {
-                alert('Загрузите файл фотографии с компьютера!');
-                return;
-            }
+    // Раздельная проверка для точного понимания ошибки
+    if (!name) {
+        alert('Пожалуйста, укажите название предмета!');
+        nameInput.focus();
+        return;
+    }
+    if (!yearVal || isNaN(year)) {
+        alert('Пожалуйста, укажите корректный год создания (например: 1975)!');
+        yearInput.focus();
+        return;
+    }
 
-            let reportBox = document.getElementById('expertReportBox');
-            let reportText = document.getElementById('expertReportText');
-            reportBox.style.display = 'block';
-            reportText.innerHTML = "🔍 Экспертная система сканирует текстуру и сверяет данные с каталогом реликвий...";
+    let reportBox = document.getElementById('expertReportBox');
+    let reportText = document.getElementById('expertReportText');
+    reportBox.style.display = 'block';
+    reportText.innerHTML = "🔍 Экспертная система сканирует текстуру и сверяет данные с каталогом реликвий...";
 
-            setTimeout(() => {
-                if (year >= 1990) {
-                    reportText.innerHTML = `<span style="color:#ff3333;">❌ ОТКЛОНЕНО ЭКСПЕРТОМ:<br>Год выпуска (${year}) >= 1990. Объект признан современным, клуб принимает только антиквариат.</span>`;
-                    document.getElementById('publishVerifiedBtn').style.display = 'none';
-                    expertVerifiedData = null;
-                } else {
-                    let score = Math.floor(Math.random() * 10) + 90; // 90-99%
-                    reportText.innerHTML = `<span style="color:#00ff66;">✅ ЭКСПЕРТИЗА УСПЕШНА!<br>• Индекс подлинности: <b>${score}%</b><br>• Историческая справка сформирована. Лот готов к публикации.</span>`;
-                    
-                    expertVerifiedData = {
-                        score: score,
-                        desc: `Экспертный отчет: Предмет прошел проверку подлинности. Структура материала соответствует эпохе (${year} г.). Коллекционная сохранность.`
-                    };
-                    document.getElementById('publishVerifiedBtn').style.display = 'block';
-                }
-            }, 1200);
+    setTimeout(() => {
+        if (year >= 1990) {
+            reportText.innerHTML = `<span style="color:#ff3333;">❌ ОТКЛОНЕНО ЭКСПЕРТОМ:<br>Год выпуска (${year}) >= 1990. Объект признан современным, клуб принимает только антиквариат.</span>`;
+            document.getElementById('publishVerifiedBtn').style.display = 'none';
+            expertVerifiedData = null;
+        } else {
+            let score = Math.floor(Math.random() * 10) + 90; // 90-99%
+            reportText.innerHTML = `<span style="color:#00ff66;">✅ ЭКСПЕРТИЗА УСПЕШНА!<br>• Индекс подлинности: <b>${score}%</b><br>• Историческая справка сформирована. Лот готов к публикации.</span>`;
+            
+            expertVerifiedData = {
+                score: score,
+                desc: `Экспертный отчет: Предмет прошел проверку подлинности. Структура материала соответствует эпохе (${year} г.). Коллекционная сохранность.`
+            };
+            document.getElementById('publishVerifiedBtn').style.display = 'block';
         }
+    }, 1200);
+}
 
         // Финальная публикация в общую базу клуба
         function publishVerifiedItem() {
