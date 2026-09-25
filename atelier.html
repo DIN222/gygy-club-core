@@ -122,7 +122,10 @@ v4.15.0 — 2026-09-24
         padding: 2px 6px; border-radius: 3px; pointer-events: none; z-index: 5;
     }
 
-    .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
+       .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
+    .spec-diagram-row { display: flex; align-items: center; gap: 12px; }
+    .spec-diagram { flex-shrink: 0; }
+    .spec-rows { flex: 1; }
     .spec-row { display: flex; justify-content: space-between; padding: 3px 0; }
     .spec-row span:last-child { color: var(--gold); }
     .care-notes { font-size: 9px; opacity: 0.75; margin-top: 8px; line-height: 1.5; color: var(--ivory); }
@@ -500,17 +503,66 @@ v4.15.0 — 2026-09-24
         return imageData;
     }
 
+     const SIZE_DIAGRAM_SVG = `
+        <svg viewBox="0 0 120 150" width="70" height="88" xmlns="http://www.w3.org/2000/svg">
+            <path d="M30,20 L44,10 Q60,22 76,10 L90,20 L104,34 L92,46 L84,40 L84,140 L36,140 L36,40 L28,46 L16,34 Z"
+                  fill="none" stroke="var(--gold-dim)" stroke-width="2"/>
+            <line x1="20" y1="55" x2="100" y2="55" stroke="var(--ivory)" stroke-width="1.5"
+                  marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"/>
+            <text x="60" y="49" fill="var(--gold)" font-size="14" font-weight="900" text-anchor="middle">A</text>
+            <line x1="60" y1="42" x2="60" y2="138" stroke="var(--ivory)" stroke-width="1.5"
+                  marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"/>
+            <text x="48" y="95" fill="var(--gold)" font-size="14" font-weight="900" text-anchor="middle">B</text>
+            <defs>
+                <marker id="arrowStart" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                    <path d="M8,1 L1,4 L8,7" fill="none" stroke="var(--ivory)" stroke-width="1.2"/>
+                </marker>
+                <marker id="arrowEnd" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                    <path d="M1,1 L8,4 L1,7" fill="none" stroke="var(--ivory)" stroke-width="1.2"/>
+                </marker>
+            </defs>
+        </svg>`;
+
     function renderSpecPanel() {
         const rows = [
-            ['Ширина по груди', `${GARMENT_CHEST_CM[state.type][state.size]} cm`],
-            ['Длина по спинке', `${GARMENT_LENGTH_CM[state.type][state.size]} cm`]
+               const SIZE_DIAGRAM_SVG = `
+        <svg viewBox="0 0 120 150" width="70" height="88" xmlns="http://www.w3.org/2000/svg">
+            <path d="M30,20 L44,10 Q60,22 76,10 L90,20 L104,34 L92,46 L84,40 L84,140 L36,140 L36,40 L28,46 L16,34 Z"
+                  fill="none" stroke="var(--gold-dim)" stroke-width="2"/>
+            <line x1="20" y1="55" x2="100" y2="55" stroke="var(--ivory)" stroke-width="1.5"
+                  marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"/>
+            <text x="60" y="49" fill="var(--gold)" font-size="14" font-weight="900" text-anchor="middle">A</text>
+            <line x1="60" y1="42" x2="60" y2="138" stroke="var(--ivory)" stroke-width="1.5"
+                  marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"/>
+            <text x="48" y="95" fill="var(--gold)" font-size="14" font-weight="900" text-anchor="middle">B</text>
+            <defs>
+                <marker id="arrowStart" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                    <path d="M8,1 L1,4 L8,7" fill="none" stroke="var(--ivory)" stroke-width="1.2"/>
+                </marker>
+                <marker id="arrowEnd" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                    <path d="M1,1 L8,4 L1,7" fill="none" stroke="var(--ivory)" stroke-width="1.2"/>
+                </marker>
+            </defs>
+        </svg>`;
+
+    function renderSpecPanel() {
+        const rows = [
+            ['A — ширина ', `${GARMENT_CHEST_CM[state.type][state.size]} cm`],
+            ['B — длина ', `${GARMENT_LENGTH_CM[state.type][state.size]} cm`]
         ];
         if (GARMENT_SLEEVE_CM[state.type]) {
             rows.push(['Длина рукава', `${GARMENT_SLEEVE_CM[state.type][state.size]} cm`]);
         }
-        document.getElementById('spec-panel').innerHTML = rows.map(([label, val]) =>
-            `<div class="spec-row"><span>${label}</span><span>${val}</span></div>`
-        ).join('');
+        document.getElementById('spec-panel').innerHTML = `
+            <div class="spec-diagram-row">
+                <div class="spec-diagram">${SIZE_DIAGRAM_SVG}</div>
+                <div class="spec-rows">
+                    ${rows.map(([label, val]) => `<div class="spec-row"><span>${label}</span><span>${val}</span></div>`).join('')}
+                </div>
+            </div>`;
+    }
+                </div>
+            </div>`;
     }
 
     function renderNecklineFitFields() {
