@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GY-GY Club | Antique Store & AI Lab</title>
+    <title>GY-GY Club | Antique Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { 
             --gold: #FFD700; 
-            --panel-bg: rgba(244, 235, 208, 0.92);
+            --panel-bg: rgba(244, 235, 208, 0.95);
             --border-wood: #5a3e1b;
             --dark-wood: #2b1d0c;
         }
@@ -21,6 +21,7 @@
             font-family: 'Share Tech Mono', monospace;
         }
 
+        /* Приглушенный фон во весь экран */
         #store-bg {
             position: fixed;
             inset: 0;
@@ -94,12 +95,17 @@
             font-size: 11px;
             color: var(--dark-wood);
             margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .mini-scroll {
             display: flex;
             gap: 6px;
             overflow-x: auto;
             padding: 4px 0;
+            min-height: 53px;
+            align-items: center;
         }
         .mini-scroll::-webkit-scrollbar { height: 4px; }
         .mini-scroll::-webkit-scrollbar-thumb { background: var(--border-wood); border-radius: 2px; }
@@ -204,13 +210,6 @@
             width: 100%; padding: 6px; border: 1px solid var(--border-wood); background: #fff;
             font-family: inherit; font-size: 11px; border-radius: 3px;
         }
-
-        /* Стили для лаборатории ИИ */
-        .ai-scanner-box {
-            background: #111; color: #00ff66; padding: 12px; border-radius: 4px;
-            font-size: 11px; border: 1px solid #00ff66; margin-bottom: 10px;
-            min-height: 80px; display: none;
-        }
     </style>
 </head>
 <body>
@@ -219,39 +218,41 @@
 
     <div class="shop-wrapper">
         <header class="shop-header">
-            <h1>GY-GY Club | Antique Store v6.0</h1>
+            <h1>GY-GY Club | Antique Store</h1>
             <div class="header-btns">
-                <button class="header-btn" onclick="openImportModal()">🤖 Лаборатория ИИ-экспертизы</button>
+                <button class="header-btn" onclick="openImportModal()">+ Загрузить фото с ПК</button>
                 <button class="header-btn" onclick="openReviewsModal()">💬 Отзывы</button>
                 <button class="header-btn" onclick="location.href='hall.html'">В Холл</button>
             </div>
         </header>
 
+        <!-- ЛЕВАЯ ПАНЕЛЬ С КАТЕГОРИЯМИ И МИНИ-СКРОЛЛАМИ -->
         <aside class="left-panel">
-            <div class="section-title">KATEGORIY ARTEGORTES</div>
+            <div class="section-title">БАЗА ТОВАРОВ КЛУБА</div>
             <div id="categoriesContainer"></div>
         </aside>
 
+        <!-- ЦЕНТРАЛЬНАЯ РАМКА ДЕМОНСТРАЦИИ -->
         <main class="center-panel">
             <div class="display-frame">
                 <img id="activeArtifactImg" src="" alt="Выберите товар" style="display:none;">
                 <div id="emptyDisplayPlaceholder" style="color:#782814; font-size:13px; font-weight:bold;">
-                    Витрина ожидает артефакт.<br>Пройдите ИИ-экспертизу через кнопку в шапке!
+                    Витрина пуста.<br>Выберите товар слева из мини-скролла<br>или добавьте фото с компьютера.
                 </div>
             </div>
             <div class="display-info">
-                <h2 id="activeArtifactTitle">Витрина пуста</h2>
-                <p id="activeArtifactShortDesc">Выберите позицию из каталога или подготовьте новый лот.</p>
+                <h2 id="activeArtifactTitle">Товар не выбран</h2>
+                <p id="activeArtifactShortDesc">Нажмите на иконку в любой категории слева для просмотра деталей.</p>
             </div>
         </main>
 
+        <!-- ПРАВАЯ ПАНЕЛЬ ХАРАКТЕРИСТИК -->
         <section class="right-panel">
-            <div class="section-title">ХАРАКТЕРИСТИКИ АРТЕФАКТА</div>
+            <div class="section-title">ХАРАКТЕРИСТИКИ</div>
             <div class="spec-box" id="specsDetails">
                 <p><b>Категория:</b> —</p>
                 <p><b>Год создания:</b> —</p>
-                <p><b>ИИ-индекс подлинности:</b> —</p>
-                <p style="margin-top: 6px;"><b>Описание:</b> Выберите позицию для детального изучения.</p>
+                <p style="margin-top: 6px;"><b>Описание:</b> Сведения появятся при выборе лота.</p>
             </div>
 
             <div class="spec-box">
@@ -264,51 +265,46 @@
             </div>
 
             <button class="action-btn" onclick="addToCart()">🛒 Добавить в корзину</button>
-            <button class="action-btn" style="background: linear-gradient(to bottom, #5a3e1b, #2b1d0c);" onclick="openImportModal()">🤖 Пройти ИИ-экспертизу фото</button>
+            <button class="action-btn" style="background: linear-gradient(to bottom, #5a3e1b, #2b1d0c);" onclick="openImportModal()">+ Добавить фото в базу</button>
         </section>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ОТДЕЛЬНЫЙ ЭТАП ПОДГОТОВКИ И ИИ-ЭКСПЕРТИЗЫ -->
+    <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ ФОТО С ПК В КАТЕГОРИЮ -->
     <div class="modal-overlay" id="importModal">
         <div class="modal-card">
             <span class="modal-close" onclick="closeImportModal()">&times;</span>
-            <h3>🤖 Лаборатория ИИ-экспертизы артефактов</h3>
-            <p style="font-size: 10px; margin-bottom: 8px; color: #555;">Этап предварительной оценки: нейросеть сканирует фото на следы старины, текстуру и стиль до 1990 года.</p>
+            <h3>Импорт фото с клиентской базы (ПК)</h3>
+            <p style="font-size: 10px; margin-bottom: 8px; color: #555;">⚠️ Контроль клуба: принимаются раритеты <b>строго до 1990 года</b>.</p>
             
             <div class="form-group">
-                <label>1. Загрузите фото объекта:</label>
+                <label>Выберите фото на компьютере:</label>
                 <input type="file" id="localPhotoFile" accept="image/*" onchange="previewLocalImage(event)">
             </div>
-            <div class="form-group"><label>Предварительное название:</label><input type="text" id="importName" placeholder="Напр. Винтажный портсигар"></div>
-            <div class="form-group"><label>Категория:</label>
+            <div class="form-group"><label>Название товара:</label><input type="text" id="importName" placeholder="Напр. Хрустальная ваза"></div>
+            <div class="form-group"><label>Категория в базе клуба:</label>
                 <select id="importCategory">
-                    <option value="glass">Glass (Стекло)</option>
-                    <option value="porcelain">Porcelain (Фарфор)</option>
-                    <option value="fabric">Fabric (Текстиль/Бумага)</option>
-                    <option value="metal">Metal (Металл)</option>
-                    <option value="tech">Tech (Техно-девайсы)</option>
+                    <option value="glass">Стекло (Glass)</option>
+                    <option value="porcelain">Фарфор (Porcelain)</option>
+                    <option value="fabric">Текстиль/Бумага (Fabric)</option>
+                    <option value="metal">Металл (Metal)</option>
+                    <option value="tech">Техно-девайсы (Tech)</option>
                 </select>
             </div>
-            <div class="form-group"><label>Заявляемый год создания:</label><input type="number" id="importYear" placeholder="1975"></div>
-
-            <!-- Контейнер работы ИИ-оценщика -->
-            <div id="aiScannerBox" class="ai-scanner-box">
-                <div id="aiScannerText">⏳ Нажмите кнопку ниже для запуска нейросетевого анализа изображения...</div>
-            </div>
-
-            <button class="action-btn" id="aiScanBtn" onclick="runAIAnalysis()" style="background: #111; color: #00ff66; border: 1px solid #00ff66; margin-bottom: 8px;">⚡ Запустить ИИ-сканирование подлинности</button>
+            <div class="form-group"><label>Год создания (&lt; 1990):</label><input type="number" id="importYear" placeholder="1975"></div>
+            <div class="form-group"><label>Цена (GY-GY 🪙):</label><input type="number" id="importPrice" value="150"></div>
+            <div class="form-group"><label>Описание / Историческая справка:</label><textarea id="importDesc" rows="2" placeholder="Состояние, происхождение..."></textarea></div>
             
-            <button class="action-btn" id="publishBtn" onclick="publishVerifiedItem()" style="display:none;">✨ Разместить артефакт в базе магазина</button>
+            <button class="action-btn" onclick="addPhotoToClubDatabase()">Зарегистрировать в базе клуба</button>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ОТЗЫВЫ -->
+    <!-- МОДАЛЬНОЕ ОКНО ОТЗЫВОВ -->
     <div class="modal-overlay" id="reviewsModal">
         <div class="modal-card">
             <span class="modal-close" onclick="closeReviewsModal()">&times;</span>
             <h3>💬 Отзывы резидентов Лавки</h3>
             <div style="max-height: 180px; overflow-y: auto; font-size: 11px; margin-bottom: 10px;" id="reviewsList">
-                <div style="border-bottom:1px solid #ccc; padding-bottom:5px; margin-bottom:5px;"><b>#4092:</b> «ИИ-лаборатория выдала точный процент подлинности моим часам!»</div>
+                <div style="border-bottom:1px solid #ccc; padding-bottom:5px; margin-bottom:5px;"><b>#4092:</b> «Загрузка своих фото работает отлично!»</div>
             </div>
             <div class="form-group"><input type="text" id="newReviewText" placeholder="Ваш отзыв..."></div>
             <button class="action-btn" onclick="addReview()">Оставить отзыв</button>
@@ -316,26 +312,23 @@
     </div>
 
     <script>
+        // Инициализация базы данных магазина в localStorage (пустой массив или стартовые пустые категории)
         if (!localStorage.getItem('gy_store_inventory')) {
-            let initialStoreItems = [
-                { id: 1, name: "Хрустальный бокал Чарли", category: "glass", year: 1978, price: 120, aiScore: 98, img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=300", desc: "Ретро-бокал из бара основателей клуба. Сохранил легкий дух 70-х." },
-                { id: 2, name: "Фарфоровый конь", category: "porcelain", year: 1965, price: 340, aiScore: 95, img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300", desc: "Статуэтка смеющегося коня. Тончайшая работа мастеров старой школы." }
-            ];
-            localStorage.setItem('gy_store_inventory', JSON.stringify(initialStoreItems));
+            localStorage.setItem('gy_store_inventory', JSON.stringify([]));
         }
 
         let activeItem = null;
         let tempBase64Image = "";
-        let verifiedAiData = null;
 
         const categoryMeta = {
-            glass: "Glass (Стекло)",
-            porcelain: "Porcelain (Фарфор)",
-            fabric: "Fabric (Текстиль)",
-            metal: "Metal (Металл)",
-            tech: "Tech (Техника)"
+            glass: "Стекло (Glass)",
+            porcelain: "Фарфор (Porcelain)",
+            fabric: "Текстиль (Fabric)",
+            metal: "Металл (Metal)",
+            tech: "Техно-девайсы (Tech)"
         };
 
+        // Отрисовка категорий и горизонтальных мини-скроллов товаров
         function renderCategories() {
             let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
             let container = document.getElementById('categoriesContainer');
@@ -343,9 +336,10 @@
 
             for (let catKey in categoryMeta) {
                 let itemsInCat = storeInventory.filter(i => i.category === catKey);
+                
                 let miniItemsHtml = '';
                 if (itemsInCat.length === 0) {
-                    miniItemsHtml = `<span style="font-size:10px; color:#777; padding:4px;">Пусто</span>`;
+                    miniItemsHtml = `<span style="font-size:10px; color:#666; padding:4px;">Нет товаров</span>`;
                 } else {
                     itemsInCat.forEach(item => {
                         miniItemsHtml += `
@@ -355,17 +349,25 @@
                         `;
                     });
                 }
+
                 container.innerHTML += `
                     <div class="category-group">
-                        <div class="category-header">${categoryMeta[catKey]}</div>
-                        <div class="mini-scroll">${miniItemsHtml}</div>
+                        <div class="category-header">
+                            <span>${categoryMeta[catKey]}</span>
+                            <span style="font-size:9px; color:#555;">(${itemsInCat.length})</span>
+                        </div>
+                        <div class="mini-scroll">
+                            ${miniItemsHtml}
+                        </div>
                     </div>
                 `;
             }
         }
 
+        // Выбор товара из скролла и вывод в центр и на правую панель
         function selectItem(item) {
             activeItem = item;
+
             let imgEl = document.getElementById('activeArtifactImg');
             imgEl.src = item.img;
             imgEl.style.display = 'block';
@@ -377,12 +379,13 @@
             document.getElementById('specsDetails').innerHTML = `
                 <p><b>Категория:</b> ${categoryMeta[item.category] || item.category}</p>
                 <p><b>Год создания:</b> ${item.year} г.</p>
-                <p><b>ИИ-индекс подлинности:</b> <span style="color:#008000; font-weight:bold;">${item.aiScore || 90}% (Раритет)</span></p>
                 <p style="margin-top: 6px;"><b>Описание:</b> ${item.desc}</p>
             `;
+
             document.getElementById('activePriceInput').value = item.price;
         }
 
+        // Обновление цены
         function updatePrice(newPrice) {
             if (activeItem) {
                 activeItem.price = parseInt(newPrice) || 0;
@@ -395,6 +398,7 @@
             }
         }
 
+        // Обработка загружаемого файла с компьютера
         function previewLocalImage(event) {
             let file = event.target.files[0];
             if (file) {
@@ -410,70 +414,52 @@
             }
         }
 
-        // Отдельный этап ИИ-сканирования
-        function runAIAnalysis() {
-            let year = parseInt(document.getElementById('importYear').value);
+        // Добавление фото из клиентской базы в базу клуба с проверкой года < 1990
+        function addPhotoToClubDatabase() {
             let name = document.getElementById('importName').value.trim();
+            let cat = document.getElementById('importCategory').value;
+            let year = parseInt(document.getElementById('importYear').value);
+            let price = parseInt(document.getElementById('importPrice').value) || 100;
+            let desc = document.getElementById('importDesc').value.trim() || "Реликвия из личного архива резидента.";
 
-            if (!name || !year || !tempBase64Image) {
-                alert('Заполните название, год и выберите файл фото перед запуском ИИ!');
+            if (!name || !year) {
+                alert('Укажите название и год создания товара!');
+                return;
+            }
+            if (!tempBase64Image) {
+                alert('Выберите файл фотографии с компьютера!');
+                return;
+            }
+            if (year >= 1990) {
+                alert(`⚠️ Ошибка контроля!\nГод ${year} слишком новый. Клуб принимает исключительно раритеты до 1990 года!`);
                 return;
             }
 
-            let scannerBox = document.getElementById('aiScannerBox');
-            let scannerText = document.getElementById('aiScannerText');
-            scannerBox.style.display = 'block';
-            scannerText.innerHTML = "🔍 Инициализация нейросети... Анализ текстуры, палитры и микротрещин...";
-
-            // Симуляция работы визуального анализатора
-            setTimeout(() => {
-                scannerText.innerHTML += "<br>📊 Обнаружены признаки исторического старения материала...";
-            }, 800);
-
-            setTimeout(() => {
-                if (year >= 1990) {
-                    scannerText.innerHTML = `<span style="color:#ff3333;">❌ ОШИБКА АВТОРИЗАЦИИ: Нейросеть распознала современный объект (Год ${year} >= 1990). Лот отклонен клубом!</span>`;
-                    document.getElementById('publishBtn').style.display = 'none';
-                } else {
-                    let randomScore = Math.floor(Math.random() * 15) + 85; // от 85% до 99%
-                    scannerText.innerHTML = `<span style="color:#00ff66;">✅ АНАЛИЗ ЗАВЕРШЕН УСПЕШНО!<br>• Индекс раритета: <b>${randomScore}%</b><br>• Статус: Винтажный подлинник до 1990 г.<br>• Исторический контекст сгенерирован.</span>`;
-                    
-                    verifiedAiData = {
-                        score: randomScore,
-                        generatedDesc: `Авто-экспертиза ИИ: Раритетный артефакт эпохи. Структура материала соответствует заявленному ${year} году выпуска. Высокая коллекционная ценность.`
-                    };
-                    document.getElementById('publishBtn').style.display = 'block';
-                }
-            }, 1800);
-        }
-
-        function publishVerifiedItem() {
-            if (!verifiedAiData) return;
-
             let newItem = {
                 id: Date.now(),
-                name: document.getElementById('importName').value.trim(),
-                category: document.getElementById('importCategory').value,
-                year: parseInt(document.getElementById('importYear').value),
-                price: 150,
-                aiScore: verifiedAiData.score,
+                name: name,
+                category: cat,
+                year: year,
+                price: price,
                 img: tempBase64Image,
-                desc: verifiedAiData.generatedDesc
+                desc: desc
             };
 
             let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
             storeInventory.push(newItem);
             localStorage.setItem('gy_store_inventory', JSON.stringify(storeInventory));
 
-            alert('✨ Артефакт успешно прошел ИИ-лабораторию и опубликован на витрине!');
+            alert('✅ Фото успешно добавлено в базу клуба и распределено по категории!');
             closeImportModal();
             renderCategories();
             selectItem(newItem);
             
-            // Сброс формы
-            document.getElementById('aiScannerBox').style.display = 'none';
-            document.getElementById('publishBtn').style.display = 'none';
-            verifiedAiData = null;
+            // Сброс полей формы
+            document.getElementById('localPhotoFile').value = '';
+            document.getElementById('importName').value = '';
+            document.getElementById('importYear').value = '';
+            document.getElementById('importDesc').value = '';
+            tempBase64Image = "";
         }
 
         function openImportModal() { document.getElementById('importModal').style.display = 'flex'; }
