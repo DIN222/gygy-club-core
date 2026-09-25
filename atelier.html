@@ -1,22 +1,27 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-v4.15.0 — 2026-09-24
-  Изменения относительно v4.11.0:
-  (1) Ссылка "ЗАЛ СЛАВЫ" убрана из Ателье — переезжает в меню Холла
-      (отдельная правка hall.html), т.к. это общеклубная, а не
-      атерская функция.
-  (2) При "Поделиться с клубом" — новый чекбокс согласия на публичное
-      обсуждение/лайки (по умолчанию НЕ отмечен). Без явного согласия
-      принт не сможет попасть в Зал славы, даже случайно.
-  (3) Подпись автора под иконкой в ленте принтов клуба — как и раньше.
+  v4.16.0 — 2026-09-25
+  Полная пересборка (во избежание риска рассинхронизации после
+  нескольких точечных правок подряд — та же причина поломки повторялась
+  третий раз). Включает всё относительно v4.15.0:
+  (1) Аватарка коня увеличена на 15% (58px → 67px).
+  (2) Шрифт вывески сменён с Cinzel на Playfair Display (тот же шрифт,
+      что уже используется в вывеске клуба на фото-фоне регистрации).
+  (3) Текст вывески — ЗАГЛУШКА "HORSE IN A COAT", замените на ваш
+      реальный перевод (ищите <span class="title-text">).
+  (4) Диаграмма размеров A/B (SVG) рядом с числовыми характеристиками.
+  (5) Подпись автора под иконкой принта — только при public_likes_allowed.
+  (6) Чекбокс согласия на публичность при "Поделиться с клубом".
+  Блок оплаты/доставки (платёжный терминал) — пока НЕ включён в этот
+  файл, это отдельная задача, обсудим и соберём следующим заходом.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.15.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<title>GY-GY Club — Atelier v4.16.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
     :root {
@@ -40,7 +45,7 @@ v4.15.0 — 2026-09-24
     .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
 
     .gy-user-badge { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; display: none; z-index: 1000; }
-    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 40%; object-fit: cover; }
+    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
 
     .page-wrap {
@@ -54,11 +59,11 @@ v4.15.0 — 2026-09-24
         margin-bottom: 20px;
     }
     .atelier-title-badge img {
-        width: 58px; height: 58px; object-fit: contain; border-radius: 50%;
+        width: 67px; height: 67px; object-fit: contain; border-radius: 50%;
         filter: drop-shadow(0 0 8px rgba(255,215,0,0.75)) drop-shadow(0 0 3px rgba(255,215,0,0.9));
     }
     .atelier-title-badge .title-text {
-        font-family: 'Cinzel', serif; font-weight: 900; font-size: 24px; text-align: center;
+        font-family: 'Playfair Display', serif; font-weight: 900; font-size: 24px; text-align: center;
         text-shadow: 0 0 10px rgba(255,215,0,0.4);
     }
 
@@ -122,7 +127,7 @@ v4.15.0 — 2026-09-24
         padding: 2px 6px; border-radius: 3px; pointer-events: none; z-index: 5;
     }
 
-       .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
+    .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
     .spec-diagram-row { display: flex; align-items: center; gap: 12px; }
     .spec-diagram { flex-shrink: 0; }
     .spec-rows { flex: 1; }
@@ -166,7 +171,6 @@ v4.15.0 — 2026-09-24
     .category-picker { display: none; flex-direction: column; gap: 6px; margin-top: 4px; }
     .category-picker.open { display: flex; }
     .category-picker select { width: 100%; padding: 6px; font-size: 10px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
-    .category-picker .row { display: flex; gap: 6px; }
 
     .position-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .position-row select { flex: 1; padding: 7px; font-size: 11px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; }
@@ -207,8 +211,8 @@ v4.15.0 — 2026-09-24
 <div class="page-wrap">
 
     <div class="atelier-title-badge">
-        <img src="horse_coat.png" alt="">
-        <span class="title-text">Atelier «Horse in a Coat»</span>
+        <img src="horse_welcome.png" alt="">
+        <span class="title-text">HORSE IN A COAT</span>
     </div>
 
     <div class="config-body">
@@ -286,7 +290,7 @@ v4.15.0 — 2026-09-24
                 </select>
                 <div class="checkbox-row">
                     <input type="checkbox" id="check-public-likes">
-                    <label for="check-public-likes">Разрешить публичное обсуждение и лайки (может попасть в Зал славы)</label>
+                    <label for="check-public-likes">Разрешить публичное обсуждение и лайки (может попасть в "Это круто")</label>
                 </div>
                 <button class="btn-cfg small" id="btn-share-confirm">OK</button>
             </div>
@@ -503,7 +507,7 @@ v4.15.0 — 2026-09-24
         return imageData;
     }
 
-     const SIZE_DIAGRAM_SVG = `
+    const SIZE_DIAGRAM_SVG = `
         <svg viewBox="0 0 120 150" width="70" height="88" xmlns="http://www.w3.org/2000/svg">
             <path d="M30,20 L44,10 Q60,22 76,10 L90,20 L104,34 L92,46 L84,40 L84,140 L36,140 L36,40 L28,46 L16,34 Z"
                   fill="none" stroke="var(--gold-dim)" stroke-width="2"/>
@@ -525,30 +529,8 @@ v4.15.0 — 2026-09-24
 
     function renderSpecPanel() {
         const rows = [
-               const SIZE_DIAGRAM_SVG = `
-        <svg viewBox="0 0 120 150" width="70" height="88" xmlns="http://www.w3.org/2000/svg">
-            <path d="M30,20 L44,10 Q60,22 76,10 L90,20 L104,34 L92,46 L84,40 L84,140 L36,140 L36,40 L28,46 L16,34 Z"
-                  fill="none" stroke="var(--gold-dim)" stroke-width="2"/>
-            <line x1="20" y1="55" x2="100" y2="55" stroke="var(--ivory)" stroke-width="1.5"
-                  marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"/>
-            <text x="60" y="49" fill="var(--gold)" font-size="14" font-weight="900" text-anchor="middle">A</text>
-            <line x1="60" y1="42" x2="60" y2="138" stroke="var(--ivory)" stroke-width="1.5"
-                  marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"/>
-            <text x="48" y="95" fill="var(--gold)" font-size="14" font-weight="900" text-anchor="middle">B</text>
-            <defs>
-                <marker id="arrowStart" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-                    <path d="M8,1 L1,4 L8,7" fill="none" stroke="var(--ivory)" stroke-width="1.2"/>
-                </marker>
-                <marker id="arrowEnd" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-                    <path d="M1,1 L8,4 L1,7" fill="none" stroke="var(--ivory)" stroke-width="1.2"/>
-                </marker>
-            </defs>
-        </svg>`;
-
-    function renderSpecPanel() {
-        const rows = [
-            ['A — ширина ', `${GARMENT_CHEST_CM[state.type][state.size]} cm`],
-            ['B — длина ', `${GARMENT_LENGTH_CM[state.type][state.size]} cm`]
+            ['A — ширина по груди', `${GARMENT_CHEST_CM[state.type][state.size]} cm`],
+            ['B — длина по спинке', `${GARMENT_LENGTH_CM[state.type][state.size]} cm`]
         ];
         if (GARMENT_SLEEVE_CM[state.type]) {
             rows.push(['Длина рукава', `${GARMENT_SLEEVE_CM[state.type][state.size]} cm`]);
@@ -558,9 +540,6 @@ v4.15.0 — 2026-09-24
                 <div class="spec-diagram">${SIZE_DIAGRAM_SVG}</div>
                 <div class="spec-rows">
                     ${rows.map(([label, val]) => `<div class="spec-row"><span>${label}</span><span>${val}</span></div>`).join('')}
-                </div>
-            </div>`;
-    }
                 </div>
             </div>`;
     }
@@ -813,12 +792,11 @@ v4.15.0 — 2026-09-24
                     renderPrintOverlay(true);
                     updateShareRowVisibility();
                 });
-                                const author = document.createElement('div');
+                const author = document.createElement('div');
                 author.className = 'print-author';
                 // Имя автора показываем только если он сам дал согласие на
                 // публичность (public_likes_allowed) — иначе принт уже
-                // собственность клуба, а не чья-то персональная работа,
-                // и подписывать его "Guest" смысла не имеет.
+                // собственность клуба, подписывать его "Guest" смысла нет.
                 author.textContent = item.public_likes_allowed ? (item.from_user_name || '') : '';
                 wrap.appendChild(cell);
                 wrap.appendChild(author);
