@@ -16,103 +16,89 @@
         
         html, body {
             width: 100%; height: 100vh;
-            background: #000;
+            background: #140d06; /* Чистый темный фон (картинку Store 0.png можно удалить из проекта) */
             overflow: hidden;
             font-family: 'Share Tech Mono', monospace;
-        }
-
-        /* МЕСТО ФОНОВОЙ КАРТИНКИ (можете удалить эту строчку или тег ниже) */
-        #store-bg {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            background: url('Store 0.png') no-repeat center center;
-            background-size: cover;
-            filter: brightness(0.5);
-            pointer-events: none;
         }
 
         .shop-wrapper {
             position: relative;
             z-index: 10;
             display: grid;
-            grid-template-columns: 320px 1fr 340px;
-            grid-template-rows: 60px 1fr;
+            grid-template-columns: 310px 1fr 330px;
+            grid-template-rows: 55px 1fr;
             height: 100vh;
-            gap: 12px;
-            padding: 12px;
+            gap: 10px;
+            padding: 10px;
         }
 
         .shop-header {
             grid-column: 1 / -1;
-            background: rgba(30, 20, 10, 0.85);
+            background: rgba(30, 20, 10, 0.95);
             border: 2px solid var(--border-wood);
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 0 15px;
             color: var(--gold);
             font-family: 'Cinzel', serif;
             box-shadow: 0 4px 15px rgba(0,0,0,0.6);
         }
-        .shop-header h1 { font-size: 18px; letter-spacing: 1px; }
-        .header-btns { display: flex; gap: 10px; }
+        .shop-header h1 { font-size: 16px; letter-spacing: 1px; }
+        .header-btns { display: flex; gap: 8px; }
         .header-btn {
             background: #5a3e1b; color: var(--gold); border: 1px solid var(--gold);
-            padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;
+            padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold;
         }
         .header-btn:hover { background: #782814; }
 
-        .left-panel, .center-panel, .right-panel {
+        .left-panel {
             background: var(--panel-bg);
             border: 2px solid var(--border-wood);
             border-radius: 6px;
-            padding: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        .left-panel {
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         .section-title {
             font-family: 'Cinzel', serif;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: var(--dark-wood);
             border-bottom: 1px solid var(--border-wood);
-            padding-bottom: 4px;
-            margin-bottom: 4px;
+            padding-bottom: 3px;
+            margin-bottom: 3px;
         }
         .category-group {
             background: rgba(255,255,255,0.6);
             border: 1px solid var(--border-wood);
             border-radius: 4px;
-            padding: 6px;
+            padding: 5px;
         }
         .category-header {
             font-weight: bold;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--dark-wood);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             display: flex;
             justify-content: space-between;
         }
         .mini-scroll {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             overflow-x: auto;
-            padding: 4px 0;
-            min-height: 53px;
+            padding: 2px 0;
+            min-height: 45px;
             align-items: center;
         }
-        .mini-scroll::-webkit-scrollbar { height: 4px; }
+        .mini-scroll::-webkit-scrollbar { height: 3px; }
         .mini-scroll::-webkit-scrollbar-thumb { background: var(--border-wood); border-radius: 2px; }
         .mini-item {
-            min-width: 45px; height: 45px;
+            min-width: 40px; height: 40px;
             border: 1px solid var(--border-wood);
             background: #fff; cursor: pointer;
             border-radius: 3px; overflow: hidden;
@@ -122,22 +108,27 @@
         .mini-item:hover { border-color: #782814; transform: scale(1.05); }
 
         .center-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--border-wood);
+            border-radius: 6px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            overflow: hidden;
         }
         .display-frame {
             width: 100%;
-            height: 60%;
+            height: 55vh;
             border: 3px solid var(--border-wood);
             background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.15);
-            margin-bottom: 8px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.15);
             position: relative;
             overflow: hidden;
             border-radius: 4px;
@@ -147,29 +138,34 @@
         .projection-switcher {
             display: flex;
             gap: 6px;
-            margin-bottom: 8px;
+            margin: 6px 0;
         }
         .proj-btn {
             background: #e6dfc8; border: 1px solid var(--border-wood);
-            padding: 3px 8px; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 3px;
+            padding: 3px 8px; font-size: 9px; font-weight: bold; cursor: pointer; border-radius: 3px;
         }
         .proj-btn.active { background: var(--border-wood); color: var(--gold); }
 
-        .display-info h2 { font-family: 'Cinzel', serif; font-size: 16px; color: var(--dark-wood); margin-bottom: 4px; }
+        .display-info h2 { font-family: 'Cinzel', serif; font-size: 15px; color: var(--dark-wood); margin-bottom: 3px; }
         .display-info p { font-size: 11px; color: #442d13; max-width: 90%; margin: 0 auto; line-height: 1.3; }
 
         .right-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--border-wood);
+            border-radius: 6px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         .spec-box {
             background: rgba(255,255,255,0.7);
             border: 1px solid var(--border-wood);
             border-radius: 4px;
             padding: 8px;
-            font-size: 11px;
+            font-size: 10px;
             line-height: 1.4;
         }
         .spec-box b { color: var(--dark-wood); }
@@ -186,7 +182,7 @@
         }
         .action-btn {
             background: linear-gradient(to bottom, #782814, #4a180b); color: var(--gold);
-            border: 2px solid var(--border-wood); padding: 8px; font-size: 11px; font-weight: bold;
+            border: 2px solid var(--border-wood); padding: 7px; font-size: 10px; font-weight: bold;
             cursor: pointer; border-radius: 4px; text-align: center; width: 100%;
             font-family: 'Share Tech Mono', monospace;
         }
@@ -196,22 +192,23 @@
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center; z-index: 1000;
+            padding: 10px;
         }
         .modal-card {
             background: #f4ebd0; border: 3px solid var(--border-wood); padding: 15px;
-            width: 90%; max-width: 480px; border-radius: 8px; color: var(--dark-wood);
-            font-family: 'Share Tech Mono', monospace; max-height: 90vh; overflow-y: auto;
+            width: 100%; max-width: 480px; border-radius: 8px; color: var(--dark-wood);
+            font-family: 'Share Tech Mono', monospace; max-height: 95vh; overflow-y: auto;
         }
         .modal-card h3 {
             font-family: 'Cinzel', serif; margin-bottom: 10px; font-size: 14px;
             border-bottom: 1px solid var(--border-wood); padding-bottom: 4px;
         }
         .modal-close { float: right; cursor: pointer; font-weight: bold; font-size: 16px; }
-        .form-group { margin-bottom: 8px; font-size: 11px; }
+        .form-group { margin-bottom: 8px; font-size: 10px; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 2px; }
         .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 5px; border: 1px solid var(--border-wood); background: #fff;
-            font-family: inherit; font-size: 11px; border-radius: 3px;
+            font-family: inherit; font-size: 10px; border-radius: 3px;
         }
         
         .previews-grid {
@@ -221,29 +218,26 @@
             margin-bottom: 8px;
         }
         .preview-box {
-            width: 100%; height: 95px; border: 2px dashed var(--border-wood);
+            width: 100%; height: 90px; border: 2px dashed var(--border-wood);
             background: #fff; display: flex; align-items: center; justify-content: center;
             border-radius: 4px; overflow: hidden; position: relative; text-align: center; padding: 4px;
         }
         .preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .preview-box span { font-size: 10px; color: #777; }
+        .preview-box span { font-size: 9px; color: #777; }
 
         .expert-report {
             background: #111; color: #00ff66; padding: 8px; border-radius: 4px;
-            font-size: 11px; border: 1px solid #00ff66; margin-bottom: 8px; display: none;
+            font-size: 10px; border: 1px solid #00ff66; margin-bottom: 8px; display: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Удалите строчку ниже, если хотите убрать фоновое изображение -->
-    <div id="store-bg"></div>
-
     <div class="shop-wrapper">
         <header class="shop-header">
             <h1>GY-GY Club | Antique Store</h1>
             <div class="header-btns">
-                <button class="header-btn" onclick="openExpertModal()">+ Экспертиза</button>
+                <button class="header-btn" onclick="openExpertModal()">+ Экспертиза и добавление</button>
                 <button class="header-btn" onclick="openReviewsModal()">💬 Отзывы</button>
                 <button class="header-btn" onclick="location.href='hall.html'">В Холл</button>
             </div>
@@ -251,7 +245,7 @@
 
         <!-- ЛЕВАЯ ПАНЕЛЬ С КАТЕГОРИЯМИ И МИНИ-СКРОЛЛАМИ -->
         <aside class="left-panel">
-            <div class="section-title">БАЗА ТОВАРОВ</div>
+            <div class="section-title">БАЗА ТОВАРОВ КЛУБА</div>
             <div id="categoriesContainer"></div>
         </aside>
 
@@ -260,13 +254,14 @@
             <div class="display-frame">
                 <img id="activeArtifactImg" src="" alt="Выберите товар" style="display:none;">
                 <div id="emptyDisplayPlaceholder" style="color:#782814; font-size:12px; font-weight:bold;">
-                    База пуста.<br>Нажмите «+ Экспертиза»<br>для добавления раритета.
+                    База пуста.<br>Нажмите «+ Экспертиза и добавление»<br>чтобы загрузить раритет.
                 </div>
             </div>
             
+            <!-- Переключатель проекций -->
             <div class="projection-switcher" id="projectionSwitcher" style="display:none;">
-                <button class="proj-btn active" id="projBtn1" onclick="switchProjection(1)">Проекция 1</button>
-                <button class="proj-btn" id="projBtn2" onclick="switchProjection(2)">Проекция 2</button>
+                <button class="proj-btn active" id="projBtn1" onclick="switchProjection(1)">Проекция 1 (Вид спереди)</button>
+                <button class="proj-btn" id="projBtn2" onclick="switchProjection(2)">Проекция 2 (Деталь/Низ)</button>
             </div>
 
             <div class="display-info">
@@ -282,7 +277,8 @@
                 <p><b>Категория:</b> —</p>
                 <p><b>Год создания:</b> —</p>
                 <p><b>Размеры:</b> —</p>
-                <p><b>Подлинность:</b> —</p>
+                <p><b>Индекс подлинности:</b> —</p>
+                <p style="margin-top: 4px;"><b>Описание:</b> Сведения появятся при выборе лота.</p>
             </div>
 
             <div class="spec-box">
@@ -294,33 +290,34 @@
                 </div>
             </div>
 
-            <button class="action-btn" onclick="addToCart()">🛒 В корзину</button>
-            <button class="action-btn" style="background: linear-gradient(to bottom, #5a3e1b, #2b1d0c);" onclick="openExpertModal()">+ Добавить с экспертизой</button>
+            <button class="action-btn" onclick="addToCart()">🛒 Добавить в корзину</button>
+            <button class="action-btn" style="background: linear-gradient(to bottom, #5a3e1b, #2b1d0c);" onclick="openExpertModal()">+ Добавить артефакт с экспертизой</button>
         </section>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО -->
+    <!-- МОДАЛЬНОЕ ОКНО: ЭКСПЕРТИЗА, РАЗМЕРЫ И ДВЕ ПРОЕКЦИИ -->
     <div class="modal-overlay" id="expertModal">
         <div class="modal-card">
             <span class="modal-close" onclick="closeExpertModal()">&times;</span>
-            <h3>Лаборатория экспертной оценки</h3>
+            <h3>Лаборатория экспертной оценки артефакта</h3>
+            <p style="font-size: 9px; margin-bottom: 6px; color: #555;">Загрузите два ракурса, укажите размеры и год (строго до 1990 года).</p>
             
             <div class="form-group">
-                <label>Проекции предмета (Фото 1 и Фото 2):</label>
+                <label>Загрузка проекций (фото 1 и фото 2):</label>
                 <div class="previews-grid">
                     <div class="preview-box">
-                        <span id="pText1">Главный вид<br><input type="file" accept="image/*" onchange="previewImage(event, 1)" style="margin-top:3px; font-size:9px;"></span>
+                        <span id="pText1">Фото 1 (Главный вид)<br><input type="file" accept="image/*" onchange="previewImage(event, 1)" style="margin-top:3px; font-size:8px;"></span>
                         <img id="previewImg1" src="" style="display:none;">
                     </div>
                     <div class="preview-box">
-                        <span id="pText2">Вторая проекция<br><input type="file" accept="image/*" onchange="previewImage(event, 2)" style="margin-top:3px; font-size:9px;"></span>
+                        <span id="pText2">Фото 2 (Вторая проекция)<br><input type="file" accept="image/*" onchange="previewImage(event, 2)" style="margin-top:3px; font-size:8px;"></span>
                         <img id="previewImg2" src="" style="display:none;">
                     </div>
                 </div>
             </div>
 
             <div class="form-group"><label>Название предмета:</label><input type="text" id="expertName" placeholder="Напр. Медный кувшин"></div>
-            <div class="form-group"><label>Категория:</label>
+            <div class="form-group"><label>Категория в базе клуба:</label>
                 <select id="expertCategory">
                     <option value="glass">Стекло (Glass)</option>
                     <option value="porcelain">Фарфор (Porcelain)</option>
@@ -331,19 +328,19 @@
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                <div class="form-group"><label>Год (&lt; 1990):</label><input type="number" id="expertYear" placeholder="1975"></div>
-                <div class="form-group"><label>Размеры:</label><input type="text" id="expertDimensions" placeholder="25х14 см"></div>
+                <div class="form-group"><label>Год создания (&lt; 1990):</label><input type="number" id="expertYear" placeholder="1975"></div>
+                <div class="form-group"><label>Размеры (ВхШ):</label><input type="text" id="expertDimensions" placeholder="Напр. 25х14 см"></div>
             </div>
 
-            <div class="form-group"><label>Цена (GY-GY 🪙):</label><input type="number" id="expertPrice" value="180"></div>
+            <div class="form-group"><label>Базовая цена (GY-GY 🪙):</label><input type="number" id="expertPrice" value="180"></div>
 
             <div id="expertReportBox" class="expert-report">
-                <div id="expertReportText">Ожидание проверки...</div>
+                <div id="expertReportText">Ожидание запуска проверки...</div>
             </div>
 
             <button class="action-btn" id="runExpertBtn" onclick="runExpertAnalysis()" style="background: #111; color: #00ff66; border: 1px solid #00ff66; margin-bottom: 6px;">⚡ Запустить экспертный анализ</button>
             
-            <button class="action-btn" id="publishVerifiedBtn" onclick="publishVerifiedItem()" style="display:none;">✨ Одобрено! Разместить в базе</button>
+            <button class="action-btn" id="publishVerifiedBtn" onclick="publishVerifiedItem()" style="display:none;">✨ Одобрено! Разместить в базе клуба</button>
         </div>
     </div>
 
@@ -351,9 +348,9 @@
     <div class="modal-overlay" id="reviewsModal">
         <div class="modal-card">
             <span class="modal-close" onclick="closeReviewsModal()">&times;</span>
-            <h3>💬 Отзывы резидентов</h3>
-            <div style="max-height: 140px; overflow-y: auto; font-size: 11px; margin-bottom: 8px;" id="reviewsList">
-                <div style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:4px;"><b>#4092:</b> «Компактный интерфейс и размеры — отлично!»</div>
+            <h3>💬 Отзывы резидентов Лавки</h3>
+            <div style="max-height: 150px; overflow-y: auto; font-size: 10px; margin-bottom: 8px;" id="reviewsList">
+                <div style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:4px;"><b>#4092:</b> «Компактный вид и две проекции — то что нужно!»</div>
             </div>
             <div class="form-group"><input type="text" id="newReviewText" placeholder="Ваш отзыв..."></div>
             <button class="action-btn" onclick="addReview()">Оставить отзыв</button>
@@ -388,7 +385,7 @@
                 let itemsInCat = storeInventory.filter(i => i.category === catKey);
                 let miniItemsHtml = '';
                 if (itemsInCat.length === 0) {
-                    miniItemsHtml = `<span style="font-size:10px; color:#666; padding:4px;">Пусто</span>`;
+                    miniItemsHtml = `<span style="font-size:9px; color:#666; padding:3px;">Нет артефактов</span>`;
                 } else {
                     itemsInCat.forEach(item => {
                         let thumb = item.img1 || item.img || '';
@@ -404,7 +401,7 @@
                     <div class="category-group">
                         <div class="category-header">
                             <span>${categoryMeta[catKey]}</span>
-                            <span style="font-size:9px; color:#555;">(${itemsInCat.length})</span>
+                            <span style="font-size:8px; color:#555;">(${itemsInCat.length})</span>
                         </div>
                         <div class="mini-scroll">
                             ${miniItemsHtml}
@@ -433,9 +430,10 @@
 
             document.getElementById('specsDetails').innerHTML = `
                 <p><b>Категория:</b> ${categoryMeta[item.category] || item.category}</p>
-                <p><b>Год:</b> ${item.year} г.</p>
+                <p><b>Год создания:</b> ${item.year} г.</p>
                 <p><b>Размеры:</b> ${item.dimensions || 'Не указаны'}</p>
-                <p><b>Подлинность:</b> <span style="color:#008000; font-weight:bold;">${item.aiScore || 95}%</span></p>
+                <p><b>Индекс подлинности:</b> <span style="color:#008000; font-weight:bold;">${item.aiScore || 95}% (Подлинник)</span></p>
+                <p style="margin-top: 4px;"><b>Описание:</b> ${item.desc}</p>
             `;
             document.getElementById('activePriceInput').value = item.price;
         }
@@ -506,37 +504,37 @@
             let year = parseInt(yearVal);
 
             if (!name) {
-                alert('Укажите название предмета!');
+                alert('Пожалуйста, укажите название предмета!');
                 nameInput.focus();
                 return;
             }
             if (!yearVal || isNaN(year)) {
-                alert('Укажите корректный год создания (например: 1975)!');
+                alert('Пожалуйста, укажите корректный год создания (например: 1975)!');
                 yearInput.focus();
                 return;
             }
             if (!tempBase64Img1) {
-                alert('Загрузите первую проекцию (главное фото)!');
+                alert('Загрузите по крайней мере первую проекцию (главное фото)!');
                 return;
             }
 
             let reportBox = document.getElementById('expertReportBox');
             let reportText = document.getElementById('expertReportText');
             reportBox.style.display = 'block';
-            reportText.innerHTML = "🔍 Сканирование артефакта...";
+            reportText.innerHTML = "🔍 Экспертная система сканирует текстуру и сверяет данные...";
 
             setTimeout(() => {
                 if (year >= 1990) {
-                    reportText.innerHTML = `<span style="color:#ff3333;">❌ ОТКЛОНЕНО: Год (${year}) >= 1990 (не антиквариат).</span>`;
+                    reportText.innerHTML = `<span style="color:#ff3333;">❌ ОТКЛОНЕНО ЭКСПЕРТОМ:<br>Год выпуска (${year}) >= 1990. Клуб принимает только антиквариат.</span>`;
                     document.getElementById('publishVerifiedBtn').style.display = 'none';
                     expertVerifiedData = null;
                 } else {
                     let score = Math.floor(Math.random() * 10) + 90; 
-                    reportText.innerHTML = `<span style="color:#00ff66;">✅ УСПЕШНО!<br>• Подлинность: <b>${score}%</b><br>• Лот готов к публикации.</span>`;
+                    reportText.innerHTML = `<span style="color:#00ff66;">✅ ЭКСПЕРТИЗА УСПЕШНА!<br>• Индекс подлинности: <b>${score}%</b><br>• Проекции верифицированы. Лот готов.</span>`;
                     
                     expertVerifiedData = {
                         score: score,
-                        desc: `Экспертный отчет: Подлинность подтверждена. Период создания: ${year} г.`
+                        desc: `Экспертный отчет: Предмет прошел проверку подлинности. Структура материала соответствует эпохе (${year} г.). Коллекционная сохранность.`
                     };
                     document.getElementById('publishVerifiedBtn').style.display = 'block';
                 }
@@ -563,12 +561,12 @@
             storeInventory.push(newItem);
             localStorage.setItem('gy_store_inventory', JSON.stringify(storeInventory));
 
-            alert('✨ Артефакт добавлен в базу клуба!');
+            alert('✨ Артефакт успешно добавлен в базу клуба!');
             closeExpertModal();
             renderCategories();
             selectItem(newItem);
             
-            // Сброс
+            // Сброс формы
             document.getElementById('expertName').value = '';
             document.getElementById('expertYear').value = '';
             document.getElementById('expertDimensions').value = '';
@@ -590,10 +588,10 @@
 
         function addToCart() {
             if (!activeItem) {
-                alert('Выберите товар из каталога!');
+                alert('Выберите товар из левой колонки каталога!');
                 return;
             }
-            alert(`🛒 "${activeItem.name}" добавлен в корзину за ${activeItem.price} монет!`);
+            alert(`🛒 Товар "${activeItem.name}" добавлен в корзину по цене ${activeItem.price} GY-GY монет!`);
         }
 
         function addReview() {
