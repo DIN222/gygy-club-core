@@ -187,6 +187,11 @@
             font-family: 'Share Tech Mono', monospace;
         }
         .action-btn:hover { filter: brightness(1.1); }
+        .action-btn-danger {
+            background: linear-gradient(to bottom, #5a1b1b, #2b0c0c);
+            color: #ffcccc;
+            border: 2px solid #781414;
+        }
 
         /* Модальные окна */
         .modal-overlay {
@@ -291,6 +296,7 @@
             </div>
 
             <button class="action-btn" onclick="addToCart()">🛒 Добавить в корзину</button>
+            <button class="action-btn action-btn-danger" onclick="deleteActiveItem()">🗑 Удалить этот артефакт из базы</button>
             <button class="action-btn" style="background: linear-gradient(to bottom, #5a3e1b, #2b1d0c);" onclick="openExpertModal()">+ Добавить артефакт с экспертизой</button>
         </section>
     </div>
@@ -350,7 +356,7 @@
             <span class="modal-close" onclick="closeReviewsModal()">&times;</span>
             <h3>💬 Отзывы резидентов Лавки</h3>
             <div style="max-height: 150px; overflow-y: auto; font-size: 10px; margin-bottom: 8px;" id="reviewsList">
-                <div style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:4px;"><b>#4092:</b> «Сжатие изображений решает проблему с памятью!»</div>
+                <div style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:4px;"><b>#4092:</b> «Кнопка удаления из базы очень кстати!»</div>
             </div>
             <div class="form-group"><input type="text" id="newReviewText" placeholder="Ваш отзыв..."></div>
             <button class="action-btn" onclick="addReview()">Оставить отзыв</button>
@@ -467,7 +473,37 @@
             }
         }
 
-        // Функция автоматического сжатия и оптимизации изображения для экономии памяти
+        // Функция удаления выбранного лота
+        function deleteActiveItem() {
+            if (!activeItem) {
+                alert('Сначала выберите артефакт в каталоге, который хотите удалить!');
+                return;
+            }
+            if (confirm(`Вы уверены, что хотите удалить предмет "${activeItem.name}" из базы клуба?`)) {
+                let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
+                storeInventory = storeInventory.filter(i => i.id !== activeItem.id);
+                localStorage.setItem('gy_store_inventory', JSON.stringify(storeInventory));
+
+                // Сбрасываем текущий просмотр
+                activeItem = null;
+                document.getElementById('activeArtifactImg').style.display = 'none';
+                document.getElementById('emptyDisplayPlaceholder').style.display = 'block';
+                document.getElementById('projectionSwitcher').style.display = 'none';
+                document.getElementById('activeArtifactTitle').textContent = 'Товар не выбран';
+                document.getElementById('activeArtifactShortDesc').textContent = 'Загрузите артефакт через экспертный модуль.';
+                document.getElementById('specsDetails').innerHTML = `
+                    <p><b>Категория:</b> —</p>
+                    <p><b>Год создания:</b> —</p>
+                    <p><b>Размеры:</b> —</p>
+                    <p><b>Индекс подлинности:</b> —</p>
+                    <p style="margin-top: 4px;"><b>Описание:</b> Сведения появятся при выборе лота.</p>
+                `;
+
+                renderCategories();
+                alert('🗑 Предмет успешно удален из базы.');
+            }
+        }
+
         function resizeAndCompressImage(base64Str, maxWidth, maxHeight, quality, callback) {
             let img = new Image();
             img.src = base64Str;
@@ -501,7 +537,6 @@
             if (file) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    // Сжимаем до 800px и качества 0.75 (идеально для хранения без ошибок памяти)
                     resizeAndCompressImage(e.target.result, 800, 800, 0.75, function(compressedBase64) {
                         if (num === 1) {
                             tempBase64Img1 = compressedBase64;
@@ -613,7 +648,7 @@
                 tempBase64Img2 = "";
                 expertVerifiedData = null;
             } catch (e) {
-                alert('Ошибка памяти: Лимит хранилища браузера исчерпан. Попробуйте очистить старые ненужные товары.');
+                alert('Ошибка памяти: Лимит хранилища браузера исчерпан.');
             }
         }
 
