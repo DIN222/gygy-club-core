@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GY-GY Club | Antique Store & Expert Lab</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
         
         html, body {
             width: 100%; height: 100vh;
-            background: #140d06; /* Чистый темный фон (картинку Store 0.png можно удалить из проекта) */
+            background: #140d06;
             overflow: hidden;
             font-family: 'Share Tech Mono', monospace;
         }
@@ -285,7 +285,7 @@
                 <div class="price-row">
                     <span>Цена:</span>
                     <div>
-                        <input type="number" class="price-input" id="activePriceInput" value="100" oninput="updatePrice(this.value)"> €
+                        <input type="number" class="price-input" id="activePriceInput" value="100" oninput="updatePrice(this.value)"> 🪙
                     </div>
                 </div>
             </div>
@@ -350,7 +350,7 @@
             <span class="modal-close" onclick="closeReviewsModal()">&times;</span>
             <h3>💬 Отзывы резидентов Лавки</h3>
             <div style="max-height: 150px; overflow-y: auto; font-size: 10px; margin-bottom: 8px;" id="reviewsList">
-                <div style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:4px;"><b>#4092:</b> «Компактный вид и две проекции — то что нужно!»</div>
+                <div style="border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:4px;"><b>#4092:</b> «Сжатие изображений решает проблему с памятью!»</div>
             </div>
             <div class="form-group"><input type="text" id="newReviewText" placeholder="Ваш отзыв..."></div>
             <button class="action-btn" onclick="addReview()">Оставить отзыв</button>
@@ -467,29 +467,61 @@
             }
         }
 
+        // Функция автоматического сжатия и оптимизации изображения для экономии памяти
+        function resizeAndCompressImage(base64Str, maxWidth, maxHeight, quality, callback) {
+            let img = new Image();
+            img.src = base64Str;
+            img.onload = function () {
+                let canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                let ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                callback(canvas.toDataURL('image/jpeg', quality));
+            };
+        }
+
         function previewImage(event, num) {
             let file = event.target.files[0];
             if (file) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    if (num === 1) {
-                        tempBase64Img1 = e.target.result;
-                        let img = document.getElementById('previewImg1');
-                        img.src = tempBase64Img1;
-                        img.style.display = 'block';
-                        document.getElementById('pText1').style.display = 'none';
+                    // Сжимаем до 800px и качества 0.75 (идеально для хранения без ошибок памяти)
+                    resizeAndCompressImage(e.target.result, 800, 800, 0.75, function(compressedBase64) {
+                        if (num === 1) {
+                            tempBase64Img1 = compressedBase64;
+                            let img = document.getElementById('previewImg1');
+                            img.src = tempBase64Img1;
+                            img.style.display = 'block';
+                            document.getElementById('pText1').style.display = 'none';
 
-                        if (!document.getElementById('expertName').value) {
-                            let clean = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-                            document.getElementById('expertName').value = clean.charAt(0).toUpperCase() + clean.slice(1);
+                            if (!document.getElementById('expertName').value) {
+                                let clean = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                                document.getElementById('expertName').value = clean.charAt(0).toUpperCase() + clean.slice(1);
+                            }
+                        } else {
+                            tempBase64Img2 = compressedBase64;
+                            let img = document.getElementById('previewImg2');
+                            img.src = tempBase64Img2;
+                            img.style.display = 'block';
+                            document.getElementById('pText2').style.display = 'none';
                         }
-                    } else {
-                        tempBase64Img2 = e.target.result;
-                        let img = document.getElementById('previewImg2');
-                        img.src = tempBase64Img2;
-                        img.style.display = 'block';
-                        document.getElementById('pText2').style.display = 'none';
-                    }
+                    });
                 };
                 reader.readAsDataURL(file);
             }
@@ -521,7 +553,7 @@
             let reportBox = document.getElementById('expertReportBox');
             let reportText = document.getElementById('expertReportText');
             reportBox.style.display = 'block';
-            reportText.innerHTML = "🔍 Экспертная система сканирует текстуру и сверяет данные...";
+            reportText.innerHTML = "🔍 Экспертная система сжимает кадры и сверяет данные...";
 
             setTimeout(() => {
                 if (year >= 1990) {
@@ -557,28 +589,32 @@
                 desc: expertVerifiedData.desc
             };
 
-            let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
-            storeInventory.push(newItem);
-            localStorage.setItem('gy_store_inventory', JSON.stringify(storeInventory));
+            try {
+                let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
+                storeInventory.push(newItem);
+                localStorage.setItem('gy_store_inventory', JSON.stringify(storeInventory));
 
-            alert('✨ Артефакт успешно добавлен в базу клуба!');
-            closeExpertModal();
-            renderCategories();
-            selectItem(newItem);
-            
-            // Сброс формы
-            document.getElementById('expertName').value = '';
-            document.getElementById('expertYear').value = '';
-            document.getElementById('expertDimensions').value = '';
-            document.getElementById('previewImg1').style.display = 'none';
-            document.getElementById('previewImg2').style.display = 'none';
-            document.getElementById('pText1').style.display = 'block';
-            document.getElementById('pText2').style.display = 'block';
-            document.getElementById('expertReportBox').style.display = 'none';
-            document.getElementById('publishVerifiedBtn').style.display = 'none';
-            tempBase64Img1 = "";
-            tempBase64Img2 = "";
-            expertVerifiedData = null;
+                alert('✨ Артефакт успешно добавлен в базу клуба!');
+                closeExpertModal();
+                renderCategories();
+                selectItem(newItem);
+                
+                // Сброс формы
+                document.getElementById('expertName').value = '';
+                document.getElementById('expertYear').value = '';
+                document.getElementById('expertDimensions').value = '';
+                document.getElementById('previewImg1').style.display = 'none';
+                document.getElementById('previewImg2').style.display = 'none';
+                document.getElementById('pText1').style.display = 'block';
+                document.getElementById('pText2').style.display = 'block';
+                document.getElementById('expertReportBox').style.display = 'none';
+                document.getElementById('publishVerifiedBtn').style.display = 'none';
+                tempBase64Img1 = "";
+                tempBase64Img2 = "";
+                expertVerifiedData = null;
+            } catch (e) {
+                alert('Ошибка памяти: Лимит хранилища браузера исчерпан. Попробуйте очистить старые ненужные товары.');
+            }
         }
 
         function openExpertModal() { document.getElementById('expertModal').style.display = 'flex'; }
