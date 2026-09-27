@@ -667,14 +667,16 @@
 function renderGarmentPhoto() {
         const src = GARMENT_PHOTOS[state.type][state.color][state.position];
         const imgEl = document.getElementById('garment-photo');
+        
+        // Сбрасываем стили перед установкой нового источника
+        imgEl.style.transform = 'none';
+        
         imgEl.src = src;
         document.getElementById('size-badge').textContent = state.size;
         
-        // Применяем увеличение ТОЛЬКО для белой футболки сзади (если у черной всё в порядке)
+        // Аккуратный, пропорциональный подгон для белой футболки со спины
         if (state.type === 'tshirt' && state.color === 'white' && state.position === 'back') {
-            imgEl.style.transform = 'scale(1,5)'; 
-        } else {
-            imgEl.style.transform = 'scale(1)'; 
+            imgEl.style.transform = 'scale(1.08)'; // Мягкое увеличение без искажений и вытягивания
         }
 
         const frame = document.getElementById('preview-frame');
