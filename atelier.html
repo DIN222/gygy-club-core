@@ -949,7 +949,7 @@
 
     document.getElementById('btn-confirm').addEventListener('click', () => {
         const summary = document.getElementById('order-info').innerHTML;
-        document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>$${calculatePrice()}</b>`;
+        document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>€${calculatePrice()}</b>`;
         openModal('modal-confirm-order');
     });
 
