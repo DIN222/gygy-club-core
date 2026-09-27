@@ -54,16 +54,39 @@
         padding: 60px 16px 40px;
     }
 
-    .atelier-title-badge {
+   .atelier-title-badge {
         display: flex; align-items: center; justify-content: center; gap: 14px;
         margin-bottom: 20px;
     }
     .atelier-title-badge img {
-        width: 67px; height: 67px; object-fit: contain; border-radius: 50%;
+        width: 79px; height: 79px; /* Увеличено на 18% от 67px */
+        object-fit: contain; border-radius: 50%;
         filter: drop-shadow(0 0 8px rgba(255,215,0,0.75)) drop-shadow(0 0 3px rgba(255,215,0,0.9));
     }
+    
+    /* Обертка для двух уровней */
+    .atelier-titles {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        line-height: 1.15;
+    }
+    
+    /* Верхняя надпись "ATELIER" */
+    .title-atelier {
+        font-family: 'Cinzel', serif; 
+        font-weight: 700; 
+        font-size: 18px; 
+        text-shadow: 0 0 10px rgba(255,215,0,0.4);
+        letter-spacing: 2px;
+        opacity: 0.85;
+    }
+
+    /* Нижняя надпись "HORSE IN A COAT" (увеличена на 18% от 24px до ~28px) */
     .atelier-title-badge .title-text {
-        font-family: 'Cinzel', serif;', serif; font-weight: 900; font-size: 24px; text-align: center;
+        font-family: 'Playfair Display', serif; 
+        font-weight: 900; 
+        font-size: 28px; 
         text-shadow: 0 0 10px rgba(255,215,0,0.4);
     }
 
@@ -212,10 +235,12 @@
 <div class="page-wrap">
 
     <div class="atelier-title-badge">
-        <img src="horse_coat.png" alt="">
-        <span class="title-text"> ATELIER "HORSE IN A COAT"</span>
+    <img src="horse_coat.png" alt="">
+    <div class="atelier-titles">
+        <span class="title-atelier">ATELIER</span>
+        <span class="title-text">"HORSE IN A COAT"</span>
     </div>
-
+</div>
     <div class="config-body">
         <div class="buttons-col">
             <div class="field-row">
