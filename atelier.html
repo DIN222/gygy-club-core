@@ -742,7 +742,7 @@
             `Fabric: ${state.fabricDensity} g/m², ${compLabel}${drawstringLine}${shapeLine}<br>` +
             `Print: ${printLine} | ${state.position.toUpperCase()}<br>` +
             `Кол-во: ${state.quantity} шт.`;
-        document.getElementById('order-price').textContent = `$${calculatePrice()}`;
+        document.getElementById('order-price').textContent = `€${calculatePrice()}`;
     }
 
     function updateShareRowVisibility() {
