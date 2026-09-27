@@ -664,16 +664,25 @@
         printBox: null
     };
     let currentUser = { id: 'guest', name: 'Guest' };
-
-    function renderGarmentPhoto() {
+function renderGarmentPhoto() {
         const src = GARMENT_PHOTOS[state.type][state.color][state.position];
-        document.getElementById('garment-photo').src = src;
+        const imgEl = document.getElementById('garment-photo');
+        imgEl.src = src;
         document.getElementById('size-badge').textContent = state.size;
+        
+        // Компенсация разницы в отступах PNG-файлов для вида сзади
+        // Если спина кажется меньше, коэффициент можно увеличить (например, до 1.15 или 1.2)
+        if (state.position === 'back') {
+            imgEl.style.transform = 'scale(1.12)'; 
+        } else {
+            imgEl.style.transform = 'scale(1)';
+        }
+
         const frame = document.getElementById('preview-frame');
         frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
         frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
     }
-
+ 
     function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
         const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
