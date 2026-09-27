@@ -533,13 +533,10 @@
             necklineRow.innerHTML = `
                 <select id="select-neckline">
                     <option value="round">ГОРЛОВИНА: КРУГЛАЯ</option>
-                    <option value="v">ГОРЛОВИНА: V-ОБРАЗНАЯ</option>
                 </select>`;
             fitRow.innerHTML = `
                 <select id="select-fit">
                     <option value="unisex">ПОСАДКА: УНИСЕКС</option>
-                    <option value="slim">ПОСАДКА: ПРИТАЛЕННАЯ</option>
-                    <option value="oversize">ПОСАДКА: OVERSIZE</option>
                 </select>`;
             if (!(state.neckline in NECKLINE_PRICE_MOD)) state.neckline = 'round';
             if (!(state.fit in FIT_PRICE_MOD)) state.fit = 'unisex';
