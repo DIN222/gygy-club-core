@@ -627,16 +627,16 @@
             ]
         },
         hoodie: {
-            density:     [{ value: '280-320', label: '280–320 g/m² }],
+            density:     [{ value: '280-320', label: '280–320 g/m² (heavyweight fleece)' }],
             composition: [
-                { value: 'cotton80poly20',  label: '80% COTTON / 20% POLYESTER' },
+                { value: 'cotton80poly20',  label: '80% COTTON / 20% POLYESTER (brushed fleece)' },
                 { value: 'cotton100fleece', label: '100% COTTON FLEECE' }
             ]
         },
         longsleeve: {
-            density:     [{ value: '220-240', label: '220–240 g/m² }],
+            density:     [{ value: '220-240', label: '220–240 g/m² (трёхнитка начёс)' }],
             composition: [
-                { value: 'cotton100fleece', label: '100% COTTON }
+                { value: 'cotton100fleece', label: '100% COTTON (трёхнитка начёс)' }
             ]
         }
     };
@@ -665,31 +665,21 @@
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
-  function renderGarmentPhoto() {
+    function renderGarmentPhoto() {
         const src = GARMENT_PHOTOS[state.type][state.color][state.position];
-        const imgEl = document.getElementById('garment-photo');
-        
-        // Сбрасываем стили перед установкой нового источника
-        imgEl.style.transform = 'none';
-        
-        imgEl.src = src;
+        document.getElementById('garment-photo').src = src;
         document.getElementById('size-badge').textContent = state.size;
-        
-        // Аккуратный, пропорциональный подгон для белой футболки со спины
-        if (state.type === 'tshirt' && state.color === 'white' && state.position === 'back') {
-            imgEl.style.transform = 'scale(1.25)'; // Мягкое увеличение без искажений и вытягивания
-        }
-
         const frame = document.getElementById('preview-frame');
         frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
         frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
     }
+
     function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
         const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
         embroideryOpt.disabled = !isClubPrint;
-        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА ( принты из базы клуба)';
+        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА (только принты из базы клуба)';
         if (!isClubPrint && state.technique === 'embroidery') {
             state.technique = 'dtf';
             sel.value = 'dtf';
