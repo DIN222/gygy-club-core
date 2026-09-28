@@ -179,32 +179,16 @@
         position: absolute; top: 8px; right: 8px; background: var(--gold);
         color: #000; font-size: 11px; font-weight: 900; padding: 3px 7px; border-radius: 3px; z-index: 5;
     }
-    /* Тонкая, едва заметная рамка принта */
     .print-overlay-img {
-        position: absolute;
-        object-fit: contain;
-        cursor: move;
-        touch-action: none;
-        outline: 1px dashed rgba(255, 255, 255, 0.25);
+        position: absolute; object-fit: cover; cursor: move; touch-action: none;
+        outline: 2px dashed #ffffff;
         outline-offset: 2px;
-        box-shadow: none;
-        transition: outline-color 0.2s ease;
+        box-shadow: 0 0 0 1px #000000, 0 0 0 4px rgba(255,255,255,0.6);
     }
-    .print-overlay-img:hover {
-        outline-color: rgba(255, 255, 255, 0.7);
-    }
-
-    /* Единая активная точка: меняет размер и вращает одновременно */
     .print-resize-handle {
-        position: absolute;
-        width: 12px;
-        height: 12px;
-        background: var(--gold);
-        border: 1px solid #000;
-        cursor: nwse-resize;
-        z-index: 6;
+        position: absolute; width: 16px; height: 16px; background: var(--gold);
+        border: 1px solid #000; cursor: nwse-resize; touch-action: none; z-index: 6;
         border-radius: 2px;
-        box-shadow: 0 0 4px rgba(0,0,0,0.8);
     }
     .drag-hint {
         position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
@@ -680,26 +664,17 @@
         printBox: null
     };
     let currentUser = { id: 'guest', name: 'Guest' };
-function renderGarmentPhoto() {
-        const src = GARMENT_PHOTOS[state.type][state.color][state.position];
-        const imgEl = document.getElementById('garment-photo');
-        
-        // Сбрасываем стили перед установкой нового источника
-        imgEl.style.transform = 'none';
-        
-        imgEl.src = src;
-        document.getElementById('size-badge').textContent = state.size;
-        
-        // Аккуратный, пропорциональный подгон для белой футболки со спины
-        if (state.type === 'tshirt' && state.color === 'white' && state.position === 'back') {
-            imgEl.style.transform = 'scale(1.35)'; // Мягкое увеличение без искажений и вытягивания
-        }
 
+    function renderGarmentPhoto() {
+        const src = GARMENT_PHOTOS[state.type][state.color][state.position];
+        document.getElementById('garment-photo').src = src;
+        document.getElementById('size-badge').textContent = state.size;
         const frame = document.getElementById('preview-frame');
         frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
         frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
     }
- function updateTechniqueAvailability() {
+
+    function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
         const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
@@ -712,7 +687,6 @@ function renderGarmentPhoto() {
         document.getElementById('tech-note').style.display = isClubPrint ? 'none' : 'block';
     }
 
-    // [КОНТЕКСТ ДО]: Функция расчета дефолтных размеров рамки
     function defaultPrintBox() {
         const frame = document.getElementById('preview-frame');
         const dims = SCALE_DIMENSIONS_CM[state.scale];
@@ -722,111 +696,58 @@ function renderGarmentPhoto() {
         return {
             left: Math.round(frame.clientWidth / 2 - w / 2),
             top: Math.round(frame.clientHeight * (DEFAULT_ANCHOR_Y_PCT / 100) - h / 2),
-            width: w, 
-            height: h,
-            rotation: 0
+            width: w, height: h
         };
     }
 
-    /* ==========================================================
-       🌀 ИСПРАВЛЕННЫЙ ИНСТРУМЕНТ ПЕРЕМЕЩЕНИЯ, РАЗМЕРА И ВРАЩЕНИЯ
-       ========================================================== */
-
-    let dragging = null;
-    let dragData = {};
-
-    // Глобальные слушатели перемещения и завершения перетаскивания (вешаются 1 раз)
-    document.addEventListener('pointermove', (e) => {
-        if (!dragging) return;
-        const currentX = e.clientX;
-        const currentY = e.clientY;
+    function attachDragResize(img, handle) {
         const frame = document.getElementById('preview-frame');
-        const img = frame.querySelector('.print-overlay-img');
-        if (!img) return;
-
-        if (dragging === 'move') {
-            const dx = currentX - dragData.startX;
-            const dy = currentY - dragData.startY;
-            state.printBox.left = Math.max(0, Math.min(dragData.startBox.left + dx, frame.clientWidth - state.printBox.width));
-            state.printBox.top = Math.max(0, Math.min(dragData.startBox.top + dy, frame.clientHeight - state.printBox.height));
-        } else if (dragging === 'transform') {
-            const currentDistance = Math.hypot(currentX - dragData.startCenterX, currentY - dragData.startCenterY);
-            const currentAngle = Math.atan2(currentY - dragData.startCenterY, currentX - dragData.startCenterX) * (180 / Math.PI);
-
-            const scale = currentDistance / Math.max(1, dragData.startDistance);
-            let newW = Math.round(dragData.startBox.width * scale);
-            let newH = Math.round(dragData.startBox.height * scale);
-
-            newW = Math.max(25, Math.min(newW, 450));
-            newH = Math.max(25, Math.min(newH, 450));
-
-            const angleDelta = currentAngle - dragData.startAngle;
-            const newRotation = Math.round(((dragData.startBox.rotation || 0) + angleDelta) % 360);
-
-            state.printBox.width = newW;
-            state.printBox.height = newH;
-            state.printBox.rotation = newRotation;
+        function clampBox(box) {
+            box.width = Math.max(20, box.width);
+            box.height = Math.max(20, box.height);
+            box.left = Math.max(0, Math.min(box.left, frame.clientWidth - box.width));
+            box.top = Math.max(0, Math.min(box.top, frame.clientHeight - box.height));
+            return box;
         }
-        
-        applyBoxDirectly(img, frame.querySelector('.print-resize-handle'));
-    });
-
-    document.addEventListener('pointerup', () => {
-        if (dragging) {
-            dragging = null;
-            updateOrderInfo();
+        function applyBox() {
+            img.style.left = state.printBox.left + 'px';
+            img.style.top = state.printBox.top + 'px';
+            img.style.width = state.printBox.width + 'px';
+            img.style.height = state.printBox.height + 'px';
+            handle.style.left = (state.printBox.left + state.printBox.width - 8) + 'px';
+            handle.style.top = (state.printBox.top + state.printBox.height - 8) + 'px';
         }
-    });
-
-    function applyBoxDirectly(img, handleResize) {
-        if (!img || !handleResize) return;
-        img.style.left = state.printBox.left + 'px';
-        img.style.top = state.printBox.top + 'px';
-        img.style.width = state.printBox.width + 'px';
-        img.style.height = state.printBox.height + 'px';
-        
-        const rot = state.printBox.rotation || 0;
-        img.style.transform = `rotate(${rot}deg)`;
-        img.style.transformOrigin = 'center center';
-
-        handleResize.style.left = (state.printBox.left + state.printBox.width - 6) + 'px';
-        handleResize.style.top = (state.printBox.top + state.printBox.height - 6) + 'px';
-    }
-
-    function attachDragAndTransform(img, handleResize) {
-        const frame = document.getElementById('preview-frame');
-        applyBoxDirectly(img, handleResize);
-
+        applyBox();
+        let dragging = null, startX, startY, startBox;
         function onPointerDown(mode) {
             return (e) => {
-                dragging = mode;
-                dragData.startX = e.clientX;
-                dragData.startY = e.clientY;
-                dragData.startBox = { ...state.printBox };
-
-                const frameRect = frame.getBoundingClientRect();
-                dragData.startCenterX = frameRect.left + dragData.startBox.left + dragData.startBox.width / 2;
-                dragData.startCenterY = frameRect.top + dragData.startBox.top + dragData.startBox.height / 2;
-
-                dragData.startDistance = Math.hypot(dragData.startX - dragData.startCenterX, dragData.startY - dragData.startCenterY);
-                dragData.startAngle = Math.atan2(dragData.startY - dragData.startCenterY, dragData.startX - dragData.startCenterX) * (180 / Math.PI);
-
+                dragging = mode; startX = e.clientX; startY = e.clientY;
+                startBox = { ...state.printBox };
                 e.target.setPointerCapture(e.pointerId);
                 e.preventDefault();
             };
         }
-
-        img.onpointerdown = onPointerDown('move');
-        handleResize.onpointerdown = onPointerDown('transform');
+        function onPointerMove(e) {
+            if (!dragging) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            if (dragging === 'move') state.printBox = clampBox({ ...startBox, left: startBox.left + dx, top: startBox.top + dy });
+            else state.printBox = clampBox({ ...startBox, width: startBox.width + dx, height: startBox.height + dy });
+            applyBox();
+        }
+        function onPointerUp() { if (dragging) { dragging = null; updateOrderInfo(); } }
+        img.addEventListener('pointerdown', onPointerDown('move'));
+        handle.addEventListener('pointerdown', onPointerDown('resize'));
+        frame.addEventListener('pointermove', onPointerMove);
+        frame.addEventListener('pointerup', onPointerUp);
+        frame.addEventListener('pointerleave', onPointerUp);
     }
 
     function renderPrintOverlay(resetPosition = false) {
         const frame = document.getElementById('preview-frame');
-        frame.querySelectorAll('.print-overlay-img, .print-resize-handle, .print-rotate-handle, .drag-hint').forEach(el => el.remove());
+        frame.querySelectorAll('.print-overlay-img, .print-resize-handle, .drag-hint').forEach(el => el.remove());
         updateTechniqueAvailability();
         if (!state.currentPrint) { updateOrderInfo(); return; }
         if (resetPosition || !state.printBox) state.printBox = defaultPrintBox();
-        if (state.printBox.rotation === undefined) state.printBox.rotation = 0;
 
         const img = document.createElement('img');
         img.className = 'print-overlay-img';
@@ -834,24 +755,45 @@ function renderGarmentPhoto() {
         img.style.mixBlendMode = (state.color === 'white') ? 'multiply' : 'normal';
         frame.appendChild(img);
 
-        const handleResize = document.createElement('div');
-        handleResize.className = 'print-resize-handle';
-        frame.appendChild(handleResize);
+        const handle = document.createElement('div');
+        handle.className = 'print-resize-handle';
+        frame.appendChild(handle);
 
         const hint = document.createElement('div');
         hint.className = 'drag-hint';
-        hint.textContent = 'Перетащите принт / потяните уголок для размера и вращения';
+        hint.textContent = 'Перетащите принт / потяните за уголок';
         frame.appendChild(hint);
-        setTimeout(() => hint.remove(), 3500);
+        setTimeout(() => hint.remove(), 3000);
 
-        attachDragAndTransform(img, handleResize);
+        attachDragResize(img, handle);
         updateOrderInfo();
     }
-    /* ==========================================================
-       🛑 КОНЕЦ ИЗМЕНЕНИЙ
-       ========================================================== */
 
-    // [КОНТЕКСТ ПОСЛЕ]: Функция обновления информации о заказе
+    function scaleCm(id) {
+        const d = SCALE_DIMENSIONS_CM[id];
+        return `${d.w}x${d.h}cm`;
+    }
+    function unitPrice() {
+        let p = BASE_PRICE[state.type] || 0;
+        if (state.currentPrint) {
+            p += SCALE_PRICE[state.scale] || 0;
+            p += TECH_PRICE_MOD[state.technique] || 0;
+        }
+        p += FABRIC_PRICE_MOD[state.fabricComposition] || 0;
+        if (state.type !== 'hoodie') {
+            p += NECKLINE_PRICE_MOD[state.neckline] || 0;
+            p += FIT_PRICE_MOD[state.fit] || 0;
+        }
+        return p;
+    }
+    function calculatePrice() { return unitPrice() * Math.max(1, state.quantity); }
+    function actualPrintSizeLabel() {
+        if (!state.currentPrint || !state.printBox) return '';
+        const ratio = pxPerCmApprox(state.type, state.size);
+        const wCm = (state.printBox.width / ratio).toFixed(0);
+        const hCm = (state.printBox.height / ratio).toFixed(0);
+        return `~${wCm}x${hCm}cm (вручную, ориентировочно)`;
+    }
     function updateOrderInfo() {
         const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
         const drawstringLine = (state.type === 'hoodie')
