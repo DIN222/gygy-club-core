@@ -665,15 +665,25 @@
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
-    function renderGarmentPhoto() {
+   function renderGarmentPhoto() {
         const src = GARMENT_PHOTOS[state.type][state.color][state.position];
-        document.getElementById('garment-photo').src = src;
+        const imgEl = document.getElementById('garment-photo');
+        
+        // Сбрасываем стили перед установкой нового источника
+        imgEl.style.transform = 'none';
+        
+        imgEl.src = src;
         document.getElementById('size-badge').textContent = state.size;
+        
+        // Аккуратный, пропорциональный подгон для белой футболки со спины
+        if (state.type === 'tshirt' && state.color === 'white' && state.position === 'back') {
+            imgEl.style.transform = 'scale(1.5)'; // Мягкое увеличение без искажений и вытягивания
+        }
+
         const frame = document.getElementById('preview-frame');
         frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
         frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
     }
-
     function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
         const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
