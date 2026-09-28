@@ -689,7 +689,7 @@
         const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
         embroideryOpt.disabled = !isClubPrint;
-        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА (только принты из базы клуба)';
+        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА ( принты из базы клуба)';
         if (!isClubPrint && state.technique === 'embroidery') {
             state.technique = 'dtf';
             sel.value = 'dtf';
