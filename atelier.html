@@ -627,16 +627,16 @@
             ]
         },
         hoodie: {
-            density:     [{ value: '280-320', label: '280–320 g/m² (heavyweight fleece)' }],
+            density:     [{ value: '280-320', label: '280–320 g/m²' }],
             composition: [
-                { value: 'cotton80poly20',  label: '80% COTTON / 20% POLYESTER (brushed fleece)' },
+                { value: 'cotton80poly20',  label: '80% COTTON / 20% POLYESTER ' },
                 { value: 'cotton100fleece', label: '100% COTTON FLEECE' }
             ]
         },
         longsleeve: {
-            density:     [{ value: '220-240', label: '220–240 g/m² (трёхнитка начёс)' }],
+            density:     [{ value: '220-240', label: '220–240 g/m² ' }],
             composition: [
-                { value: 'cotton100fleece', label: '100% COTTON (трёхнитка начёс)' }
+                { value: 'cotton100fleece', label: '100% COTTON ' }
             ]
         }
     };
@@ -679,7 +679,7 @@
         const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
         embroideryOpt.disabled = !isClubPrint;
-        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА (только принты из базы клуба)';
+        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА ( принты из базы клуба)';
         if (!isClubPrint && state.technique === 'embroidery') {
             state.technique = 'dtf';
             sel.value = 'dtf';
