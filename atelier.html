@@ -179,16 +179,32 @@
         position: absolute; top: 8px; right: 8px; background: var(--gold);
         color: #000; font-size: 11px; font-weight: 900; padding: 3px 7px; border-radius: 3px; z-index: 5;
     }
+    /* Тонкая, едва заметная рамка принта */
     .print-overlay-img {
-        position: absolute; object-fit: cover; cursor: move; touch-action: none;
-        outline: 2px dashed #ffffff;
+        position: absolute;
+        object-fit: contain;
+        cursor: move;
+        touch-action: none;
+        outline: 1px dashed rgba(255, 255, 255, 0.25);
         outline-offset: 2px;
-        box-shadow: 0 0 0 1px #000000, 0 0 0 4px rgba(255,255,255,0.6);
+        box-shadow: none;
+        transition: outline-color 0.2s ease;
     }
+    .print-overlay-img:hover {
+        outline-color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Единая активная точка: меняет размер и вращает одновременно */
     .print-resize-handle {
-        position: absolute; width: 16px; height: 16px; background: var(--gold);
-        border: 1px solid #000; cursor: nwse-resize; touch-action: none; z-index: 6;
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: var(--gold);
+        border: 1px solid #000;
+        cursor: nwse-resize;
+        z-index: 6;
         border-radius: 2px;
+        box-shadow: 0 0 4px rgba(0,0,0,0.8);
     }
     .drag-hint {
         position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
@@ -696,6 +712,7 @@ function renderGarmentPhoto() {
         document.getElementById('tech-note').style.display = isClubPrint ? 'none' : 'block';
     }
 
+   // [КОНТЕКСТ ДО]: Функция расчета дефолтных размеров рамки
     function defaultPrintBox() {
         const frame = document.getElementById('preview-frame');
         const dims = SCALE_DIMENSIONS_CM[state.scale];
@@ -705,47 +722,105 @@ function renderGarmentPhoto() {
         return {
             left: Math.round(frame.clientWidth / 2 - w / 2),
             top: Math.round(frame.clientHeight * (DEFAULT_ANCHOR_Y_PCT / 100) - h / 2),
-            width: w, height: h
+            width: w, 
+            height: h,
+            rotation: 0
         };
     }
 
-    function attachDragResize(img, handle) {
+    /* ==========================================================
+       🌀 НАЧАЛО ИЗМЕНЕНИЙ (Инструмент перемещения, размера и вращения через один уголок)
+       ========================================================== */
+    function attachDragAndTransform(img, handleResize) {
         const frame = document.getElementById('preview-frame');
-        function clampBox(box) {
-            box.width = Math.max(20, box.width);
-            box.height = Math.max(20, box.height);
-            box.left = Math.max(0, Math.min(box.left, frame.clientWidth - box.width));
-            box.top = Math.max(0, Math.min(box.top, frame.clientHeight - box.height));
-            return box;
-        }
+        
         function applyBox() {
             img.style.left = state.printBox.left + 'px';
             img.style.top = state.printBox.top + 'px';
             img.style.width = state.printBox.width + 'px';
             img.style.height = state.printBox.height + 'px';
-            handle.style.left = (state.printBox.left + state.printBox.width - 8) + 'px';
-            handle.style.top = (state.printBox.top + state.printBox.height - 8) + 'px';
+            
+            // Применяем вращение вокруг центра принта
+            const rot = state.printBox.rotation || 0;
+            img.style.transform = `rotate(${rot}deg)`;
+            img.style.transformOrigin = 'center center';
+
+            // Позиционируем маркер в правом нижнем углу рамки
+            handleResize.style.left = (state.printBox.left + state.printBox.width - 6) + 'px';
+            handleResize.style.top = (state.printBox.top + state.printBox.height - 6) + 'px';
         }
+
         applyBox();
+
         let dragging = null, startX, startY, startBox;
+        let startCenterX, startCenterY, startDistance, startAngle;
+
         function onPointerDown(mode) {
             return (e) => {
-                dragging = mode; startX = e.clientX; startY = e.clientY;
+                dragging = mode;
+                startX = e.clientX;
+                startY = e.clientY;
                 startBox = { ...state.printBox };
+
+                const frameRect = frame.getBoundingClientRect();
+                // Вычисляем центр принта в координатах экрана
+                startCenterX = frameRect.left + startBox.left + startBox.width / 2;
+                startCenterY = frameRect.top + startBox.top + startBox.height / 2;
+
+                // Начальные параметры для пропорционального изменения размера и угла
+                startDistance = Math.hypot(startX - startCenterX, startY - startCenterY);
+                startAngle = Math.atan2(startY - startCenterY, startX - startCenterX) * (180 / Math.PI);
+
                 e.target.setPointerCapture(e.pointerId);
                 e.preventDefault();
             };
         }
+
         function onPointerMove(e) {
             if (!dragging) return;
-            const dx = e.clientX - startX, dy = e.clientY - startY;
-            if (dragging === 'move') state.printBox = clampBox({ ...startBox, left: startBox.left + dx, top: startBox.top + dy });
-            else state.printBox = clampBox({ ...startBox, width: startBox.width + dx, height: startBox.height + dy });
+            const currentX = e.clientX;
+            const currentY = e.clientY;
+
+            if (dragging === 'move') {
+                const dx = currentX - startX;
+                const dy = currentY - startY;
+                state.printBox.left = Math.max(0, Math.min(startBox.left + dx, frame.clientWidth - startBox.width));
+                state.printBox.top = Math.max(0, Math.min(startBox.top + dy, frame.clientHeight - startBox.height));
+            } else if (dragging === 'transform') {
+                // Текущая дистанция и угол относительно центра принта
+                const currentDistance = Math.hypot(currentX - startCenterX, currentY - startCenterY);
+                const currentAngle = Math.atan2(currentY - startCenterY, currentX - startCenterX) * (180 / Math.PI);
+
+                // Плавное масштабирование по удалению/приближению мыши к центру
+                const scale = currentDistance / Math.max(1, startDistance);
+                let newW = Math.round(startBox.width * scale);
+                let newH = Math.round(startBox.height * scale);
+
+                // Ограничения минимального и максимального размера
+                newW = Math.max(25, Math.min(newW, 450));
+                newH = Math.max(25, Math.min(newH, 450));
+
+                // Плавное вращение при движении мыши по кругу
+                const angleDelta = currentAngle - startAngle;
+                const newRotation = Math.round(((startBox.rotation || 0) + angleDelta) % 360);
+
+                state.printBox.width = newW;
+                state.printBox.height = newH;
+                state.printBox.rotation = newRotation;
+            }
             applyBox();
         }
-        function onPointerUp() { if (dragging) { dragging = null; updateOrderInfo(); } }
+
+        function onPointerUp() {
+            if (dragging) {
+                dragging = null;
+                updateOrderInfo();
+            }
+        }
+
         img.addEventListener('pointerdown', onPointerDown('move'));
-        handle.addEventListener('pointerdown', onPointerDown('resize'));
+        handleResize.addEventListener('pointerdown', onPointerDown('transform'));
+
         frame.addEventListener('pointermove', onPointerMove);
         frame.addEventListener('pointerup', onPointerUp);
         frame.addEventListener('pointerleave', onPointerUp);
@@ -753,10 +828,12 @@ function renderGarmentPhoto() {
 
     function renderPrintOverlay(resetPosition = false) {
         const frame = document.getElementById('preview-frame');
-        frame.querySelectorAll('.print-overlay-img, .print-resize-handle, .drag-hint').forEach(el => el.remove());
+        // Очищаем старые элементы, включая возможную старую точку вращения
+        frame.querySelectorAll('.print-overlay-img, .print-resize-handle, .print-rotate-handle, .drag-hint').forEach(el => el.remove());
         updateTechniqueAvailability();
         if (!state.currentPrint) { updateOrderInfo(); return; }
         if (resetPosition || !state.printBox) state.printBox = defaultPrintBox();
+        if (state.printBox.rotation === undefined) state.printBox.rotation = 0;
 
         const img = document.createElement('img');
         img.className = 'print-overlay-img';
@@ -764,46 +841,27 @@ function renderGarmentPhoto() {
         img.style.mixBlendMode = (state.color === 'white') ? 'multiply' : 'normal';
         frame.appendChild(img);
 
-        const handle = document.createElement('div');
-        handle.className = 'print-resize-handle';
-        frame.appendChild(handle);
+        const handleResize = document.createElement('div');
+        handleResize.className = 'print-resize-handle';
+        frame.appendChild(handleResize);
 
         const hint = document.createElement('div');
         hint.className = 'drag-hint';
-        hint.textContent = 'Перетащите принт / потяните за уголок';
+        hint.textContent = 'Перетащите принт / потяните уголок для размера и вращения';
         frame.appendChild(hint);
-        setTimeout(() => hint.remove(), 3000);
+        setTimeout(() => hint.remove(), 3500);
 
-        attachDragResize(img, handle);
+        attachDragAndTransform(img, handleResize);
         updateOrderInfo();
     }
+    /* ==========================================================
+       🛑 КОНЕЦ ИЗМЕНЕНИЙ
+       ========================================================== */
 
-    function scaleCm(id) {
-        const d = SCALE_DIMENSIONS_CM[id];
-        return `${d.w}x${d.h}cm`;
-    }
-    function unitPrice() {
-        let p = BASE_PRICE[state.type] || 0;
-        if (state.currentPrint) {
-            p += SCALE_PRICE[state.scale] || 0;
-            p += TECH_PRICE_MOD[state.technique] || 0;
-        }
-        p += FABRIC_PRICE_MOD[state.fabricComposition] || 0;
-        if (state.type !== 'hoodie') {
-            p += NECKLINE_PRICE_MOD[state.neckline] || 0;
-            p += FIT_PRICE_MOD[state.fit] || 0;
-        }
-        return p;
-    }
-    function calculatePrice() { return unitPrice() * Math.max(1, state.quantity); }
-    function actualPrintSizeLabel() {
-        if (!state.currentPrint || !state.printBox) return '';
-        const ratio = pxPerCmApprox(state.type, state.size);
-        const wCm = (state.printBox.width / ratio).toFixed(0);
-        const hCm = (state.printBox.height / ratio).toFixed(0);
-        return `~${wCm}x${hCm}cm (вручную, ориентировочно)`;
-    }
+    // [КОНТЕКСТ ПОСЛЕ]: Функция обновления информации о заказе
     function updateOrderInfo() {
+        // ... ваш последующий код ...
+    }
         const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
         const drawstringLine = (state.type === 'hoodie')
             ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА (визуал без изменений на превью)' : 'нет'}` : '';
