@@ -338,11 +338,23 @@
             </div>
             <div class="tech-note" id="tech-note">Вышивка требует отдельной цифровки — доступна только для готовых принтов из базы клуба.</div>
 
-            <div class="print-strip-row">
-                <button class="print-arrow" id="print-prev">‹</button>
-                <div class="print-strip" id="print-strip"></div>
-                <button class="print-arrow" id="print-next">›</button>
-            </div>
+           <!-- Блок со стрелочками и лентой принтов -->
+    <div class="print-strip-row">
+        <button class="print-arrow" id="print-prev">‹</button>
+        <div class="print-strip" id="print-strip"></div>
+        <button class="print-arrow" id="print-next">›</button>
+    </div>
+
+    <!-- ВСТАВЛЯТЬ СЮДА (в HTML-разметку, после ленты принтов) -->
+    <div class="embroidery-toggle-slot" id="embroidery-toggle-slot">
+        <div style="width: 36px; height: 36px; flex-shrink: 0; background: #111; display: flex; align-items: center; justify-content: center; border: 1px solid var(--gold);">
+            <span style="font-size: 16px;">🧵</span>
+        </div>
+        <div style="flex: 1; font-size: 10px; line-height: 1.3;">
+            <div style="font-weight: 700; color: var(--gold);">ВЫШИВКА (ПРЕМИУМ)</div>
+            <div style="color: var(--ivory); opacity: 0.8;">Нажмите для выбора вышивки</div>
+        </div>
+    </div>
 
             <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
 
