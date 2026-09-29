@@ -150,7 +150,6 @@
 
       <div class="menu-grid">
         <button class="menu-btn" id="btn-ai-room" data-translate="zone_ai_room">AI ROOM</button>
-        <button class="menu-btn" id="btn-office" data-translate="zone_office">OFFICE</button>
         <button class="menu-btn" id="btn-bar" data-translate="zone_bar">BAR</button>
         <button class="menu-btn" id="btn-atelier">Atelier «Horse in a Coat»</button>
         <button class="menu-btn" id="btn-store">THE OLD CURIOSITI SHOP</button>
@@ -169,7 +168,6 @@
     registerSound('door', 'door_open.mp3');
 
     document.getElementById('btn-ai-room').addEventListener('click', () => goToPage('verses.html'));
-    document.getElementById('btn-office').addEventListener('click', () => goToPage('office.html'));
     document.getElementById('btn-bar').addEventListener('click', () => goToPage('bar.html', { sound: 'door' }));
     document.getElementById('btn-atelier').addEventListener('click', () => goToPage('atelier.html'));
         document.getElementById('btn-store').addEventListener('click', () => goToPage('store.html'));
