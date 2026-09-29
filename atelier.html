@@ -284,7 +284,7 @@
     <img src="horse_coat.png" alt="">
     <div class="atelier-titles">
         <span class="title-atelier">ATELIER</span>
-        <span class="title-text">"HORSE  IN  A  COAT"</span>
+        <span class="title-text">"HORSE IN A COAT"</span>
     </div>
 </div>
     <div class="config-body">
@@ -338,23 +338,11 @@
             </div>
             <div class="tech-note" id="tech-note">Вышивка требует отдельной цифровки — доступна только для готовых принтов из базы клуба.</div>
 
-           <!-- Блок со стрелочками и лентой принтов -->
-    <div class="print-strip-row">
-        <button class="print-arrow" id="print-prev">‹</button>
-        <div class="print-strip" id="print-strip"></div>
-        <button class="print-arrow" id="print-next">›</button>
-    </div>
-
-    <!-- ВСТАВЛЯТЬ СЮДА (в HTML-разметку, после ленты принтов) -->
-    <div class="embroidery-toggle-slot" id="embroidery-toggle-slot">
-        <div style="width: 36px; height: 36px; flex-shrink: 0; background: #111; display: flex; align-items: center; justify-content: center; border: 1px solid var(--gold);">
-            <span style="font-size: 16px;">🧵</span>
-        </div>
-        <div style="flex: 1; font-size: 10px; line-height: 1.3;">
-            <div style="font-weight: 700; color: var(--gold);">ВЫШИВКА (ПРЕМИУМ)</div>
-            <div style="color: var(--ivory); opacity: 0.8;">Нажмите для выбора вышивки</div>
-        </div>
-    </div>
+            <div class="print-strip-row">
+                <button class="print-arrow" id="print-prev">‹</button>
+                <div class="print-strip" id="print-strip"></div>
+                <button class="print-arrow" id="print-next">›</button>
+            </div>
 
             <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
 
@@ -453,47 +441,7 @@
         <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
     </div>
 </div>
-/* Фикс для заблокированных полей (ворот и посадка у худи) */
-    .field-row select:disabled, 
-    .field-row input:disabled {
-        background: var(--ivory) !important;
-        color: #1a1408 !important;
-        opacity: 0.75;
-        border-color: var(--gold) !important;
-        -webkit-text-fill-color: #1a1408 !important;
-        cursor: not-allowed;
-    }
 
-    /* Стили для схемы размеров A и B на превью */
-    .size-schema-overlay {
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        display: flex;
-        justify-content: space-between;
-        pointer-events: none;
-        z-index: 5;
-    }
-    .dimension-badge {
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        font-size: 10px;
-        padding: 4px 8px;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        border: 1px solid var(--gold);
-        font-family: inherit;
-    }
-
-    /* Интерактивный слот вышивки */
-    .embroidery-toggle-slot {
-        display: flex; align-items: center; gap: 8px; margin-top: 6px; padding: 6px;
-        border: 1px dashed var(--gold); background: rgba(255,215,0,0.03); cursor: pointer; transition: all 0.2s;
-    }
-    .embroidery-toggle-slot:hover {
-        background: rgba(255,215,0,0.1);
-    }
 <script type="module">
     import { init as initLocalization } from './core/localization.js';
     import { init as initPassport } from './modules/passport.js';
@@ -736,188 +684,17 @@
         frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
         frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
     }
-   // ==========================================
-    // [КОНТЕКСТ ДО]: Доступность техники (вышивка теперь свободна для PNG)
-    // ==========================================
     function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
-        const embroideryOpt = sel ? sel.querySelector('option[value="embroidery"]') : null;
-        if (embroideryOpt) {
-            embroideryOpt.disabled = false; // Вышивка всегда доступна (мастер адаптирует PNG под машинный формат)
+        const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
+        const embroideryOpt = sel.querySelector('option[value="embroidery"]');
+        embroideryOpt.disabled = !isClubPrint;
+        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА ( принты из базы клуба)';
+        if (!isClubPrint && state.technique === 'embroidery') {
+            state.technique = 'dtf';
+            sel.value = 'dtf';
         }
-        const techNote = document.getElementById('tech-note');
-        if (techNote) {
-            techNote.style.display = 'none'; // Убираем старую предупреждающую надпись
-        }
-    }
-
-    // ==========================================
-    // [КОНТЕКСТ ДО]: Расчет дефолтной рамки с учетом уменьшения для белой футболки (-15%)
-    // ==========================================
-    function defaultPrintBox() {
-        const frame = document.getElementById('preview-frame');
-        const dims = SCALE_DIMENSIONS_CM[state.scale];
-        const ratio = pxPerCmApprox(state.type, state.size);
-        
-        // Коэффициент уменьшения визуала для белой футболки спереди
-        const whiteShirtFactor = (state.color === 'white' && state.type === 'tshirt' && state.position === 'front') ? 0.85 : 1.0;
-
-        const w = Math.round(dims.w * ratio * whiteShirtFactor);
-        const h = Math.round(dims.h * ratio * whiteShirtFactor);
-        return {
-            left: Math.round(frame.clientWidth / 2 - w / 2),
-            top: Math.round(frame.clientHeight * (DEFAULT_ANCHOR_Y_PCT / 100) - h / 2),
-            width: w, 
-            height: h,
-            rotation: 0
-        };
-    }
-
-    // ==========================================
-    // [КОНТЕКСТ ДО]: Схема размеров изделия A (ширина) и B (длина) в см
-    // ==========================================
-    function getGarmentDimensionsCm() {
-        const dims = (SIZE_CHART && SIZE_CHART[state.type] && SIZE_CHART[state.type][state.size]) || { width: 52, length: 72 };
-        return {
-            widthA: dims.width,   
-            lengthB: dims.length  
-        };
-    }
-
-    let dragging = null;
-    let dragData = {};
-
-    // Глобальные обработчики для защиты от дублирования и дерганий рамки
-    document.addEventListener('pointermove', (e) => {
-        if (!dragging) return;
-        const currentX = e.clientX;
-        const currentY = e.clientY;
-        const frame = document.getElementById('preview-frame');
-        const img = frame.querySelector('.print-overlay-img');
-        if (!img) return;
-
-        if (dragging === 'move') {
-            const dx = currentX - dragData.startX;
-            const dy = currentY - dragData.startY;
-            state.printBox.left = Math.max(0, Math.min(dragData.startBox.left + dx, frame.clientWidth - state.printBox.width));
-            state.printBox.top = Math.max(0, Math.min(dragData.startBox.top + dy, frame.clientHeight - state.printBox.height));
-        } else if (dragging === 'transform') {
-            const currentDistance = Math.hypot(currentX - dragData.startCenterX, currentY - dragData.startCenterY);
-            const currentAngle = Math.atan2(currentY - dragData.startCenterY, currentX - dragData.startCenterX) * (180 / Math.PI);
-
-            const scale = currentDistance / Math.max(1, dragData.startDistance);
-            let newW = Math.round(dragData.startBox.width * scale);
-            let newH = Math.round(dragData.startBox.height * scale);
-
-            newW = Math.max(25, Math.min(newW, 450));
-            newH = Math.max(25, Math.min(newH, 450));
-
-            const angleDelta = currentAngle - dragData.startAngle;
-            const newRotation = Math.round(((dragData.startBox.rotation || 0) + angleDelta) % 360);
-
-            state.printBox.width = newW;
-            state.printBox.height = newH;
-            state.printBox.rotation = newRotation;
-        }
-        
-        applyBoxDirectly(img, frame.querySelector('.print-resize-handle'), frame.querySelector('.size-schema-overlay'));
-    });
-
-    document.addEventListener('pointerup', () => {
-        if (dragging) {
-            dragging = null;
-            updateOrderInfo();
-        }
-    });
-
-    function applyBoxDirectly(img, handleResize, schemaOverlay) {
-        if (!img || !handleResize) return;
-        img.style.left = state.printBox.left + 'px';
-        img.style.top = state.printBox.top + 'px';
-        img.style.width = state.printBox.width + 'px';
-        img.style.height = state.printBox.height + 'px';
-        
-        const rot = state.printBox.rotation || 0;
-        img.style.transform = `rotate(${rot}deg)`;
-        img.style.transformOrigin = 'center center';
-
-        handleResize.style.left = (state.printBox.left + state.printBox.width - 6) + 'px';
-        handleResize.style.top = (state.printBox.top + state.printBox.height - 6) + 'px';
-
-        // Обновляем метки размерной схемы A и B в реальном времени
-        if (schemaOverlay) {
-            const garmentDims = getGarmentDimensionsCm();
-            const ratio = pxPerCmApprox(state.type, state.size);
-            const printWidthCm = (state.printBox.width / ratio).toFixed(1);
-            const printHeightCm = (state.printBox.height / ratio).toFixed(1);
-
-            schemaOverlay.innerHTML = `
-                <div class="dimension-badge badge-a">↔ Ширина (A): ${garmentDims.widthA} см (Принт: ${printWidthCm} см)</div>
-                <div class="dimension-badge badge-b">↕ Длина (B): ${garmentDims.lengthB} см (Принт: ${printHeightCm} см)</div>
-            `;
-        }
-    }
-
-    function attachDragAndTransform(img, handleResize) {
-        const frame = document.getElementById('preview-frame');
-        const schemaOverlay = frame.querySelector('.size-schema-overlay');
-        applyBoxDirectly(img, handleResize, schemaOverlay);
-
-        function onPointerDown(mode) {
-            return (e) => {
-                dragging = mode;
-                dragData.startX = e.clientX;
-                dragData.startY = e.clientY;
-                dragData.startBox = { ...state.printBox };
-
-                const frameRect = frame.getBoundingClientRect();
-                dragData.startCenterX = frameRect.left + dragData.startBox.left + dragData.startBox.width / 2;
-                dragData.startCenterY = frameRect.top + dragData.startBox.top + dragData.startBox.height / 2;
-
-                dragData.startDistance = Math.hypot(dragData.startX - dragData.startCenterX, dragData.startY - dragData.startCenterY);
-                dragData.startAngle = Math.atan2(dragData.startY - dragData.startCenterY, dragData.startX - dragData.startCenterX) * (180 / Math.PI);
-
-                e.target.setPointerCapture(e.pointerId);
-                e.preventDefault();
-            };
-        }
-
-        img.onpointerdown = onPointerDown('move');
-        handleResize.onpointerdown = onPointerDown('transform');
-    }
-
-    function renderPrintOverlay(resetPosition = false) {
-        const frame = document.getElementById('preview-frame');
-        frame.querySelectorAll('.print-overlay-img, .print-resize-handle, .print-rotate-handle, .drag-hint, .size-schema-overlay').forEach(el => el.remove());
-        
-        updateTechniqueAvailability();
-        if (!state.currentPrint) { updateOrderInfo(); return; }
-        if (resetPosition || !state.printBox) state.printBox = defaultPrintBox();
-        if (state.printBox.rotation === undefined) state.printBox.rotation = 0;
-
-        const img = document.createElement('img');
-        img.className = 'print-overlay-img';
-        img.src = state.currentPrint.design;
-        img.style.mixBlendMode = (state.color === 'white') ? 'multiply' : 'normal';
-        frame.appendChild(img);
-
-        const handleResize = document.createElement('div');
-        handleResize.className = 'print-resize-handle';
-        frame.appendChild(handleResize);
-
-        // Контейнер схемы A и B
-        const schemaOverlay = document.createElement('div');
-        schemaOverlay.className = 'size-schema-overlay';
-        frame.appendChild(schemaOverlay);
-
-        const hint = document.createElement('div');
-        hint.className = 'drag-hint';
-        hint.textContent = 'Перетащите принт / потяните уголок для размера и вращения';
-        frame.appendChild(hint);
-        setTimeout(() => hint.remove(), 3500);
-
-        attachDragAndTransform(img, handleResize);
-        updateOrderInfo();
+        document.getElementById('tech-note').style.display = isClubPrint ? 'none' : 'block';
     }
 
     function defaultPrintBox() {
