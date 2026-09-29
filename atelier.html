@@ -441,7 +441,17 @@
         <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
     </div>
 </div>
-
+/* Фикс для заблокированных полей (ворот и посадка у худи), чтобы они не становились черными */
+    .field-row select:disabled, 
+    .field-row input:disabled {
+        background: var(--ivory) !important;
+        color: #1a1408 !important;
+        opacity: 0.75; /* Чуть приглушаем, чтобы визуально было понятно, что выбор фиксированный */
+        border-color: var(--gold) !important;
+        -webkit-text-fill-color: #1a1408 !important; /* Убираем черти-какой дефолтный цвет в Safari */
+        cursor: not-allowed;
+    }
+  
 <script type="module">
     import { init as initLocalization } from './core/localization.js';
     import { init as initPassport } from './modules/passport.js';
