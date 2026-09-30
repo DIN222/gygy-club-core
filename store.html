@@ -37,7 +37,7 @@
             padding: 12px;
         }
 
-        /* Шапка */
+        /* Шапка с навигационными стрелками и центрированным заголовком */
         .shop-header {
             grid-column: 1 / -1;
             background: linear-gradient(to bottom, #2b1d0c, #1a1007);
@@ -50,9 +50,51 @@
             color: var(--gold);
             font-family: 'Cinzel', serif;
             box-shadow: 0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,215,0,0.2);
+            position: relative;
         }
-        .shop-header h1 { font-size: 17px; letter-spacing: 1.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .header-btns { display: flex; gap: 10px; }
+        
+        .header-nav-group {
+            display: flex;
+            gap: 6px;
+            z-index: 2;
+        }
+        .nav-arrow-btn {
+            background: linear-gradient(to bottom, #6d4b20, #4a3112);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .nav-arrow-btn:hover { background: var(--accent-red); transform: translateY(-1px); }
+
+        .header-title-wrapper {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        .shop-header h1 { 
+            font-size: 16px; 
+            letter-spacing: 1.5px; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+            white-space: nowrap;
+        }
+
+        .header-btns { 
+            display: flex; 
+            gap: 10px; 
+            z-index: 2; 
+        }
         .header-btn {
             background: linear-gradient(to bottom, #6d4b20, #4a3112);
             color: var(--gold);
@@ -283,7 +325,18 @@
 
     <div class="shop-wrapper">
         <header class="shop-header">
-            <h1>GY-GY Club | Antique Store</h1>
+            <!-- Навигационные стрелки слева -->
+            <div class="header-nav-group">
+                <button class="nav-arrow-btn" onclick="history.back()" title="Назад">‹</button>
+                <button class="nav-arrow-btn" onclick="history.forward()" title="Вперед">›</button>
+            </div>
+            
+            <!-- Название по центру -->
+            <div class="header-title-wrapper">
+                <h1>GY-GY Club | Antique Store</h1>
+            </div>
+
+            <!-- Кнопки управления справа -->
             <div class="header-btns">
                 <button class="header-btn" onclick="openExpertModal()">+ Экспертиза и добавление</button>
                 <button class="header-btn" onclick="openReviewsModal()">💬 Отзывы</button>
