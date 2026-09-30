@@ -9,7 +9,7 @@
         :root { 
             --gold: #FFD700; 
             --gold-light: #ffea75;
-            --panel-bg: rgba(247, 241, 225, 0.96);
+            --panel-bg: rgba(25, 16, 8, 0.78); /* Полупрозрачный темный фон под рамками */
             --border-wood: #5a3e1b;
             --dark-wood: #2b1d0c;
             --deep-bg: #140d06;
@@ -26,16 +26,6 @@
             font-family: 'Share Tech Mono', monospace;
         }
 
-        /* Затемнение фона под интерфейсом для читаемости */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: rgba(20, 13, 6, 0.65);
-            z-index: 1;
-            pointer-events: none;
-        }
-
         .shop-wrapper {
             position: relative;
             z-index: 10;
@@ -47,7 +37,7 @@
             padding: 12px;
         }
 
-        /* Шапка с навигационными кнопками (< и <<) */
+        /* Шапка: стрелки слева, название по центру, логотип справа */
         .shop-header {
             grid-column: 1 / -1;
             background: linear-gradient(to bottom, #2b1d0c, #1a1007);
@@ -55,37 +45,74 @@
             border-radius: 8px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0 16px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,215,0,0.2);
+            position: relative;
         }
         
         .header-nav {
             display: flex;
             gap: 8px;
+            z-index: 2;
         }
         .header-nav button {
             background: linear-gradient(to bottom, #6d4b20, #4a3112);
             border: 1px solid var(--gold);
             color: var(--gold);
-            padding: 6px 14px;
+            width: 34px;
+            height: 34px;
             cursor: pointer;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: bold;
             font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.2s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         .header-nav button:hover {
-            border-color: var(--gold);
             background: var(--accent-red);
             color: var(--gold-light);
             transform: translateY(-1px);
         }
 
-        /* Левая панель (Каталог) */
+        .header-title-wrapper {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        .shop-header h1 { 
+            font-family: 'Cinzel', serif;
+            font-size: 16px; 
+            letter-spacing: 1.5px; 
+            color: var(--gold);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+            white-space: nowrap;
+        }
+
+        .header-logo {
+            z-index: 2;
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid var(--border-wood);
+            background: rgba(43, 29, 12, 0.85);
+            padding: 6px 12px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+
+        /* Левая панель (Каталог) с прозрачным фоном */
         .left-panel {
             background: var(--panel-bg);
+            backdrop-filter: blur(5px);
             border: 2px solid var(--border-wood);
             border-radius: 8px;
             padding: 12px;
@@ -99,23 +126,22 @@
             font-family: 'Cinzel', serif;
             font-size: 12px;
             font-weight: bold;
-            color: var(--dark-wood);
+            color: var(--gold);
             border-bottom: 2px solid var(--border-wood);
             padding-bottom: 4px;
             margin-bottom: 4px;
             letter-spacing: 0.5px;
         }
         .category-group {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-wood);
             border-radius: 6px;
             padding: 8px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }
         .category-header {
             font-weight: bold;
             font-size: 10px;
-            color: var(--dark-wood);
+            color: var(--gold-light);
             margin-bottom: 5px;
             display: flex;
             justify-content: space-between;
@@ -143,9 +169,10 @@
         .mini-item img { width: 100%; height: 100%; object-fit: cover; }
         .mini-item:hover { border-color: var(--accent-red); transform: scale(1.08); box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
 
-        /* Центральная панель (Демонстрация) */
+        /* Центральная панель (Демонстрация) с прозрачным фоном */
         .center-panel {
             background: var(--panel-bg);
+            backdrop-filter: blur(5px);
             border: 2px solid var(--border-wood);
             border-radius: 8px;
             padding: 14px;
@@ -161,7 +188,7 @@
             width: 100%;
             height: 54vh;
             border: 3px solid var(--border-wood);
-            background: #fff;
+            background: rgba(255, 255, 255, 0.95);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -178,18 +205,19 @@
             margin: 8px 0;
         }
         .proj-btn {
-            background: #e6dfc8; border: 1px solid var(--border-wood);
+            background: #3b2814; color: var(--gold); border: 1px solid var(--border-wood);
             padding: 4px 10px; font-size: 9px; font-weight: bold; cursor: pointer; border-radius: 4px;
             transition: all 0.2s;
         }
-        .proj-btn.active { background: var(--border-wood); color: var(--gold); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .proj-btn.active { background: var(--accent-red); color: var(--gold); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
 
-        .display-info h2 { font-family: 'Cinzel', serif; font-size: 16px; color: var(--dark-wood); margin-bottom: 4px; }
-        .display-info p { font-size: 11px; color: #442d13; max-width: 90%; margin: 0 auto; line-height: 1.4; }
+        .display-info h2 { font-family: 'Cinzel', serif; font-size: 16px; color: var(--gold); margin-bottom: 4px; }
+        .display-info p { font-size: 11px; color: #f4ebd0; max-width: 90%; margin: 0 auto; line-height: 1.4; }
 
-        /* Правая панель (Характеристики) */
+        /* Правая панель (Характеристики) с прозрачным фоном */
         .right-panel {
             background: var(--panel-bg);
+            backdrop-filter: blur(5px);
             border: 2px solid var(--border-wood);
             border-radius: 8px;
             padding: 14px;
@@ -200,18 +228,18 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.6);
         }
         .spec-box {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-wood);
             border-radius: 6px;
             padding: 10px;
             font-size: 10px;
             line-height: 1.5;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            color: #f4ebd0;
         }
-        .spec-box b { color: var(--dark-wood); }
+        .spec-box b { color: var(--gold); }
         .price-row {
             display: flex; align-items: center; justify-content: space-between;
-            font-weight: bold; font-size: 13px; color: var(--accent-red);
+            font-weight: bold; font-size: 13px; color: var(--gold);
         }
         .price-input {
             width: 85px; padding: 4px;
@@ -301,9 +329,20 @@
 
     <div class="shop-wrapper">
         <header class="shop-header">
+            <!-- Навигационные стрелки слева -->
             <div class="header-nav">
-                <button id="btn-back" title="Назад">&lt; Назад</button>
-                <button id="btn-hall" title="К главному входу">&lt;&lt; В Зал</button>
+                <button id="btn-back" title="Назад">&lt;</button>
+                <button id="btn-hall" title="К главному входу">&lt;&lt;</button>
+            </div>
+            
+            <!-- Название по центру -->
+            <div class="header-title-wrapper">
+                <h1>GY-GY Club | Antique Store</h1>
+            </div>
+
+            <!-- Логотип в правом углу -->
+            <div class="header-logo">
+                GY-GY CLUB
             </div>
         </header>
 
@@ -453,7 +492,7 @@
                 let itemsInCat = storeInventory.filter(i => i.category === catKey);
                 let miniItemsHtml = '';
                 if (itemsInCat.length === 0) {
-                    miniItemsHtml = `<span style="font-size:9px; color:#666; padding:3px;">Нет артефактов</span>`;
+                    miniItemsHtml = `<span style="font-size:9px; color:#aaa; padding:3px;">Нет артефактов</span>`;
                 } else {
                     itemsInCat.forEach(item => {
                         let thumb = item.img1 || item.img || '';
@@ -469,7 +508,7 @@
                     <div class="category-group">
                         <div class="category-header">
                             <span>${categoryMeta[catKey]}</span>
-                            <span style="font-size:8px; color:#555;">(${itemsInCat.length})</span>
+                            <span style="font-size:8px; color:#ffea75;">(${itemsInCat.length})</span>
                         </div>
                         <div class="mini-scroll">
                             ${miniItemsHtml}
@@ -501,7 +540,7 @@
                 <p><b>Год создания:</b> ${item.year} г.</p>
                 <p><b>Размеры:</b> ${item.dimensions || 'Не указаны'}</p>
                 <p><b>Количество:</b> ${item.quantity || '1 шт.'}</p>
-                <p><b>Индекс подлинности:</b> <span style="color:#008000; font-weight:bold;">${item.aiScore || 95}% (Подлинник)</span></p>
+                <p><b>Индекс подлинности:</b> <span style="color:#00ff66; font-weight:bold;">${item.aiScore || 95}% (Подлинник)</span></p>
                 <p style="margin-top: 4px;"><b>Описание:</b> ${item.desc}</p>
             `;
             document.getElementById('activePriceInput').value = item.price;
