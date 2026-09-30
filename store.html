@@ -37,7 +37,7 @@
             padding: 12px;
         }
 
-        /* Шапка: только навигационные стрелки слева */
+        /* Шапка в стиле Ателье: только навигационные кнопки слева */
         .shop-header {
             grid-column: 1 / -1;
             background: linear-gradient(to bottom, #2b1d0c, #1a1007);
@@ -49,27 +49,29 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,215,0,0.2);
         }
         
-        .header-nav-group {
+        .header-nav {
             display: flex;
             gap: 8px;
         }
-        .nav-arrow-btn {
-            background: linear-gradient(to bottom, #6d4b20, #4a3112);
+        .header-nav button {
+            background: none;
+            border: 1px solid var(--border-wood);
             color: var(--gold);
-            border: 1px solid var(--gold);
-            width: 32px;
-            height: 32px;
-            border-radius: 5px;
+            padding: 6px 12px;
             cursor: pointer;
-            font-size: 16px;
+            border-radius: 4px;
+            font-size: 11px;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.2s;
+            background: linear-gradient(to bottom, #6d4b20, #4a3112);
         }
-        .nav-arrow-btn:hover { background: var(--accent-red); transform: translateY(-1px); }
+        .header-nav button:hover {
+            border-color: var(--gold);
+            background: var(--accent-red);
+            color: var(--gold-light);
+            transform: translateY(-1px);
+        }
 
         /* Левая панель (Каталог) */
         .left-panel {
@@ -175,7 +177,7 @@
         .display-info h2 { font-family: 'Cinzel', serif; font-size: 16px; color: var(--dark-wood); margin-bottom: 4px; }
         .display-info p { font-size: 11px; color: #442d13; max-width: 90%; margin: 0 auto; line-height: 1.4; }
 
-        /* Правая панель (Характеристики и кнопки управления внизу) */
+        /* Правая панель (Характеристики) */
         .right-panel {
             background: var(--panel-bg);
             border: 2px solid var(--border-wood);
@@ -289,10 +291,9 @@
 
     <div class="shop-wrapper">
         <header class="shop-header">
-            <!-- Навигационные стрелки -->
-            <div class="header-nav-group">
-                <button class="nav-arrow-btn" onclick="history.back()" title="Назад">‹</button>
-                <button class="nav-arrow-btn" onclick="history.forward()" title="Вперед">›</button>
+            <div class="header-nav">
+                <button id="btn-back">← Назад</button>
+                <button id="btn-hall">В Зал</button>
             </div>
         </header>
 
@@ -323,7 +324,7 @@
             </div>
         </main>
 
-        <!-- ПРАВАЯ ПАНЕЛЬ ХАРАКТЕРИСТИК И НИЖНИХ КНОПОК -->
+        <!-- ПРАВАЯ ПАНЕЛЬ ХАРАКТЕРИСТИК -->
         <section class="right-panel">
             <div class="section-title">ХАРАКТЕРИСТИКИ</div>
             <div class="spec-box" id="specsDetails">
@@ -348,7 +349,6 @@
             <button class="action-btn action-btn-danger" onclick="deleteActiveItem()">🗑 Удалить этот артефакт из базы</button>
             <button class="action-btn action-btn-secondary" onclick="openExpertModal()">+ Экспертиза и добавление</button>
             <button class="action-btn action-btn-secondary" onclick="openReviewsModal()">💬 Отзывы резидентов</button>
-            <button class="action-btn action-btn-secondary" onclick="location.href='hall.html'">🏛 В Холл клуба</button>
         </section>
     </div>
 
@@ -709,6 +709,9 @@
         function closeExpertModal() { document.getElementById('expertModal').style.display = 'none'; }
         function openReviewsModal() { document.getElementById('reviewsModal').style.display = 'flex'; }
         function closeReviewsModal() { document.getElementById('reviewsModal').style.display = 'none'; }
+
+        document.getElementById('btn-back').addEventListener('click', () => history.back());
+        document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
 
         function addToCart() {
             if (!activeItem) {
