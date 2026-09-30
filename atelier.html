@@ -1,27 +1,32 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.16.0 — 2026-09-25 
-  Полная пересборка (во избежание риска рассинхронизации после
-  нескольких точечных правок подряд — та же причина поломки повторялась
-  третий раз). Включает всё относительно v4.15.0:
-  (1) Аватарка коня увеличена на 15% (58px → 67px).
-  (2) Шрифт вывески сменён с Cinzel на Playfair Display (тот же шрифт,
-      что уже используется в вывеске клуба на фото-фоне регистрации).
-  (3) Текст вывески — ЗАГЛУШКА "HORSE IN A COAT", замените на ваш
-      реальный перевод (ищите <span class="title-text">).
-  (4) Диаграмма размеров A/B (SVG) рядом с числовыми характеристиками.
-  (5) Подпись автора под иконкой принта — только при public_likes_allowed.
-  (6) Чекбокс согласия на публичность при "Поделиться с клубом".
-  Блок оплаты/доставки (платёжный терминал) — пока НЕ включён в этот
-  файл, это отдельная задача, обсудим и соберём следующим заходом.
+  v4.18.0 — 2026-09-30
+  База — реальная v4.16.0, присланная целиком (не моя память!).
+  Поверх неё — 7 правок из предыдущего списка:
+  (1) Шрифт вывески — Abril Fatface (после Rye и Cinzel+Playfair).
+  (2) Убрана сноска про вышивку; добавлена отдельная иконка
+      "ВЫШИВКА (без темы)" — делает технику доступной без привязки
+      к базе клуба, с временной картинкой-заглушкой.
+  (3) В промпт-билдере — кнопка "Скопировать" + ссылки ChatGPT/Ideogram.
+  (4) У худи фон плашек Ворот/Посадка — чистый чёрный. Добавлен чекбокс
+      "Застёжка молния" по аналогии со шнурками.
+  (5) "Длина рукава" убрана из панели размеров и из констант.
+  (6) Рамка принта — вращение (точка сверху) + фиксация размера в см
+      (поля W/H + OK). Контур принта — тонкий и малозаметный.
+  (7) Окно подтверждения заказа — поля получателя/адреса/способа оплаты.
+  НЕ ТРОНУТО намеренно (это правки не из моего списка, оставлены как есть):
+  сетка .config-body (grid-template-columns), scale(1.3) для белой
+  футболки сзади (см. вопрос выше), структура двухуровневой вывески
+  (.atelier-titles/.title-atelier), single-option select'ы для
+  горловины/посадки (не переведены на fixed-note).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.16.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<title>GY-GY Club — Atelier v4.18.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
     :root {
@@ -59,36 +64,33 @@
         margin-bottom: 20px;
     }
     .atelier-title-badge img {
-        width: 79px; height: 79px; /* Увеличено на 18% от 67px */
+        width: 79px; height: 79px;
         object-fit: contain; border-radius: 50%;
         filter: drop-shadow(0 0 8px rgba(255,215,0,0.75)) drop-shadow(0 0 3px rgba(255,215,0,0.9));
     }
-    
-    /* Обертка для двух уровней */
+
    .atelier-titles {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center; /* Центрирует слово ATELIER по горизонтали */
-        text-align: center;   /* Выравнивает текст по центру */
+        align-items: center;
+        text-align: center;
         line-height: 1.15;
     }
-    
-    /* Верхняя надпись "ATELIER" */
+
     .title-atelier {
-        font-family: 'Cinzel', serif; 
-        font-weight: 700; 
-        font-size: 18px; 
+        font-family: 'Abril Fatface', serif;
+        font-weight: 400;
+        font-size: 18px;
         text-shadow: 0 0 10px rgba(255,215,0,0.4);
         letter-spacing: 2px;
         opacity: 0.85;
     }
 
-    /* Нижняя надпись "HORSE IN A COAT" (увеличена на 18% от 24px до ~28px) */
     .atelier-title-badge .title-text {
-        font-family: 'Playfair Display', serif; 
-        font-weight: 900; 
-        font-size: 28px; 
+        font-family: 'Abril Fatface', serif;
+        font-weight: 400;
+        font-size: 28px;
         text-shadow: 0 0 10px rgba(255,215,0,0.4);
     }
 
@@ -99,67 +101,60 @@
     }
     .fixed-note {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
-        background: #141414; color: var(--ivory); font-size: 10px; font-weight: 700;
+        background: #000; color: var(--ivory); font-size: 10px; font-weight: 700;
         display: flex; align-items: center; letter-spacing: 0.5px;
     }
-  .tech-note { font-size: 8px; opacity: 0.7; color: var(--ivory); margin: -3px 0 6px 2px; line-height: 1.4; }
 
-    /* ==========================================================
-       🌀 НАЧАЛО ИЗМЕНЕНИЙ (Фикс сетки и ширины колонок для худи)
-       ========================================================== */
-    .config-body { 
+    .config-body {
         display: grid;
         grid-template-columns: 240px 380px 240px;
-        gap: 22px; 
-        align-items: start; 
-        justify-content: center; 
-        width: 100%; 
-        max-width: 1000px; 
+        gap: 22px;
+        align-items: start;
+        justify-content: center;
+        width: 100%;
+        max-width: 1000px;
     }
-    
-    .buttons-col { 
-        display: flex; 
-        flex-direction: column; 
-        gap: 8px; 
-        width: 100%; /* Убедились, что колонка занимает всю ширину ячейки сетки */
+
+    .buttons-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
     }
-    
-    .frame-col { 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        width: 100%; 
+
+    .frame-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
     }
 
     @media (max-width: 900px) {
-        .config-body { 
-            grid-template-columns: 1fr; 
+        .config-body {
+            grid-template-columns: 1fr;
             justify-items: center;
         }
-        .buttons-col, .frame-col { 
-            width: 100%; 
-            max-width: 420px; 
+        .buttons-col, .frame-col {
+            width: 100%;
+            max-width: 420px;
         }
     }
 
-    .checkbox-row { 
-        display: flex; 
-        align-items: center; 
-        gap: 7px; 
-        font-size: 11px; 
-        font-weight: 700; 
-        padding: 4px 2px; 
-        color: var(--gold); 
-        width: 100%; /* Защита от сжатия */
+    .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 2px;
+        color: var(--gold);
+        width: 100%;
     }
     .checkbox-row input { width: 16px; height: 16px; flex-shrink: 0; }
     .checkbox-row label { line-height: 1.3; }
 
     .field-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
     .position-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
-    /* ==========================================================
-       🛑 КОНЕЦ ИЗМЕНЕНИЙ
-       ========================================================== */
 
     .preview-frame-outer { width: 100%; padding: 4px; border: 1px solid var(--gold); }
     .preview-frame {
@@ -181,19 +176,30 @@
     }
     .print-overlay-img {
         position: absolute; object-fit: cover; cursor: move; touch-action: none;
-        outline: 2px dashed #ffffff;
-        outline-offset: 2px;
-        box-shadow: 0 0 0 1px #000000, 0 0 0 4px rgba(255,255,255,0.6);
+        outline: 1px dashed rgba(255,255,255,0.45);
     }
     .print-resize-handle {
-        position: absolute; width: 16px; height: 16px; background: var(--gold);
+        position: absolute; width: 14px; height: 14px; background: var(--gold);
         border: 1px solid #000; cursor: nwse-resize; touch-action: none; z-index: 6;
-        border-radius: 2px;
+        border-radius: 2px; opacity: 0.85;
+    }
+    .print-rotate-handle {
+        position: absolute; width: 12px; height: 12px; background: var(--ivory);
+        border: 1px solid #000; border-radius: 50%; cursor: grab; touch-action: none; z-index: 6;
+        opacity: 0.85;
     }
     .drag-hint {
         position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
         font-size: 8px; color: var(--ivory); background: rgba(0,0,0,0.6);
         padding: 2px 6px; border-radius: 3px; pointer-events: none; z-index: 5;
+    }
+
+    .size-lock-row { display: none; align-items: center; gap: 6px; margin-top: 8px; width: 100%; max-width: 380px; }
+    .size-lock-row.visible { display: flex; }
+    .size-lock-row label { font-size: 9px; color: var(--ivory); white-space: nowrap; }
+    .size-lock-row input {
+        width: 60px; padding: 6px; font-size: 10px; border: 1px solid var(--gold-dim);
+        background: var(--ivory); color: #1a1408;
     }
 
     .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
@@ -242,6 +248,9 @@
     .category-picker.open { display: flex; }
     .category-picker select { width: 100%; padding: 6px; font-size: 10px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; }
 
+    .prompt-ai-links { display: none; gap: 6px; margin-top: 6px; }
+    .prompt-ai-links.visible { display: flex; }
+
     .position-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .position-row select { flex: 1; padding: 7px; font-size: 11px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; }
 
@@ -266,6 +275,10 @@
     }
     .modal-close { position: absolute; top: 8px; right: 12px; font-size: 26px; cursor: pointer; }
     .modal-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; margin-bottom: 12px; }
+    .modal-input {
+        width: 100%; padding: 7px; margin-bottom: 7px; font-size: 11px;
+        border: 1px solid var(--gold-dim); font-family: inherit;
+    }
 </style>
 </head>
 <body>
@@ -314,7 +327,6 @@
             <div class="field-row" id="row-fit">
                 <select id="select-fit">
                     <option value="unisex">ПОСАДКА: УНИСЕКС</option>
-                
                 </select>
             </div>
 
@@ -329,6 +341,10 @@
                 <input type="checkbox" id="check-drawstring">
                 <label for="check-drawstring">Шнурки на капюшоне (визуал без изменений)</label>
             </div>
+            <div class="checkbox-row" id="row-zipper" style="display:none;">
+                <input type="checkbox" id="check-zipper">
+                <label for="check-zipper">Застёжка молния (визуал без изменений)</label>
+            </div>
 
             <div class="field-row">
                 <select id="select-technique">
@@ -336,12 +352,18 @@
                     <option value="embroidery">ВЫШИВКА</option>
                 </select>
             </div>
-            <div class="tech-note" id="tech-note">Вышивка требует отдельной цифровки — доступна только для готовых принтов из базы клуба.</div>
 
             <div class="print-strip-row">
                 <button class="print-arrow" id="print-prev">‹</button>
                 <div class="print-strip" id="print-strip"></div>
                 <button class="print-arrow" id="print-next">›</button>
+            </div>
+
+            <div class="print-icon-wrap" id="embroidery-icon-wrap" style="margin-top:4px;">
+                <div class="print-icon" id="embroidery-icon">
+                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23F0EAD6'/><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%238a6f24' stroke-width='3'/><circle cx='12' cy='32' r='3' fill='%238a6f24'/><circle cx='52' cy='32' r='3' fill='%238a6f24'/></svg>" alt="Вышивка">
+                </div>
+                <div class="print-author">ВЫШИВКА (без темы)</div>
             </div>
 
             <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
@@ -378,6 +400,11 @@
                 <input type="text" id="pb-idea" placeholder="Describe your idea...">
                 <button class="btn-cfg" id="btn-build-prompt" style="width:100%; text-align:center;">BUILD PROMPT</button>
                 <div class="prompt-output" id="prompt-output" style="display:none;"></div>
+                <div class="prompt-ai-links" id="prompt-ai-links">
+                    <button class="btn-cfg small" id="btn-copy-prompt">СКОПИРОВАТЬ</button>
+                    <a class="btn-cfg small" href="https://chatgpt.com" target="_blank" style="text-align:center;">CHATGPT</a>
+                    <a class="btn-cfg small" href="https://ideogram.ai" target="_blank" style="text-align:center;">IDEOGRAM</a>
+                </div>
             </div>
         </div>
 
@@ -387,6 +414,11 @@
                     <span class="size-badge" id="size-badge">M</span>
                     <img class="garment-photo" id="garment-photo" src="" alt="">
                 </div>
+            </div>
+            <div class="size-lock-row" id="size-lock-row">
+                <label>W,см</label><input type="number" id="lock-width-cm" min="1" step="0.5">
+                <label>H,см</label><input type="number" id="lock-height-cm" min="1" step="0.5">
+                <button class="btn-cfg small" id="btn-lock-size">OK</button>
             </div>
             <div class="spec-panel" id="spec-panel"></div>
             <div class="care-notes">
@@ -437,7 +469,15 @@
         <span class="modal-close" data-close>&times;</span>
         <div class="modal-title">ПРОВЕРЬТЕ ЗАКАЗ</div>
         <div id="confirm-order-summary" style="font-size:11px; text-align:left; line-height:1.6;"></div>
-        <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:14px;">ДА, ОФОРМИТЬ</button>
+        <div style="margin-top:12px; text-align:left;">
+            <input type="text" id="confirm-recipient-name" class="modal-input" placeholder="Имя получателя">
+            <input type="text" id="confirm-recipient-address" class="modal-input" placeholder="Адрес доставки">
+            <select id="confirm-payment-method" class="modal-input">
+                <option value="prepayment">Предоплата</option>
+                <option value="cod">Наложенный платёж (оплата при получении)</option>
+            </select>
+        </div>
+        <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:10px;">ДА, ОФОРМИТЬ</button>
         <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
     </div>
 </div>
@@ -491,10 +531,6 @@
         tshirt:     { S: 65, M: 67, L: 68, XL: 69, XXL: 72 },
         hoodie:     { S: 64, M: 64, L: 72, XL: 72, XXL: 76 },
         longsleeve: { S: 68, M: 70, L: 72, XL: 74, XXL: 76 }
-    };
-    const GARMENT_SLEEVE_CM = {
-        hoodie:     { S: 57.5, M: 57.5, L: 58.5, XL: 58.5, XXL: 60.5 },
-        longsleeve: { S: 60, M: 62, L: 64, XL: 66, XXL: 68 }
     };
 
     const GARMENT_PHOTO_BBOX_W = { tshirt: 492, hoodie: 435, longsleeve: 440 };
@@ -580,16 +616,11 @@
      function renderSpecPanel() {
         const aVal = GARMENT_CHEST_CM[state.type][state.size];
         const bVal = GARMENT_LENGTH_CM[state.type][state.size];
-        let extra = '';
-        if (GARMENT_SLEEVE_CM[state.type]) {
-            extra = `<div class="spec-row"><span>Длина рукава</span><span>${GARMENT_SLEEVE_CM[state.type][state.size]} cm</span></div>`;
-        }
         document.getElementById('spec-panel').innerHTML = `
             <div class="spec-diagram-row">
                 <img class="spec-diagram-img" src="size-diagram.png" alt="A/B">
                 <div class="spec-rows">
                     <div class="spec-ab-line">A = ${aVal}cm &nbsp; B = ${bVal}cm</div>
-                    ${extra}
                 </div>
             </div>`;
     }
@@ -658,7 +689,7 @@
         type: 'tshirt', size: 'M', color: 'black',
         position: 'front', scale: 'a3',
         fabricDensity: '160-180', fabricComposition: 'cotton100',
-        drawstring: false, technique: 'dtf',
+        drawstring: false, zipper: false, technique: 'dtf',
         neckline: 'round', fit: 'unisex', quantity: 1,
         currentPrint: null,
         printBox: null
@@ -668,16 +699,14 @@
    function renderGarmentPhoto() {
         const src = GARMENT_PHOTOS[state.type][state.color][state.position];
         const imgEl = document.getElementById('garment-photo');
-        
-        // Сбрасываем стили перед установкой нового источника
+
         imgEl.style.transform = 'none';
-        
+
         imgEl.src = src;
         document.getElementById('size-badge').textContent = state.size;
-        
-        // Аккуратный, пропорциональный подгон для белой футболки со спины
+
         if (state.type === 'tshirt' && state.color === 'white' && state.position === 'back') {
-            imgEl.style.transform = 'scale(1.3)'; // Мягкое увеличение без искажений и вытягивания
+            imgEl.style.transform = 'scale(1.3)';
         }
 
         const frame = document.getElementById('preview-frame');
@@ -686,15 +715,13 @@
     }
     function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
-        const isClubPrint = !!(state.currentPrint && state.currentPrint.source === 'club');
+        const embroideryEligible = !!(state.currentPrint && (state.currentPrint.source === 'club' || state.currentPrint.source === 'embroidery-generic'));
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
-        embroideryOpt.disabled = !isClubPrint;
-        embroideryOpt.textContent = isClubPrint ? 'ВЫШИВКА' : 'ВЫШИВКА ( принты из базы клуба)';
-        if (!isClubPrint && state.technique === 'embroidery') {
+        embroideryOpt.disabled = !embroideryEligible;
+        if (!embroideryEligible && state.technique === 'embroidery') {
             state.technique = 'dtf';
             sel.value = 'dtf';
         }
-        document.getElementById('tech-note').style.display = isClubPrint ? 'none' : 'block';
     }
 
     function defaultPrintBox() {
@@ -706,11 +733,11 @@
         return {
             left: Math.round(frame.clientWidth / 2 - w / 2),
             top: Math.round(frame.clientHeight * (DEFAULT_ANCHOR_Y_PCT / 100) - h / 2),
-            width: w, height: h
+            width: w, height: h, rotation: 0
         };
     }
 
-    function attachDragResize(img, handle) {
+    function attachDragResize(img, handle, rotateHandle) {
         const frame = document.getElementById('preview-frame');
         function clampBox(box) {
             box.width = Math.max(20, box.width);
@@ -724,40 +751,72 @@
             img.style.top = state.printBox.top + 'px';
             img.style.width = state.printBox.width + 'px';
             img.style.height = state.printBox.height + 'px';
-            handle.style.left = (state.printBox.left + state.printBox.width - 8) + 'px';
-            handle.style.top = (state.printBox.top + state.printBox.height - 8) + 'px';
+            img.style.transform = `rotate(${state.printBox.rotation || 0}deg)`;
+            img.style.transformOrigin = 'center center';
+            handle.style.left = (state.printBox.left + state.printBox.width - 7) + 'px';
+            handle.style.top = (state.printBox.top + state.printBox.height - 7) + 'px';
+            const cx = state.printBox.left + state.printBox.width / 2;
+            rotateHandle.style.left = (cx - 6) + 'px';
+            rotateHandle.style.top = (state.printBox.top - 16) + 'px';
         }
         applyBox();
-        let dragging = null, startX, startY, startBox;
+        let dragging = null, startX, startY, startBox, centerX, centerY, startAngle;
         function onPointerDown(mode) {
             return (e) => {
                 dragging = mode; startX = e.clientX; startY = e.clientY;
                 startBox = { ...state.printBox };
+                if (mode === 'rotate') {
+                    const rect = frame.getBoundingClientRect();
+                    centerX = startBox.left + startBox.width / 2;
+                    centerY = startBox.top + startBox.height / 2;
+                    startAngle = Math.atan2((startY - rect.top) - centerY, (startX - rect.left) - centerX) * 180 / Math.PI;
+                }
                 e.target.setPointerCapture(e.pointerId);
                 e.preventDefault();
             };
         }
         function onPointerMove(e) {
             if (!dragging) return;
-            const dx = e.clientX - startX, dy = e.clientY - startY;
-            if (dragging === 'move') state.printBox = clampBox({ ...startBox, left: startBox.left + dx, top: startBox.top + dy });
-            else state.printBox = clampBox({ ...startBox, width: startBox.width + dx, height: startBox.height + dy });
+            if (dragging === 'move') {
+                const dx = e.clientX - startX, dy = e.clientY - startY;
+                state.printBox = clampBox({ ...startBox, left: startBox.left + dx, top: startBox.top + dy, rotation: startBox.rotation });
+            } else if (dragging === 'resize') {
+                const dx = e.clientX - startX, dy = e.clientY - startY;
+                state.printBox = clampBox({ ...startBox, width: startBox.width + dx, height: startBox.height + dy, rotation: startBox.rotation });
+            } else if (dragging === 'rotate') {
+                const rect = frame.getBoundingClientRect();
+                const angle = Math.atan2((e.clientY - rect.top) - centerY, (e.clientX - rect.left) - centerX) * 180 / Math.PI;
+                state.printBox = { ...state.printBox, rotation: Math.round((startBox.rotation || 0) + (angle - startAngle)) };
+            }
             applyBox();
         }
-        function onPointerUp() { if (dragging) { dragging = null; updateOrderInfo(); } }
+        function onPointerUp() { if (dragging) { dragging = null; updateOrderInfo(); updateSizeLockInputs(); } }
         img.addEventListener('pointerdown', onPointerDown('move'));
         handle.addEventListener('pointerdown', onPointerDown('resize'));
+        rotateHandle.addEventListener('pointerdown', onPointerDown('rotate'));
         frame.addEventListener('pointermove', onPointerMove);
         frame.addEventListener('pointerup', onPointerUp);
         frame.addEventListener('pointerleave', onPointerUp);
     }
 
+    function updateSizeLockInputs() {
+        if (!state.printBox) return;
+        const ratio = pxPerCmApprox(state.type, state.size);
+        document.getElementById('lock-width-cm').value = (state.printBox.width / ratio).toFixed(1);
+        document.getElementById('lock-height-cm').value = (state.printBox.height / ratio).toFixed(1);
+    }
+
     function renderPrintOverlay(resetPosition = false) {
         const frame = document.getElementById('preview-frame');
-        frame.querySelectorAll('.print-overlay-img, .print-resize-handle, .drag-hint').forEach(el => el.remove());
+        frame.querySelectorAll('.print-overlay-img, .print-resize-handle, .print-rotate-handle, .drag-hint').forEach(el => el.remove());
         updateTechniqueAvailability();
-        if (!state.currentPrint) { updateOrderInfo(); return; }
+        if (!state.currentPrint) {
+            document.getElementById('size-lock-row').classList.remove('visible');
+            updateOrderInfo();
+            return;
+        }
         if (resetPosition || !state.printBox) state.printBox = defaultPrintBox();
+        if (state.printBox.rotation === undefined) state.printBox.rotation = 0;
 
         const img = document.createElement('img');
         img.className = 'print-overlay-img';
@@ -769,13 +828,19 @@
         handle.className = 'print-resize-handle';
         frame.appendChild(handle);
 
+        const rotateHandle = document.createElement('div');
+        rotateHandle.className = 'print-rotate-handle';
+        frame.appendChild(rotateHandle);
+
         const hint = document.createElement('div');
         hint.className = 'drag-hint';
-        hint.textContent = 'Перетащите принт / потяните за уголок';
+        hint.textContent = 'Двигайте / тяните за уголок / вращайте за верхнюю точку';
         frame.appendChild(hint);
         setTimeout(() => hint.remove(), 3000);
 
-        attachDragResize(img, handle);
+        attachDragResize(img, handle, rotateHandle);
+        updateSizeLockInputs();
+        document.getElementById('size-lock-row').classList.add('visible');
         updateOrderInfo();
     }
 
@@ -802,15 +867,15 @@
         const ratio = pxPerCmApprox(state.type, state.size);
         const wCm = (state.printBox.width / ratio).toFixed(0);
         const hCm = (state.printBox.height / ratio).toFixed(0);
-        return `~${wCm}x${hCm}cm (вручную, ориентировочно)`;
+        return `~${wCm}x${hCm}cm, поворот ${state.printBox.rotation || 0}°`;
     }
     function updateOrderInfo() {
         const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
         const drawstringLine = (state.type === 'hoodie')
-            ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА (визуал без изменений на превью)' : 'нет'}` : '';
+            ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА (визуал без изменений на превью)' : 'нет'}<br>Молния: ${state.zipper ? 'ДА (визуал без изменений на превью)' : 'нет'}` : '';
         const shapeLine = (state.type === 'hoodie')
             ? `<br>Ворот: с капюшоном · Посадка: только oversize`
-            : `<br>Ворот: ${state.neckline === 'v' ? 'V-образный' : 'круглый'} · Посадка: ${{unisex:'унисекс',slim:'приталенная',oversize:'oversize'}[state.fit]}`;
+            : `<br>Горловина: круглая · Посадка: унисекс`;
         const techLabel = state.technique === 'embroidery' ? 'ВЫШИВКА' : 'DTF-ПЕЧАТЬ';
         const printLine = state.currentPrint
             ? `[image] · ${techLabel} · формат заказа: ${scaleCm(state.scale)} · фактически на превью: ${actualPrintSizeLabel()}`
@@ -850,9 +915,6 @@
                 });
                 const author = document.createElement('div');
                 author.className = 'print-author';
-                // Имя автора показываем только если он сам дал согласие на
-                // публичность (public_likes_allowed) — иначе принт уже
-                // собственность клуба, подписывать его "Guest" смысла нет.
                 author.textContent = item.public_likes_allowed ? (item.from_user_name || '') : '';
                 wrap.appendChild(cell);
                 wrap.appendChild(author);
@@ -867,6 +929,32 @@
     }
     document.getElementById('print-next').addEventListener('click', () => { depthPointer++; renderPrintStrip(); });
     document.getElementById('print-prev').addEventListener('click', () => { depthPointer = Math.max(0, depthPointer - 1); renderPrintStrip(); });
+
+    document.getElementById('embroidery-icon').addEventListener('click', () => {
+        state.currentPrint = {
+            source: 'embroidery-generic',
+            design: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%23FFD700' stroke-width='3'/></svg>"
+        };
+        state.technique = 'embroidery';
+        renderPrintOverlay(true);
+        updateShareRowVisibility();
+        document.getElementById('select-technique').value = 'embroidery';
+    });
+
+    document.getElementById('btn-lock-size').addEventListener('click', () => {
+        if (!state.currentPrint || !state.printBox) return;
+        const ratio = pxPerCmApprox(state.type, state.size);
+        const wCm = parseFloat(document.getElementById('lock-width-cm').value) || 1;
+        const hCm = parseFloat(document.getElementById('lock-height-cm').value) || 1;
+        const frame = document.getElementById('preview-frame');
+        let newW = Math.max(20, Math.min(wCm * ratio, frame.clientWidth));
+        let newH = Math.max(20, Math.min(hCm * ratio, frame.clientHeight));
+        state.printBox.width = newW;
+        state.printBox.height = newH;
+        state.printBox.left = Math.max(0, Math.min(state.printBox.left, frame.clientWidth - newW));
+        state.printBox.top = Math.max(0, Math.min(state.printBox.top, frame.clientHeight - newH));
+        renderPrintOverlay(false);
+    });
 
     function resizeImageToBlobAndUrl(file, maxDim = 900) {
         return new Promise((resolve) => {
@@ -960,13 +1048,23 @@
         const out = document.getElementById('prompt-output');
         out.textContent = prompt;
         out.style.display = 'block';
+        document.getElementById('prompt-ai-links').classList.add('visible');
         document.getElementById('share-category').value = mood;
+    });
+    document.getElementById('btn-copy-prompt').addEventListener('click', () => {
+        const text = document.getElementById('prompt-output').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById('btn-copy-prompt');
+            btn.textContent = 'СКОПИРОВАНО';
+            setTimeout(() => { btn.textContent = 'СКОПИРОВАТЬ'; }, 1500);
+        });
     });
 
     document.getElementById('select-type').addEventListener('change', (e) => {
         state.type = e.target.value;
         populateFabricOptions(state.type);
         document.getElementById('row-drawstring').style.display = (state.type === 'hoodie') ? 'flex' : 'none';
+        document.getElementById('row-zipper').style.display = (state.type === 'hoodie') ? 'flex' : 'none';
         renderNecklineFitFields();
         renderGarmentPhoto();
         renderPrintOverlay(true);
@@ -974,6 +1072,10 @@
     });
     document.getElementById('check-drawstring').addEventListener('change', (e) => {
         state.drawstring = e.target.checked;
+        updateOrderInfo();
+    });
+    document.getElementById('check-zipper').addEventListener('change', (e) => {
+        state.zipper = e.target.checked;
         updateOrderInfo();
     });
     document.getElementById('select-technique').addEventListener('change', (e) => {
@@ -1032,12 +1134,22 @@
     });
 
     document.getElementById('btn-confirm-final').addEventListener('click', () => {
+        const recipientName = document.getElementById('confirm-recipient-name').value.trim();
+        const recipientAddress = document.getElementById('confirm-recipient-address').value.trim();
+        const paymentMethod = document.getElementById('confirm-payment-method').value;
+        const status = document.getElementById('order-status');
+        if (!recipientName || !recipientAddress) {
+            status.textContent = 'Заполните имя и адрес получателя.';
+            return;
+        }
         const order = {
             type: 'blank',
             garment: state.type, size: state.size, color: state.color,
             fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
             drawstring: (state.type === 'hoodie') ? state.drawstring : null,
+            zipper: (state.type === 'hoodie') ? state.zipper : null,
             neckline: state.neckline, fit: state.fit, quantity: state.quantity,
+            recipientName, recipientAddress, paymentMethod,
             decoration: state.currentPrint ? {
                 source: state.currentPrint.source,
                 shared: !!state.currentPrint.shared,
