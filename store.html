@@ -37,7 +37,7 @@
             padding: 12px;
         }
 
-        /* Шапка в стиле Ателье: только навигационные кнопки слева */
+        /* Шапка с навигационными кнопками (одинарная и двойная стрелки) */
         .shop-header {
             grid-column: 1 / -1;
             background: linear-gradient(to bottom, #2b1d0c, #1a1007);
@@ -54,17 +54,17 @@
             gap: 8px;
         }
         .header-nav button {
-            background: none;
-            border: 1px solid var(--border-wood);
+            background: linear-gradient(to bottom, #6d4b20, #4a3112);
+            border: 1px solid var(--gold);
             color: var(--gold);
-            padding: 6px 12px;
+            padding: 6px 14px;
             cursor: pointer;
             border-radius: 4px;
             font-size: 11px;
             font-weight: bold;
             font-family: 'Share Tech Mono', monospace;
             transition: all 0.2s;
-            background: linear-gradient(to bottom, #6d4b20, #4a3112);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         .header-nav button:hover {
             border-color: var(--gold);
@@ -292,8 +292,8 @@
     <div class="shop-wrapper">
         <header class="shop-header">
             <div class="header-nav">
-                <button id="btn-back">← Назад</button>
-                <button id="btn-hall">В Зал</button>
+                <button id="btn-back">‹ Назад</button>
+                <button id="btn-hall">« В Зал</button>
             </div>
         </header>
 
