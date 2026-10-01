@@ -935,7 +935,7 @@
     document.getElementById('print-next').addEventListener('click', () => { depthPointer++; renderPrintStrip(); });
     document.getElementById('print-prev').addEventListener('click', () => { depthPointer = Math.max(0, depthPointer - 1); renderPrintStrip(); });
 
-    document.getElementById('embroidery-icon').addEventListener('click', () => {
+     document.getElementById('embroidery-icon').addEventListener('click', () => {
         state.currentPrint = {
             source: 'embroidery-generic',
             design: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%23FFD700' stroke-width='3'/></svg>"
@@ -943,7 +943,9 @@
         state.technique = 'embroidery';
         renderPrintOverlay(true);
         updateShareRowVisibility();
-        document.getElementById('select-technique').value = 'embroidery';
+        const sel = document.getElementById('select-technique');
+        sel.value = 'embroidery';
+        sel.dispatchEvent(new Event('change'));
     });
 
     document.getElementById('btn-lock-size').addEventListener('click', () => {
