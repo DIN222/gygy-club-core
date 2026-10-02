@@ -1251,15 +1251,18 @@ OCTYPE html>
         align-items: center;
         justify-content: center;
     }
+<style>
+    /* Только фон слоновой кости для плашек Худи, всё остальное родное */
+    .fixed-note {
+        background-color: #FFFFF0 !important;
+    }
 </style>
 
 <script>
-        // Подтверждение заказа и вызов модального окна
         document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>€${calculatePrice()}</b>`;
         openModal('modal-confirm');
     });
 
-    // Инициализация ателье при загрузке
     (async function initAtelier() {
         populateFabricOptions(state.type);
         renderNecklineFitFields();
