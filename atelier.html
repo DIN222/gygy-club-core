@@ -1222,62 +1222,6 @@ OCTYPE html>
     renderPrintOverlay();
     renderSpecPanel();
 </script>
-<style>
-    /* Принудительный цвет слоновой кости для информационных плашек Худи */
-    .fixed-note {
-        background-color: #FFFFF0 !important;
-        color: #1A1A1A !important;
-        border: 1px solid #E6E6D8 !important;
-        padding: 6px 10px;
-        border-radius: 4px;
-        display: inline-block;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-</style>
 
-<style>
-    /* Точная подгонка под общий стиль и шрифт atelier.html */
-    .fixed-note {
-        font-family: inherit !important;        /* Наследуем родной шрифт страницы */
-        background-color: #FDFBF7 !important;   /* Мягкая слоновая кость / Ivory */
-        color: inherit !important;              /* Наследуем родной цвет текста */
-        border: 1px solid rgba(0, 0, 0, 0.18) !important; /* Легкая органичная рамка */
-        padding: 6px 12px;
-        border-radius: 4px;
-        font-size: 0.9em;
-        letter-spacing: 0.03em;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-<style>
-    /* Только фон слоновой кости для плашек Худи, всё остальное родное */
-    .fixed-note {
-        background-color: #FFFFF0 !important;
-    }
-</style>
-
-<script>
-        document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>€${calculatePrice()}</b>`;
-        openModal('modal-confirm');
-    });
-
-    (async function initAtelier() {
-        populateFabricOptions(state.type);
-        renderNecklineFitFields();
-        renderGarmentPhoto();
-        renderSpecPanel();
-
-        try {
-            await clubBase.init();
-        } catch (e) {
-            console.warn('[Atelier] Ошибка при инициализации базы клуба.', e);
-        }
-
-        renderPrintStrip();
-        updateOrderInfo();
-    })();
-</script>
 </body>
 </html>
