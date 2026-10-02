@@ -86,14 +86,31 @@
     /* Стиль кнопок выбора (Ворот, Посадка и др.) — единый стиль */
     .btn-group { display: flex; gap: 8px; flex: 1; width: 100%; }
     .btn-option {
-        flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
-        background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
-        cursor: pointer; text-align: center; transition: background-color 0.2s, color 0.2s;
-    }
+      
     .btn-option:hover { background: var(--gold); color: #000; }
-    .btn-option.active {
-        background: var(--gold); color: #000; font-weight: bold;
-    }
+   /* ✅ Жесткие стили ТОЛЬКО для блоков Ворот (#row-neckline) и Посадка (#row-fit) */
+#row-neckline .btn-option,
+#row-fit .btn-option {
+    background-color: #F0EAD6 !important; /* Слоновая кость */
+    color: #000000 !important;             /* Чёрные буквы */
+    border: 1px solid var(--gold) !important;
+    font-weight: 600;
+}
+
+/* При наведении мышкой */
+#row-neckline .btn-option:hover,
+#row-fit .btn-option:hover {
+    background-color: var(--gold) !important;
+    color: #000000 !important;
+}
+
+/* При нажатии (активное состояние) */
+#row-neckline .btn-option.active,
+#row-fit .btn-option.active {
+    background-color: var(--gold) !important; /* Ярко-золотой фон */
+    color: #000000 !important;             /* Чёрные буквы */
+    font-weight: 900;
+}
 
     .fixed-note {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
@@ -511,6 +528,7 @@
     import { get, set } from './core/storage.js';
     import * as eventBus from './core/eventBus.js';
 
+    // Инициализация базовых сервисов
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
@@ -519,17 +537,18 @@
         init: async () => {},
         addPrint: async () => { throw new Error('Модуль базы клуба недоступен (core/clubBase.js не найден).'); }
     };
+
     try {
         clubBase = await import('./core/clubBase.js');
     } catch (e) {
         console.warn('[Atelier] core/clubBase.js не загружен — проверьте, что файл (и core/supabase-init.js) реально залиты в репозиторий.', e);
     }
 
-    const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO
+    const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: Указать актуальный юзернейм
 
     const GARMENT_PHOTOS = {
         tshirt:     { white: { front: 'tshirt-white-front.png', back: 'tshirt-white-back.png' }, black: { front: 'tshirt-black-front.png', back: 'tshirt-black-back.png' } },
-        hoodie:     { white: { front: 'hoodie-white-front.png', back: 'hoodie-white-back.png' }, black: { front: 'hoodie-black-front.png', back: 'hoodie-black-back.png' } },
+        hoodie:     { white: { front: 'hoodie-white-front.png', back: 'hoodie-white-back.png' }, black: { front: 'hoodie-black-back.png', back: 'hoodie-black-back.png' } },
         longsleeve: { white: { front: 'longsleeve-white-front.png', back: 'longsleeve-white-back.png' }, black: { front: 'longsleeve-black-front.png', back: 'longsleeve-black-back.png' } }
     };
 
@@ -538,6 +557,7 @@
     const TECH_PRICE_MOD = { dtf: 0, embroidery: 7 };
     const NECKLINE_PRICE_MOD = { round: 0, v: 3 };
     const FIT_PRICE_MOD = { unisex: 0, slim: 2, oversize: 4 };
+
     const SCALE_DIMENSIONS_CM = {
         'a3':          { w: 30, h: 40 },
         'a4':          { w: 21, h: 30 },
@@ -550,6 +570,7 @@
         hoodie:     { S: 60, M: 60, L: 64, XL: 64, XXL: 68 },
         longsleeve: { S: 48, M: 50, L: 52, XL: 54, XXL: 56 }
     };
+
     const GARMENT_LENGTH_CM = {
         tshirt:     { S: 65, M: 67, L: 68, XL: 69, XXL: 72 },
         hoodie:     { S: 64, M: 64, L: 72, XL: 72, XXL: 76 },
@@ -560,6 +581,22 @@
     const OUTSTRETCH_FACTOR = 1.5;
     const DEFAULT_ANCHOR_Y_PCT = 42;
     const BG_REMOVE_THRESHOLD = 32;
+
+    // Встроенная функция для настройки переключателей
+    function initOptionGroup(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const buttons = container.querySelectorAll('.btn-option');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // 1. Снимаем класс active со всех кнопок в этой группе
+                buttons.forEach(b => b.classList.remove('active'));
+                // 2. Добавляем класс active той кнопке, на которую нажали
+                e.currentTarget.classList.add('active');
+            });
+        });
+    }
 
     function pxPerCmApprox(type, size) {
         const basePxPerCm = GARMENT_PHOTO_BBOX_W[type] / (GARMENT_CHEST_CM[type].M * OUTSTRETCH_FACTOR);
@@ -636,7 +673,7 @@
         return imageData;
     }
 
-     function renderSpecPanel() {
+    function renderSpecPanel() {
         const aVal = GARMENT_CHEST_CM[state.type][state.size];
         const bVal = GARMENT_LENGTH_CM[state.type][state.size];
         document.getElementById('spec-panel').innerHTML = `
@@ -647,6 +684,7 @@
                 </div>
             </div>`;
     }
+
     function renderNecklineFitFields() {
         const necklineRow = document.getElementById('row-neckline');
         const fitRow = document.getElementById('row-fit');
@@ -670,6 +708,10 @@
             document.getElementById('select-neckline').addEventListener('change', (e) => { state.neckline = e.target.value; updateOrderInfo(); });
             document.getElementById('select-fit').addEventListener('change', (e) => { state.fit = e.target.value; updateOrderInfo(); });
         }
+        
+        // Инициализируем переключатели после отрисовки
+        initOptionGroup('row-neckline');
+        initOptionGroup('row-fit');
     }
 
     const FABRIC_OPTIONS = {
@@ -719,25 +761,27 @@
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
- function renderGarmentPhoto() {
-    const key = `${state.type}-${state.color}-${state.position}`;
-    const src = GARMENT_PHOTOS[state.type][state.color][state.position];
-    const imgEl = document.getElementById('garment-photo');
-    const frame = document.getElementById('preview-frame');
+    function renderGarmentPhoto() {
+        const key = `${state.type}-${state.color}-${state.position}`;
+        const src = GARMENT_PHOTOS[state.type][state.color][state.position];
+        const imgEl = document.getElementById('garment-photo');
+        const frame = document.getElementById('preview-frame');
 
-    imgEl.src = src;
-    // Добавляем точный ключ для CSS-коррекции
-    frame.setAttribute('data-garment', key); 
-    document.getElementById('size-badge').textContent = state.size;
+        imgEl.src = src;
+        frame.setAttribute('data-garment', key); 
+        document.getElementById('size-badge').textContent = state.size;
 
-    frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
-    frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
-}
+        frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
+        frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
+    }
+
     function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
         const embroideryEligible = !!(state.currentPrint && (state.currentPrint.source === 'club' || state.currentPrint.source === 'embroidery-generic'));
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
-        embroideryOpt.disabled = !embroideryEligible;
+        if (embroideryOpt) {
+            embroideryOpt.disabled = !embroideryEligible;
+        }
         if (!embroideryEligible && state.technique === 'embroidery') {
             state.technique = 'dtf';
             sel.value = 'dtf';
@@ -868,6 +912,7 @@
         const d = SCALE_DIMENSIONS_CM[id];
         return `${d.w}x${d.h}cm`;
     }
+
     function unitPrice() {
         let p = BASE_PRICE[state.type] || 0;
         if (state.currentPrint) {
@@ -881,7 +926,9 @@
         }
         return p;
     }
+
     function calculatePrice() { return unitPrice() * Math.max(1, state.quantity); }
+
     function actualPrintSizeLabel() {
         if (!state.currentPrint || !state.printBox) return '';
         const ratio = pxPerCmApprox(state.type, state.size);
@@ -889,6 +936,7 @@
         const hCm = (state.printBox.height / ratio).toFixed(0);
         return `~${wCm}x${hCm}cm, поворот ${state.printBox.rotation || 0}°`;
     }
+
     function updateOrderInfo() {
         const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
         const drawstringLine = (state.type === 'hoodie')
@@ -950,7 +998,7 @@
     document.getElementById('print-next').addEventListener('click', () => { depthPointer++; renderPrintStrip(); });
     document.getElementById('print-prev').addEventListener('click', () => { depthPointer = Math.max(0, depthPointer - 1); renderPrintStrip(); });
 
-     document.getElementById('embroidery-icon').addEventListener('click', () => {
+    document.getElementById('embroidery-icon').addEventListener('click', () => {
         state.currentPrint = {
             source: 'embroidery-generic',
             design: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%23FFD700' stroke-width='3'/></svg>"
@@ -1138,10 +1186,12 @@
 
     function openModal(id) {
         const m = document.getElementById(id);
+        if (!m) return;
         m.style.display = 'flex';
         requestAnimationFrame(() => m.style.opacity = '1');
     }
     function closeModal(m) {
+        if (!m) return;
         m.style.opacity = '0';
         setTimeout(() => m.style.display = 'none', 300);
     }
@@ -1151,79 +1201,25 @@
 
     document.getElementById('btn-confirm').addEventListener('click', () => {
         const summary = document.getElementById('order-info').innerHTML;
-        document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>€${calculatePrice()}</b>`;
-        openModal('modal-confirm-order');
-    });
-
-    document.getElementById('btn-confirm-final').addEventListener('click', () => {
-        const recipientName = document.getElementById('confirm-recipient-name').value.trim();
-        const recipientAddress = document.getElementById('confirm-recipient-address').value.trim();
-        const paymentMethod = document.getElementById('confirm-payment-method').value;
-        const status = document.getElementById('order-status');
-        if (!recipientName || !recipientAddress) {
-            status.textContent = 'Заполните имя и адрес получателя.';
-            return;
+        const total = calculatePrice();
+        const summaryEl = document.getElementById('confirm-order-summary');
+        if (summaryEl) {
+            summaryEl.innerHTML = `${summary}<br><strong>ИТОГО: €${total}</strong>`;
         }
-        const order = {
-            type: 'blank',
-            garment: state.type, size: state.size, color: state.color,
-            fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
-            drawstring: (state.type === 'hoodie') ? state.drawstring : null,
-            zipper: (state.type === 'hoodie') ? state.zipper : null,
-            neckline: state.neckline, fit: state.fit, quantity: state.quantity,
-            recipientName, recipientAddress, paymentMethod,
-            decoration: state.currentPrint ? {
-                source: state.currentPrint.source,
-                shared: !!state.currentPrint.shared,
-                category: state.currentPrint.category || null,
-                technique: state.technique,
-                position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
-                actualSizeOnPreview: actualPrintSizeLabel()
-            } : null,
-            unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now()
-        };
-        const reports = get('officeAtelierReports', []);
-        reports.push(order);
-        set('officeAtelierReports', reports.slice(-50));
-        closeModal(document.getElementById('modal-confirm-order'));
-        document.getElementById('order-status').textContent = 'Order sent to Office!';
+        openModal('modal-confirm');
     });
 
-    document.getElementById('link-help').addEventListener('click', () => {
-        window.open(TELEGRAM_HELP_URL, '_blank');
-    });
-
-    document.getElementById('btn-back').addEventListener('click', () => history.back());
-    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
-
-    function handlePassportData(data) {
-        currentUser = {
-            id: (data && (data.id || data.passportId)) || 'guest',
-            name: (data && (data.name || data.nickname)) || 'Guest'
-        };
-    }
-    try {
-        const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
-        if (typeof onFn === 'function') {
-            onFn('PASSPORT_READY', handlePassportData);
-            onFn('PASSPORT_UPDATED', handlePassportData);
-        }
-    } catch (e) {
-        console.warn('[Atelier] Не удалось подключиться к eventBus для паспорта.', e);
-    }
-
-    clubBase.init(eventBus).then(() => renderPrintStrip()).catch(() => renderPrintStrip());
-    try {
-        const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
-        if (typeof onFn === 'function') onFn('CLUBBASE_UPDATED', renderPrintStrip);
-    } catch (e) { /* eventBus недоступен */ }
- 
+    // Инициализация при старте
     populateFabricOptions(state.type);
     renderNecklineFitFields();
     renderGarmentPhoto();
-    renderPrintOverlay();
     renderSpecPanel();
-</script>
+    renderPrintStrip();
+    updateOrderInfo();
 
+    // Запуск обработчиков для существующих или статических HTML блоков
+    initOptionGroup('row-neckline');
+    initOptionGroup('row-fit');
+</script>
 </body>
 </html>
