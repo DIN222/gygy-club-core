@@ -1222,6 +1222,44 @@ OCTYPE html>
     renderPrintOverlay();
     renderSpecPanel();
 </script>
+<style>
+    /* Принудительный цвет слоновой кости для информационных плашек Худи */
+    .fixed-note {
+        background-color: #FFFFF0 !important;
+        color: #1A1A1A !important;
+        border: 1px solid #E6E6D8 !important;
+        padding: 6px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+</style>
 
+<script>
+        // Завершение оформления заказа
+        document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>€${calculatePrice()}</b>`;
+        openModal('modal-confirm');
+    });
+
+    // Инициализация ателье
+    (async function initAtelier() {
+        populateFabricOptions(state.type);
+        renderNecklineFitFields();
+        renderGarmentPhoto();
+        renderSpecPanel();
+
+        try {
+            await clubBase.init();
+        } catch (e) {
+            console.warn('[Atelier] Ошибка при инициализации базы клуба.', e);
+        }
+
+        renderPrintStrip();
+        updateOrderInfo();
+    })();
+</script>
+</body>
+</html>
 </body>
 </html>
