@@ -717,16 +717,20 @@
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
-   function renderGarmentPhoto() {
-        const src = GARMENT_PHOTOS[state.type][state.color][state.position];
-        const imgEl = document.getElementById('garment-photo');
-        imgEl.src = src;
-        document.getElementById('size-badge').textContent = state.size;
+ function renderGarmentPhoto() {
+    const key = `${state.type}-${state.color}-${state.position}`;
+    const src = GARMENT_PHOTOS[state.type][state.color][state.position];
+    const imgEl = document.getElementById('garment-photo');
+    const frame = document.getElementById('preview-frame');
 
-        const frame = document.getElementById('preview-frame');
-        frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
-        frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
-    }
+    imgEl.src = src;
+    // Добавляем точный ключ для CSS-коррекции
+    frame.setAttribute('data-garment', key); 
+    document.getElementById('size-badge').textContent = state.size;
+
+    frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
+    frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
+}
     function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
         const embroideryEligible = !!(state.currentPrint && (state.currentPrint.source === 'club' || state.currentPrint.source === 'embroidery-generic'));
