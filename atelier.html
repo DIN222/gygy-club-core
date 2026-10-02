@@ -1215,7 +1215,7 @@
         const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
         if (typeof onFn === 'function') onFn('CLUBBASE_UPDATED', renderPrintStrip);
     } catch (e) { /* eventBus недоступен */ }
-
+ 
     populateFabricOptions(state.type);
     renderNecklineFitFields();
     renderGarmentPhoto();
