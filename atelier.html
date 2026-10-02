@@ -1,31 +1,14 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.18.0 — 2026-09-30
-  База — реальная v4.16.0, присланная целиком (не моя память!).
-  Поверх неё — 7 правок из предыдущего списка:
-  (1) Шрифт вывески — Abril Fatface (после Rye и Cinzel+Playfair).
-  (2) Убрана сноска про вышивку; добавлена отдельная иконка
-      "ВЫШИВКА (без темы)" — делает технику доступной без привязки
-      к базе клуба, с временной картинкой-заглушкой.
-  (3) В промпт-билдере — кнопка "Скопировать" + ссылки ChatGPT/Ideogram.
-  (4) У худи фон плашек Ворот/Посадка — чистый чёрный. Добавлен чекбокс
-      "Застёжка молния" по аналогии со шнурками.
-  (5) "Длина рукава" убрана из панели размеров и из констант.
-  (6) Рамка принта — вращение (точка сверху) + фиксация размера в см
-      (поля W/H + OK). Контур принта — тонкий и малозаметный.
-  (7) Окно подтверждения заказа — поля получателя/адреса/способа оплаты.
-  НЕ ТРОНУТО намеренно (это правки не из моего списка, оставлены как есть):
-  сетка .config-body (grid-template-columns), scale(1.3) для белой
-  футболки сзади (см. вопрос выше), структура двухуровневой вывески
-  (.atelier-titles/.title-atelier), single-option select'ы для
-  горловины/посадки (не переведены на fixed-note).
+  v4.18.1 — 2026-09-30
+  Правки заливки кнопок Ворот/Посадка и текста "Оверсайз".
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.18.0</title>
+<title>GY-GY Club — Atelier v4.18.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -59,7 +42,7 @@
         padding: 60px 16px 40px;
     }
 
-   .atelier-title-badge {
+    .atelier-title-badge {
         display: flex; align-items: center; justify-content: center; gap: 14px;
         margin-bottom: 20px;
     }
@@ -69,7 +52,7 @@
         filter: drop-shadow(0 0 8px rgba(255,215,0,0.75)) drop-shadow(0 0 3px rgba(255,215,0,0.9));
     }
 
-   .atelier-titles {
+    .atelier-titles {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -94,11 +77,24 @@
         text-shadow: 0 0 10px rgba(255,215,0,0.4);
     }
 
-    .field-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        .field-row select, .field-row input[type="number"] {
+    .field-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
+    .field-row select, .field-row input[type="number"] {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
         background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
     }
+
+    /* Стиль кнопок выбора (Ворот, Посадка и др.) — единый стиль */
+    .btn-group { display: flex; gap: 8px; flex: 1; width: 100%; }
+    .btn-option {
+        flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
+        background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
+        cursor: pointer; text-align: center; transition: background-color 0.2s, color 0.2s;
+    }
+    .btn-option:hover { background: var(--gold); color: #000; }
+    .btn-option.active {
+        background: var(--gold); color: #000; font-weight: bold;
+    }
+
     .fixed-note {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
         background: #000; color: var(--ivory); font-size: 10px; font-weight: 700;
@@ -153,7 +149,6 @@
     .checkbox-row input { width: 16px; height: 16px; flex-shrink: 0; }
     .checkbox-row label { line-height: 1.3; }
 
-    .field-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
     .position-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
 
     .preview-frame-outer { width: 100%; padding: 4px; border: 1px solid var(--gold); }
@@ -163,7 +158,7 @@
         position: relative; display: flex; align-items: center; justify-content: center;
         overflow: hidden;
     }
-  .preview-frame.backdrop-for-dark-garment {
+    .preview-frame.backdrop-for-dark-garment {
         background: radial-gradient(ellipse at center, #9a9a9a 0%, #6b6b6b 100%);
     }
     .preview-frame.backdrop-for-light-garment {
@@ -183,7 +178,6 @@
         color: #000; font-size: 11px; font-weight: 900; padding: 3px 7px; border-radius: 3px; z-index: 5;
     }
 
-   /* Подгонка силуэтов белых футболок под черный стандарт */
     .preview-frame[data-garment="tshirt-white-back"] .garment-photo {
         transform: scale(1.18) translateY(-3%);
     }
@@ -219,7 +213,7 @@
     }
 
     .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
-        .spec-diagram-row { display: flex; align-items: center; gap: 12px; }
+    .spec-diagram-row { display: flex; align-items: center; gap: 12px; }
     .spec-diagram-img { width: 70px; height: auto; flex-shrink: 0; border-radius: 4px; background: #fff; }
     .spec-rows { flex: 1; }
     .spec-ab-line { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
@@ -242,7 +236,7 @@
 
     .print-strip-row { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
     .print-strip { display: flex; gap: 5px; flex: 1; }
-       .print-icon-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .print-icon-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .embroidery-icon-row { display: flex; margin-top: 4px; }
     .embroidery-icon-row .print-icon-wrap { flex: 0 0 64px; }
     .embroidery-icon-row .print-icon { width: 64px; height: 64px; aspect-ratio: unset; }
@@ -313,12 +307,13 @@
 <div class="page-wrap">
 
     <div class="atelier-title-badge">
-    <img src="horse_coat.png" alt="">
-    <div class="atelier-titles">
-        <span class="title-atelier">ATELIER</span>
-        <span class="title-text">"HORSE   IN   A   COAT"</span>
+        <img src="horse_coat.png" alt="">
+        <div class="atelier-titles">
+            <span class="title-atelier">ATELIER</span>
+            <span class="title-text">"HORSE   IN   A   COAT"</span>
+        </div>
     </div>
-</div>
+    
     <div class="config-body">
         <div class="buttons-col">
             <div class="field-row">
@@ -338,15 +333,19 @@
                 </select>
             </div>
 
+            <!-- Блок Горловина -->
             <div class="field-row" id="row-neckline">
-                <select id="select-neckline">
-                    <option value="round">ГОРЛОВИНА: КРУГЛАЯ</option>
-                </select>
+                <div class="btn-group collar-options">
+                    <button type="button" class="btn-option active" data-neck="round">ГОРЛОВИНА: КРУГЛАЯ</button>
+                </div>
             </div>
+
+            <!-- Блок Посадка -->
             <div class="field-row" id="row-fit">
-                <select id="select-fit">
-                    <option value="unisex">ПОСАДКА: УНИСЕКС</option>
-                </select>
+                <div class="btn-group fit-options">
+                    <button type="button" class="btn-option active" data-fit="unisex">ПОСАДКА: УНИСЕКС</button>
+                    <button type="button" class="btn-option" data-fit="oversize">Оверсайз</button>
+                </div>
             </div>
 
             <div class="field-row">
@@ -378,7 +377,7 @@
                 <button class="print-arrow" id="print-next">›</button>
             </div>
 
-                        <div class="embroidery-icon-row">
+            <div class="embroidery-icon-row">
                 <div class="print-icon-wrap" id="embroidery-icon-wrap">
                     <div class="print-icon" id="embroidery-icon">
                         <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23F0EAD6'/><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%238a6f24' stroke-width='3'/><circle cx='12' cy='32' r='3' fill='%238a6f24'/><circle cx='52' cy='32' r='3' fill='%238a6f24'/></svg>" alt="Вышивка">
@@ -502,6 +501,9 @@
         <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
     </div>
 </div>
+
+</body>
+</html>
 
 <script type="module">
     import { init as initLocalization } from './core/localization.js';
