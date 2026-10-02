@@ -1236,13 +1236,30 @@ OCTYPE html>
     }
 </style>
 
+<style>
+    /* Точная подгонка под общий стиль и шрифт atelier.html */
+    .fixed-note {
+        font-family: inherit !important;        /* Наследуем родной шрифт страницы */
+        background-color: #FDFBF7 !important;   /* Мягкая слоновая кость / Ivory */
+        color: inherit !important;              /* Наследуем родной цвет текста */
+        border: 1px solid rgba(0, 0, 0, 0.18) !important; /* Легкая органичная рамка */
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        letter-spacing: 0.03em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
 <script>
-        // Завершение оформления заказа
+        // Подтверждение заказа и вызов модального окна
         document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>€${calculatePrice()}</b>`;
         openModal('modal-confirm');
     });
 
-    // Инициализация ателье
+    // Инициализация ателье при загрузке
     (async function initAtelier() {
         populateFabricOptions(state.type);
         renderNecklineFitFields();
@@ -1259,7 +1276,5 @@ OCTYPE html>
         updateOrderInfo();
     })();
 </script>
-</body>
-</html>
 </body>
 </html>
