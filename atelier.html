@@ -1,14 +1,31 @@
-<!DOCTYPE html>
+OCTYPE html>
 <!--
   atelier.html
-  v4.18.1 — 2026-09-30
-  Правки заливки кнопок Ворот/Посадка и текста "Оверсайз".
+  v4.18.0 — 2026-09-30
+  База — реальная v4.16.0, присланная целиком (не моя память!).
+  Поверх неё — 7 правок из предыдущего списка:
+  (1) Шрифт вывески — Abril Fatface (после Rye и Cinzel+Playfair).
+  (2) Убрана сноска про вышивку; добавлена отдельная иконка
+      "ВЫШИВКА (без темы)" — делает технику доступной без привязки
+      к базе клуба, с временной картинкой-заглушкой.
+  (3) В промпт-билдере — кнопка "Скопировать" + ссылки ChatGPT/Ideogram.
+  (4) У худи фон плашек Ворот/Посадка — чистый чёрный. Добавлен чекбокс
+      "Застёжка молния" по аналогии со шнурками.
+  (5) "Длина рукава" убрана из панели размеров и из констант.
+  (6) Рамка принта — вращение (точка сверху) + фиксация размера в см
+      (поля W/H + OK). Контур принта — тонкий и малозаметный.
+  (7) Окно подтверждения заказа — поля получателя/адреса/способа оплаты.
+  НЕ ТРОНУТО намеренно (это правки не из моего списка, оставлены как есть):
+  сетка .config-body (grid-template-columns), scale(1.3) для белой
+  футболки сзади (см. вопрос выше), структура двухуровневой вывески
+  (.atelier-titles/.title-atelier), single-option select'ы для
+  горловины/посадки (не переведены на fixed-note).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.18.1</title>
+<title>GY-GY Club — Atelier v4.18.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -42,7 +59,7 @@
         padding: 60px 16px 40px;
     }
 
-    .atelier-title-badge {
+   .atelier-title-badge {
         display: flex; align-items: center; justify-content: center; gap: 14px;
         margin-bottom: 20px;
     }
@@ -52,7 +69,7 @@
         filter: drop-shadow(0 0 8px rgba(255,215,0,0.75)) drop-shadow(0 0 3px rgba(255,215,0,0.9));
     }
 
-    .atelier-titles {
+   .atelier-titles {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -77,41 +94,11 @@
         text-shadow: 0 0 10px rgba(255,215,0,0.4);
     }
 
-    .field-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
-    .field-row select, .field-row input[type="number"] {
+    .field-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .field-row select, .field-row input[type="number"] {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
         background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
     }
-
-    /* Стиль кнопок выбора (Ворот, Посадка и др.) — единый стиль */
-    .btn-group { display: flex; gap: 8px; flex: 1; width: 100%; }
-    .btn-option {
-      
-    .btn-option:hover { background: var(--gold); color: #000; }
-   /* ✅ Жесткие стили ТОЛЬКО для блоков Ворот (#row-neckline) и Посадка (#row-fit) */
-#row-neckline .btn-option,
-#row-fit .btn-option {
-    background-color: #F0EAD6 !important; /* Слоновая кость */
-    color: #000000 !important;             /* Чёрные буквы */
-    border: 1px solid var(--gold) !important;
-    font-weight: 600;
-}
-
-/* При наведении мышкой */
-#row-neckline .btn-option:hover,
-#row-fit .btn-option:hover {
-    background-color: var(--gold) !important;
-    color: #000000 !important;
-}
-
-/* При нажатии (активное состояние) */
-#row-neckline .btn-option.active,
-#row-fit .btn-option.active {
-    background-color: var(--gold) !important; /* Ярко-золотой фон */
-    color: #000000 !important;             /* Чёрные буквы */
-    font-weight: 900;
-}
-
     .fixed-note {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
         background: #000; color: var(--ivory); font-size: 10px; font-weight: 700;
@@ -166,6 +153,7 @@
     .checkbox-row input { width: 16px; height: 16px; flex-shrink: 0; }
     .checkbox-row label { line-height: 1.3; }
 
+    .field-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
     .position-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
 
     .preview-frame-outer { width: 100%; padding: 4px; border: 1px solid var(--gold); }
@@ -175,7 +163,7 @@
         position: relative; display: flex; align-items: center; justify-content: center;
         overflow: hidden;
     }
-    .preview-frame.backdrop-for-dark-garment {
+  .preview-frame.backdrop-for-dark-garment {
         background: radial-gradient(ellipse at center, #9a9a9a 0%, #6b6b6b 100%);
     }
     .preview-frame.backdrop-for-light-garment {
@@ -195,6 +183,7 @@
         color: #000; font-size: 11px; font-weight: 900; padding: 3px 7px; border-radius: 3px; z-index: 5;
     }
 
+   /* Подгонка силуэтов белых футболок под черный стандарт */
     .preview-frame[data-garment="tshirt-white-back"] .garment-photo {
         transform: scale(1.18) translateY(-3%);
     }
@@ -230,7 +219,7 @@
     }
 
     .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
-    .spec-diagram-row { display: flex; align-items: center; gap: 12px; }
+        .spec-diagram-row { display: flex; align-items: center; gap: 12px; }
     .spec-diagram-img { width: 70px; height: auto; flex-shrink: 0; border-radius: 4px; background: #fff; }
     .spec-rows { flex: 1; }
     .spec-ab-line { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
@@ -253,7 +242,7 @@
 
     .print-strip-row { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
     .print-strip { display: flex; gap: 5px; flex: 1; }
-    .print-icon-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+       .print-icon-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .embroidery-icon-row { display: flex; margin-top: 4px; }
     .embroidery-icon-row .print-icon-wrap { flex: 0 0 64px; }
     .embroidery-icon-row .print-icon { width: 64px; height: 64px; aspect-ratio: unset; }
@@ -324,13 +313,12 @@
 <div class="page-wrap">
 
     <div class="atelier-title-badge">
-        <img src="horse_coat.png" alt="">
-        <div class="atelier-titles">
-            <span class="title-atelier">ATELIER</span>
-            <span class="title-text">"HORSE   IN   A   COAT"</span>
-        </div>
+    <img src="horse_coat.png" alt="">
+    <div class="atelier-titles">
+        <span class="title-atelier">ATELIER</span>
+        <span class="title-text">"HORSE   IN   A   COAT"</span>
     </div>
-    
+</div>
     <div class="config-body">
         <div class="buttons-col">
             <div class="field-row">
@@ -350,19 +338,15 @@
                 </select>
             </div>
 
-            <!-- Блок Горловина -->
             <div class="field-row" id="row-neckline">
-                <div class="btn-group collar-options">
-                    <button type="button" class="btn-option active" data-neck="round">ГОРЛОВИНА: КРУГЛАЯ</button>
-                </div>
+                <select id="select-neckline">
+                    <option value="round">ГОРЛОВИНА: КРУГЛАЯ</option>
+                </select>
             </div>
-
-            <!-- Блок Посадка -->
             <div class="field-row" id="row-fit">
-                <div class="btn-group fit-options">
-                    <button type="button" class="btn-option active" data-fit="unisex">ПОСАДКА: УНИСЕКС</button>
-                    <button type="button" class="btn-option" data-fit="oversize">Оверсайз</button>
-                </div>
+                <select id="select-fit">
+                    <option value="unisex">ПОСАДКА: УНИСЕКС</option>
+                </select>
             </div>
 
             <div class="field-row">
@@ -394,7 +378,7 @@
                 <button class="print-arrow" id="print-next">›</button>
             </div>
 
-            <div class="embroidery-icon-row">
+                        <div class="embroidery-icon-row">
                 <div class="print-icon-wrap" id="embroidery-icon-wrap">
                     <div class="print-icon" id="embroidery-icon">
                         <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23F0EAD6'/><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%238a6f24' stroke-width='3'/><circle cx='12' cy='32' r='3' fill='%238a6f24'/><circle cx='52' cy='32' r='3' fill='%238a6f24'/></svg>" alt="Вышивка">
@@ -519,16 +503,12 @@
     </div>
 </div>
 
-</body>
-</html>
-
 <script type="module">
     import { init as initLocalization } from './core/localization.js';
     import { init as initPassport } from './modules/passport.js';
     import { get, set } from './core/storage.js';
     import * as eventBus from './core/eventBus.js';
 
-    // Инициализация базовых сервисов
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
@@ -537,18 +517,17 @@
         init: async () => {},
         addPrint: async () => { throw new Error('Модуль базы клуба недоступен (core/clubBase.js не найден).'); }
     };
-
     try {
         clubBase = await import('./core/clubBase.js');
     } catch (e) {
         console.warn('[Atelier] core/clubBase.js не загружен — проверьте, что файл (и core/supabase-init.js) реально залиты в репозиторий.', e);
     }
 
-    const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO: Указать актуальный юзернейм
+    const TELEGRAM_HELP_URL = 'https://t.me/PLACEHOLDER_USERNAME'; // TODO
 
     const GARMENT_PHOTOS = {
         tshirt:     { white: { front: 'tshirt-white-front.png', back: 'tshirt-white-back.png' }, black: { front: 'tshirt-black-front.png', back: 'tshirt-black-back.png' } },
-        hoodie:     { white: { front: 'hoodie-white-front.png', back: 'hoodie-white-back.png' }, black: { front: 'hoodie-black-back.png', back: 'hoodie-black-back.png' } },
+        hoodie:     { white: { front: 'hoodie-white-front.png', back: 'hoodie-white-back.png' }, black: { front: 'hoodie-black-front.png', back: 'hoodie-black-back.png' } },
         longsleeve: { white: { front: 'longsleeve-white-front.png', back: 'longsleeve-white-back.png' }, black: { front: 'longsleeve-black-front.png', back: 'longsleeve-black-back.png' } }
     };
 
@@ -557,7 +536,6 @@
     const TECH_PRICE_MOD = { dtf: 0, embroidery: 7 };
     const NECKLINE_PRICE_MOD = { round: 0, v: 3 };
     const FIT_PRICE_MOD = { unisex: 0, slim: 2, oversize: 4 };
-
     const SCALE_DIMENSIONS_CM = {
         'a3':          { w: 30, h: 40 },
         'a4':          { w: 21, h: 30 },
@@ -570,7 +548,6 @@
         hoodie:     { S: 60, M: 60, L: 64, XL: 64, XXL: 68 },
         longsleeve: { S: 48, M: 50, L: 52, XL: 54, XXL: 56 }
     };
-
     const GARMENT_LENGTH_CM = {
         tshirt:     { S: 65, M: 67, L: 68, XL: 69, XXL: 72 },
         hoodie:     { S: 64, M: 64, L: 72, XL: 72, XXL: 76 },
@@ -581,22 +558,6 @@
     const OUTSTRETCH_FACTOR = 1.5;
     const DEFAULT_ANCHOR_Y_PCT = 42;
     const BG_REMOVE_THRESHOLD = 32;
-
-    // Встроенная функция для настройки переключателей
-    function initOptionGroup(containerId) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
-        const buttons = container.querySelectorAll('.btn-option');
-        buttons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                // 1. Снимаем класс active со всех кнопок в этой группе
-                buttons.forEach(b => b.classList.remove('active'));
-                // 2. Добавляем класс active той кнопке, на которую нажали
-                e.currentTarget.classList.add('active');
-            });
-        });
-    }
 
     function pxPerCmApprox(type, size) {
         const basePxPerCm = GARMENT_PHOTO_BBOX_W[type] / (GARMENT_CHEST_CM[type].M * OUTSTRETCH_FACTOR);
@@ -673,7 +634,7 @@
         return imageData;
     }
 
-    function renderSpecPanel() {
+     function renderSpecPanel() {
         const aVal = GARMENT_CHEST_CM[state.type][state.size];
         const bVal = GARMENT_LENGTH_CM[state.type][state.size];
         document.getElementById('spec-panel').innerHTML = `
@@ -684,13 +645,12 @@
                 </div>
             </div>`;
     }
-
     function renderNecklineFitFields() {
         const necklineRow = document.getElementById('row-neckline');
         const fitRow = document.getElementById('row-fit');
         if (state.type === 'hoodie') {
             necklineRow.innerHTML = `<div class="fixed-note">ВОРОТ: С КАПЮШОНОМ</div>`;
-            fitRow.innerHTML = `<div class="fixed-note">ПОСАДКА: OVERSIZE</div>`;
+            fitRow.innerHTML = `<div class="fixed-note">ПОСАДКА: ТОЛЬКО OVERSIZE</div>`;
             state.neckline = 'hood'; state.fit = 'oversize';
         } else {
             necklineRow.innerHTML = `
@@ -708,10 +668,6 @@
             document.getElementById('select-neckline').addEventListener('change', (e) => { state.neckline = e.target.value; updateOrderInfo(); });
             document.getElementById('select-fit').addEventListener('change', (e) => { state.fit = e.target.value; updateOrderInfo(); });
         }
-        
-        // Инициализируем переключатели после отрисовки
-        initOptionGroup('row-neckline');
-        initOptionGroup('row-fit');
     }
 
     const FABRIC_OPTIONS = {
@@ -761,27 +717,25 @@
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
-    function renderGarmentPhoto() {
-        const key = `${state.type}-${state.color}-${state.position}`;
-        const src = GARMENT_PHOTOS[state.type][state.color][state.position];
-        const imgEl = document.getElementById('garment-photo');
-        const frame = document.getElementById('preview-frame');
+ function renderGarmentPhoto() {
+    const key = `${state.type}-${state.color}-${state.position}`;
+    const src = GARMENT_PHOTOS[state.type][state.color][state.position];
+    const imgEl = document.getElementById('garment-photo');
+    const frame = document.getElementById('preview-frame');
 
-        imgEl.src = src;
-        frame.setAttribute('data-garment', key); 
-        document.getElementById('size-badge').textContent = state.size;
+    imgEl.src = src;
+    // Добавляем точный ключ для CSS-коррекции
+    frame.setAttribute('data-garment', key); 
+    document.getElementById('size-badge').textContent = state.size;
 
-        frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
-        frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
-    }
-
+    frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
+    frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
+}
     function updateTechniqueAvailability() {
         const sel = document.getElementById('select-technique');
         const embroideryEligible = !!(state.currentPrint && (state.currentPrint.source === 'club' || state.currentPrint.source === 'embroidery-generic'));
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
-        if (embroideryOpt) {
-            embroideryOpt.disabled = !embroideryEligible;
-        }
+        embroideryOpt.disabled = !embroideryEligible;
         if (!embroideryEligible && state.technique === 'embroidery') {
             state.technique = 'dtf';
             sel.value = 'dtf';
@@ -912,7 +866,6 @@
         const d = SCALE_DIMENSIONS_CM[id];
         return `${d.w}x${d.h}cm`;
     }
-
     function unitPrice() {
         let p = BASE_PRICE[state.type] || 0;
         if (state.currentPrint) {
@@ -926,9 +879,7 @@
         }
         return p;
     }
-
     function calculatePrice() { return unitPrice() * Math.max(1, state.quantity); }
-
     function actualPrintSizeLabel() {
         if (!state.currentPrint || !state.printBox) return '';
         const ratio = pxPerCmApprox(state.type, state.size);
@@ -936,7 +887,6 @@
         const hCm = (state.printBox.height / ratio).toFixed(0);
         return `~${wCm}x${hCm}cm, поворот ${state.printBox.rotation || 0}°`;
     }
-
     function updateOrderInfo() {
         const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
         const drawstringLine = (state.type === 'hoodie')
@@ -998,7 +948,7 @@
     document.getElementById('print-next').addEventListener('click', () => { depthPointer++; renderPrintStrip(); });
     document.getElementById('print-prev').addEventListener('click', () => { depthPointer = Math.max(0, depthPointer - 1); renderPrintStrip(); });
 
-    document.getElementById('embroidery-icon').addEventListener('click', () => {
+     document.getElementById('embroidery-icon').addEventListener('click', () => {
         state.currentPrint = {
             source: 'embroidery-generic',
             design: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%23FFD700' stroke-width='3'/></svg>"
@@ -1186,12 +1136,10 @@
 
     function openModal(id) {
         const m = document.getElementById(id);
-        if (!m) return;
         m.style.display = 'flex';
         requestAnimationFrame(() => m.style.opacity = '1');
     }
     function closeModal(m) {
-        if (!m) return;
         m.style.opacity = '0';
         setTimeout(() => m.style.display = 'none', 300);
     }
@@ -1201,25 +1149,79 @@
 
     document.getElementById('btn-confirm').addEventListener('click', () => {
         const summary = document.getElementById('order-info').innerHTML;
-        const total = calculatePrice();
-        const summaryEl = document.getElementById('confirm-order-summary');
-        if (summaryEl) {
-            summaryEl.innerHTML = `${summary}<br><strong>ИТОГО: €${total}</strong>`;
-        }
-        openModal('modal-confirm');
+        document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>€${calculatePrice()}</b>`;
+        openModal('modal-confirm-order');
     });
 
-    // Инициализация при старте
+    document.getElementById('btn-confirm-final').addEventListener('click', () => {
+        const recipientName = document.getElementById('confirm-recipient-name').value.trim();
+        const recipientAddress = document.getElementById('confirm-recipient-address').value.trim();
+        const paymentMethod = document.getElementById('confirm-payment-method').value;
+        const status = document.getElementById('order-status');
+        if (!recipientName || !recipientAddress) {
+            status.textContent = 'Заполните имя и адрес получателя.';
+            return;
+        }
+        const order = {
+            type: 'blank',
+            garment: state.type, size: state.size, color: state.color,
+            fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
+            drawstring: (state.type === 'hoodie') ? state.drawstring : null,
+            zipper: (state.type === 'hoodie') ? state.zipper : null,
+            neckline: state.neckline, fit: state.fit, quantity: state.quantity,
+            recipientName, recipientAddress, paymentMethod,
+            decoration: state.currentPrint ? {
+                source: state.currentPrint.source,
+                shared: !!state.currentPrint.shared,
+                category: state.currentPrint.category || null,
+                technique: state.technique,
+                position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
+                actualSizeOnPreview: actualPrintSizeLabel()
+            } : null,
+            unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now()
+        };
+        const reports = get('officeAtelierReports', []);
+        reports.push(order);
+        set('officeAtelierReports', reports.slice(-50));
+        closeModal(document.getElementById('modal-confirm-order'));
+        document.getElementById('order-status').textContent = 'Order sent to Office!';
+    });
+
+    document.getElementById('link-help').addEventListener('click', () => {
+        window.open(TELEGRAM_HELP_URL, '_blank');
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+
+    function handlePassportData(data) {
+        currentUser = {
+            id: (data && (data.id || data.passportId)) || 'guest',
+            name: (data && (data.name || data.nickname)) || 'Guest'
+        };
+    }
+    try {
+        const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
+        if (typeof onFn === 'function') {
+            onFn('PASSPORT_READY', handlePassportData);
+            onFn('PASSPORT_UPDATED', handlePassportData);
+        }
+    } catch (e) {
+        console.warn('[Atelier] Не удалось подключиться к eventBus для паспорта.', e);
+    }
+
+    clubBase.init(eventBus).then(() => renderPrintStrip()).catch(() => renderPrintStrip());
+    try {
+        const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
+        if (typeof onFn === 'function') onFn('CLUBBASE_UPDATED', renderPrintStrip);
+    } catch (e) { /* eventBus недоступен */ }
+
     populateFabricOptions(state.type);
     renderNecklineFitFields();
     renderGarmentPhoto();
+    renderPrintOverlay();
     renderSpecPanel();
-    renderPrintStrip();
-    updateOrderInfo();
-
-    // Запуск обработчиков для существующих или статических HTML блоков
-    initOptionGroup('row-neckline');
-    initOptionGroup('row-fit');
 </script>
+
 </body>
 </html>
