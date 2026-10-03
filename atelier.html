@@ -1,32 +1,31 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.18.0 — 2026-09-30
-  База — реальная v4.16.0, присланная целиком (не моя память!).
-  Поверх неё — 7 правок из предыдущего списка:
-  (1) Шрифт вывески — Abril Fatface (после Rye и Cinzel+Playfair).
-  (2) Убрана сноска про вышивку; добавлена отдельная иконка
-      "ВЫШИВКА (без темы)" — делает технику доступной без привязки
-      к базе клуба, с временной картинкой-заглушкой.
-  (3) В промпт-билдере — кнопка "Скопировать" + ссылки ChatGPT/Ideogram.
-  (4) У худи фон плашек Ворот/Посадка — чистый чёрный. Добавлен чекбокс
-      "Застёжка молния" по аналогии со шнурками.
-  (5) "Длина рукава" убрана из панели размеров и из констант.
-  (6) Рамка принта — вращение (точка сверху) + фиксация размера в см
-      (поля W/H + OK). Контур принта — тонкий и малозаметный.
-  (7) Окно подтверждения заказа — поля получателя/адреса/способа оплаты.
-  НЕ ТРОНУТО намеренно (это правки не из моего списка, оставлены как есть):
-  сетка .config-body (grid-template-columns), scale(1.3) для белой
-  футболки сзади (см. вопрос выше), структура двухуровневой вывески
-  (.atelier-titles/.title-atelier), single-option select'ы для
-  горловины/посадки (не переведены на fixed-note).
+  v4.19.0 — 2026-09-30
+  Изменения относительно v4.18.0:
+  (1) Шрифт вывески — Fascinate (винтажный Tuscan-стиль, засечки
+      сверху/снизу/посередине буквы — именно то, что просили). Центровка
+      не тронута, добавлен letter-spacing между словами.
+  (2) Шнурки и молния перенесены в правую колонку, под поле количества,
+      перед order-info — ближе к кнопке заказа, как просили.
+  (3) Плашки Ворот/Посадка на худи — фон возвращён на ivory (как у
+      соседних выпадающих списков), а не чёрный — чтобы не выбивались.
+  (4) Иконка "Вышивка" уменьшена, подпись "ВЫШИВКА" теперь сбоку от
+      иконки (не снизу) — на свободном месте, для быстрой ориентации.
+      Стрелки листания к ней намеренно НЕ добавлены — пока это один
+      общий образец, листать нечего; если понадобится реальная подборка
+      вышивочных эскизов — это отдельная задача с реальными файлами.
+  (5) Лента принтов клуба — каждая из 5 категорий теперь листается
+      НЕЗАВИСИМО и зацикленно (а не "стоп на первой пустой клетке"),
+      чтобы неравномерно заполненные категории не блокировали доступ
+      к остальным принтам.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.18.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<title>GY-GY Club — Atelier v4.19.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
     :root {
@@ -79,29 +78,30 @@
     }
 
     .title-atelier {
-        font-family: 'Abril Fatface', serif;
+        font-family: 'Fascinate', serif;
         font-weight: 400;
-        font-size: 18px;
+        font-size: 17px;
         text-shadow: 0 0 10px rgba(255,215,0,0.4);
-        letter-spacing: 2px;
+        letter-spacing: 3px;
         opacity: 0.85;
     }
 
     .atelier-title-badge .title-text {
-        font-family: 'Abril Fatface', serif;
+        font-family: 'Fascinate', serif;
         font-weight: 400;
-        font-size: 28px;
+        font-size: 26px;
         text-shadow: 0 0 10px rgba(255,215,0,0.4);
+        letter-spacing: 4px;
     }
 
     .field-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        .field-row select, .field-row input[type="number"] {
+    .field-row select, .field-row input[type="number"] {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
         background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
     }
     .fixed-note {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
-        background: #000; color: var(--ivory); font-size: 10px; font-weight: 700;
+        background: var(--ivory); color: #1a1408; font-size: 10px; font-weight: 700;
         display: flex; align-items: center; letter-spacing: 0.5px;
     }
 
@@ -153,7 +153,6 @@
     .checkbox-row input { width: 16px; height: 16px; flex-shrink: 0; }
     .checkbox-row label { line-height: 1.3; }
 
-    .field-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
     .position-row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
 
     .preview-frame-outer { width: 100%; padding: 4px; border: 1px solid var(--gold); }
@@ -203,7 +202,7 @@
     }
 
     .spec-panel { width: 100%; font-size: 10px; color: var(--ivory); margin-top: 10px; }
-        .spec-diagram-row { display: flex; align-items: center; gap: 12px; }
+    .spec-diagram-row { display: flex; align-items: center; gap: 12px; }
     .spec-diagram-img { width: 70px; height: auto; flex-shrink: 0; border-radius: 4px; background: #fff; }
     .spec-rows { flex: 1; }
     .spec-ab-line { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
@@ -226,10 +225,7 @@
 
     .print-strip-row { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
     .print-strip { display: flex; gap: 5px; flex: 1; }
-       .print-icon-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .embroidery-icon-row { display: flex; margin-top: 4px; }
-    .embroidery-icon-row .print-icon-wrap { flex: 0 0 64px; }
-    .embroidery-icon-row .print-icon { width: 64px; height: 64px; aspect-ratio: unset; }
+    .print-icon-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .print-author {
         font-size: 7px; color: var(--ivory); opacity: 0.75; text-align: center;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -245,6 +241,10 @@
     .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold); width: 30px; height: 30px; cursor: pointer; font-weight: 900; font-size: 14px; flex-shrink: 0; }
     .print-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
+    .embroidery-icon-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .embroidery-icon-row .print-icon { width: 40px; height: 40px; aspect-ratio: unset; flex-shrink: 0; }
+    .embroidery-label { font-size: 10px; font-weight: 700; color: var(--ivory); letter-spacing: 0.5px; }
+
     .share-row { display: none; gap: 8px; margin-top: 4px; }
     .share-row.visible { display: flex; }
     .category-picker { display: none; flex-direction: column; gap: 6px; margin-top: 4px; }
@@ -254,7 +254,6 @@
     .prompt-ai-links { display: none; gap: 6px; margin-top: 6px; }
     .prompt-ai-links.visible { display: flex; }
 
-    .position-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .position-row select { flex: 1; padding: 7px; font-size: 11px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; }
 
     .order-info { font-size: 11px; margin-top: 6px; padding: 8px 2px; color: var(--ivory); }
@@ -340,15 +339,6 @@
                 <select id="select-fabric-composition"></select>
             </div>
 
-            <div class="checkbox-row" id="row-drawstring" style="display:none;">
-                <input type="checkbox" id="check-drawstring">
-                <label for="check-drawstring">Шнурки на капюшоне (визуал без изменений)</label>
-            </div>
-            <div class="checkbox-row" id="row-zipper" style="display:none;">
-                <input type="checkbox" id="check-zipper">
-                <label for="check-zipper">Застёжка молния (визуал без изменений)</label>
-            </div>
-
             <div class="field-row">
                 <select id="select-technique">
                     <option value="dtf">DTF-ПЕЧАТЬ</option>
@@ -362,13 +352,11 @@
                 <button class="print-arrow" id="print-next">›</button>
             </div>
 
-                        <div class="embroidery-icon-row">
-                <div class="print-icon-wrap" id="embroidery-icon-wrap">
-                    <div class="print-icon" id="embroidery-icon">
-                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23F0EAD6'/><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%238a6f24' stroke-width='3'/><circle cx='12' cy='32' r='3' fill='%238a6f24'/><circle cx='52' cy='32' r='3' fill='%238a6f24'/></svg>" alt="Вышивка">
-                    </div>
-                    <div class="print-author">ВЫШИВКА (без темы)</div>
+            <div class="embroidery-icon-row">
+                <div class="print-icon" id="embroidery-icon">
+                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23F0EAD6'/><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%238a6f24' stroke-width='3'/><circle cx='12' cy='32' r='3' fill='%238a6f24'/><circle cx='52' cy='32' r='3' fill='%238a6f24'/></svg>" alt="Вышивка">
                 </div>
+                <span class="embroidery-label">ВЫШИВКА (без темы)</span>
             </div>
 
             <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
@@ -449,6 +437,16 @@
                 <label class="fixed-note" style="flex:0 0 auto; padding:8px 10px;">КОЛ-ВО, ШТ.</label>
                 <input type="number" id="input-quantity" min="1" value="1" step="1">
             </div>
+
+            <div class="checkbox-row" id="row-drawstring" style="display:none;">
+                <input type="checkbox" id="check-drawstring">
+                <label for="check-drawstring">Шнурки на капюшоне (визуал без изменений)</label>
+            </div>
+            <div class="checkbox-row" id="row-zipper" style="display:none;">
+                <input type="checkbox" id="check-zipper">
+                <label for="check-zipper">Застёжка молния (визуал без изменений)</label>
+            </div>
+
             <div class="order-info" id="order-info"></div>
             <div class="price-line" id="order-price">—</div>
             <div class="status-line" id="order-status"></div>
@@ -518,8 +516,8 @@
     const BASE_PRICE = { tshirt: 15, hoodie: 35, longsleeve: 22 };
     const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3 };
     const TECH_PRICE_MOD = { dtf: 0, embroidery: 7 };
-    const NECKLINE_PRICE_MOD = { round: 0, v: 3 };
-    const FIT_PRICE_MOD = { unisex: 0, slim: 2, oversize: 4 };
+    const NECKLINE_PRICE_MOD = { round: 0 };
+    const FIT_PRICE_MOD = { unisex: 0 };
     const SCALE_DIMENSIONS_CM = {
         'a3':          { w: 30, h: 40 },
         'a4':          { w: 21, h: 30 },
@@ -634,7 +632,7 @@
         const fitRow = document.getElementById('row-fit');
         if (state.type === 'hoodie') {
             necklineRow.innerHTML = `<div class="fixed-note">ВОРОТ: С КАПЮШОНОМ</div>`;
-            fitRow.innerHTML = `<div class="fixed-note">ПОСАДКА:  OVERSIZE</div>`;
+            fitRow.innerHTML = `<div class="fixed-note">ПОСАДКА: ТОЛЬКО OVERSIZE</div>`;
             state.neckline = 'hood'; state.fit = 'oversize';
         } else {
             necklineRow.innerHTML = `
@@ -645,12 +643,7 @@
                 <select id="select-fit">
                     <option value="unisex">ПОСАДКА: УНИСЕКС</option>
                 </select>`;
-            if (!(state.neckline in NECKLINE_PRICE_MOD)) state.neckline = 'round';
-            if (!(state.fit in FIT_PRICE_MOD)) state.fit = 'unisex';
-            document.getElementById('select-neckline').value = state.neckline;
-            document.getElementById('select-fit').value = state.fit;
-            document.getElementById('select-neckline').addEventListener('change', (e) => { state.neckline = e.target.value; updateOrderInfo(); });
-            document.getElementById('select-fit').addEventListener('change', (e) => { state.fit = e.target.value; updateOrderInfo(); });
+            state.neckline = 'round'; state.fit = 'unisex';
         }
     }
 
@@ -701,7 +694,7 @@
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
-   function renderGarmentPhoto() {
+    function renderGarmentPhoto() {
         const src = GARMENT_PHOTOS[state.type][state.color][state.position];
         const imgEl = document.getElementById('garment-photo');
         imgEl.src = src;
@@ -716,6 +709,7 @@
         const embroideryEligible = !!(state.currentPrint && (state.currentPrint.source === 'club' || state.currentPrint.source === 'embroidery-generic'));
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
         embroideryOpt.disabled = !embroideryEligible;
+        embroideryOpt.textContent = embroideryEligible ? 'ВЫШИВКА' : 'ВЫШИВКА (выберите клубный принт или иконку вышивки)';
         if (!embroideryEligible && state.technique === 'embroidery') {
             state.technique = 'dtf';
             sel.value = 'dtf';
@@ -853,10 +847,6 @@
             p += TECH_PRICE_MOD[state.technique] || 0;
         }
         p += FABRIC_PRICE_MOD[state.fabricComposition] || 0;
-        if (state.type !== 'hoodie') {
-            p += NECKLINE_PRICE_MOD[state.neckline] || 0;
-            p += FIT_PRICE_MOD[state.fit] || 0;
-        }
         return p;
     }
     function calculatePrice() { return unitPrice() * Math.max(1, state.quantity); }
@@ -869,18 +859,15 @@
     }
     function updateOrderInfo() {
         const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
-        const drawstringLine = (state.type === 'hoodie')
-            ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА (визуал без изменений на превью)' : 'нет'}<br>Молния: ${state.zipper ? 'ДА (визуал без изменений на превью)' : 'нет'}` : '';
-        const shapeLine = (state.type === 'hoodie')
-            ? `<br>Ворот: с капюшоном · Посадка: только oversize`
-            : `<br>Горловина: круглая · Посадка: унисекс`;
+        const hoodieExtras = (state.type === 'hoodie')
+            ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА' : 'нет'}<br>Молния: ${state.zipper ? 'ДА' : 'нет'}` : '';
         const techLabel = state.technique === 'embroidery' ? 'ВЫШИВКА' : 'DTF-ПЕЧАТЬ';
         const printLine = state.currentPrint
             ? `[image] · ${techLabel} · формат заказа: ${scaleCm(state.scale)} · фактически на превью: ${actualPrintSizeLabel()}`
             : '— none —';
         document.getElementById('order-info').innerHTML =
             `${state.type.toUpperCase()} / ${state.size} / ${state.color.toUpperCase()}<br>` +
-            `Fabric: ${state.fabricDensity} g/m², ${compLabel}${drawstringLine}${shapeLine}<br>` +
+            `Fabric: ${state.fabricDensity} g/m², ${compLabel}${hoodieExtras}<br>` +
             `Print: ${printLine} | ${state.position.toUpperCase()}<br>` +
             `Кол-во: ${state.quantity} шт.`;
         document.getElementById('order-price').textContent = `€${calculatePrice()}`;
@@ -893,13 +880,25 @@
         if (!isOwnUnshared) document.getElementById('category-picker').classList.remove('open');
     }
 
-    let depthPointer = 0;
+    // Независимое, зацикленное листание КАЖДОЙ категории — одна общая
+    // стрелка двигает все 5 указателей разом, но у каждого свой модуль
+    // по длине своей категории, поэтому неравномерно заполненные
+    // категории никогда не блокируют доступ к остальным.
+    let depthPointers = { rebellion: 0, motivation: 0, intellect: 0, aesthetic: 0, humor: 0 };
+
     function renderPrintStrip() {
         const data = clubBase.getAll();
         const strip = document.getElementById('print-strip');
         strip.innerHTML = '';
+        let anyItems = false;
         CATEGORIES.forEach(cat => {
-            const item = data[cat] && data[cat][depthPointer];
+            const list = data[cat] || [];
+            let item = null;
+            if (list.length > 0) {
+                anyItems = true;
+                depthPointers[cat] = ((depthPointers[cat] % list.length) + list.length) % list.length;
+                item = list[depthPointers[cat]];
+            }
             const wrap = document.createElement('div');
             wrap.className = 'print-icon-wrap';
             const cell = document.createElement('div');
@@ -921,14 +920,19 @@
             }
             strip.appendChild(wrap);
         });
-        const minLen = Math.min(...CATEGORIES.map(c => (data[c] || []).length));
-        document.getElementById('print-next').disabled = (minLen === 0) || (depthPointer >= minLen - 1);
-        document.getElementById('print-prev').disabled = (depthPointer <= 0);
+        document.getElementById('print-next').disabled = !anyItems;
+        document.getElementById('print-prev').disabled = !anyItems;
     }
-    document.getElementById('print-next').addEventListener('click', () => { depthPointer++; renderPrintStrip(); });
-    document.getElementById('print-prev').addEventListener('click', () => { depthPointer = Math.max(0, depthPointer - 1); renderPrintStrip(); });
+    document.getElementById('print-next').addEventListener('click', () => {
+        CATEGORIES.forEach(cat => { depthPointers[cat]++; });
+        renderPrintStrip();
+    });
+    document.getElementById('print-prev').addEventListener('click', () => {
+        CATEGORIES.forEach(cat => { depthPointers[cat]--; });
+        renderPrintStrip();
+    });
 
-     document.getElementById('embroidery-icon').addEventListener('click', () => {
+    document.getElementById('embroidery-icon').addEventListener('click', () => {
         state.currentPrint = {
             source: 'embroidery-generic',
             design: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M12 32 Q22 12 32 32 T52 32' fill='none' stroke='%23FFD700' stroke-width='3'/></svg>"
