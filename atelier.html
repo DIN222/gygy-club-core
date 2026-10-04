@@ -95,9 +95,10 @@
     }
 
     .field-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .field-row select, .field-row input[type="number"] {
-        flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
+        .field-row select, .field-row input[type="number"] {
+        flex: 1; min-width: 0; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
         background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .fixed-note {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
@@ -709,7 +710,7 @@
         const embroideryEligible = !!(state.currentPrint && (state.currentPrint.source === 'club' || state.currentPrint.source === 'embroidery-generic'));
         const embroideryOpt = sel.querySelector('option[value="embroidery"]');
         embroideryOpt.disabled = !embroideryEligible;
-        embroideryOpt.textContent = embroideryEligible ? 'ВЫШИВКА' : 'ВЫШИВКА (выберите клубный принт или иконку вышивки)';
+                embroideryOpt.textContent = embroideryEligible ? 'ВЫШИВКА' : 'ВЫШИВКА (недоступно)';
         if (!embroideryEligible && state.technique === 'embroidery') {
             state.technique = 'dtf';
             sel.value = 'dtf';
