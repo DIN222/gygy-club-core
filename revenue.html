@@ -51,30 +51,30 @@
         { key: 'souvenirs', label: 'Сувениры' }
     ];
 
-    async function render() {
-        const { data: income } = await supabase.from('income_entries').select('business_line, total_amount');
-        const { data: expense } = await supabase.from('expense_entries').select('business_line, total_price, delivery_cost');
+     async function render() {
+        const { data: income } = await supabase.from('income_entries').select('business_line, total_amount, cogs_amount');
 
         const panel = document.getElementById('panel');
-        let grandIncome = 0, grandExpense = 0;
+        let grandIncome = 0, grandCogs = 0;
         panel.innerHTML = LINES.map(line => {
-            const inc = (income || []).filter(r => r.business_line === line.key).reduce((s, r) => s + Number(r.total_amount || 0), 0);
-            const exp = (expense || []).filter(r => r.business_line === line.key).reduce((s, r) => s + Number(r.total_price || 0) + Number(r.delivery_cost || 0), 0);
-            grandIncome += inc; grandExpense += exp;
-            const profit = inc - exp;
+            const rows = (income || []).filter(r => r.business_line === line.key);
+            const inc = rows.reduce((s, r) => s + Number(r.total_amount || 0), 0);
+            const cogs = rows.reduce((s, r) => s + Number(r.cogs_amount || 0), 0);
+            grandIncome += inc; grandCogs += cogs;
+            const profit = inc - cogs;
             return `
                 <div class="line-card">
                     <h3>${line.label}</h3>
-                    <div class="row"><span>Приход</span><span>€${inc.toFixed(2)}</span></div>
-                    <div class="row"><span>Расход</span><span>€${exp.toFixed(2)}</span></div>
+                    <div class="row"><span>Приход (продажи)</span><span>€${inc.toFixed(2)}</span></div>
+                    <div class="row"><span>Себестоимость проданного</span><span>€${cogs.toFixed(2)}</span></div>
                     <div class="row profit ${profit < 0 ? 'negative' : ''}"><span>Доход</span><span>€${profit.toFixed(2)}</span></div>
                 </div>`;
         }).join('') + `
             <div class="line-card" style="border-color: var(--gold);">
                 <h3>ВСЕГО ПО КЛУБУ</h3>
-                <div class="row"><span>Приход</span><span>€${grandIncome.toFixed(2)}</span></div>
-                <div class="row"><span>Расход</span><span>€${grandExpense.toFixed(2)}</span></div>
-                <div class="row profit ${(grandIncome-grandExpense) < 0 ? 'negative' : ''}"><span>Доход</span><span>€${(grandIncome-grandExpense).toFixed(2)}</span></div>
+                <div class="row"><span>Приход (продажи)</span><span>€${grandIncome.toFixed(2)}</span></div>
+                <div class="row"><span>Себестоимость проданного</span><span>€${grandCogs.toFixed(2)}</span></div>
+                <div class="row profit ${(grandIncome-grandCogs) < 0 ? 'negative' : ''}"><span>Доход</span><span>€${(grandIncome-grandCogs).toFixed(2)}</span></div>
             </div>`;
     }
 
