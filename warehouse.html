@@ -1,1 +1,172 @@
+<!DOCTYPE html>
+<!--
+  warehouse.html
+  v1.0.0 — 2026-10-01
+  Склад: текущие остатки (сырьё + готовая продукция), ручной приход
+  закупленного сырья (временно — пока нет автосвязи с Расходом),
+  возврат готовой продукции обратно на склад.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Склад v1.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); overflow-y: auto; font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .back-arrow:hover { opacity: 0.6; }
+    .page-wrap { position: relative; min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 20px; margin-bottom: 16px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 640px; }
+    .section-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px; }
+    .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+    .form-grid input, .form-grid select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 10px; }
+    .btn-cfg { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 8px 12px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-family: inherit; font-size: 11px; }
+    .btn-cfg:hover { border-color: var(--gold); }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+    th { text-align: left; color: var(--gold-dim); padding: 6px 4px; border-bottom: 1px solid var(--gold-dim); font-size: 10px; text-transform: uppercase; }
+    td { padding: 6px 4px; border-bottom: 1px solid #1a1a1a; color: var(--ivory); }
+    td.amount { color: var(--gold); text-align: right; white-space: nowrap; }
+    .low-stock { color: #e74c3c; }
+</style>
+</head>
+<body>
 
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-accounting">&lt;&lt;</a>
+</div>
+
+<div class="page-wrap">
+    <div class="title">СКЛАД</div>
+
+    <div class="panel">
+        <div class="section-label">Приход сырья (вручную, пока не связано с Расходом автоматически)</div>
+        <div class="form-grid">
+            <input type="text" id="recv-name" placeholder="Название (напр. Ткань хлопок)">
+            <input type="number" id="recv-qty" placeholder="Кол-во" min="0" step="0.01">
+            <input type="text" id="recv-unit" placeholder="Ед. (м, шт, кг)" value="шт">
+            <input type="number" id="recv-cost" placeholder="Цена за ед., €" min="0" step="0.01">
+        </div>
+        <button class="btn-cfg" id="btn-receive">ПРИНЯТЬ НА СКЛАД</button>
+
+        <div class="section-label">Возврат готовой продукции</div>
+        <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+            <input type="text" id="return-name" placeholder="Название изделия">
+            <input type="number" id="return-qty" placeholder="Кол-во" min="0" step="1">
+            <button class="btn-cfg" id="btn-return">ВЕРНУТЬ НА СКЛАД</button>
+        </div>
+
+        <div class="section-label">Текущие остатки — Сырьё</div>
+        <table>
+            <thead><tr><th>Название</th><th>Кол-во</th><th>Ед.</th><th>Ср. цена</th></tr></thead>
+            <tbody id="raw-rows"></tbody>
+        </table>
+
+        <div class="section-label">Текущие остатки — Готовая продукция</div>
+        <table>
+            <thead><tr><th>Название</th><th>Кол-во</th><th>Ед.</th><th>Себест. ед.</th></tr></thead>
+            <tbody id="finished-rows"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { supabase } from './core/supabase-init.js';
+
+    async function upsertStock(item_name, item_type, business_line, deltaQty, newUnitCost, unit) {
+        const { data: existing } = await supabase
+            .from('warehouse_stock').select('*')
+            .eq('item_name', item_name).eq('item_type', item_type).eq('business_line', business_line)
+            .maybeSingle();
+
+        if (!existing) {
+            await supabase.from('warehouse_stock').insert({
+                item_name, item_type, business_line,
+                quantity: deltaQty, unit: unit || 'шт',
+                avg_unit_cost: newUnitCost || 0
+            });
+            return;
+        }
+        const oldQty = Number(existing.quantity);
+        const oldCost = Number(existing.avg_unit_cost);
+        const newQty = oldQty + deltaQty;
+        let newAvgCost = oldCost;
+        if (newUnitCost !== undefined && newQty > 0) {
+            newAvgCost = ((oldQty * oldCost) + (deltaQty * newUnitCost)) / newQty;
+        }
+        await supabase.from('warehouse_stock').update({
+            quantity: newQty, avg_unit_cost: newAvgCost, updated_at: new Date().toISOString()
+        }).eq('id', existing.id);
+    }
+
+    document.getElementById('btn-receive').addEventListener('click', async () => {
+        const item_name = document.getElementById('recv-name').value.trim();
+        const quantity = parseFloat(document.getElementById('recv-qty').value) || 0;
+        const unit = document.getElementById('recv-unit').value.trim() || 'шт';
+        const unitCost = parseFloat(document.getElementById('recv-cost').value) || 0;
+        if (!item_name || quantity <= 0) return;
+
+        await upsertStock(item_name, 'raw_material', 'atelier', quantity, unitCost, unit);
+        await supabase.from('warehouse_movements').insert({
+            item_name, item_type: 'raw_material', business_line: 'atelier',
+            movement_type: 'receipt_purchase', quantity, unit
+        });
+        document.getElementById('recv-name').value = '';
+        document.getElementById('recv-qty').value = '';
+        document.getElementById('recv-cost').value = '';
+        loadStock();
+    });
+
+    document.getElementById('btn-return').addEventListener('click', async () => {
+        const item_name = document.getElementById('return-name').value.trim();
+        const quantity = parseFloat(document.getElementById('return-qty').value) || 0;
+        if (!item_name || quantity <= 0) return;
+
+        await upsertStock(item_name, 'finished_good', 'atelier', quantity, undefined, 'шт');
+        await supabase.from('warehouse_movements').insert({
+            item_name, item_type: 'finished_good', business_line: 'atelier',
+            movement_type: 'return', quantity, unit: 'шт'
+        });
+        document.getElementById('return-name').value = '';
+        document.getElementById('return-qty').value = '';
+        loadStock();
+    });
+
+    async function loadStock() {
+        const { data, error } = await supabase.from('warehouse_stock').select('*').order('item_name');
+        if (error) { console.error(error); return; }
+        const raw = (data || []).filter(r => r.item_type === 'raw_material');
+        const finished = (data || []).filter(r => r.item_type === 'finished_good');
+
+        document.getElementById('raw-rows').innerHTML = raw.map(r => `
+            <tr>
+                <td>${r.item_name}</td>
+                <td class="${Number(r.quantity) <= 0 ? 'low-stock' : ''}">${Number(r.quantity).toFixed(2)}</td>
+                <td>${r.unit}</td>
+                <td class="amount">€${Number(r.avg_unit_cost).toFixed(2)}</td>
+            </tr>`).join('') || '<tr><td colspan="4" style="color:#666;">Пусто</td></tr>';
+
+        document.getElementById('finished-rows').innerHTML = finished.map(r => `
+            <tr>
+                <td>${r.item_name}</td>
+                <td class="${Number(r.quantity) <= 0 ? 'low-stock' : ''}">${Number(r.quantity).toFixed(0)}</td>
+                <td>${r.unit}</td>
+                <td class="amount">€${Number(r.avg_unit_cost).toFixed(2)}</td>
+            </tr>`).join('') || '<tr><td colspan="4" style="color:#666;">Пусто</td></tr>';
+    }
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+
+    loadStock();
+</script>
+
+</body>
+</html>
