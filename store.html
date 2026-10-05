@@ -1,786 +1,456 @@
 <!DOCTYPE html>
-<html lang="ru">
+<!--
+  store.html
+  v2.0.0 — 2026-10-02
+  Полная пересборка под общие правила проекта (изначально файл собирал
+  другой ИИ отдельно от основного стека):
+  (1) ES-модули вместо инлайн onclick; modules/passport.js вместо
+      самодельного пользователя; core/supabase-init.js вместо localStorage.
+  (2) Валюта — €, не вымышленные "GY-GY монеты" (иначе продажи Лавки не
+      попадут в общую Бухгалтерию/Приход).
+  (3) Фиктивный "ИИ-анализ подлинности" (случайный процент) убран —
+      заменён честным полем "оценка сотрудника клуба", без вида
+      алгоритмической проверки, которой на самом деле нет.
+  (4) Хранение — Supabase (таблица store_items, бакет store-items),
+      видно всем посетителям клуба, не только в браузере того, кто
+      добавлял лоты.
+  (5) Шапка/стрелки/паспорт — тот же структурный паттерн, что в
+      hall.html/atelier.html (position: absolute, обязательный CSS
+      для .gy-user-badge — без него плавающий аватар разносит вёрстку,
+      этот баг уже несколько раз чинили на других страницах).
+  Деревянная/антикварная тема панелей (дерево, бордовый акцент) сохранена
+  как уместная тематическая вариация — структурные правила (модули,
+  паспорт, Supabase, хедер) не нарушены.
+-->
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GY-GY Club | Antique Store & Expert Lab</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <style>
-        :root { 
-            --gold: #FFD700; 
-            --gold-light: #ffea75;
-            --panel-bg: rgba(25, 16, 8, 0.78); /* Полупрозрачный темный фон под рамками */
-            --border-wood: #5a3e1b;
-            --dark-wood: #2b1d0c;
-            --deep-bg: #140d06;
-            --accent-red: #782814;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>GY-GY Club — Antique Store v2.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6;
+        --border-wood: #5a3e1b; --dark-wood: #2b1d0c; --deep-bg: #140d06; --accent-red: #782814;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+        width: 100%; min-height: 100%; background: #000; color: var(--gold);
+        overflow-y: auto; overflow-x: hidden; font-family: 'Share Tech Mono', monospace;
+    }
+    #store-bg {
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        background: url('Store 0.png') center/cover no-repeat;
+        opacity: 0.3;
+    }
+    .header-right { position: absolute; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; transition: opacity 0.2s, transform 0.2s; pointer-events: auto; }
+    .back-arrow:hover { opacity: 0.8; transform: scale(1.1); }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        html, body {
-            width: 100%; height: 100vh;
-            background: var(--deep-bg) url('Store 0.png') no-repeat center center fixed;
-            background-size: cover;
-            overflow: hidden;
-            font-family: 'Share Tech Mono', monospace;
-        }
+    .gy-user-badge { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; display: none; z-index: 1000; }
+    .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
 
-        .shop-wrapper {
-            position: relative;
-            z-index: 10;
-            display: grid;
-            grid-template-columns: 310px 1fr 330px;
-            grid-template-rows: 60px 1fr;
-            height: 100vh;
-            gap: 12px;
-            padding: 12px;
-        }
+    .page-wrap { position: relative; z-index: 1; min-height: 100vh; padding: 64px 12px 24px; }
 
-        /* Шапка: стрелки слева, название по центру, логотип справа */
-        .shop-header {
-            grid-column: 1 / -1;
-            background: linear-gradient(to bottom, #2b1d0c, #1a1007);
-            border: 2px solid var(--border-wood);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,215,0,0.2);
-            position: relative;
-        }
-        
-        .header-nav {
-            display: flex;
-            gap: 8px;
-            z-index: 2;
-        }
-        .header-nav button {
-            background: linear-gradient(to bottom, #6d4b20, #4a3112);
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            width: 34px;
-            height: 34px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: bold;
-            font-family: 'Share Tech Mono', monospace;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        .header-nav button:hover {
-            background: var(--accent-red);
-            color: var(--gold-light);
-            transform: translateY(-1px);
-        }
+    .page-title { text-align: center; font-family: 'Cinzel', serif; font-size: 17px; letter-spacing: 1px; margin-bottom: 14px; text-shadow: 0 0 10px rgba(255,215,0,0.35); }
 
-        .header-title-wrapper {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            pointer-events: none;
-        }
-        .shop-header h1 { 
-            font-family: 'Cinzel', serif;
-            font-size: 16px; 
-            letter-spacing: 1.5px; 
-            color: var(--gold);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
-            white-space: nowrap;
-        }
+    .shop-wrapper { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 1100px; margin: 0 auto; }
+    @media (min-width: 900px) { .shop-wrapper { grid-template-columns: 300px 1fr 300px; } }
 
-        .header-logo {
-            z-index: 2;
-            font-family: 'Cinzel', serif;
-            color: var(--gold);
-            font-size: 11px;
-            font-weight: bold;
-            border: 1px solid var(--border-wood);
-            background: rgba(43, 29, 12, 0.85);
-            padding: 6px 12px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            letter-spacing: 1px;
-        }
+    .panel {
+        background: rgba(25, 16, 8, 0.78); border: 2px solid var(--border-wood); border-radius: 8px;
+        padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .left-panel, .right-panel { display: flex; flex-direction: column; gap: 10px; max-height: 70vh; overflow-y: auto; }
+    .section-title { font-family: 'Cinzel', serif; font-size: 12px; font-weight: bold; color: var(--gold); border-bottom: 2px solid var(--border-wood); padding-bottom: 4px; margin-bottom: 4px; }
 
-        /* Левая панель (Каталог) с прозрачным фоном */
-        .left-panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(5px);
-            border: 2px solid var(--border-wood);
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow-y: auto;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-        }
-        .section-title {
-            font-family: 'Cinzel', serif;
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--gold);
-            border-bottom: 2px solid var(--border-wood);
-            padding-bottom: 4px;
-            margin-bottom: 4px;
-            letter-spacing: 0.5px;
-        }
-        .category-group {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-wood);
-            border-radius: 6px;
-            padding: 8px;
-        }
-        .category-header {
-            font-weight: bold;
-            font-size: 10px;
-            color: var(--gold-light);
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .mini-scroll {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding: 3px 0;
-            min-height: 48px;
-            align-items: center;
-        }
-        .mini-scroll::-webkit-scrollbar { height: 4px; }
-        .mini-scroll::-webkit-scrollbar-thumb { background: var(--border-wood); border-radius: 2px; }
-        .mini-item {
-            min-width: 44px; height: 44px;
-            border: 1.5px solid var(--border-wood);
-            background: #fff; cursor: pointer;
-            border-radius: 4px; overflow: hidden;
-            flex-shrink: 0; position: relative;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        }
-        .mini-item img { width: 100%; height: 100%; object-fit: cover; }
-        .mini-item:hover { border-color: var(--accent-red); transform: scale(1.08); box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
+    .category-group { background: rgba(255,255,255,0.05); border: 1px solid var(--border-wood); border-radius: 6px; padding: 8px; }
+    .category-header { font-weight: bold; font-size: 10px; color: var(--gold); margin-bottom: 5px; display: flex; justify-content: space-between; }
+    .mini-scroll { display: flex; gap: 6px; overflow-x: auto; padding: 3px 0; min-height: 48px; align-items: center; }
+    .mini-item { min-width: 44px; height: 44px; border: 1.5px solid var(--border-wood); background: #fff; cursor: pointer; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .mini-item img { width: 100%; height: 100%; object-fit: cover; }
+    .mini-item:hover { border-color: var(--gold); }
+    .empty-cat { font-size: 9px; color: #998; padding: 3px; }
 
-        /* Центральная панель (Демонстрация) с прозрачным фоном */
-        .center-panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(5px);
-            border: 2px solid var(--border-wood);
-            border-radius: 8px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            text-align: center;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-            overflow: hidden;
-        }
-        .display-frame {
-            width: 100%;
-            height: 54vh;
-            border: 3px solid var(--border-wood);
-            background: rgba(255, 255, 255, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
-            border-radius: 6px;
-        }
-        .display-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        
-        .projection-switcher {
-            display: flex;
-            gap: 8px;
-            margin: 8px 0;
-        }
-        .proj-btn {
-            background: #3b2814; color: var(--gold); border: 1px solid var(--border-wood);
-            padding: 4px 10px; font-size: 9px; font-weight: bold; cursor: pointer; border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .proj-btn.active { background: var(--accent-red); color: var(--gold); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+    .center-panel { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .display-frame { width: 100%; height: 48vh; border: 3px solid var(--border-wood); background: rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden; position: relative; }
+    .display-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .placeholder-text { color: var(--accent-red); font-size: 12px; font-weight: bold; }
+    .projection-switcher { display: none; gap: 8px; margin: 8px 0; }
+    .projection-switcher.visible { display: flex; }
+    .proj-btn { background: #3b2814; color: var(--gold); border: 1px solid var(--border-wood); padding: 4px 10px; font-size: 9px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+    .proj-btn.active { background: var(--accent-red); }
+    .display-info h2 { font-family: 'Cinzel', serif; font-size: 15px; color: var(--gold); margin: 6px 0 3px; }
+    .display-info p { font-size: 11px; color: var(--ivory); max-width: 90%; margin: 0 auto; line-height: 1.4; }
 
-        .display-info h2 { font-family: 'Cinzel', serif; font-size: 16px; color: var(--gold); margin-bottom: 4px; }
-        .display-info p { font-size: 11px; color: #f4ebd0; max-width: 90%; margin: 0 auto; line-height: 1.4; }
+    .spec-box { background: rgba(255,255,255,0.05); border: 1px solid var(--border-wood); border-radius: 6px; padding: 10px; font-size: 10px; line-height: 1.6; color: var(--ivory); }
+    .spec-box b { color: var(--gold); }
+    .price-row { display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; color: var(--gold); }
+    .price-input { width: 85px; padding: 4px; font-family: 'Cinzel', serif; font-size: 13px; font-weight: bold; color: var(--accent-red); background: #fff; border: 1px solid var(--border-wood); border-radius: 4px; text-align: center; }
 
-        /* Правая панель (Характеристики) с прозрачным фоном */
-        .right-panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(5px);
-            border: 2px solid var(--border-wood);
-            border-radius: 8px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            overflow-y: auto;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-        }
-        .spec-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-wood);
-            border-radius: 6px;
-            padding: 10px;
-            font-size: 10px;
-            line-height: 1.5;
-            color: #f4ebd0;
-        }
-        .spec-box b { color: var(--gold); }
-        .price-row {
-            display: flex; align-items: center; justify-content: space-between;
-            font-weight: bold; font-size: 13px; color: var(--gold);
-        }
-        .price-input {
-            width: 85px; padding: 4px;
-            font-family: 'Cinzel', serif; font-size: 13px; font-weight: bold;
-            color: var(--accent-red); background: #fff;
-            border: 1px solid var(--border-wood); border-radius: 4px; text-align: center;
-            outline: none;
-        }
-        .action-btn {
-            background: linear-gradient(to bottom, #782814, #4a180b); color: var(--gold);
-            border: 2px solid var(--border-wood); padding: 8px; font-size: 10px; font-weight: bold;
-            cursor: pointer; border-radius: 5px; text-align: center; width: 100%;
-            font-family: 'Share Tech Mono', monospace;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-        .action-btn:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 5px 10px rgba(120,40,20,0.4); }
-        .action-btn-danger {
-            background: linear-gradient(to bottom, #5a1b1b, #2b0c0c);
-            color: #ffcccc;
-            border: 2px solid #781414;
-        }
-        .action-btn-danger:hover { box-shadow: 0 5px 10px rgba(90,27,27,0.5); }
-        .action-btn-secondary {
-            background: linear-gradient(to bottom, #6d4b20, #4a3112);
-        }
+    .action-btn {
+        background: linear-gradient(to bottom, #782814, #4a180b); color: var(--gold); border: 1px solid var(--border-wood);
+        padding: 8px; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 5px; width: 100%;
+        font-family: 'Share Tech Mono', monospace;
+    }
+    .action-btn:hover { filter: brightness(1.15); }
+    .action-btn-danger { background: linear-gradient(to bottom, #5a1b1b, #2b0c0c); color: #ffcccc; border-color: #781414; }
+    .action-btn-secondary { background: linear-gradient(to bottom, #6d4b20, #4a3112); }
 
-        /* Модальные окна */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(3px);
-            display: none; align-items: center; justify-content: center; z-index: 1000;
-            padding: 10px;
-        }
-        .modal-card {
-            background: #f7f1e1; border: 3px solid var(--border-wood); padding: 18px;
-            width: 100%; max-width: 480px; border-radius: 10px; color: var(--dark-wood);
-            font-family: 'Share Tech Mono', monospace; max-height: 95vh; overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
-        .modal-card h3 {
-            font-family: 'Cinzel', serif; margin-bottom: 12px; font-size: 15px;
-            border-bottom: 2px solid var(--border-wood); padding-bottom: 6px;
-        }
-        .modal-close { float: right; cursor: pointer; font-weight: bold; font-size: 18px; color: var(--accent-red); }
-        .modal-close:hover { color: #000; }
-        
-        .form-group { margin-bottom: 10px; font-size: 10px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 3px; color: var(--dark-wood); }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 6px; border: 1px solid var(--border-wood); background: #fff;
-            font-family: inherit; font-size: 10px; border-radius: 4px; outline: none;
-        }
-        .form-group input:focus, .form-group select:focus { border-color: var(--accent-red); box-shadow: 0 0 5px rgba(120,40,20,0.2); }
-        
-        .previews-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .preview-box {
-            width: 100%; height: 95px; border: 2px dashed var(--border-wood);
-            background: #fff; display: flex; align-items: center; justify-content: center;
-            border-radius: 6px; overflow: hidden; position: relative; text-align: center; padding: 4px;
-        }
-        .preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .preview-box span { font-size: 9px; color: #777; }
-
-        .expert-report {
-            background: #111; color: #00ff66; padding: 10px; border-radius: 6px;
-            font-size: 10px; border: 1px solid #00ff66; margin-bottom: 10px; display: none;
-            box-shadow: inset 0 0 10px rgba(0,255,102,0.2);
-        }
-
-        /* Скроллбары для панелей */
-        .left-panel::-webkit-scrollbar, .right-panel::-webkit-scrollbar, .modal-card::-webkit-scrollbar {
-            width: 5px;
-        }
-        .left-panel::-webkit-scrollbar-thumb, .right-panel::-webkit-scrollbar-thumb, .modal-card::-webkit-scrollbar-thumb {
-            background: var(--border-wood);
-            border-radius: 3px;
-        }
-    </style>
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 10px; }
+    .modal-card { background: #f7f1e1; border: 3px solid var(--border-wood); padding: 18px; width: 100%; max-width: 480px; border-radius: 10px; color: var(--dark-wood); max-height: 95vh; overflow-y: auto; font-family: 'Share Tech Mono', monospace; }
+    .modal-card h3 { font-family: 'Cinzel', serif; margin-bottom: 12px; font-size: 15px; border-bottom: 2px solid var(--border-wood); padding-bottom: 6px; }
+    .modal-close { float: right; cursor: pointer; font-weight: bold; font-size: 18px; color: var(--accent-red); }
+    .form-group { margin-bottom: 10px; font-size: 10px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 3px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 6px; border: 1px solid var(--border-wood); background: #fff; font-family: inherit; font-size: 10px; border-radius: 4px; }
+    .previews-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .preview-box { width: 100%; height: 95px; border: 2px dashed var(--border-wood); background: #fff; display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden; text-align: center; padding: 4px; }
+    .preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .preview-box span { font-size: 9px; color: #777; }
+    .status-line { font-size: 10px; margin-top: 6px; min-height: 14px; }
+    .status-line.ok { color: #2a7a2a; }
+    .status-line.error { color: #a02020; }
+</style>
 </head>
 <body>
 
+<div id="store-bg"></div>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-hall">&lt;&lt;</a>
+</div>
+<div id="passport-badge-container"></div>
+
+<div class="page-wrap">
+    <div class="page-title">GY-GY CLUB — ЛАВКА ДРЕВНОСТЕЙ</div>
+
     <div class="shop-wrapper">
-        <header class="shop-header">
-            <!-- Навигационные стрелки слева -->
-            <div class="header-nav">
-                <button id="btn-back" title="Назад">&lt;</button>
-                <button id="btn-hall" title="К главному входу">&lt;&lt;</button>
-            </div>
-            
-            <!-- Название по центру -->
-            <div class="header-title-wrapper">
-                <h1>GY-GY Club | Antique Store</h1>
-            </div>
-
-            <!-- Логотип в правом углу -->
-            <div class="header-logo">
-                GY-GY CLUB
-            </div>
-        </header>
-
-        <!-- ЛЕВАЯ ПАНЕЛЬ С КАТЕГОРИЯМИ И МИНИ-СКРОЛЛАМИ -->
-        <aside class="left-panel">
-            <div class="section-title">БАЗА ТОВАРОВ КЛУБА</div>
+        <aside class="panel left-panel">
+            <div class="section-title">БАЗА ЛОТОВ КЛУБА</div>
             <div id="categoriesContainer"></div>
         </aside>
 
-        <!-- ЦЕНТРАЛЬНАЯ РАМКА ДЕМОНСТРАЦИИ -->
-        <main class="center-panel">
+        <main class="panel center-panel">
             <div class="display-frame">
-                <img id="activeArtifactImg" src="" alt="Выберите товар" style="display:none;">
-                <div id="emptyDisplayPlaceholder" style="color:var(--accent-red); font-size:12px; font-weight:bold;">
-                    База пуста.<br>Нажмите «+ Экспертиза и добавление»<br>чтобы загрузить раритет.
-                </div>
+                <img id="activeImg" src="" alt="" style="display:none;">
+                <div class="placeholder-text" id="emptyPlaceholder">База пуста.<br>Нажмите «+ Добавить лот»<br>чтобы внести предмет.</div>
             </div>
-            
-            <!-- Переключатель проекций -->
-            <div class="projection-switcher" id="projectionSwitcher" style="display:none;">
-                <button class="proj-btn active" id="projBtn1" onclick="switchProjection(1)">Проекция 1 (Вид спереди)</button>
-                <button class="proj-btn" id="projBtn2" onclick="switchProjection(2)">Проекция 2 (Деталь/Низ)</button>
+            <div class="projection-switcher" id="projSwitcher">
+                <button class="proj-btn active" id="projBtn1">Вид 1</button>
+                <button class="proj-btn" id="projBtn2">Вид 2</button>
             </div>
-
             <div class="display-info">
-                <h2 id="activeArtifactTitle">Товар не выбран</h2>
-                <p id="activeArtifactShortDesc">Загрузите артефакт через экспертный модуль.</p>
+                <h2 id="activeTitle">Лот не выбран</h2>
+                <p id="activeDesc">Выберите предмет из каталога слева.</p>
             </div>
         </main>
 
-        <!-- ПРАВАЯ ПАНЕЛЬ ХАРАКТЕРИСТИК -->
-        <section class="right-panel">
+        <section class="panel right-panel">
             <div class="section-title">ХАРАКТЕРИСТИКИ</div>
-            <div class="spec-box" id="specsDetails">
-                <p><b>Категория:</b> —</p>
-                <p><b>Год создания:</b> —</p>
-                <p><b>Размеры:</b> —</p>
-                <p><b>Количество:</b> —</p>
-                <p><b>Индекс подлинности:</b> —</p>
-                <p style="margin-top: 4px;"><b>Описание:</b> Сведения появятся при выборе лота.</p>
+            <div class="spec-box" id="specsBox">
+                <p><b>Категория:</b> —</p><p><b>Год:</b> —</p><p><b>Размеры:</b> —</p><p><b>Количество:</b> —</p>
             </div>
-
             <div class="spec-box">
                 <div class="price-row">
                     <span>Цена:</span>
-                    <div>
-                        <input type="number" class="price-input" id="activePriceInput" value="100" oninput="updatePrice(this.value)"> 🪙
-                    </div>
+                    <div><input type="number" class="price-input" id="priceInput" disabled> €</div>
                 </div>
             </div>
-
-            <button class="action-btn" onclick="addToCart()">🛒 Добавить в корзину</button>
-            <button class="action-btn action-btn-danger" onclick="deleteActiveItem()">🗑 Удалить этот артефакт из базы</button>
-            <button class="action-btn action-btn-secondary" onclick="openExpertModal()">+ Экспертиза и добавление</button>
-            <button class="action-btn action-btn-secondary" onclick="openReviewsModal()">💬 Отзывы резидентов</button>
+            <button class="action-btn" id="btn-add-cart">🛒 Добавить в корзину</button>
+            <button class="action-btn action-btn-danger" id="btn-delete-item">🗑 Удалить лот из базы</button>
+            <button class="action-btn action-btn-secondary" id="btn-open-add">+ Добавить лот</button>
         </section>
     </div>
+</div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ЭКСПЕРТИЗА, РАЗМЕРЫ И ДВЕ ПРОЕКЦИИ -->
-    <div class="modal-overlay" id="expertModal">
-        <div class="modal-card">
-            <span class="modal-close" onclick="closeExpertModal()">&times;</span>
-            <h3>Лаборатория экспертной оценки артефакта</h3>
-            <p style="font-size: 9px; margin-bottom: 8px; color: #555;">Загрузите два ракурса, укажите размеры, количество и год (строго до 1990 года).</p>
-            
-            <div class="form-group">
-                <label>Загрузка проекций (фото 1 и фото 2):</label>
-                <div class="previews-grid">
-                    <div class="preview-box">
-                        <span id="pText1">Фото 1 (Главный вид)<br><input type="file" accept="image/*" onchange="previewImage(event, 1)" style="margin-top:3px; font-size:8px;"></span>
-                        <img id="previewImg1" src="" style="display:none;">
-                    </div>
-                    <div class="preview-box">
-                        <span id="pText2">Фото 2 (Вторая проекция)<br><input type="file" accept="image/*" onchange="previewImage(event, 2)" style="margin-top:3px; font-size:8px;"></span>
-                        <img id="previewImg2" src="" style="display:none;">
-                    </div>
+<div class="modal-overlay" id="addModal">
+    <div class="modal-card">
+        <span class="modal-close" data-close>&times;</span>
+        <h3>Внесение лота в базу Лавки</h3>
+        <p style="font-size:9px; margin-bottom:8px; color:#555;">Загрузите до двух фото, укажите данные. Клуб принимает предметы старше 1990 года.</p>
+
+        <div class="form-group">
+            <label>Фото (вид 1 — обязательно, вид 2 — опционально):</label>
+            <div class="previews-grid">
+                <div class="preview-box">
+                    <span id="pText1">Фото 1<br><input type="file" accept="image/*" id="file1" style="margin-top:3px; font-size:8px;"></span>
+                    <img id="previewImg1" src="" style="display:none;">
+                </div>
+                <div class="preview-box">
+                    <span id="pText2">Фото 2<br><input type="file" accept="image/*" id="file2" style="margin-top:3px; font-size:8px;"></span>
+                    <img id="previewImg2" src="" style="display:none;">
                 </div>
             </div>
-
-            <div class="form-group"><label>Название предмета:</label><input type="text" id="expertName" placeholder="Напр. Бокал"></div>
-            <div class="form-group"><label>Категория в базе клуба:</label>
-                <select id="expertCategory">
-                    <option value="glass">Стекло (Glass)</option>
-                    <option value="porcelain">Фарфор (Porcelain)</option>
-                    <option value="fabric">Текстиль/Бумага (Fabric)</option>
-                    <option value="metal">Металл (Metal)</option>
-                    <option value="tech">Техно-девайсы (Tech)</option>
-                </select>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <div class="form-group"><label>Год создания (&lt; 1990):</label><input type="number" id="expertYear" placeholder="1975"></div>
-                <div class="form-group"><label>Размеры (ВхШ):</label><input type="text" id="expertDimensions" placeholder="Напр. 25х14 см"></div>
-            </div>
-
-            <div class="form-group"><label>Количество / Набор:</label><input type="text" id="expertQuantity" placeholder="Напр. 6 шт."></div>
-            <div class="form-group"><label>Базовая цена (GY-GY 🪙):</label><input type="number" id="expertPrice" value="180"></div>
-
-            <div id="expertReportBox" class="expert-report">
-                <div id="expertReportText">Ожидание запуска проверки...</div>
-            </div>
-
-            <button class="action-btn" id="runExpertBtn" onclick="runExpertAnalysis()" style="background: #111; color: #00ff66; border: 1px solid #00ff66; margin-bottom: 8px;">⚡ Запустить экспертный анализ</button>
-            
-            <button class="action-btn" id="publishVerifiedBtn" onclick="publishVerifiedItem()" style="display:none;">✨ Одобрено! Разместить в базе клуба</button>
         </div>
-    </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ОТЗЫВОВ -->
-    <div class="modal-overlay" id="reviewsModal">
-        <div class="modal-card">
-            <span class="modal-close" onclick="closeReviewsModal()">&times;</span>
-            <h3>💬 Отзывы резидентов Лавки</h3>
-            <div style="max-height: 150px; overflow-y: auto; font-size: 10px; margin-bottom: 10px;" id="reviewsList">
-                <div style="border-bottom:1px solid #ccc; padding-bottom:5px; margin-bottom:5px;"><b>#4092:</b> «Кнопка удаления из базы очень кстати!»</div>
-            </div>
-            <div class="form-group"><input type="text" id="newReviewText" placeholder="Ваш отзыв..."></div>
-            <button class="action-btn" onclick="addReview()">Оставить отзыв</button>
+        <div class="form-group"><label>Название:</label><input type="text" id="inputName" placeholder="Напр. Бокал богемского стекла"></div>
+        <div class="form-group"><label>Категория:</label>
+            <select id="inputCategory">
+                <option value="glass">Стекло</option>
+                <option value="porcelain">Фарфор</option>
+                <option value="fabric">Текстиль/Бумага</option>
+                <option value="metal">Металл</option>
+                <option value="tech">Техно-девайсы</option>
+            </select>
         </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="form-group"><label>Год (&lt; 1990):</label><input type="number" id="inputYear" placeholder="1975"></div>
+            <div class="form-group"><label>Размеры:</label><input type="text" id="inputDimensions" placeholder="25x14 см"></div>
+        </div>
+        <div class="form-group"><label>Количество:</label><input type="text" id="inputQuantity" placeholder="1 шт." value="1 шт."></div>
+        <div class="form-group"><label>Цена, €:</label><input type="number" id="inputPrice" value="100" min="0" step="1"></div>
+        <div class="form-group"><label>Оценка сотрудника клуба (по желанию — не алгоритм, мнение человека):</label><textarea id="inputNote" rows="2" placeholder="Напр. состояние хорошее, подлинность не вызывает сомнений"></textarea></div>
+
+        <div class="status-line" id="addStatus"></div>
+        <button class="action-btn" id="btn-publish">Разместить в базе клуба</button>
     </div>
+</div>
 
-    <script>
-        if (!localStorage.getItem('gy_store_inventory')) {
-            localStorage.setItem('gy_store_inventory', JSON.stringify([]));
-        }
+<script type="module">
+    import { init as initLocalization } from './core/localization.js';
+    import { init as initPassport } from './modules/passport.js';
+    import { supabase } from './core/supabase-init.js';
 
-        let activeItem = null;
-        let currentActiveProjection = 1;
-        let tempBase64Img1 = "";
-        let tempBase64Img2 = "";
-        let expertVerifiedData = null;
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
 
-        const categoryMeta = {
-            glass: "Стекло (Glass)",
-            porcelain: "Фарфор (Porcelain)",
-            fabric: "Текстиль (Fabric)",
-            metal: "Металл (Metal)",
-            tech: "Техно-девайсы (Tech)"
-        };
+    const CATEGORY_LABELS = { glass: 'Стекло', porcelain: 'Фарфор', fabric: 'Текстиль/Бумага', metal: 'Металл', tech: 'Техно-девайсы' };
+    const CATEGORY_ORDER = ['glass', 'porcelain', 'fabric', 'metal', 'tech'];
 
-        function renderCategories() {
-            let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
-            let container = document.getElementById('categoriesContainer');
-            container.innerHTML = '';
+    let allItems = [];
+    let activeItem = null;
+    let activeProjection = 1;
+    let pendingFile1 = null, pendingFile2 = null;
 
-            for (let catKey in categoryMeta) {
-                let itemsInCat = storeInventory.filter(i => i.category === catKey);
-                let miniItemsHtml = '';
-                if (itemsInCat.length === 0) {
-                    miniItemsHtml = `<span style="font-size:9px; color:#aaa; padding:3px;">Нет артефактов</span>`;
-                } else {
-                    itemsInCat.forEach(item => {
-                        let thumb = item.img1 || item.img || '';
-                        miniItemsHtml += `
-                            <div class="mini-item" onclick='selectItem(${JSON.stringify(item).replace(/'/g, "&#39;")})' title="${item.name}">
-                                <img src="${thumb}" alt="item">
-                            </div>
-                        `;
-                    });
-                }
+    async function loadItems() {
+        const { data, error } = await supabase.from('store_items').select('*').order('created_at', { ascending: false });
+        if (error) { console.error('[Store] Ошибка загрузки', error); return; }
+        allItems = data || [];
+        renderCategories();
+    }
 
-                container.innerHTML += `
-                    <div class="category-group">
-                        <div class="category-header">
-                            <span>${categoryMeta[catKey]}</span>
-                            <span style="font-size:8px; color:#ffea75;">(${itemsInCat.length})</span>
-                        </div>
-                        <div class="mini-scroll">
-                            ${miniItemsHtml}
-                        </div>
-                    </div>
-                `;
-            }
-        }
+    function renderCategories() {
+        const container = document.getElementById('categoriesContainer');
+        container.innerHTML = CATEGORY_ORDER.map(cat => {
+            const items = allItems.filter(i => i.category === cat);
+            const thumbs = items.length
+                ? items.map(item => `<div class="mini-item" data-id="${item.id}"><img src="${item.image1_url}"></div>`).join('')
+                : `<span class="empty-cat">Нет лотов</span>`;
+            return `
+                <div class="category-group">
+                    <div class="category-header"><span>${CATEGORY_LABELS[cat]}</span><span>(${items.length})</span></div>
+                    <div class="mini-scroll">${thumbs}</div>
+                </div>`;
+        }).join('');
+        container.querySelectorAll('.mini-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const item = allItems.find(i => i.id === el.dataset.id);
+                if (item) selectItem(item);
+            });
+        });
+    }
 
-        function selectItem(item) {
-            activeItem = item;
-            currentActiveProjection = 1;
-            updateDisplayImage();
+    function selectItem(item) {
+        activeItem = item;
+        activeProjection = 1;
+        updateDisplayImage();
 
-            let switcher = document.getElementById('projectionSwitcher');
-            if (item.img2) {
-                switcher.style.display = 'flex';
-                document.getElementById('projBtn1').classList.add('active');
-                document.getElementById('projBtn2').classList.remove('active');
-            } else {
-                switcher.style.display = 'none';
-            }
+        const switcher = document.getElementById('projSwitcher');
+        switcher.classList.toggle('visible', !!item.image2_url);
+        document.getElementById('projBtn1').classList.add('active');
+        document.getElementById('projBtn2').classList.remove('active');
 
-            document.getElementById('activeArtifactTitle').textContent = item.name;
-            document.getElementById('activeArtifactShortDesc').textContent = item.desc;
+        document.getElementById('activeTitle').textContent = item.name;
+        document.getElementById('activeDesc').textContent = item.staff_note || '';
+        document.getElementById('specsBox').innerHTML = `
+            <p><b>Категория:</b> ${CATEGORY_LABELS[item.category] || item.category}</p>
+            <p><b>Год:</b> ${item.year} г.</p>
+            <p><b>Размеры:</b> ${item.dimensions || '—'}</p>
+            <p><b>Количество:</b> ${item.quantity_label || '1 шт.'}</p>
+            ${item.staff_note ? `<p style="margin-top:4px;"><b>Оценка сотрудника:</b> ${item.staff_note}</p>` : ''}
+        `;
+        const priceInput = document.getElementById('priceInput');
+        priceInput.value = item.price;
+        priceInput.disabled = false;
+    }
 
-            document.getElementById('specsDetails').innerHTML = `
-                <p><b>Категория:</b> ${categoryMeta[item.category] || item.category}</p>
-                <p><b>Год создания:</b> ${item.year} г.</p>
-                <p><b>Размеры:</b> ${item.dimensions || 'Не указаны'}</p>
-                <p><b>Количество:</b> ${item.quantity || '1 шт.'}</p>
-                <p><b>Индекс подлинности:</b> <span style="color:#00ff66; font-weight:bold;">${item.aiScore || 95}% (Подлинник)</span></p>
-                <p style="margin-top: 4px;"><b>Описание:</b> ${item.desc}</p>
-            `;
-            document.getElementById('activePriceInput').value = item.price;
-        }
+    function updateDisplayImage() {
+        if (!activeItem) return;
+        const img = document.getElementById('activeImg');
+        img.src = (activeProjection === 2 && activeItem.image2_url) ? activeItem.image2_url : activeItem.image1_url;
+        img.style.display = 'block';
+        document.getElementById('emptyPlaceholder').style.display = 'none';
+    }
 
-        function updateDisplayImage() {
-            if (!activeItem) return;
-            let imgEl = document.getElementById('activeArtifactImg');
-            let targetImg = (currentActiveProjection === 2 && activeItem.img2) ? activeItem.img2 : (activeItem.img1 || activeItem.img);
-            
-            imgEl.src = targetImg;
-            imgEl.style.display = 'block';
-            document.getElementById('emptyDisplayPlaceholder').style.display = 'none';
-        }
+    document.getElementById('projBtn1').addEventListener('click', () => {
+        activeProjection = 1;
+        document.getElementById('projBtn1').classList.add('active');
+        document.getElementById('projBtn2').classList.remove('active');
+        updateDisplayImage();
+    });
+    document.getElementById('projBtn2').addEventListener('click', () => {
+        activeProjection = 2;
+        document.getElementById('projBtn2').classList.add('active');
+        document.getElementById('projBtn1').classList.remove('active');
+        updateDisplayImage();
+    });
 
-        function switchProjection(projNum) {
-            currentActiveProjection = projNum;
-            document.getElementById('projBtn1').classList.toggle('active', projNum === 1);
-            document.getElementById('projBtn2').classList.toggle('active', projNum === 2);
-            updateDisplayImage();
-        }
+    document.getElementById('priceInput').addEventListener('change', async (e) => {
+        if (!activeItem) return;
+        const newPrice = parseFloat(e.target.value) || 0;
+        await supabase.from('store_items').update({ price: newPrice }).eq('id', activeItem.id);
+        activeItem.price = newPrice;
+    });
 
-        function updatePrice(newPrice) {
-            if (activeItem) {
-                activeItem.price = parseInt(newPrice) || 0;
-                let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
-                let found = storeInventory.find(i => i.id === activeItem.id);
-                if (found) {
-                    found.price = activeItem.price;
-                    localStorage.setItem('gy_store_inventory', JSON.stringify(storeInventory));
-                }
-            }
-        }
+    document.getElementById('btn-delete-item').addEventListener('click', async () => {
+        if (!activeItem) { alert('Сначала выберите лот в каталоге.'); return; }
+        if (!confirm(`Удалить "${activeItem.name}" из базы клуба?`)) return;
+        await supabase.from('store_items').delete().eq('id', activeItem.id);
+        activeItem = null;
+        document.getElementById('activeImg').style.display = 'none';
+        document.getElementById('emptyPlaceholder').style.display = 'block';
+        document.getElementById('projSwitcher').classList.remove('visible');
+        document.getElementById('activeTitle').textContent = 'Лот не выбран';
+        document.getElementById('activeDesc').textContent = 'Выберите предмет из каталога слева.';
+        document.getElementById('priceInput').disabled = true;
+        document.getElementById('priceInput').value = '';
+        loadItems();
+    });
 
-        function deleteActiveItem() {
-            if (!activeItem) {
-                alert('Сначала выберите артефакт в каталоге, который хотите удалить!');
-                return;
-            }
-            if (confirm(`Вы уверены, что хотите удалить предмет "${activeItem.name}" из базы клуба?`)) {
-                let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
-                storeInventory = storeInventory.filter(i => i.id !== activeItem.id);
-                localStorage.setItem('gy_store_inventory', JSON.stringify(storeInventory));
+    document.getElementById('btn-add-cart').addEventListener('click', () => {
+        if (!activeItem) { alert('Сначала выберите лот.'); return; }
+        // Полноценной корзины/оплаты в клубе пока нет — это просто
+        // заглушка-подтверждение, честно без притворства на реальную покупку.
+        alert(`"${activeItem.name}" отмечен к покупке за €${activeItem.price}. Оформление корзины — отдельная будущая задача.`);
+    });
 
-                activeItem = null;
-                document.getElementById('activeArtifactImg').style.display = 'none';
-                document.getElementById('emptyDisplayPlaceholder').style.display = 'block';
-                document.getElementById('projectionSwitcher').style.display = 'none';
-                document.getElementById('activeArtifactTitle').textContent = 'Товар не выбран';
-                document.getElementById('activeArtifactShortDesc').textContent = 'Загрузите артефакт через экспертный модуль.';
-                document.getElementById('specsDetails').innerHTML = `
-                    <p><b>Категория:</b> —</p>
-                    <p><b>Год создания:</b> —</p>
-                    <p><b>Размеры:</b> —</p>
-                    <p><b>Количество:</b> —</p>
-                    <p><b>Индекс подлинности:</b> —</p>
-                    <p style="margin-top: 4px;"><b>Описание:</b> Сведения появятся при выборе лота.</p>
-                `;
-
-                renderCategories();
-                alert('🗑 Предмет успешно удален из базы.');
-            }
-        }
-
-        function resizeAndCompressImage(base64Str, maxWidth, maxHeight, quality, callback) {
-            let img = new Image();
-            img.src = base64Str;
-            img.onload = function () {
-                let canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
+    function resizeToDataUrl(file, maxDim = 900) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                img.onload = () => {
+                    let { width, height } = img;
+                    if (width > maxDim || height > maxDim) {
+                        const r = Math.min(maxDim / width, maxDim / height);
+                        width = Math.round(width * r); height = Math.round(height * r);
                     }
-                } else {
-                    if (height > maxHeight) {
-                        width = Math.round((width * maxHeight) / height);
-                        height = maxHeight;
-                    }
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                let ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                callback(canvas.toDataURL('image/jpeg', quality));
-            };
-        }
-
-        function previewImage(event, num) {
-            let file = event.target.files[0];
-            if (file) {
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    resizeAndCompressImage(e.target.result, 800, 800, 0.75, function(compressedBase64) {
-                        if (num === 1) {
-                            tempBase64Img1 = compressedBase64;
-                            let img = document.getElementById('previewImg1');
-                            img.src = tempBase64Img1;
-                            img.style.display = 'block';
-                            document.getElementById('pText1').style.display = 'none';
-
-                            if (!document.getElementById('expertName').value) {
-                                let clean = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-                                document.getElementById('expertName').value = clean.charAt(0).toUpperCase() + clean.slice(1);
-                            }
-                        } else {
-                            tempBase64Img2 = compressedBase64;
-                            let img = document.getElementById('previewImg2');
-                            img.src = tempBase64Img2;
-                            img.style.display = 'block';
-                            document.getElementById('pText2').style.display = 'none';
-                        }
-                    });
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => resolve({ blob, url: URL.createObjectURL(blob) }), 'image/jpeg', 0.85);
                 };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function runExpertAnalysis() {
-            let nameInput = document.getElementById('expertName');
-            let yearInput = document.getElementById('expertYear');
-            
-            let name = nameInput ? nameInput.value.trim() : "";
-            let yearVal = yearInput ? yearInput.value.trim() : "";
-            let year = parseInt(yearVal);
-
-            if (!name) {
-                alert('Пожалуйста, укажите название предмета!');
-                nameInput.focus();
-                return;
-            }
-            if (!yearVal || isNaN(year)) {
-                alert('Пожалуйста, укажите корректный год создания (например: 1975)!');
-                yearInput.focus();
-                return;
-            }
-            if (!tempBase64Img1) {
-                alert('Загрузите по крайней мере первую проекцию (главное фото)!');
-                return;
-            }
-
-            let reportBox = document.getElementById('expertReportBox');
-            let reportText = document.getElementById('expertReportText');
-            reportBox.style.display = 'block';
-            reportText.innerHTML = "🔍 Экспертная система сжимает кадры и сверяет данные...";
-
-            setTimeout(() => {
-                if (year >= 1990) {
-                    reportText.innerHTML = `<span style="color:#ff3333;">❌ ОТКЛОНЕНО ЭКСПЕРТОМ:<br>Год выпуска (${year}) >= 1990. Клуб принимает только антиквариат.</span>`;
-                    document.getElementById('publishVerifiedBtn').style.display = 'none';
-                    expertVerifiedData = null;
-                } else {
-                    let score = Math.floor(Math.random() * 10) + 90; 
-                    reportText.innerHTML = `<span style="color:#00ff66;">✅ ЭКСПЕРТИЗА УСПЕШНА!<br>• Индекс подлинности: <b>${score}%</b><br>• Проекции верифицированы. Лот готов.</span>`;
-                    
-                    expertVerifiedData = {
-                        score: score,
-                        desc: `Экспертный отчет: Предмет прошел проверку подлинности. Структура материала соответствует эпохе (${year} г.). Коллекционная сохранность.`
-                    };
-                    document.getElementById('publishVerifiedBtn').style.display = 'block';
-                }
-            }, 1000);
-        }
-
-        function publishVerifiedItem() {
-            if (!expertVerifiedData) return;
-
-            let newItem = {
-                id: Date.now(),
-                name: document.getElementById('expertName').value.trim(),
-                category: document.getElementById('expertCategory').value,
-                year: parseInt(document.getElementById('expertYear').value),
-                dimensions: document.getElementById('expertDimensions').value.trim() || "Не указаны",
-                quantity: document.getElementById('expertQuantity').value.trim() || "1 шт.",
-                price: parseInt(document.getElementById('expertPrice').value) || 150,
-                aiScore: expertVerifiedData.score,
-                img1: tempBase64Img1,
-                img2: tempBase64Img2,
-                desc: expertVerifiedData.desc
+                img.src = ev.target.result;
             };
+            reader.readAsDataURL(file);
+        });
+    }
 
-            try {
-                let storeInventory = JSON.parse(localStorage.getItem('gy_store_inventory') || '[]');
-                storeInventory.push(newItem);
-                localStorage.setItem('gy_store_inventory', JSON.stringify(storeInventory));
+    document.getElementById('file1').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const { blob, url } = await resizeToDataUrl(file);
+        pendingFile1 = blob;
+        document.getElementById('previewImg1').src = url;
+        document.getElementById('previewImg1').style.display = 'block';
+        document.getElementById('pText1').style.display = 'none';
+        if (!document.getElementById('inputName').value) {
+            const clean = file.name.replace(/\.[^.]+$/, '');
+            document.getElementById('inputName').value = clean.charAt(0).toUpperCase() + clean.slice(1);
+        }
+    });
+    document.getElementById('file2').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const { blob, url } = await resizeToDataUrl(file);
+        pendingFile2 = blob;
+        document.getElementById('previewImg2').src = url;
+        document.getElementById('previewImg2').style.display = 'block';
+        document.getElementById('pText2').style.display = 'none';
+    });
 
-                alert('✨ Артефакт успешно добавлен в базу клуба!');
-                closeExpertModal();
-                renderCategories();
-                selectItem(newItem);
-                
-                document.getElementById('expertName').value = '';
-                document.getElementById('expertYear').value = '';
-                document.getElementById('expertDimensions').value = '';
-                document.getElementById('expertQuantity').value = '';
-                document.getElementById('previewImg1').style.display = 'none';
-                document.getElementById('previewImg2').style.display = 'none';
-                document.getElementById('pText1').style.display = 'block';
-                document.getElementById('pText2').style.display = 'block';
-                document.getElementById('expertReportBox').style.display = 'none';
-                document.getElementById('publishVerifiedBtn').style.display = 'none';
-                tempBase64Img1 = "";
-                tempBase64Img2 = "";
-                expertVerifiedData = null;
-            } catch (e) {
-                alert('Ошибка памяти: Лимит хранилища браузера исчерпан.');
+    document.getElementById('btn-publish').addEventListener('click', async () => {
+        const status = document.getElementById('addStatus');
+        status.className = 'status-line';
+        const name = document.getElementById('inputName').value.trim();
+        const year = parseInt(document.getElementById('inputYear').value);
+        if (!name) { status.textContent = 'Укажите название.'; status.classList.add('error'); return; }
+        if (!year || isNaN(year)) { status.textContent = 'Укажите корректный год.'; status.classList.add('error'); return; }
+        if (year >= 1990) { status.textContent = 'Клуб принимает предметы старше 1990 года.'; status.classList.add('error'); return; }
+        if (!pendingFile1) { status.textContent = 'Загрузите хотя бы первое фото.'; status.classList.add('error'); return; }
+
+        status.textContent = 'Загрузка...';
+        try {
+            const path1 = `${Date.now()}_1_${Math.random().toString(36).slice(2,8)}.jpg`;
+            await supabase.storage.from('store-items').upload(path1, pendingFile1, { contentType: 'image/jpeg' });
+            const { data: { publicUrl: url1 } } = supabase.storage.from('store-items').getPublicUrl(path1);
+
+            let url2 = null;
+            if (pendingFile2) {
+                const path2 = `${Date.now()}_2_${Math.random().toString(36).slice(2,8)}.jpg`;
+                await supabase.storage.from('store-items').upload(path2, pendingFile2, { contentType: 'image/jpeg' });
+                url2 = supabase.storage.from('store-items').getPublicUrl(path2).data.publicUrl;
             }
+
+            const { error } = await supabase.from('store_items').insert({
+                name,
+                category: document.getElementById('inputCategory').value,
+                year,
+                dimensions: document.getElementById('inputDimensions').value.trim(),
+                quantity_label: document.getElementById('inputQuantity').value.trim() || '1 шт.',
+                price: parseFloat(document.getElementById('inputPrice').value) || 0,
+                staff_note: document.getElementById('inputNote').value.trim(),
+                image1_url: url1, image2_url: url2
+            });
+            if (error) throw error;
+
+            status.textContent = 'Лот размещён!';
+            status.classList.add('ok');
+            setTimeout(() => {
+                closeModal();
+                resetForm();
+                loadItems();
+            }, 600);
+        } catch (err) {
+            console.error('[Store] Ошибка публикации', err);
+            status.textContent = 'Не удалось сохранить — база недоступна.';
+            status.classList.add('error');
         }
+    });
 
-        function openExpertModal() { document.getElementById('expertModal').style.display = 'flex'; }
-        function closeExpertModal() { document.getElementById('expertModal').style.display = 'none'; }
-        function openReviewsModal() { document.getElementById('reviewsModal').style.display = 'flex'; }
-        function closeReviewsModal() { document.getElementById('reviewsModal').style.display = 'none'; }
+    function resetForm() {
+        document.getElementById('inputName').value = '';
+        document.getElementById('inputYear').value = '';
+        document.getElementById('inputDimensions').value = '';
+        document.getElementById('inputQuantity').value = '1 шт.';
+        document.getElementById('inputNote').value = '';
+        document.getElementById('previewImg1').style.display = 'none';
+        document.getElementById('previewImg2').style.display = 'none';
+        document.getElementById('pText1').style.display = 'block';
+        document.getElementById('pText2').style.display = 'block';
+        pendingFile1 = null; pendingFile2 = null;
+        document.getElementById('addStatus').textContent = '';
+    }
 
-        document.getElementById('btn-back').addEventListener('click', () => history.back());
-        document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+    function openModal() {
+        const m = document.getElementById('addModal');
+        m.style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('addModal').style.display = 'none';
+    }
+    document.getElementById('btn-open-add').addEventListener('click', openModal);
+    document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeModal));
 
-        function addToCart() {
-            if (!activeItem) {
-                alert('Выберите товар из левой колонки каталога!');
-                return;
-            }
-            alert(`🛒 Товар "${activeItem.name}" (${activeItem.quantity || '1 шт.'}) добавлен в корзину по цене ${activeItem.price} GY-GY монет!`);
-        }
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
 
-        function addReview() {
-            let text = document.getElementById('newReviewText').value.trim();
-            if (!text) return;
-            let list = document.getElementById('reviewsList');
-            list.innerHTML += `<div style="border-bottom:1px solid #ccc; padding-bottom:5px; margin-bottom:5px;"><b>Вы:</b> «${text}»</div>`;
-            document.getElementById('newReviewText').value = '';
-        }
+    loadItems();
+</script>
 
-        window.onload = function() {
-            renderCategories();
-        };
-    </script>
 </body>
 </html>
