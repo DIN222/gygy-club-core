@@ -1,1 +1,155 @@
+<!DOCTYPE html>
+<!--
+  expense.html
+  v1.0.0 — 2026-10-01
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Расход v1.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); overflow-y: auto; font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .back-arrow:hover { opacity: 0.6; }
+    .page-wrap { position: relative; min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 20px; margin-bottom: 16px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 640px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .form-grid input, .form-grid select { padding: 8px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .new-ref-row { display: flex; gap: 6px; margin-bottom: 14px; }
+    .new-ref-row input { flex: 1; padding: 6px; border: 1px dashed var(--gold-dim); background: #0a0a0a; color: var(--ivory); font-family: inherit; font-size: 10px; }
+    .btn-cfg { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 8px 12px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-family: inherit; font-size: 11px; }
+    .btn-cfg:hover { border-color: var(--gold); }
+    .btn-cfg.small { padding: 5px 8px; font-size: 9px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 16px; }
+    th { text-align: left; color: var(--gold-dim); padding: 6px 4px; border-bottom: 1px solid var(--gold-dim); font-size: 10px; text-transform: uppercase; }
+    td { padding: 6px 4px; border-bottom: 1px solid #1a1a1a; color: var(--ivory); }
+    td.amount { color: var(--gold); text-align: right; white-space: nowrap; }
+    .total-row td { font-weight: 900; color: var(--gold); border-top: 1px solid var(--gold-dim); }
+</style>
+</head>
+<body>
 
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-accounting">&lt;&lt;</a>
+</div>
+
+<div class="page-wrap">
+    <div class="title">РАСХОД</div>
+
+    <div class="panel">
+        <div class="new-ref-row">
+            <input type="text" id="new-supplier" placeholder="Новый поставщик...">
+            <button class="btn-cfg small" id="btn-add-supplier">+</button>
+            <input type="text" id="new-delivery" placeholder="Новая служба доставки...">
+            <button class="btn-cfg small" id="btn-add-delivery">+</button>
+        </div>
+
+        <div class="form-grid">
+            <select id="line"><option value="atelier">Ателье</option><option value="store">Лавка</option><option value="souvenirs">Сувениры</option></select>
+            <input type="text" id="item-name" placeholder="Что закупили">
+            <input type="number" id="qty" placeholder="Кол-во" min="0" step="0.1">
+            <input type="number" id="unit-price" placeholder="Цена за ед., €" min="0" step="0.01">
+            <select id="supplier"></select>
+            <select id="delivery-service"></select>
+            <input type="number" id="delivery-cost" placeholder="Стоимость доставки, €" min="0" step="0.01">
+        </div>
+        <button class="btn-cfg" id="btn-add-expense" style="width:100%;">ДОБАВИТЬ РАСХОД</button>
+
+        <table>
+            <thead><tr><th>Дата</th><th>Напр.</th><th>Что</th><th>Поставщик</th><th>Сумма</th></tr></thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { supabase } from './core/supabase-init.js';
+
+    const LINE_LABELS = { atelier: 'Ателье', store: 'Лавка', souvenirs: 'Сувениры' };
+    let suppliers = [], deliveryServices = [];
+
+    async function loadRefs() {
+        const { data: s } = await supabase.from('suppliers').select('*').order('name');
+        suppliers = s || [];
+        const { data: d } = await supabase.from('delivery_services').select('*').order('name');
+        deliveryServices = d || [];
+        document.getElementById('supplier').innerHTML = '<option value="">—</option>' + suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        document.getElementById('delivery-service').innerHTML = '<option value="">—</option>' + deliveryServices.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+    }
+
+    document.getElementById('btn-add-supplier').addEventListener('click', async () => {
+        const name = document.getElementById('new-supplier').value.trim();
+        if (!name) return;
+        await supabase.from('suppliers').insert({ name });
+        document.getElementById('new-supplier').value = '';
+        loadRefs();
+    });
+    document.getElementById('btn-add-delivery').addEventListener('click', async () => {
+        const name = document.getElementById('new-delivery').value.trim();
+        if (!name) return;
+        await supabase.from('delivery_services').insert({ name });
+        document.getElementById('new-delivery').value = '';
+        loadRefs();
+    });
+
+    async function loadRows() {
+        const { data, error } = await supabase
+            .from('expense_entries')
+            .select('*, suppliers(name)')
+            .order('expense_date', { ascending: false });
+        const tbody = document.getElementById('rows');
+        if (error) { tbody.innerHTML = '<tr><td colspan="5">Ошибка загрузки — проверьте таблицы.</td></tr>'; return; }
+        let total = 0;
+        tbody.innerHTML = (data || []).map(row => {
+            total += Number(row.total_price) + Number(row.delivery_cost || 0);
+            return `<tr>
+                <td>${new Date(row.expense_date).toLocaleDateString()}</td>
+                <td>${LINE_LABELS[row.business_line] || row.business_line}</td>
+                <td>${row.item_name} (${row.quantity})</td>
+                <td>${row.suppliers?.name || '—'}</td>
+                <td class="amount">€${(Number(row.total_price) + Number(row.delivery_cost || 0)).toFixed(2)}</td>
+            </tr>`;
+        }).join('') + (data && data.length ? `<tr class="total-row"><td colspan="4">ИТОГО</td><td class="amount">€${total.toFixed(2)}</td></tr>` : '');
+    }
+
+    document.getElementById('btn-add-expense').addEventListener('click', async () => {
+        const business_line = document.getElementById('line').value;
+        const item_name = document.getElementById('item-name').value.trim();
+        const quantity = parseFloat(document.getElementById('qty').value) || 0;
+        const unit_price = parseFloat(document.getElementById('unit-price').value) || 0;
+        const supplier_id = document.getElementById('supplier').value || null;
+        const delivery_service_id = document.getElementById('delivery-service').value || null;
+        const delivery_cost = parseFloat(document.getElementById('delivery-cost').value) || 0;
+        if (!item_name || quantity <= 0) return;
+        const { error } = await supabase.from('expense_entries').insert({
+            business_line, item_name, quantity, unit_price,
+            total_price: quantity * unit_price,
+            supplier_id, delivery_service_id, delivery_cost
+        });
+        if (!error) {
+            document.getElementById('item-name').value = '';
+            document.getElementById('qty').value = '';
+            document.getElementById('unit-price').value = '';
+            document.getElementById('delivery-cost').value = '';
+            loadRows();
+        }
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+
+    loadRefs();
+    loadRows();
+</script>
+
+</body>
+</html>
