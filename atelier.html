@@ -487,11 +487,11 @@
 </div>
 
 <script type="module">
-    import { init as initLocalization } from './core/localization.js';
+        import { init as initLocalization } from './core/localization.js';
     import { init as initPassport } from './modules/passport.js';
     import { get, set } from './core/storage.js';
     import * as eventBus from './core/eventBus.js';
-
+    import { supabase } from './core/supabase-init.js';
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
