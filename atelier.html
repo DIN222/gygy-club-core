@@ -1138,7 +1138,7 @@
         openModal('modal-confirm-order');
     });
 
-    document.getElementById('btn-confirm-final').addEventListener('click', () => {
+    document.getElementById('btn-confirm-final').addEventListener('click', async () => {
         const recipientName = document.getElementById('confirm-recipient-name').value.trim();
         const recipientAddress = document.getElementById('confirm-recipient-address').value.trim();
         const paymentMethod = document.getElementById('confirm-payment-method').value;
@@ -1147,7 +1147,9 @@
             status.textContent = 'Заполните имя и адрес получателя.';
             return;
         }
+        const orderNumber = 'GY-' + Date.now().toString(36).toUpperCase();
         const order = {
+            orderNumber,
             type: 'blank',
             garment: state.type, size: state.size, color: state.color,
             fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
@@ -1165,11 +1167,26 @@
             } : null,
             unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now()
         };
+
+        // Локальная копия остаётся как подстраховка на случай недоступности базы
         const reports = get('officeAtelierReports', []);
         reports.push(order);
         set('officeAtelierReports', reports.slice(-50));
+
+        try {
+            const { error } = await supabase.from('income_entries').insert({
+                business_line: 'atelier',
+                order_number: orderNumber,
+                atelier_order: order,
+                total_amount: order.totalPrice
+            });
+            if (error) throw error;
+            status.textContent = 'Заказ передан в Бухгалтерию!';
+        } catch (err) {
+            console.error('[Atelier] Не удалось записать заказ в Приход', err);
+            status.textContent = 'Заказ сохранён локально, но не дошёл до Бухгалтерии — сообщите Модермеху.';
+        }
         closeModal(document.getElementById('modal-confirm-order'));
-        document.getElementById('order-status').textContent = 'Order sent to Office!';
     });
 
     document.getElementById('link-help').addEventListener('click', () => {
