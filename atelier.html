@@ -1145,7 +1145,7 @@
         openModal('modal-confirm-order');
     });
 
-    document.getElementById('btn-confirm-final').addEventListener('click', async () => {
+      document.getElementById('btn-confirm-final').addEventListener('click', () => {
         const recipientName = document.getElementById('confirm-recipient-name').value.trim();
         const recipientAddress = document.getElementById('confirm-recipient-address').value.trim();
         const paymentMethod = document.getElementById('confirm-payment-method').value;
@@ -1175,49 +1175,59 @@
             unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now()
         };
 
-        // Локальная копия остаётся как подстраховка на случай недоступности базы
-        const reports = get('officeAtelierReports', []);
-        reports.push(order);
-        set('officeAtelierReports', reports.slice(-50));
+        closeModal(document.getElementById('modal-confirm-order'));
 
-               try {
-            // Продаём со склада — списываем готовую продукцию и фиксируем
-            // её реальную себестоимость на момент продажи (не из головы,
-            // а из текущей средней себестоимости на складе).
-            let cogsAmount = 0;
-            const { data: stockItem } = await supabase
-                .from('warehouse_stock').select('*')
-                .eq('item_name', state.type).eq('item_type', 'finished_good').eq('business_line', 'atelier')
-                .maybeSingle();
+        openPaymentTerminal({
+            amount: order.totalPrice,
+            orderNumber,
+            lineItems: [
+                [`${state.type.toUpperCase()} ${state.size} ${state.color.toUpperCase()}`, `€${unitPrice()}`],
+                ['Кол-во', `${state.quantity} шт.`]
+            ],
+            onCancel: () => { status.textContent = 'Оплата отменена, заказ не оформлен.'; },
+            onComplete: async () => {
+                const reports = get('officeAtelierReports', []);
+                reports.push(order);
+                set('officeAtelierReports', reports.slice(-50));
 
-            if (stockItem && Number(stockItem.quantity) >= state.quantity) {
-                cogsAmount = Number(stockItem.avg_unit_cost) * state.quantity;
-                await supabase.from('warehouse_stock').update({
-                    quantity: Number(stockItem.quantity) - state.quantity,
-                    updated_at: new Date().toISOString()
-                }).eq('id', stockItem.id);
-                await supabase.from('warehouse_movements').insert({
-                    item_name: state.type, item_type: 'finished_good', business_line: 'atelier',
-                    movement_type: 'issue_production', quantity: -state.quantity, unit: 'шт',
-                    note: `Продажа, заказ ${orderNumber}`
-                });
-            } else {
-                console.warn('[Atelier] На складе недостаточно готовой продукции для честного списания — себестоимость продажи не зафиксирована (будет 0 в Доходе).');
+                try {
+                    let cogsAmount = 0;
+                    const { data: stockItem } = await supabase
+                        .from('warehouse_stock').select('*')
+                        .eq('item_name', state.type).eq('item_type', 'finished_good').eq('business_line', 'atelier')
+                        .maybeSingle();
+
+                    if (stockItem && Number(stockItem.quantity) >= state.quantity) {
+                        cogsAmount = Number(stockItem.avg_unit_cost) * state.quantity;
+                        await supabase.from('warehouse_stock').update({
+                            quantity: Number(stockItem.quantity) - state.quantity,
+                            updated_at: new Date().toISOString()
+                        }).eq('id', stockItem.id);
+                        await supabase.from('warehouse_movements').insert({
+                            item_name: state.type, item_type: 'finished_good', business_line: 'atelier',
+                            movement_type: 'issue_production', quantity: -state.quantity, unit: 'шт',
+                            note: `Продажа, заказ ${orderNumber}`
+                        });
+                    } else {
+                        console.warn('[Atelier] На складе недостаточно готовой продукции — себестоимость продажи не зафиксирована.');
+                    }
+
+                    const { error } = await supabase.from('income_entries').insert({
+                        business_line: 'atelier',
+                        order_number: orderNumber,
+                        atelier_order: order,
+                        total_amount: order.totalPrice,
+                        cogs_amount: cogsAmount
+                    });
+                    if (error) throw error;
+                    status.textContent = 'Оплачено, заказ передан в Бухгалтерию!';
+                } catch (err) {
+                    console.error('[Atelier] Не удалось записать заказ в Приход', err);
+                    status.textContent = 'Оплачено, но запись в Бухгалтерию не прошла — сообщите Модермеху.';
+                }
             }
-
-            const { error } = await supabase.from('income_entries').insert({
-                business_line: 'atelier',
-                order_number: orderNumber,
-                atelier_order: order,
-                total_amount: order.totalPrice,
-                cogs_amount: cogsAmount
-            });
-            if (error) throw error;
-            status.textContent = 'Заказ передан в Бухгалтерию!';
-        } catch (err) {
-            console.error('[Atelier] Не удалось записать заказ в Приход', err);
-            status.textContent = 'Заказ сохранён локально, но не дошёл до Бухгалтерии — сообщите Модермеху.';
-        }
+        });
+    });
         closeModal(document.getElementById('modal-confirm-order'));
     });
 
