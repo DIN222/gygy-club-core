@@ -1221,14 +1221,12 @@
                     });
                     if (error) throw error;
                     status.textContent = 'Оплачено, заказ передан в Бухгалтерию!';
-                } catch (err) {
+                             } catch (err) {
                     console.error('[Atelier] Не удалось записать заказ в Приход', err);
                     status.textContent = 'Оплачено, но запись в Бухгалтерию не прошла — сообщите Модермеху.';
                 }
             }
         });
-    });
-        closeModal(document.getElementById('modal-confirm-order'));
     });
 
     document.getElementById('link-help').addEventListener('click', () => {
