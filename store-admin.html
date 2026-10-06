@@ -1,1 +1,217 @@
+<!DOCTYPE html>
+<!--
+  store-admin.html
+  v1.0.0 — 2026-10-02
+  Управление лотами Лавки древностей — добавление и удаление. Раньше
+  это было прямо на публичной витрине, теперь убрано сюда, внутрь
+  Бухгалтерии, посетители этого не видят. Требует вход (requireAuth).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Antique Store Admin v1.0.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); overflow-y: auto; font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; z-index: 1000; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; z-index: 1000; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .back-arrow:hover { opacity: 0.6; }
+    .page-wrap { position: relative; min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 20px; margin-bottom: 16px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 640px; }
+    .form-group { margin-bottom: 10px; font-size: 11px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 3px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .previews-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .preview-box { width: 100%; height: 95px; border: 2px dashed var(--gold-dim); background: #0a0a0a; display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden; text-align: center; padding: 4px; }
+    .preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .preview-box span { font-size: 9px; color: var(--ivory); }
+    .btn-cfg { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 8px 12px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-family: inherit; font-size: 11px; width: 100%; }
+    .btn-cfg:hover { border-color: var(--gold); }
+    .status-line { font-size: 11px; margin-top: 6px; min-height: 14px; }
+    .status-line.ok { color: #6fd48a; }
+    .status-line.error { color: #e74c3c; }
+    .section-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th { text-align: left; color: var(--gold-dim); padding: 6px 4px; border-bottom: 1px solid var(--gold-dim); font-size: 10px; text-transform: uppercase; }
+    td { padding: 6px 4px; border-bottom: 1px solid #1a1a1a; color: var(--ivory); }
+    td.amount { color: var(--gold); text-align: right; }
+    .del-btn { background: #000; color: #e74c3c; border: 1px solid #e74c3c; padding: 3px 8px; font-size: 9px; cursor: pointer; }
+</style>
+</head>
+<body>
 
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back">&lt;</a>
+    <a class="back-arrow" id="btn-accounting">&lt;&lt;</a>
+</div>
+
+<div class="page-wrap">
+    <div class="title">ANTIQUE STORE — ADMIN</div>
+
+    <div class="panel">
+        <div class="form-group">
+            <label>Photos (view 1 required, view 2 optional):</label>
+            <div class="previews-grid">
+                <div class="preview-box"><span id="pText1">View 1<br><input type="file" accept="image/*" id="file1" style="margin-top:3px; font-size:8px;"></span><img id="previewImg1" src="" style="display:none;"></div>
+                <div class="preview-box"><span id="pText2">View 2<br><input type="file" accept="image/*" id="file2" style="margin-top:3px; font-size:8px;"></span><img id="previewImg2" src="" style="display:none;"></div>
+            </div>
+        </div>
+        <div class="form-group"><label>Name:</label><input type="text" id="inputName"></div>
+        <div class="form-group"><label>Category:</label>
+            <select id="inputCategory">
+                <option value="glass">Glass</option>
+                <option value="porcelain">Porcelain</option>
+                <option value="textile">Textile</option>
+                <option value="wood">Wood</option>
+                <option value="metal">Metal</option>
+                <option value="tech">Tech devices</option>
+            </select>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="form-group"><label>Year (&lt; 1990):</label><input type="number" id="inputYear"></div>
+            <div class="form-group"><label>Dimensions:</label><input type="text" id="inputDimensions"></div>
+        </div>
+        <div class="form-group"><label>Quantity:</label><input type="text" id="inputQuantity" value="1 pc."></div>
+        <div class="form-group"><label>Price, €:</label><input type="number" id="inputPrice" value="100" min="0" step="1"></div>
+        <div class="form-group"><label>Staff note (optional):</label><textarea id="inputNote" rows="2"></textarea></div>
+        <div class="status-line" id="addStatus"></div>
+        <button class="btn-cfg" id="btn-publish">PUBLISH TO STORE</button>
+
+        <div class="section-label">Current lots</div>
+        <table>
+            <thead><tr><th>Name</th><th>Category</th><th>Price</th><th></th></tr></thead>
+            <tbody id="itemsRows"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth, signOut } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const CATEGORY_LABELS = { glass: 'Glass', porcelain: 'Porcelain', textile: 'Textile', wood: 'Wood', metal: 'Metal', tech: 'Tech devices' };
+    let pendingFile1 = null, pendingFile2 = null;
+
+    function resizeToBlob(file, maxDim = 900) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                img.onload = () => {
+                    let { width, height } = img;
+                    if (width > maxDim || height > maxDim) {
+                        const r = Math.min(maxDim / width, maxDim / height);
+                        width = Math.round(width * r); height = Math.round(height * r);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => resolve({ blob, url: URL.createObjectURL(blob) }), 'image/jpeg', 0.85);
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    document.getElementById('file1').addEventListener('change', async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        const { blob, url } = await resizeToBlob(file);
+        pendingFile1 = blob;
+        document.getElementById('previewImg1').src = url;
+        document.getElementById('previewImg1').style.display = 'block';
+        document.getElementById('pText1').style.display = 'none';
+        if (!document.getElementById('inputName').value) {
+            const clean = file.name.replace(/\.[^.]+$/, '');
+            document.getElementById('inputName').value = clean.charAt(0).toUpperCase() + clean.slice(1);
+        }
+    });
+    document.getElementById('file2').addEventListener('change', async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        const { blob, url } = await resizeToBlob(file);
+        pendingFile2 = blob;
+        document.getElementById('previewImg2').src = url;
+        document.getElementById('previewImg2').style.display = 'block';
+        document.getElementById('pText2').style.display = 'none';
+    });
+
+    document.getElementById('btn-publish').addEventListener('click', async () => {
+        const status = document.getElementById('addStatus');
+        status.className = 'status-line';
+        const name = document.getElementById('inputName').value.trim();
+        const year = parseInt(document.getElementById('inputYear').value);
+        if (!name) { status.textContent = 'Enter a name.'; status.classList.add('error'); return; }
+        if (!year || isNaN(year)) { status.textContent = 'Enter a valid year.'; status.classList.add('error'); return; }
+        if (year >= 1990) { status.textContent = 'The club only accepts pre-1990 items.'; status.classList.add('error'); return; }
+        if (!pendingFile1) { status.textContent = 'Upload at least the first photo.'; status.classList.add('error'); return; }
+
+        status.textContent = 'Uploading...';
+        try {
+            const path1 = `${Date.now()}_1_${Math.random().toString(36).slice(2,8)}.jpg`;
+            await supabase.storage.from('store-items').upload(path1, pendingFile1, { contentType: 'image/jpeg' });
+            const { data: { publicUrl: url1 } } = supabase.storage.from('store-items').getPublicUrl(path1);
+
+            let url2 = null;
+            if (pendingFile2) {
+                const path2 = `${Date.now()}_2_${Math.random().toString(36).slice(2,8)}.jpg`;
+                await supabase.storage.from('store-items').upload(path2, pendingFile2, { contentType: 'image/jpeg' });
+                url2 = supabase.storage.from('store-items').getPublicUrl(path2).data.publicUrl;
+            }
+
+            const { error } = await supabase.from('store_items').insert({
+                name, category: document.getElementById('inputCategory').value, year,
+                dimensions: document.getElementById('inputDimensions').value.trim(),
+                quantity_label: document.getElementById('inputQuantity').value.trim() || '1 pc.',
+                price: parseFloat(document.getElementById('inputPrice').value) || 0,
+                staff_note: document.getElementById('inputNote').value.trim(),
+                image1_url: url1, image2_url: url2
+            });
+            if (error) throw error;
+            status.textContent = 'Published!'; status.classList.add('ok');
+            ['inputName','inputYear','inputDimensions','inputNote'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('inputQuantity').value = '1 pc.';
+            ['previewImg1','previewImg2'].forEach(id => document.getElementById(id).style.display = 'none');
+            ['pText1','pText2'].forEach(id => document.getElementById(id).style.display = 'block');
+            pendingFile1 = null; pendingFile2 = null;
+            loadItems();
+        } catch (err) {
+            console.error('[StoreAdmin]', err);
+            status.textContent = 'Save failed.'; status.classList.add('error');
+        }
+    });
+
+    async function loadItems() {
+        const { data } = await supabase.from('store_items').select('*').order('created_at', { ascending: false });
+        document.getElementById('itemsRows').innerHTML = (data || []).map(item => `
+            <tr>
+                <td>${item.name}</td>
+                <td>${CATEGORY_LABELS[item.category] || item.category}</td>
+                <td class="amount">€${Number(item.price).toFixed(2)}</td>
+                <td><button class="del-btn" data-id="${item.id}">DEL</button></td>
+            </tr>`).join('') || '<tr><td colspan="4" style="color:#666;">No lots yet</td></tr>';
+        document.querySelectorAll('.del-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Delete this lot?')) return;
+                await supabase.from('store_items').delete().eq('id', btn.dataset.id);
+                loadItems();
+            });
+        });
+    }
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+
+    loadItems();
+</script>
+
+</body>
+</html>
