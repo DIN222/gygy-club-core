@@ -72,14 +72,9 @@
 </div>
 
 <script type="module">
-    import { requireAuth } from './core/auth.js';
-
-    try {
-        const session = await requireAuth();
-        if (!session) throw new Error('Redirecting to login');
-    } catch (err) {
-        console.warn('Auth error or redirecting:', err);
-    }
+    import { requireAuth, signOut } from './core/auth.js';
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-office').addEventListener('click', () => window.location.href = 'office.html');
