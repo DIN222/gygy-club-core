@@ -121,6 +121,9 @@
 <script type="module">
     import { init as initPassport } from './modules/passport.js';
     import { get, set } from './core/storage.js';
+    import { requireAuth, signOut } from './core/auth.js';
+  const session = await requireAuth();
+if (!session) throw new Error('redirecting to login');
 
     initPassport(document.getElementById('passport-badge-container'));
 
