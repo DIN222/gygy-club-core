@@ -1,37 +1,29 @@
 <!DOCTYPE html>
 <!--
   store.html
-  v2.0.0 — 2026-10-02
-  Полная пересборка под общие правила проекта (изначально файл собирал
-  другой ИИ отдельно от основного стека):
-  (1) ES-модули вместо инлайн onclick; modules/passport.js вместо
-      самодельного пользователя; core/supabase-init.js вместо localStorage.
-  (2) Валюта — €, не вымышленные "GY-GY монеты" (иначе продажи Лавки не
-      попадут в общую Бухгалтерию/Приход).
-  (3) Фиктивный "ИИ-анализ подлинности" (случайный процент) убран —
-      заменён честным полем "оценка сотрудника клуба", без вида
-      алгоритмической проверки, которой на самом деле нет.
-  (4) Хранение — Supabase (таблица store_items, бакет store-items),
-      видно всем посетителям клуба, не только в браузере того, кто
-      добавлял лоты.
-  (5) Шапка/стрелки/паспорт — тот же структурный паттерн, что в
-      hall.html/atelier.html (position: absolute, обязательный CSS
-      для .gy-user-badge — без него плавающий аватар разносит вёрстку,
-      этот баг уже несколько раз чинили на других страницах).
-  Деревянная/антикварная тема панелей (дерево, бордовый акцент) сохранена
-  как уместная тематическая вариация — структурные правила (модули,
-  паспорт, Supabase, хедер) не нарушены.
+  v3.0.0 — 2026-10-02
+  Изменения относительно v2.0.0:
+  (1) Полностью на английском, "GY-GY Club" убрано из заголовка.
+  (2) Добавление/удаление лотов убрано отсюда совсем — теперь это
+      store-admin.html внутри Бухгалтерии (посетители этого не видят).
+      Эта страница — чистая витрина: смотреть и (пока условно) купить.
+  (3) Категория "Fabric/Paper" заменена на отдельные "Textile" и "Wood".
+  (4) Демонстрационная рамка — фон теперь размытая растянутая копия
+      самого фото (а не просто светлая плашка) — так, будто витрина
+      заполнена фоном, на котором снято фото.
+  (5) Явная кнопка "✕" закрыть просмотр лота — чтобы было видно, как
+      вернуться к каталогу после выбора товара.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>GY-GY Club — Antique Store v2.0.0</title>
+<title>Antique Store v3.0.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
     :root {
         --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6;
-        --border-wood: #5a3e1b; --dark-wood: #2b1d0c; --deep-bg: #140d06; --accent-red: #782814;
+        --border-wood: #5a3e1b; --dark-wood: #2b1d0c; --accent-red: #782814;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body {
@@ -53,16 +45,12 @@
     .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 14px; height: 10px; object-fit: cover; border: 1px solid var(--gold); }
 
     .page-wrap { position: relative; z-index: 1; min-height: 100vh; padding: 64px 12px 24px; }
-
     .page-title { text-align: center; font-family: 'Cinzel', serif; font-size: 17px; letter-spacing: 1px; margin-bottom: 14px; text-shadow: 0 0 10px rgba(255,215,0,0.35); }
 
     .shop-wrapper { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 1100px; margin: 0 auto; }
     @media (min-width: 900px) { .shop-wrapper { grid-template-columns: 300px 1fr 300px; } }
 
-    .panel {
-        background: rgba(25, 16, 8, 0.78); border: 2px solid var(--border-wood); border-radius: 8px;
-        padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-    }
+    .panel { background: rgba(25, 16, 8, 0.78); border: 2px solid var(--border-wood); border-radius: 8px; padding: 12px; }
     .left-panel, .right-panel { display: flex; flex-direction: column; gap: 10px; max-height: 70vh; overflow-y: auto; }
     .section-title { font-family: 'Cinzel', serif; font-size: 12px; font-weight: bold; color: var(--gold); border-bottom: 2px solid var(--border-wood); padding-bottom: 4px; margin-bottom: 4px; }
 
@@ -74,10 +62,20 @@
     .mini-item:hover { border-color: var(--gold); }
     .empty-cat { font-size: 9px; color: #998; padding: 3px; }
 
-    .center-panel { display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .display-frame { width: 100%; height: 48vh; border: 3px solid var(--border-wood); background: rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden; position: relative; }
-    .display-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
-    .placeholder-text { color: var(--accent-red); font-size: 12px; font-weight: bold; }
+    .center-panel { display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+    .display-frame {
+        width: 100%; height: 48vh; border: 3px solid var(--border-wood); border-radius: 6px;
+        position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .display-bg-fill { position: absolute; inset: -10px; background-size: cover; background-position: center; filter: blur(18px) brightness(0.75); transform: scale(1.1); }
+    .display-frame img.fg { position: relative; max-width: 92%; max-height: 92%; object-fit: contain; z-index: 1; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.5)); }
+    .placeholder-text { position: relative; z-index: 1; color: var(--accent-red); font-size: 12px; font-weight: bold; background: rgba(255,255,255,0.92); padding: 10px 14px; border-radius: 6px; }
+    .btn-close-item {
+        position: absolute; top: 8px; right: 8px; z-index: 2; width: 26px; height: 26px; border-radius: 50%;
+        background: rgba(0,0,0,0.6); color: var(--gold); border: 1px solid var(--gold); cursor: pointer;
+        font-size: 14px; display: none; align-items: center; justify-content: center;
+    }
+    .btn-close-item.visible { display: flex; }
     .projection-switcher { display: none; gap: 8px; margin: 8px 0; }
     .projection-switcher.visible { display: flex; }
     .proj-btn { background: #3b2814; color: var(--gold); border: 1px solid var(--border-wood); padding: 4px 10px; font-size: 9px; font-weight: bold; cursor: pointer; border-radius: 4px; }
@@ -87,32 +85,14 @@
 
     .spec-box { background: rgba(255,255,255,0.05); border: 1px solid var(--border-wood); border-radius: 6px; padding: 10px; font-size: 10px; line-height: 1.6; color: var(--ivory); }
     .spec-box b { color: var(--gold); }
-    .price-row { display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; color: var(--gold); }
-    .price-input { width: 85px; padding: 4px; font-family: 'Cinzel', serif; font-size: 13px; font-weight: bold; color: var(--accent-red); background: #fff; border: 1px solid var(--border-wood); border-radius: 4px; text-align: center; }
+    .price-row { display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 15px; color: var(--gold); }
 
     .action-btn {
         background: linear-gradient(to bottom, #782814, #4a180b); color: var(--gold); border: 1px solid var(--border-wood);
-        padding: 8px; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 5px; width: 100%;
+        padding: 9px; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 5px; width: 100%;
         font-family: 'Share Tech Mono', monospace;
     }
     .action-btn:hover { filter: brightness(1.15); }
-    .action-btn-danger { background: linear-gradient(to bottom, #5a1b1b, #2b0c0c); color: #ffcccc; border-color: #781414; }
-    .action-btn-secondary { background: linear-gradient(to bottom, #6d4b20, #4a3112); }
-
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 10px; }
-    .modal-card { background: #f7f1e1; border: 3px solid var(--border-wood); padding: 18px; width: 100%; max-width: 480px; border-radius: 10px; color: var(--dark-wood); max-height: 95vh; overflow-y: auto; font-family: 'Share Tech Mono', monospace; }
-    .modal-card h3 { font-family: 'Cinzel', serif; margin-bottom: 12px; font-size: 15px; border-bottom: 2px solid var(--border-wood); padding-bottom: 6px; }
-    .modal-close { float: right; cursor: pointer; font-weight: bold; font-size: 18px; color: var(--accent-red); }
-    .form-group { margin-bottom: 10px; font-size: 10px; }
-    .form-group label { display: block; font-weight: bold; margin-bottom: 3px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 6px; border: 1px solid var(--border-wood); background: #fff; font-family: inherit; font-size: 10px; border-radius: 4px; }
-    .previews-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    .preview-box { width: 100%; height: 95px; border: 2px dashed var(--border-wood); background: #fff; display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden; text-align: center; padding: 4px; }
-    .preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-    .preview-box span { font-size: 9px; color: #777; }
-    .status-line { font-size: 10px; margin-top: 6px; min-height: 14px; }
-    .status-line.ok { color: #2a7a2a; }
-    .status-line.error { color: #a02020; }
 </style>
 </head>
 <body>
@@ -126,87 +106,41 @@
 <div id="passport-badge-container"></div>
 
 <div class="page-wrap">
-    <div class="page-title">GY-GY CLUB — ЛАВКА ДРЕВНОСТЕЙ</div>
+    <div class="page-title">ANTIQUE STORE</div>
 
     <div class="shop-wrapper">
         <aside class="panel left-panel">
-            <div class="section-title">БАЗА ЛОТОВ КЛУБА</div>
+            <div class="section-title">CATALOG</div>
             <div id="categoriesContainer"></div>
         </aside>
 
         <main class="panel center-panel">
-            <div class="display-frame">
-                <img id="activeImg" src="" alt="" style="display:none;">
-                <div class="placeholder-text" id="emptyPlaceholder">База пуста.<br>Нажмите «+ Добавить лот»<br>чтобы внести предмет.</div>
+            <div class="display-frame" id="displayFrame">
+                <div class="display-bg-fill" id="displayBgFill" style="display:none;"></div>
+                <button class="btn-close-item" id="btnCloseItem">✕</button>
+                <img class="fg" id="activeImg" src="" alt="" style="display:none;">
+                <div class="placeholder-text" id="emptyPlaceholder">The catalog is empty.<br>Check back soon.</div>
             </div>
             <div class="projection-switcher" id="projSwitcher">
-                <button class="proj-btn active" id="projBtn1">Вид 1</button>
-                <button class="proj-btn" id="projBtn2">Вид 2</button>
+                <button class="proj-btn active" id="projBtn1">View 1</button>
+                <button class="proj-btn" id="projBtn2">View 2</button>
             </div>
             <div class="display-info">
-                <h2 id="activeTitle">Лот не выбран</h2>
-                <p id="activeDesc">Выберите предмет из каталога слева.</p>
+                <h2 id="activeTitle">No item selected</h2>
+                <p id="activeDesc">Pick a piece from the catalog on the left.</p>
             </div>
         </main>
 
         <section class="panel right-panel">
-            <div class="section-title">ХАРАКТЕРИСТИКИ</div>
+            <div class="section-title">DETAILS</div>
             <div class="spec-box" id="specsBox">
-                <p><b>Категория:</b> —</p><p><b>Год:</b> —</p><p><b>Размеры:</b> —</p><p><b>Количество:</b> —</p>
+                <p><b>Category:</b> —</p><p><b>Year:</b> —</p><p><b>Dimensions:</b> —</p><p><b>Quantity:</b> —</p>
             </div>
             <div class="spec-box">
-                <div class="price-row">
-                    <span>Цена:</span>
-                    <div><input type="number" class="price-input" id="priceInput" disabled> €</div>
-                </div>
+                <div class="price-row"><span>Price:</span><span id="priceDisplay">—</span></div>
             </div>
-            <button class="action-btn" id="btn-add-cart">🛒 Добавить в корзину</button>
-            <button class="action-btn action-btn-danger" id="btn-delete-item">🗑 Удалить лот из базы</button>
-            <button class="action-btn action-btn-secondary" id="btn-open-add">+ Добавить лот</button>
+            <button class="action-btn" id="btn-add-cart">🛒 Add to cart</button>
         </section>
-    </div>
-</div>
-
-<div class="modal-overlay" id="addModal">
-    <div class="modal-card">
-        <span class="modal-close" data-close>&times;</span>
-        <h3>Внесение лота в базу Лавки</h3>
-        <p style="font-size:9px; margin-bottom:8px; color:#555;">Загрузите до двух фото, укажите данные. Клуб принимает предметы старше 1990 года.</p>
-
-        <div class="form-group">
-            <label>Фото (вид 1 — обязательно, вид 2 — опционально):</label>
-            <div class="previews-grid">
-                <div class="preview-box">
-                    <span id="pText1">Фото 1<br><input type="file" accept="image/*" id="file1" style="margin-top:3px; font-size:8px;"></span>
-                    <img id="previewImg1" src="" style="display:none;">
-                </div>
-                <div class="preview-box">
-                    <span id="pText2">Фото 2<br><input type="file" accept="image/*" id="file2" style="margin-top:3px; font-size:8px;"></span>
-                    <img id="previewImg2" src="" style="display:none;">
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group"><label>Название:</label><input type="text" id="inputName" placeholder="Напр. Бокал богемского стекла"></div>
-        <div class="form-group"><label>Категория:</label>
-            <select id="inputCategory">
-                <option value="glass">Стекло</option>
-                <option value="porcelain">Фарфор</option>
-                <option value="fabric">Текстиль/Бумага</option>
-                <option value="metal">Металл</option>
-                <option value="tech">Техно-девайсы</option>
-            </select>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-            <div class="form-group"><label>Год (&lt; 1990):</label><input type="number" id="inputYear" placeholder="1975"></div>
-            <div class="form-group"><label>Размеры:</label><input type="text" id="inputDimensions" placeholder="25x14 см"></div>
-        </div>
-        <div class="form-group"><label>Количество:</label><input type="text" id="inputQuantity" placeholder="1 шт." value="1 шт."></div>
-        <div class="form-group"><label>Цена, €:</label><input type="number" id="inputPrice" value="100" min="0" step="1"></div>
-        <div class="form-group"><label>Оценка сотрудника клуба (по желанию — не алгоритм, мнение человека):</label><textarea id="inputNote" rows="2" placeholder="Напр. состояние хорошее, подлинность не вызывает сомнений"></textarea></div>
-
-        <div class="status-line" id="addStatus"></div>
-        <button class="action-btn" id="btn-publish">Разместить в базе клуба</button>
     </div>
 </div>
 
@@ -218,17 +152,16 @@
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
-    const CATEGORY_LABELS = { glass: 'Стекло', porcelain: 'Фарфор', fabric: 'Текстиль/Бумага', metal: 'Металл', tech: 'Техно-девайсы' };
-    const CATEGORY_ORDER = ['glass', 'porcelain', 'fabric', 'metal', 'tech'];
+    const CATEGORY_LABELS = { glass: 'Glass', porcelain: 'Porcelain', textile: 'Textile', wood: 'Wood', metal: 'Metal', tech: 'Tech devices' };
+    const CATEGORY_ORDER = ['glass', 'porcelain', 'textile', 'wood', 'metal', 'tech'];
 
     let allItems = [];
     let activeItem = null;
     let activeProjection = 1;
-    let pendingFile1 = null, pendingFile2 = null;
 
     async function loadItems() {
         const { data, error } = await supabase.from('store_items').select('*').order('created_at', { ascending: false });
-        if (error) { console.error('[Store] Ошибка загрузки', error); return; }
+        if (error) { console.error('[Store] Load error', error); return; }
         allItems = data || [];
         renderCategories();
     }
@@ -239,7 +172,7 @@
             const items = allItems.filter(i => i.category === cat);
             const thumbs = items.length
                 ? items.map(item => `<div class="mini-item" data-id="${item.id}"><img src="${item.image1_url}"></div>`).join('')
-                : `<span class="empty-cat">Нет лотов</span>`;
+                : `<span class="empty-cat">No items yet</span>`;
             return `
                 <div class="category-group">
                     <div class="category-header"><span>${CATEGORY_LABELS[cat]}</span><span>(${items.length})</span></div>
@@ -259,6 +192,7 @@
         activeProjection = 1;
         updateDisplayImage();
 
+        document.getElementById('btnCloseItem').classList.add('visible');
         const switcher = document.getElementById('projSwitcher');
         switcher.classList.toggle('visible', !!item.image2_url);
         document.getElementById('projBtn1').classList.add('active');
@@ -267,23 +201,39 @@
         document.getElementById('activeTitle').textContent = item.name;
         document.getElementById('activeDesc').textContent = item.staff_note || '';
         document.getElementById('specsBox').innerHTML = `
-            <p><b>Категория:</b> ${CATEGORY_LABELS[item.category] || item.category}</p>
-            <p><b>Год:</b> ${item.year} г.</p>
-            <p><b>Размеры:</b> ${item.dimensions || '—'}</p>
-            <p><b>Количество:</b> ${item.quantity_label || '1 шт.'}</p>
-            ${item.staff_note ? `<p style="margin-top:4px;"><b>Оценка сотрудника:</b> ${item.staff_note}</p>` : ''}
+            <p><b>Category:</b> ${CATEGORY_LABELS[item.category] || item.category}</p>
+            <p><b>Year:</b> ${item.year}</p>
+            <p><b>Dimensions:</b> ${item.dimensions || '—'}</p>
+            <p><b>Quantity:</b> ${item.quantity_label || '1 pc.'}</p>
+            ${item.staff_note ? `<p style="margin-top:4px;"><b>Staff note:</b> ${item.staff_note}</p>` : ''}
         `;
-        const priceInput = document.getElementById('priceInput');
-        priceInput.value = item.price;
-        priceInput.disabled = false;
+        document.getElementById('priceDisplay').textContent = `€${Number(item.price).toFixed(2)}`;
     }
+
+    function clearSelection() {
+        activeItem = null;
+        document.getElementById('activeImg').style.display = 'none';
+        document.getElementById('displayBgFill').style.display = 'none';
+        document.getElementById('emptyPlaceholder').style.display = 'block';
+        document.getElementById('btnCloseItem').classList.remove('visible');
+        document.getElementById('projSwitcher').classList.remove('visible');
+        document.getElementById('activeTitle').textContent = 'No item selected';
+        document.getElementById('activeDesc').textContent = 'Pick a piece from the catalog on the left.';
+        document.getElementById('specsBox').innerHTML = `<p><b>Category:</b> —</p><p><b>Year:</b> —</p><p><b>Dimensions:</b> —</p><p><b>Quantity:</b> —</p>`;
+        document.getElementById('priceDisplay').textContent = '—';
+    }
+    document.getElementById('btnCloseItem').addEventListener('click', clearSelection);
 
     function updateDisplayImage() {
         if (!activeItem) return;
+        const url = (activeProjection === 2 && activeItem.image2_url) ? activeItem.image2_url : activeItem.image1_url;
         const img = document.getElementById('activeImg');
-        img.src = (activeProjection === 2 && activeItem.image2_url) ? activeItem.image2_url : activeItem.image1_url;
+        img.src = url;
         img.style.display = 'block';
         document.getElementById('emptyPlaceholder').style.display = 'none';
+        const bgFill = document.getElementById('displayBgFill');
+        bgFill.style.backgroundImage = `url('${url}')`;
+        bgFill.style.display = 'block';
     }
 
     document.getElementById('projBtn1').addEventListener('click', () => {
@@ -299,152 +249,10 @@
         updateDisplayImage();
     });
 
-    document.getElementById('priceInput').addEventListener('change', async (e) => {
-        if (!activeItem) return;
-        const newPrice = parseFloat(e.target.value) || 0;
-        await supabase.from('store_items').update({ price: newPrice }).eq('id', activeItem.id);
-        activeItem.price = newPrice;
-    });
-
-    document.getElementById('btn-delete-item').addEventListener('click', async () => {
-        if (!activeItem) { alert('Сначала выберите лот в каталоге.'); return; }
-        if (!confirm(`Удалить "${activeItem.name}" из базы клуба?`)) return;
-        await supabase.from('store_items').delete().eq('id', activeItem.id);
-        activeItem = null;
-        document.getElementById('activeImg').style.display = 'none';
-        document.getElementById('emptyPlaceholder').style.display = 'block';
-        document.getElementById('projSwitcher').classList.remove('visible');
-        document.getElementById('activeTitle').textContent = 'Лот не выбран';
-        document.getElementById('activeDesc').textContent = 'Выберите предмет из каталога слева.';
-        document.getElementById('priceInput').disabled = true;
-        document.getElementById('priceInput').value = '';
-        loadItems();
-    });
-
     document.getElementById('btn-add-cart').addEventListener('click', () => {
-        if (!activeItem) { alert('Сначала выберите лот.'); return; }
-        // Полноценной корзины/оплаты в клубе пока нет — это просто
-        // заглушка-подтверждение, честно без притворства на реальную покупку.
-        alert(`"${activeItem.name}" отмечен к покупке за €${activeItem.price}. Оформление корзины — отдельная будущая задача.`);
+        if (!activeItem) { alert('Pick an item first.'); return; }
+        alert(`"${activeItem.name}" marked for purchase at €${activeItem.price}. A real cart/checkout is a future task.`);
     });
-
-    function resizeToDataUrl(file, maxDim = 900) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                img.onload = () => {
-                    let { width, height } = img;
-                    if (width > maxDim || height > maxDim) {
-                        const r = Math.min(maxDim / width, maxDim / height);
-                        width = Math.round(width * r); height = Math.round(height * r);
-                    }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width; canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    canvas.toBlob((blob) => resolve({ blob, url: URL.createObjectURL(blob) }), 'image/jpeg', 0.85);
-                };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    document.getElementById('file1').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const { blob, url } = await resizeToDataUrl(file);
-        pendingFile1 = blob;
-        document.getElementById('previewImg1').src = url;
-        document.getElementById('previewImg1').style.display = 'block';
-        document.getElementById('pText1').style.display = 'none';
-        if (!document.getElementById('inputName').value) {
-            const clean = file.name.replace(/\.[^.]+$/, '');
-            document.getElementById('inputName').value = clean.charAt(0).toUpperCase() + clean.slice(1);
-        }
-    });
-    document.getElementById('file2').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const { blob, url } = await resizeToDataUrl(file);
-        pendingFile2 = blob;
-        document.getElementById('previewImg2').src = url;
-        document.getElementById('previewImg2').style.display = 'block';
-        document.getElementById('pText2').style.display = 'none';
-    });
-
-    document.getElementById('btn-publish').addEventListener('click', async () => {
-        const status = document.getElementById('addStatus');
-        status.className = 'status-line';
-        const name = document.getElementById('inputName').value.trim();
-        const year = parseInt(document.getElementById('inputYear').value);
-        if (!name) { status.textContent = 'Укажите название.'; status.classList.add('error'); return; }
-        if (!year || isNaN(year)) { status.textContent = 'Укажите корректный год.'; status.classList.add('error'); return; }
-        if (year >= 1990) { status.textContent = 'Клуб принимает предметы старше 1990 года.'; status.classList.add('error'); return; }
-        if (!pendingFile1) { status.textContent = 'Загрузите хотя бы первое фото.'; status.classList.add('error'); return; }
-
-        status.textContent = 'Загрузка...';
-        try {
-            const path1 = `${Date.now()}_1_${Math.random().toString(36).slice(2,8)}.jpg`;
-            await supabase.storage.from('store-items').upload(path1, pendingFile1, { contentType: 'image/jpeg' });
-            const { data: { publicUrl: url1 } } = supabase.storage.from('store-items').getPublicUrl(path1);
-
-            let url2 = null;
-            if (pendingFile2) {
-                const path2 = `${Date.now()}_2_${Math.random().toString(36).slice(2,8)}.jpg`;
-                await supabase.storage.from('store-items').upload(path2, pendingFile2, { contentType: 'image/jpeg' });
-                url2 = supabase.storage.from('store-items').getPublicUrl(path2).data.publicUrl;
-            }
-
-            const { error } = await supabase.from('store_items').insert({
-                name,
-                category: document.getElementById('inputCategory').value,
-                year,
-                dimensions: document.getElementById('inputDimensions').value.trim(),
-                quantity_label: document.getElementById('inputQuantity').value.trim() || '1 шт.',
-                price: parseFloat(document.getElementById('inputPrice').value) || 0,
-                staff_note: document.getElementById('inputNote').value.trim(),
-                image1_url: url1, image2_url: url2
-            });
-            if (error) throw error;
-
-            status.textContent = 'Лот размещён!';
-            status.classList.add('ok');
-            setTimeout(() => {
-                closeModal();
-                resetForm();
-                loadItems();
-            }, 600);
-        } catch (err) {
-            console.error('[Store] Ошибка публикации', err);
-            status.textContent = 'Не удалось сохранить — база недоступна.';
-            status.classList.add('error');
-        }
-    });
-
-    function resetForm() {
-        document.getElementById('inputName').value = '';
-        document.getElementById('inputYear').value = '';
-        document.getElementById('inputDimensions').value = '';
-        document.getElementById('inputQuantity').value = '1 шт.';
-        document.getElementById('inputNote').value = '';
-        document.getElementById('previewImg1').style.display = 'none';
-        document.getElementById('previewImg2').style.display = 'none';
-        document.getElementById('pText1').style.display = 'block';
-        document.getElementById('pText2').style.display = 'block';
-        pendingFile1 = null; pendingFile2 = null;
-        document.getElementById('addStatus').textContent = '';
-    }
-
-    function openModal() {
-        const m = document.getElementById('addModal');
-        m.style.display = 'flex';
-    }
-    function closeModal() {
-        document.getElementById('addModal').style.display = 'none';
-    }
-    document.getElementById('btn-open-add').addEventListener('click', openModal);
-    document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeModal));
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
