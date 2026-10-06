@@ -87,6 +87,9 @@
 <script type="module">
     import { init as initPassport } from './modules/passport.js';
     import { supabase } from './core/supabase-init.js';
+  import { requireAuth, signOut } from './core/auth.js';
+  const session = await requireAuth();
+if (!session) throw new Error('redirecting to login');
 
     initPassport(document.getElementById('passport-badge-container') || document.createElement('div'));
 
