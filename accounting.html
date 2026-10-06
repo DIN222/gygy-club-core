@@ -71,11 +71,12 @@
 </div>
 
 <script>
-    document.getElementById('btn-back').addEventListener('click', () => history.back());
-    document.getElementById('btn-office').addEventListener('click', () => window.location.href = 'office.html');
   import { requireAuth, signOut } from './core/auth.js';
   const session = await requireAuth();
 if (!session) throw new Error('redirecting to login');
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-office').addEventListener('click', () => window.location.href = 'office.html');
+ 
 </script>
 
 </body>
