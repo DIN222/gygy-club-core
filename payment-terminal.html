@@ -1,1 +1,43 @@
 
+<!DOCTYPE html>
+<!-- payment-terminal.html — v1.0.0 — 2026-10-02 — демо-страница модуля -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Payment Terminal Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; }
+    .title { font-family: 'Cinzel', serif; font-size: 18px; }
+    input { padding: 8px; border: 1px solid var(--gold); background: #F0EAD6; color: #1a1408; font-family: inherit; width: 160px; text-align: center; }
+    button { padding: 10px 20px; background: var(--gold); color: #000; border: none; font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+<div class="page-wrap">
+    <div class="title">PAYMENT TERMINAL — DEMO</div>
+    <input type="number" id="demo-amount" value="25" min="1" step="1">
+    <button id="btn-test">ОТКРЫТЬ ТЕРМИНАЛ</button>
+</div>
+<script type="module">
+    import { openPaymentTerminal } from './modules/paymentTerminal.js';
+    document.getElementById('btn-test').addEventListener('click', () => {
+        const amount = parseFloat(document.getElementById('demo-amount').value) || 25;
+        openPaymentTerminal({
+            amount, orderNumber: 'DEMO-' + Date.now().toString(36).toUpperCase(),
+            lineItems: [['Test item', `€${amount}`]],
+            onComplete: () => alert('Готово — в реальном заказе здесь была бы запись в Бухгалтерию.')
+        });
+    });
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+</script>
+</body>
+</html>
