@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<!-- login.html — v1.0.0 — 2026-10-02 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Staff Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        width: 100%; min-height: 100%; background: #000; color: var(--gold);
+        font-family: 'Share Tech Mono', monospace; display: flex; align-items: center; justify-content: center;
+    }
+    .card { width: 280px; padding: 24px; border: 1px solid var(--gold-dim); background: #0a0a0a; }
+    .title { font-family: 'Cinzel', serif; font-size: 16px; text-align: center; margin-bottom: 18px; letter-spacing: 1px; }
+    input {
+        width: 100%; padding: 9px; margin-bottom: 10px; border: 1px solid var(--gold);
+        background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 12px;
+    }
+    button {
+        width: 100%; padding: 9px; background: var(--gold); color: #000; border: none;
+        font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: inherit; font-size: 11px;
+    }
+    button:hover { filter: brightness(1.08); }
+    .status { font-size: 11px; color: #e74c3c; text-align: center; margin-top: 8px; min-height: 14px; }
+</style>
+</head>
+<body>
+<div class="card">
+    <div class="title">STAFF LOGIN</div>
+    <input type="email" id="email" placeholder="Email" autocomplete="username">
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+    <button id="btn-login">ВОЙТИ</button>
+    <div class="status" id="status"></div>
+</div>
+<script type="module">
+    import { signIn } from './core/auth.js';
 
+    async function attemptLogin() {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const status = document.getElementById('status');
+        status.textContent = '';
+        try {
+            await signIn(email, password);
+            window.location.href = 'office.html';
+        } catch (e) {
+            status.textContent = 'Неверный email или пароль.';
+        }
+    }
+    document.getElementById('btn-login').addEventListener('click', attemptLogin);
+    document.getElementById('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptLogin(); });
+</script>
+</body>
+</html>
