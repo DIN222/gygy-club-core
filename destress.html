@@ -11,17 +11,17 @@
         /* Контейнер локации */
         .destress-container { position: relative; width: 100%; height: 100vh; }
 
-        /* Слой 1: Фото-фон */
+        /* Слой 1: Фото-фон (сделали ярче и видимее) */
         .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        .bg-image { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.55) contrast(1.05); }
-        .vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.2) 30%, rgba(0,0,0,0.85) 100%); }
+        .bg-image { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.85) contrast(1.05); }
+        .vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.55) 100%); }
 
         /* Слой 2: Интерактивный интерфейс */
         .ui-layer { position: relative; z-index: 2; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; pointer-events: none; }
         .ui-layer > * { pointer-events: auto; }
 
         /* Верхняя панель (Постоянные атрибуты GY-GY) */
-        .navbar { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; background: rgba(15, 15, 15, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); padding: 10px 24px; border-radius: 50px; width: 100%; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; background: rgba(15, 15, 15, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); padding: 10px 24px; border-radius: 50px; width: 100%; }
         .brand-logo { color: #f39c12; font-weight: bold; font-size: 1.2rem; text-decoration: none; display: flex; align-items: center; gap: 8px; }
         .brand-logo span { background: #f39c12; color: #000; padding: 2px 8px; border-radius: 6px; font-weight: 900; }
         .lang-panel { display: flex; gap: 6px; }
@@ -30,41 +30,42 @@
         .btn-back { color: #fff; text-decoration: none; background: rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; transition: 0.2s; }
         .btn-back:hover { background: rgba(255,255,255,0.2); }
 
-        /* Центральная Рамка ИИ */
-        .ai-frame { max-width: 680px; width: 100%; margin: auto; background: rgba(12, 20, 28, 0.88); border: 1px solid #00f0ff; box-shadow: 0 0 30px rgba(0, 240, 255, 0.25); backdrop-filter: blur(15px); border-radius: 20px; padding: 22px; text-align: left; }
+        /* Центральная Рамка ИИ (С прозрачным фоном для видимости интерьера) */
+        .ai-frame { max-width: 680px; width: 100%; margin: auto; background: rgba(12, 20, 28, 0.55); border: 1px solid rgba(0, 240, 255, 0.4); box-shadow: 0 0 30px rgba(0, 240, 255, 0.15); backdrop-filter: blur(8px); border-radius: 20px; padding: 22px; text-align: left; }
         
         .ai-header { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 10px; }
         .ai-avatar { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; border: 2px solid #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.5); flex-shrink: 0; }
         .ai-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .ai-title h2 { color: #00f0ff; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 1px; }
-        .ai-title p { color: #aaa; font-size: 0.8rem; }
+        .ai-title p { color: #ddd; font-size: 0.8rem; }
 
-        .ai-dialogue { font-size: 0.95rem; color: #ddd; margin-bottom: 12px; line-height: 1.4; }
+        .ai-dialogue { font-size: 0.95rem; color: #fff; margin-bottom: 12px; line-height: 1.4; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
-        .section-label { font-size: 0.75rem; color: #00f0ff; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
+        .section-label { font-size: 0.75rem; color: #00f0ff; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; font-weight: bold; }
 
         /* Чипы */
         .chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-        .chip { background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); color: #00f0ff; padding: 5px 10px; border-radius: 10px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
-        .chip:hover { background: rgba(0, 240, 255, 0.25); border-color: #00f0ff; }
+        .chip { background: rgba(0, 240, 255, 0.2); border: 1px solid rgba(0, 240, 255, 0.4); color: #fff; padding: 5px 10px; border-radius: 10px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; backdrop-filter: blur(4px); }
+        .chip:hover { background: rgba(0, 240, 255, 0.4); border-color: #00f0ff; }
         
         /* Чипы-рецепты */
-        .chip-recipe { background: rgba(243, 156, 18, 0.1); border-color: rgba(243, 156, 18, 0.3); color: #f39c12; }
-        .chip-recipe:hover { background: rgba(243, 156, 18, 0.25); border-color: #f39c12; }
+        .chip-recipe { background: rgba(243, 156, 18, 0.2); border-color: rgba(243, 156, 18, 0.4); color: #fff; }
+        .chip-recipe:hover { background: rgba(243, 156, 18, 0.4); border-color: #f39c12; }
 
         /* Строка ввода */
         .input-group { margin-bottom: 12px; }
-        .express-input { width: 100%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 14px; border-radius: 10px; color: #fff; font-size: 0.9rem; outline: none; }
-        .express-input:focus { border-color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.3); }
+        .express-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255, 255, 255, 0.3); padding: 10px 14px; border-radius: 10px; color: #fff; font-size: 0.9rem; outline: none; backdrop-filter: blur(4px); }
+        .express-input::placeholder { color: #ccc; }
+        .express-input:focus { border-color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.4); }
 
         /* Кнопки действий */
         .actions-group { display: flex; gap: 8px; }
-        .btn-action { flex: 1; background: #2ecc71; color: #000; border: none; padding: 10px; border-radius: 10px; font-weight: bold; font-size: 0.8rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; text-align: center; }
-        .btn-action:hover { background: #27ae60; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); color: #fff; }
-        .btn-atelier { background: #f39c12; }
-        .btn-atelier:hover { background: #d35400; box-shadow: 0 0 10px rgba(243, 156, 18, 0.4); }
+        .btn-action { flex: 1; background: rgba(46, 204, 113, 0.85); color: #000; border: none; padding: 10px; border-radius: 10px; font-weight: bold; font-size: 0.8rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; text-align: center; backdrop-filter: blur(4px); }
+        .btn-action:hover { background: #27ae60; color: #fff; box-shadow: 0 0 10px rgba(46, 204, 113, 0.5); }
+        .btn-atelier { background: rgba(243, 156, 18, 0.85); }
+        .btn-atelier:hover { background: #d35400; color: #fff; box-shadow: 0 0 10px rgba(243, 156, 18, 0.5); }
 
-        .footer { text-align: center; font-size: 0.8rem; color: #666; padding-bottom: 5px; }
+        .footer { text-align: center; font-size: 0.8rem; color: #aaa; padding-bottom: 5px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
@@ -90,7 +91,6 @@
 
             <main class="ai-frame">
                 <div class="ai-header">
-                    <!-- Подключаем реальную аватарку Чарли -->
                     <div class="ai-avatar">
                         <img src="horse_welcome.png" alt="Чарли" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><text y=\'32\' font-size=\'30\'>🐴</text></svg>'">
                     </div>
@@ -112,7 +112,7 @@
                     <span class="chip" onclick="addText('Сел на жвачку')">💩 Сел на жвачку</span>
                 </div>
 
-                <!-- Новые фирменные рецепты Чарли -->
+                <!-- Рецепты Чарли -->
                 <div class="section-label">2. Фирменный рецепт от Чарли:</div>
                 <div class="chips-container">
                     <span class="chip chip-recipe" onclick="setRecipe('Зафонарь себе в контейнер!')">📦 Зафонарь себе в контейнер!</span>
