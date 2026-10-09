@@ -431,7 +431,8 @@
                     <option value="a3">A3 (30x40cm)</option>
                     <option value="a4">A4 (21x30cm)</option>
                     <option value="logo-chest">LOGO CHEST (10x10cm)</option>
-                    <option value="logo-sleeve">LOGO SLEEVE (7x7cm)</option>
+                                       <option value="logo-sleeve">LOGO SLEEVE (7x7cm)</option>
+                    <option value="custom">ФАКТИЧЕСКИЙ РАЗМЕР (W×H вручную)</option>
                 </select>
             </div>
             <div class="field-row">
@@ -516,7 +517,7 @@
     };
 
     const BASE_PRICE = { tshirt: 15, hoodie: 35, longsleeve: 22 };
-    const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3 };
+      const SCALE_PRICE = { a3: 12, a4: 8, 'logo-chest': 4, 'logo-sleeve': 3, custom: 10 };
     const TECH_PRICE_MOD = { dtf: 0, embroidery: 7 };
     const NECKLINE_PRICE_MOD = { round: 0 };
     const FIT_PRICE_MOD = { unisex: 0 };
@@ -524,7 +525,8 @@
         'a3':          { w: 30, h: 40 },
         'a4':          { w: 21, h: 30 },
         'logo-chest':  { w: 10, h: 10 },
-        'logo-sleeve': { w: 7,  h: 7  }
+                'logo-sleeve': { w: 7,  h: 7  },
+        'custom':      { w: 20, h: 20 }
     };
 
     const GARMENT_CHEST_CM = {
@@ -834,11 +836,15 @@
 
         attachDragResize(img, handle, rotateHandle);
         updateSizeLockInputs();
-        document.getElementById('size-lock-row').classList.add('visible');
+                document.getElementById('size-lock-row').classList.toggle('visible', state.scale === 'custom');
         updateOrderInfo();
     }
 
-    function scaleCm(id) {
+     function scaleCm(id) {
+        if (id === 'custom' && state.printBox) {
+            const ratio = pxPerCmApprox(state.type, state.size);
+            return `${(state.printBox.width / ratio).toFixed(0)}x${(state.printBox.height / ratio).toFixed(0)}cm`;
+        }
         const d = SCALE_DIMENSIONS_CM[id];
         return `${d.w}x${d.h}cm`;
     }
