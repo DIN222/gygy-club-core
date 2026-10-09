@@ -11,7 +11,7 @@
         /* Контейнер локации */
         .destress-container { position: relative; width: 100%; height: 100vh; }
 
-        /* Слой 1: Фото-фон (ищет файл destress_bg.jpg в той же папке) */
+        /* Слой 1: Фото-фон */
         .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .bg-image { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.55) contrast(1.05); }
         .vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.2) 30%, rgba(0,0,0,0.85) 100%); }
@@ -30,24 +30,25 @@
         .btn-back { color: #fff; text-decoration: none; background: rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; transition: 0.2s; }
         .btn-back:hover { background: rgba(255,255,255,0.2); }
 
-        /* Центральная Рамка ИИ (Профилакторий) */
-        .ai-frame { max-width: 650px; width: 100%; margin: auto; background: rgba(12, 20, 28, 0.88); border: 1px solid #00f0ff; box-shadow: 0 0 30px rgba(0, 240, 255, 0.25); backdrop-filter: blur(15px); border-radius: 20px; padding: 22px; text-align: left; }
+        /* Центральная Рамка ИИ */
+        .ai-frame { max-width: 680px; width: 100%; margin: auto; background: rgba(12, 20, 28, 0.88); border: 1px solid #00f0ff; box-shadow: 0 0 30px rgba(0, 240, 255, 0.25); backdrop-filter: blur(15px); border-radius: 20px; padding: 22px; text-align: left; }
         
         .ai-header { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 10px; }
-        .ai-avatar { width: 45px; height: 45px; background: #f39c12; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 2px solid #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.5); }
-        .ai-title h2 { color: #00f0ff; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
+        .ai-avatar { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; border: 2px solid #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.5); flex-shrink: 0; }
+        .ai-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .ai-title h2 { color: #00f0ff; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 1px; }
         .ai-title p { color: #aaa; font-size: 0.8rem; }
 
         .ai-dialogue { font-size: 0.95rem; color: #ddd; margin-bottom: 12px; line-height: 1.4; }
 
         .section-label { font-size: 0.75rem; color: #00f0ff; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
 
-        /* Чипы (Симптомы и Рецепты) */
+        /* Чипы */
         .chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
         .chip { background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); color: #00f0ff; padding: 5px 10px; border-radius: 10px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
         .chip:hover { background: rgba(0, 240, 255, 0.25); border-color: #00f0ff; }
         
-        /* Особый стиль для чипов-рецептов */
+        /* Чипы-рецепты */
         .chip-recipe { background: rgba(243, 156, 18, 0.1); border-color: rgba(243, 156, 18, 0.3); color: #f39c12; }
         .chip-recipe:hover { background: rgba(243, 156, 18, 0.25); border-color: #f39c12; }
 
@@ -70,7 +71,6 @@
 
     <div class="destress-container">
         <!-- СЛОЙ 1: ФОТО-ФОН -->
-        <!-- Положи файл destress_bg.jpg в корень репозитория рядом с destress.html -->
         <div class="bg-layer">
             <img src="destress_bg.jpg" alt="De-Stress Studio Background" class="bg-image" onerror="this.src='https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=1920&auto=format&fit=crop'">
             <div class="vignette"></div>
@@ -78,7 +78,6 @@
 
         <!-- СЛОЙ 2: ИНТЕРАКТИВНЫЙ ИНТЕРФЕЙС -->
         <div class="ui-layer">
-            <!-- Постоянные атрибуты клуба -->
             <header class="navbar">
                 <a href="index.html" class="brand-logo"><span>GY-GY</span> CLUB</a>
                 <div class="lang-panel">
@@ -89,21 +88,23 @@
                 <a href="bar_navigation.html" class="btn-back">⬅️ В Бар</a>
             </header>
 
-            <!-- Центральная рамка ИИ -->
             <main class="ai-frame">
                 <div class="ai-header">
-                    <div class="ai-avatar">🐴</div>
+                    <!-- Подключаем реальную аватарку Чарли -->
+                    <div class="ai-avatar">
+                        <img src="horse_welcome.png" alt="Чарли" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><text y=\'32\' font-size=\'30\'>🐴</text></svg>'">
+                    </div>
                     <div class="ai-title">
-                        <h2>Бармен-Терапевт Чарли</h2>
+                        <h2>Бармен-Целитель Чарли</h2>
                         <p>De-Stress Studio • Кабинет разгрузки</p>
                     </div>
                 </div>
 
                 <div class="ai-dialogue" id="dialogue-text">
-                    Добро пожаловать в профилакторий! Устраивайся в кресле. На что жалуешься? Выбери симптом или сразу выпиши лечебный абсурд:
+                    Приветствую в профилактории, друг! Устраивайся в кресле. На что жалуешься сегодня? Выбирай симптом или заряди мощный рецепт:
                 </div>
 
-                <!-- Быстрые симптомы -->
+                <!-- Симптомы -->
                 <div class="section-label">1. Источник стресса:</div>
                 <div class="chips-container">
                     <span class="chip" onclick="addText('Поругался с начальником')">💼 Поругался с начальником</span>
@@ -111,15 +112,15 @@
                     <span class="chip" onclick="addText('Сел на жвачку')">💩 Сел на жвачку</span>
                 </div>
 
-                <!-- Готовые лечебные выражения (абсурд) -->
-                <div class="section-label">2. Лечебный рецепт от Чарли:</div>
+                <!-- Новые фирменные рецепты Чарли -->
+                <div class="section-label">2. Фирменный рецепт от Чарли:</div>
                 <div class="chips-container">
-                    <span class="chip chip-recipe" onclick="setRecipe('Залуди свою табуретку!')">🪑 Залуди свою табуретку!</span>
-                    <span class="chip chip-recipe" onclick="setRecipe('Напильником по сепаратору!')">⚙️ Напильником по сепаратору!</span>
-                    <span class="chip chip-recipe" onclick="setRecipe('Застакань свои тапочки!')">👟 Застакань свои тапочки!</span>
+                    <span class="chip chip-recipe" onclick="setRecipe('Зафонарь себе в контейнер!')">📦 Зафонарь себе в контейнер!</span>
+                    <span class="chip chip-recipe" onclick="setRecipe('Сахаруй твою поддон!')">🥞 Сахаруй твою поддон!</span>
+                    <span class="chip chip-recipe" onclick="setRecipe('Маракуй тебе в подкладку!')">🧥 Маракуй тебе в подкладку!</span>
                 </div>
 
-                <!-- Поле ввода -->
+                <!-- Строка ввода -->
                 <div class="input-group">
                     <input type="text" id="user-input" class="express-input" placeholder="Или напиши свой шедевр здесь...">
                 </div>
@@ -148,12 +149,12 @@
         }
 
         function publishNews() {
-            const val = document.getElementById('user-input').value || "Застакань свои тапочки!";
-            alert("Чарли кивает: рецепт принят! Фраза отправлена в общие новости клуба: \"" + val + "\"");
+            const val = document.getElementById('user-input').value || "Зафонарь себе в контейнер!";
+            alert("Бармен-Целитель Чарли одобряет! Рецепт отправлен в общие новости клуба: \"" + val + "\"");
         }
 
         function goToAtelier() {
-            const val = document.getElementById('user-input').value || "Залуди свою табуретку!";
+            const val = document.getElementById('user-input').value || "Зафонарь себе в контейнер!";
             window.location.href = `atelier.html?phrase=${encodeURIComponent(val)}`;
         }
     </script>
