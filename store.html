@@ -250,9 +250,33 @@
         updateDisplayImage();
     });
 
+     function parseQty(label) {
+        const m = (label || '').match(/(\d+)/);
+        return m ? parseInt(m[1], 10) : 1;
+    }
+    function lotTotal(item) { return Number(item.price) * parseQty(item.quantity_label); }
+
     document.getElementById('btn-add-cart').addEventListener('click', () => {
         if (!activeItem) { alert('Pick an item first.'); return; }
-        alert(`"${activeItem.name}" marked for purchase at €${activeItem.price}. A real cart/checkout is a future task.`);
+        const item = activeItem;
+        const qty = parseQty(item.quantity_label);
+        const total = lotTotal(item);
+        const orderNumber = 'ST-' + Date.now().toString(36).toUpperCase();
+        openPaymentTerminal({
+            amount: total,
+            orderNumber,
+            lineItems: [[item.name, `€${Number(item.price).toFixed(2)} × ${qty}`]],
+            onComplete: async () => {
+                try {
+                    await supabase.from('income_entries').insert({
+                        business_line: 'store',
+                        order_number: orderNumber,
+                        atelier_order: { description: item.name, qty, unitPrice: Number(item.price) },
+                        total_amount: total
+                    });
+                } catch (e) { console.error('[Store] Не удалось записать продажу в Приход', e); }
+            }
+        });
     });
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
