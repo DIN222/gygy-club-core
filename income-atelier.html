@@ -1,1 +1,162 @@
+<!DOCTYPE html>
+<!--
+  income-atelier.html — v1.0.0 — 2026-10-03
+  Приход → Ателье: (1) предпросмотр — выбор клиента без цены → цена по формуле,
+  (2) постоянные параметры (то, что подставляется в формулу и видно клиенту
+  в Ателье), (3) последние заказы.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Приход: Ателье</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 16px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 640px; }
+    .section-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 22px 0 8px; }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .preview-grid select, .preview-grid input[type="number"] { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .check { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+    .price-box { margin-top: 10px; padding: 12px; background: #0a0a0a; border: 1px solid var(--gold-dim); font-size: 12px; }
+    .price-box .row { display: flex; justify-content: space-between; padding: 2px 0; color: var(--ivory); }
+    .price-box .big { color: var(--gold); font-weight: 900; font-size: 18px; border-top: 1px solid var(--gold-dim); margin-top: 6px; padding-top: 6px; }
+    .param-group { margin-bottom: 10px; }
+    .param-group h4 { font-size: 11px; color: var(--gold); margin-bottom: 4px; }
+    .param-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 11px; color: var(--ivory); }
+    .param-row input { width: 90px; padding: 5px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; text-align: right; }
+    .btn-cfg { width: 100%; margin-top: 10px; background: var(--gold); color: #000; border: 1px solid var(--gold); padding: 10px; cursor: pointer; font-weight: 900; text-transform: uppercase; font-family: inherit; font-size: 11px; }
+    .status-line { font-size: 11px; margin-top: 6px; min-height: 14px; }
+    .status-line.ok { color: #6fd48a; } .status-line.error { color: #e74c3c; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th { text-align: left; color: var(--gold-dim); padding: 6px 4px; border-bottom: 1px solid var(--gold-dim); font-size: 10px; text-transform: uppercase; }
+    td { padding: 6px 4px; border-bottom: 1px solid #1a1a1a; color: var(--ivory); }
+    td.amount { color: var(--gold); text-align: right; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-income">&lt;&lt;</a></div>
 
+<div class="page-wrap">
+    <div class="title">ПРИХОД — АТЕЛЬЕ</div>
+    <div class="panel">
+
+        <div class="section-label">1. Что выбирает клиент → цена по формуле</div>
+        <div class="preview-grid">
+            <select id="pv-type"><option value="tshirt">T-SHIRT</option><option value="hoodie">HOODIE</option><option value="longsleeve">LONGSLEEVE</option></select>
+            <select id="pv-comp">
+                <option value="cotton100">100% COTTON</option><option value="stretch">STRETCH</option>
+                <option value="cotton80poly20">80% COTTON / 20% POLY</option><option value="cotton100fleece">100% COTTON FLEECE</option>
+            </select>
+            <select id="pv-scale">
+                <option value="a3">A3</option><option value="a4">A4</option><option value="logo-chest">LOGO CHEST</option>
+                <option value="logo-sleeve">LOGO SLEEVE</option><option value="custom">ФАКТИЧЕСКИЙ РАЗМЕР</option>
+            </select>
+            <select id="pv-tech"><option value="dtf">DTF-ПЕЧАТЬ</option><option value="embroidery">ВЫШИВКА</option></select>
+            <label class="check"><input type="checkbox" id="pv-print" checked> с принтом</label>
+            <input type="number" id="pv-qty" min="1" value="1" step="1">
+            <label class="check"><input type="checkbox" id="pv-drawstring"> шнурки (худи)</label>
+            <label class="check"><input type="checkbox" id="pv-zipper"> молния (худи)</label>
+        </div>
+        <div class="price-box">
+            <div class="row"><span>Себестоимость единицы</span><span id="pv-cost">€0.00</span></div>
+            <div class="row"><span>Розничная цена единицы</span><span id="pv-retail">€0.00</span></div>
+            <div class="row big"><span>Итого</span><span id="pv-total">€0.00</span></div>
+        </div>
+
+        <div class="section-label">2. Постоянные параметры (Бухгалтерия)</div>
+        <div id="params"></div>
+        <button class="btn-cfg" id="btn-save">СОХРАНИТЬ ПАРАМЕТРЫ</button>
+        <div class="status-line" id="status"></div>
+
+        <div class="section-label">3. Последние заказы Ателье</div>
+        <table>
+            <thead><tr><th>Дата</th><th>№ заказа</th><th>Изделие</th><th>Сумма</th></tr></thead>
+            <tbody id="orders"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+    import { PARAM_DEFS, DEFAULTS, loadPricing, computeBreakdown } from './core/pricing.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const values = { ...DEFAULTS, ...(await loadPricing()) };
+
+    function renderParams() {
+        const groups = {};
+        PARAM_DEFS.forEach(d => { (groups[d[2]] = groups[d[2]] || []).push(d); });
+        document.getElementById('params').innerHTML = Object.entries(groups).map(([group, defs]) => `
+            <div class="param-group"><h4>${group}</h4>
+            ${defs.map(d => `<div class="param-row"><span>${d[1]}</span><input type="number" step="0.01" data-key="${d[0]}" value="${values[d[0]]}"></div>`).join('')}
+            </div>`).join('');
+        document.querySelectorAll('#params input').forEach(inp => inp.addEventListener('input', updatePreview));
+    }
+
+    function currentParams() {
+        const p = { ...values };
+        document.querySelectorAll('#params input').forEach(inp => { p[inp.dataset.key] = parseFloat(inp.value) || 0; });
+        return p;
+    }
+
+    function updatePreview() {
+        const b = computeBreakdown(currentParams(), {
+            type: document.getElementById('pv-type').value,
+            composition: document.getElementById('pv-comp').value,
+            scale: document.getElementById('pv-scale').value,
+            technique: document.getElementById('pv-tech').value,
+            hasPrint: document.getElementById('pv-print').checked,
+            drawstring: document.getElementById('pv-drawstring').checked,
+            zipper: document.getElementById('pv-zipper').checked
+        });
+        const qty = Math.max(1, parseInt(document.getElementById('pv-qty').value) || 1);
+        document.getElementById('pv-cost').textContent = `€${b.cost.toFixed(2)}`;
+        document.getElementById('pv-retail').textContent = `€${b.retail.toFixed(2)}`;
+        document.getElementById('pv-total').textContent = `€${(b.retail * qty).toFixed(2)}`;
+    }
+    ['pv-type','pv-comp','pv-scale','pv-tech','pv-print','pv-qty','pv-drawstring','pv-zipper']
+        .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+
+    document.getElementById('btn-save').addEventListener('click', async () => {
+        const status = document.getElementById('status');
+        status.className = 'status-line';
+        const p = currentParams();
+        const rows = PARAM_DEFS.map(d => ({
+            key: d[0], value: p[d[0]], label: d[1], param_group: d[2], updated_at: new Date().toISOString()
+        }));
+        const { error } = await supabase.from('pricing_params').upsert(rows);
+        if (error) { console.error(error); status.textContent = 'Не удалось сохранить.'; status.classList.add('error'); return; }
+        status.textContent = 'Сохранено — клиенты в Ателье увидят новые цены.'; status.classList.add('ok');
+    });
+
+    async function loadOrders() {
+        const { data } = await supabase.from('income_entries').select('*')
+            .eq('business_line', 'atelier').order('order_date', { ascending: false }).limit(20);
+        document.getElementById('orders').innerHTML = (data || []).map(r => `
+            <tr><td>${new Date(r.order_date).toLocaleDateString()}</td><td>${r.order_number}</td>
+            <td>${r.atelier_order?.garment || ''} ${r.atelier_order?.size || ''}</td>
+            <td class="amount">€${Number(r.total_amount).toFixed(2)}</td></tr>`).join('')
+            || '<tr><td colspan="4" style="color:#666;">Заказов пока нет</td></tr>';
+    }
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-income').addEventListener('click', () => window.location.href = 'income.html');
+
+    renderParams();
+    updatePreview();
+    loadOrders();
+</script>
+</body>
+</html>
