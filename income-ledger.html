@@ -37,7 +37,7 @@
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
     document.getElementById('btn-back').addEventListener('click', () => history.back());
-    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+       document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'income.html');
 </script>
 </body>
 </html>
