@@ -148,6 +148,7 @@
     import { init as initLocalization } from './core/localization.js';
     import { init as initPassport } from './modules/passport.js';
     import { supabase } from './core/supabase-init.js';
+      import { openPaymentTerminal } from './modules/paymentTerminal.js';
 
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
