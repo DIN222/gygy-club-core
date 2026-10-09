@@ -11,7 +11,7 @@
         /* Контейнер локации */
         .destress-container { position: relative; width: 100%; height: 100vh; }
 
-        /* Слой 1: Фото-фон (сделали ярче и видимее) */
+        /* Слой 1: Фото-фон (видимый и яркий) */
         .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .bg-image { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.85) contrast(1.05); }
         .vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.55) 100%); }
@@ -33,11 +33,16 @@
         /* Центральная Рамка ИИ (С прозрачным фоном для видимости интерьера) */
         .ai-frame { max-width: 680px; width: 100%; margin: auto; background: rgba(12, 20, 28, 0.55); border: 1px solid rgba(0, 240, 255, 0.4); box-shadow: 0 0 30px rgba(0, 240, 255, 0.15); backdrop-filter: blur(8px); border-radius: 20px; padding: 22px; text-align: left; }
         
-        .ai-header { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 10px; }
+        .ai-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 10px; }
+        .ai-header-left { display: flex; align-items: center; gap: 15px; }
         .ai-avatar { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; border: 2px solid #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.5); flex-shrink: 0; }
         .ai-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .ai-title h2 { color: #00f0ff; font-size: 1.15rem; text-transform: uppercase; letter-spacing: 1px; }
         .ai-title p { color: #ddd; font-size: 0.8rem; }
+
+        /* Кнопка ротации карточки */
+        .btn-rotate { background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.4); color: #00f0ff; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .btn-rotate:hover { background: rgba(0, 240, 255, 0.3); }
 
         .ai-dialogue { font-size: 0.95rem; color: #fff; margin-bottom: 12px; line-height: 1.4; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
@@ -53,10 +58,13 @@
         .chip-recipe:hover { background: rgba(243, 156, 18, 0.4); border-color: #f39c12; }
 
         /* Строка ввода */
-        .input-group { margin-bottom: 12px; }
-        .express-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255, 255, 255, 0.3); padding: 10px 14px; border-radius: 10px; color: #fff; font-size: 0.9rem; outline: none; backdrop-filter: blur(4px); }
+        .input-group { margin-bottom: 12px; display: flex; gap: 8px; }
+        .express-input { flex-grow: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255, 255, 255, 0.3); padding: 10px 14px; border-radius: 10px; color: #fff; font-size: 0.9rem; outline: none; backdrop-filter: blur(4px); }
         .express-input::placeholder { color: #ccc; }
         .express-input:focus { border-color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.4); }
+        
+        .btn-contribute { background: rgba(155, 89, 182, 0.85); border: 1px solid #8e44ad; color: #fff; padding: 0 14px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; backdrop-filter: blur(4px); }
+        .btn-contribute:hover { background: #8e44ad; box-shadow: 0 0 10px rgba(155, 89, 182, 0.5); }
 
         /* Кнопки действий */
         .actions-group { display: flex; gap: 8px; }
@@ -91,38 +99,35 @@
 
             <main class="ai-frame">
                 <div class="ai-header">
-                    <div class="ai-avatar">
-                        <img src="horse_welcome.png" alt="Чарли" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><text y=\'32\' font-size=\'30\'>🐴</text></svg>'">
+                    <div class="ai-header-left">
+                        <div class="ai-avatar">
+                            <img src="horse_welcome.png" alt="Чарли" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><text y=\'32\' font-size=\'30\'>🐴</text></svg>'">
+                        </div>
+                        <div class="ai-title">
+                            <h2>Бармен-Целитель Чарли</h2>
+                            <p>De-Stress Studio • Кабинет разгрузки</p>
+                        </div>
                     </div>
-                    <div class="ai-title">
-                        <h2>Бармен-Целитель Чарли</h2>
-                        <p>De-Stress Studio • Кабинет разгрузки</p>
-                    </div>
+                    <!-- Кнопка ротации вариантов -->
+                    <button class="btn-rotate" onclick="rotateOptions()">🎲 Другой замес</button>
                 </div>
 
                 <div class="ai-dialogue" id="dialogue-text">
                     Приветствую в профилактории, друг! Устраивайся в кресле. На что жалуешься сегодня? Выбирай симптом или заряди мощный рецепт:
                 </div>
 
-                <!-- Симптомы -->
+                <!-- Симптомы (Динамическая ротация) -->
                 <div class="section-label">1. Источник стресса:</div>
-                <div class="chips-container">
-                    <span class="chip" onclick="addText('Поругался с начальником')">💼 Поругался с начальником</span>
-                    <span class="chip" onclick="addText('Обрызгала машина')">🚗 Обрызгала машина</span>
-                    <span class="chip" onclick="addText('Сел на жвачку')">💩 Сел на жвачку</span>
-                </div>
+                <div class="chips-container" id="symptoms-box"></div>
 
-                <!-- Рецепты Чарли -->
+                <!-- Рецепты Чарли (Динамическая ротация) -->
                 <div class="section-label">2. Фирменный рецепт от Чарли:</div>
-                <div class="chips-container">
-                    <span class="chip chip-recipe" onclick="setRecipe('Зафонарь себе в контейнер!')">📦 Зафонарь себе в контейнер!</span>
-                    <span class="chip chip-recipe" onclick="setRecipe('Сахаруй твою поддон!')">🥞 Сахаруй твою поддон!</span>
-                    <span class="chip chip-recipe" onclick="setRecipe('Маракуй тебе в подкладку!')">🧥 Маракуй тебе в подкладку!</span>
-                </div>
+                <div class="chips-container" id="recipes-box"></div>
 
-                <!-- Строка ввода -->
+                <!-- Строка ввода и кнопка добавления в базу -->
                 <div class="input-group">
                     <input type="text" id="user-input" class="express-input" placeholder="Или напиши свой шедевр здесь...">
+                    <button class="btn-contribute" onclick="contributeToDatabase()" title="Добавить свою идею в ротацию клуба">➕ В базу</button>
                 </div>
 
                 <!-- Кнопки действий -->
@@ -139,6 +144,60 @@
     </div>
 
     <script>
+        // БАЗА ДАННЫХ ПОВОДОВ И РЕЦЕПТОВ КЛУБА GY-GY
+        let complaintsDatabase = [
+            { text: "💼 Поругался с начальником", icon: "💼" },
+            { text: "🚗 Обрызгала машина", icon: "🚗" },
+            { text: "💩 Сел на жвачку", icon: "💩" },
+            { text: "🍺 Опрокинул бокал с пивом", icon: "🍺" },
+            { text: "🏴‍☠️ Забыл где заначка", icon: "🏴‍☠️" },
+            { text: "💸 По пьяне дал в займы", icon: "💸" },
+            { text: "💻 Завис комп перед сохранением", icon: "💻" },
+            { text: "⏰ Проспал будильник на час", icon: "⏰" }
+        ];
+
+        let recipesDatabase = [
+            "Зафонарь себе в контейнер!",
+            "Сахаруй твою поддон!",
+            "Маракуй тебе в подкладку!",
+            "Залуди свою табуретку!",
+            "Напильником по сепаратору!",
+            "Застакань свои тапочки!",
+            "Пропылесось туман в голове!",
+            "Забетонируй розетку смехом!"
+        ];
+
+        // Функция случайной выборки элементов
+        function getRandomItems(arr, count) {
+            let shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        // Ротация вариантов на экране
+        function rotateOptions() {
+            const randomSymptoms = getRandomItems(complaintsDatabase, 3);
+            const symptomsBox = document.getElementById('symptoms-box');
+            symptomsBox.innerHTML = '';
+            randomSymptoms.forEach(item => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.innerHTML = item.text;
+                chip.onclick = () => addText(item.text);
+                symptomsBox.appendChild(chip);
+            });
+
+            const randomRecipes = getRandomItems(recipesDatabase, 3);
+            const recipesBox = document.getElementById('recipes-box');
+            recipesBox.innerHTML = '';
+            randomRecipes.forEach(recipeText => {
+                const chip = document.createElement('span');
+                chip.className = 'chip chip-recipe';
+                chip.innerHTML = `✨ ${recipeText}`;
+                chip.onclick = () => setRecipe(recipeText);
+                recipesBox.appendChild(chip);
+            });
+        }
+
         function addText(text) {
             const input = document.getElementById('user-input');
             input.value = input.value ? input.value + " — " + text : text;
@@ -148,15 +207,34 @@
             document.getElementById('user-input').value = recipeText;
         }
 
+        // Добавление пользовательской идеи гостя в базу
+        function contributeToDatabase() {
+            const input = document.getElementById('user-input');
+            const val = input.value.trim();
+            if (!val) {
+                alert("Сначала введите свой шедевр в строке!");
+                return;
+            }
+            
+            recipesDatabase.push(val);
+            rotateOptions();
+            
+            alert(`Бармен-Целитель Чарли записал вашу идею в золотой фонд клуба: "${val}" Теперь она участвует в ротации!`);
+            input.value = '';
+        }
+
         function publishNews() {
             const val = document.getElementById('user-input').value || "Зафонарь себе в контейнер!";
             alert("Бармен-Целитель Чарли одобряет! Рецепт отправлен в общие новости клуба: \"" + val + "\"");
         }
 
         function goToAtelier() {
-            const val = document.getElementById('user-input').value || "Зафонарь себе в контейнер!";
+            const val = document.getElementById('user-input').value || "Залуди свою табуретку!";
             window.location.href = `atelier.html?phrase=${encodeURIComponent(val)}`;
         }
+
+        // Автозапуск ротации при загрузке страницы
+        window.onload = rotateOptions;
     </script>
 </body>
 </html>
