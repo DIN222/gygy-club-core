@@ -493,7 +493,8 @@
     import { get, set } from './core/storage.js';
     import * as eventBus from './core/eventBus.js';
     import { supabase } from './core/supabase-init.js';
-      import { openPaymentTerminal } from './modules/paymentTerminal.js';
+      import { openPaymentTerminal } from './modules/paymentTerminal.js'
+      import { loadPricing, computeUnitPrice, DEFAULTS } from './core/pricing.js';
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
@@ -504,7 +505,9 @@
     };
     try {
         clubBase = await import('./core/clubBase.js');
-    } catch (e) {
+    } catch (e)
+          let pricingParams = { ...DEFAULTS, ...(await loadPricing()) };
+    {
         console.warn('[Atelier] core/clubBase.js не загружен — проверьте, что файл (и core/supabase-init.js) реально залиты в репозиторий.', e);
     }
 
@@ -848,16 +851,14 @@
         const d = SCALE_DIMENSIONS_CM[id];
         return `${d.w}x${d.h}cm`;
     }
-    function unitPrice() {
-        let p = BASE_PRICE[state.type] || 0;
-        if (state.currentPrint) {
-            p += SCALE_PRICE[state.scale] || 0;
-            p += TECH_PRICE_MOD[state.technique] || 0;
-        }
-        p += FABRIC_PRICE_MOD[state.fabricComposition] || 0;
-        return p;
+      function unitPrice() {
+        return computeUnitPrice(pricingParams, {
+            type: state.type, composition: state.fabricComposition,
+            scale: state.scale, technique: state.technique, hasPrint: !!state.currentPrint,
+            drawstring: state.drawstring, zipper: state.zipper
+        });
     }
-    function calculatePrice() { return unitPrice() * Math.max(1, state.quantity); }
+    function calculatePrice() { return Math.round(unitPrice() * Math.max(1, state.quantity) * 100) / 100; }
     function actualPrintSizeLabel() {
         if (!state.currentPrint || !state.printBox) return '';
         const ratio = pxPerCmApprox(state.type, state.size);
