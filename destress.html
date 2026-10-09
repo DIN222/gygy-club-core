@@ -11,9 +11,9 @@
         /* Контейнер локации */
         .destress-container { position: relative; width: 100%; height: 100vh; }
 
-        /* Слой 1: Фото-фон (наш интерьер с креслом и низкими экранами) */
+        /* Слой 1: Фото-фон JPG */
         .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        .bg-image { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.65) contrast(1.05); }
+        .bg-image { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6) contrast(1.05); }
         .vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.2) 30%, rgba(0,0,0,0.85) 100%); }
 
         /* Слой 2: Интерактивный интерфейс */
@@ -31,7 +31,7 @@
         .btn-back:hover { background: rgba(255,255,255,0.2); }
 
         /* Центральная Рамка ИИ (Профилакторий) */
-        .ai-frame { max-width: 650px; width: 100%; margin: auto; background: rgba(12, 20, 28, 0.85); border: 1px solid #00f0ff; box-shadow: 0 0 30px rgba(0, 240, 255, 0.25); backdrop-filter: blur(15px); border-radius: 20px; padding: 25px; text-align: left; }
+        .ai-frame { max-width: 650px; width: 100%; margin: auto; background: rgba(12, 20, 28, 0.88); border: 1px solid #00f0ff; box-shadow: 0 0 30px rgba(0, 240, 255, 0.25); backdrop-filter: blur(15px); border-radius: 20px; padding: 25px; text-align: left; }
         
         .ai-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 12px; }
         .ai-avatar { width: 50px; height: 50px; background: #f39c12; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 2px solid #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.5); }
@@ -40,19 +40,21 @@
 
         .ai-dialogue { font-size: 1rem; color: #ddd; margin-bottom: 15px; line-height: 1.4; }
 
-        /* Кнопки-подсказки (Быстрые чипы) */
+        .section-label { font-size: 0.8rem; color: #00f0ff; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+
+        /* Быстрые чипы-симптомы */
         .chips-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
         .chip { background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); color: #00f0ff; padding: 6px 12px; border-radius: 12px; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
         .chip:hover { background: rgba(0, 240, 255, 0.25); border-color: #00f0ff; }
 
         /* Строка ввода */
-        .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .express-input { flex-grow: 1; background: rgba(0,0,0,0.6); border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 16px; border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none; }
+        .input-group { margin-bottom: 15px; }
+        .express-input { width: 100%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px 16px; border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none; }
         .express-input:focus { border-color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.3); }
 
         /* Кнопки действий */
         .actions-group { display: flex; gap: 10px; }
-        .btn-action { flex: 1; background: #2ecc71; color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; text-align: center; }
+        .btn-action { flex: 1; background: #2ecc71; color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: 0.2s; text-transform: uppercase; text-align: center; }
         .btn-action:hover { background: #27ae60; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); color: #fff; }
         .btn-atelier { background: #f39c12; }
         .btn-atelier:hover { background: #d35400; box-shadow: 0 0 10px rgba(243, 156, 18, 0.4); }
@@ -63,10 +65,9 @@
 <body>
 
     <div class="destress-container">
-        <!-- СЛОЙ 1: ФОТО-ФОН -->
+        <!-- СЛОЙ 1: ФОТО-ФОН (JPG) -->
         <div class="bg-layer">
-            <!-- Здесь используется сгенерированный фото-фон комнаты релакса -->
-            <img src="watermarked_img_1985107859902441693.jpg" alt="De-Stress Studio" class="bg-image">
+            <img src="assets/images/destress_bg.jpg" alt="De-Stress Studio" class="bg-image">
             <div class="vignette"></div>
         </div>
 
@@ -88,54 +89,54 @@
                 <div class="ai-header">
                     <div class="ai-avatar">🐴</div>
                     <div class="ai-title">
-                        <h2>Иппотерапевт Сэр Гаврила</h2>
-                        <p>Клубный Профилакторий • Сеанс разгрузки</p>
+                        <h2>Бармен-Терапевт Чарли</h2>
+                        <p>De-Stress Studio • Кабинет разгрузки</p>
                     </div>
                 </div>
 
                 <div class="ai-dialogue" id="dialogue-text">
-                    Приветствуем в De-Stress Studio! День выдался жестким? На что жалуетесь, уважаемый резидент?
+                    Добро пожаловать в профилакторий, друг! Устраивайся в кресле поудобнее. На что жалуешься сегодня? Выбирай симптом или пиши свою боль:
                 </div>
 
                 <!-- Быстрые подсказки-симптомы -->
-                <div class="chips-container" id="chips-box">
-                    <span class="chip" onclick="selectChip('Поругался с начальником')">💼 Поругался с начальником</span>
-                    <span class="chip" onclick="selectChip('Обрызгала машина')">🚗 Обрызгала машина</span>
-                    <span class="chip" onclick="selectChip('Сел на жвачку')">💩 Сел на жвачку</span>
+                <div class="section-label">Типичные симптомы:</div>
+                <div class="chips-container">
+                    <span class="chip" onclick="selectComplaint('Поругался с начальником')">💼 Поругался с начальником</span>
+                    <span class="chip" onclick="selectComplaint('Обрызгала машина')">🚗 Обрызгала машина</span>
+                    <span class="chip" onclick="selectComplaint('Сел на жвачку')">💩 Сел на жвачку</span>
                 </div>
 
-                <!-- Поле ввода -->
+                <!-- Поле ввода жалобы / рецепта -->
                 <div class="input-group">
-                    <input type="text5" id="user-input" class="express-input" placeholder="Или опишите свою боль в двух словах...">
+                    <input type="text" id="user-input" class="express-input" placeholder="Например: Залуди свою табуретку!">
                 </div>
 
-                <!-- Кнопки публикации / перехода -->
+                <!-- Кнопки действий -->
                 <div class="actions-group">
                     <button class="btn-action" onclick="publishNews()">📢 В новости клуба</button>
-                    <button class="btn-action btn-atelier" onclick="goToAtelier()">👕 Заказать футболку</button>
+                    <button class="btn-action btn-atelier" onclick="goToAtelier()">👕 В Ателье (на футболку)</button>
                 </div>
             </main>
 
             <footer class="footer">
-                GY-GY Club © 2026 | Смех лечит лучше любых микстур
+                GY-GY Club © 2026 | Юмор — лучшее лекарство от рутины
             </footer>
         </div>
     </div>
 
     <script>
-        // Простой скрипт для обработки выбора подсказок
-        function selectChip(text) {
+        function selectComplaint(text) {
             document.getElementById('user-input').value = text;
         }
 
         function publishNews() {
-            const val = document.getElementById('user-input').value || "Обычный дневной дзен";
-            alert("Рецепт успешно принят! Фраза отправлена в общие новости клуба для обсуждения: " + val);
+            const val = document.getElementById('user-input').value || "Застакань свои тапочки";
+            alert("Рецепт успешно принят Чарли! Фраза отправлена в общие новости клуба: \"" + val + "\"");
         }
 
         function goToAtelier() {
             const val = document.getElementById('user-input').value || "Залуди свою табуретку!";
-            // Переход в ателье с передачей фразы в параметре URL
+            // Переход в atelier.html с передачей выбранной фразы
             window.location.href = `atelier.html?phrase=${encodeURIComponent(val)}`;
         }
     </script>
