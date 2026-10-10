@@ -1,1 +1,219 @@
+<!DOCTYPE html>
+<!--
+  income-product.html — v1.0.0 — 2026-10-10
+  Приход → Ателье → изделие (?garment=tshirt|hoodie|longsleeve).
+  Сводка для заготовки бланков + таблица заказов (дата, № заказа, данные
+  заказа, данные бухгалтерии, сумма). Затраты берутся из снимка в заказе
+  (order.pricing); у старых заказов пересчитываются по текущим параметрам (≈).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Приход: изделие</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 19px; margin-bottom: 14px; text-align: center; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 980px; }
+    .section-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 22px 0 8px; }
+    .period-row select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    .card { background: #0a0a0a; border: 1px solid var(--gold-dim); padding: 10px; text-align: center; }
+    .card .num { font-size: 20px; font-weight: 900; color: var(--gold); }
+    .card .cap { font-size: 9px; color: var(--ivory); opacity: 0.7; margin-top: 2px; text-transform: uppercase; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th { text-align: left; color: var(--gold-dim); padding: 6px 5px; border-bottom: 1px solid var(--gold-dim); font-size: 10px; text-transform: uppercase; white-space: nowrap; }
+    td { padding: 6px 5px; border-bottom: 1px solid #1a1a1a; color: var(--ivory); white-space: nowrap; }
+    td.num, th.num { text-align: right; }
+    td.amount { color: var(--gold); text-align: right; font-weight: 700; }
+    tr.total-row td { font-weight: 900; color: var(--gold); border-top: 1px solid var(--gold-dim); }
+    tr.order-row { cursor: pointer; }
+    tr.order-row:hover td { background: #0d0d0d; }
+    tr.detail-row td { white-space: normal; background: #0a0a0a; color: var(--ivory); font-size: 10px; line-height: 1.7; }
+    .approx { opacity: 0.6; font-style: italic; }
+    .empty-note { font-size: 11px; color: #666; text-align: center; padding: 20px; }
+    .tech-line { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+    .tech-line span { border: 1px solid var(--gold-dim); padding: 5px 10px; font-size: 11px; color: var(--ivory); }
+    .tech-line b { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-atelier">&lt;&lt;</a></div>
 
+<div class="page-wrap">
+    <div class="title" id="title">ПРИХОД — АТЕЛЬЕ</div>
+    <div class="panel">
+        <div class="period-row">
+            <select id="period">
+                <option value="all">За всё время</option>
+                <option value="30">Последние 30 дней</option>
+                <option value="7">Последние 7 дней</option>
+            </select>
+        </div>
+
+        <div class="cards">
+            <div class="card"><div class="num" id="c-orders">0</div><div class="cap">заказов</div></div>
+            <div class="card"><div class="num" id="c-pcs">0</div><div class="cap">штук</div></div>
+            <div class="card"><div class="num" id="c-sum">€0.00</div><div class="cap">выручка</div></div>
+        </div>
+
+        <div class="section-label">Техника (штук)</div>
+        <div class="tech-line" id="tech-line"></div>
+
+        <div class="section-label">Бланки к заготовке: размер × цвет (штук)</div>
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Размер</th><th class="num">Чёрный</th><th class="num">Белый</th><th class="num">Всего</th></tr></thead>
+                <tbody id="matrix"></tbody>
+            </table>
+        </div>
+
+        <div class="section-label">Заказы (клик по строке — затраты)</div>
+        <div class="table-scroll">
+            <table>
+                <thead><tr>
+                    <th>Дата</th><th>№ заказа</th><th>Цвет</th><th>Размер</th><th class="num">Кол-во</th>
+                    <th>Техника</th><th>Принт</th>
+                    <th class="num">Себест. ед.</th><th class="num">Наценка ед.</th><th class="num">Розница ед.</th><th class="num">Сумма</th>
+                </tr></thead>
+                <tbody id="orders"></tbody>
+            </table>
+        </div>
+        <div class="empty-note" id="empty-note" style="display:none;">За выбранный период заказов нет.</div>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+    import { DEFAULTS, loadPricing, computeBreakdown } from './core/pricing.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const GARMENTS = ['tshirt', 'hoodie', 'longsleeve'];
+    const TITLES = { tshirt: 'ФУТБОЛКА', hoodie: 'ХУДИ', longsleeve: 'ЛОНГСЛИВ' };
+    const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+    const COLOR_LABELS = { black: 'ЧЁРНЫЙ', white: 'БЕЛЫЙ' };
+
+    const urlGarment = new URLSearchParams(location.search).get('garment');
+    const garment = GARMENTS.includes(urlGarment) ? urlGarment : 'tshirt';
+    document.getElementById('title').textContent = `ПРИХОД — АТЕЛЬЕ — ${TITLES[garment]}`;
+
+    const currentParams = { ...DEFAULTS, ...(await loadPricing()) };
+    const eur = (n) => `€${Number(n).toFixed(2)}`;
+    const qtyOf = (o) => Number(o.quantity) || 1;
+
+    function techLabel(o) {
+        if (!o.decoration) return 'Без принта';
+        return o.decoration.technique === 'embroidery' ? 'Вышивка' : 'DTF-принт';
+    }
+    function printDetail(o) {
+        const d = o.decoration;
+        if (!d) return '—';
+        return [d.scaleCm, d.category || (d.source === 'own' ? 'свой' : 'клуб')].filter(Boolean).join(' · ');
+    }
+    function getPricing(o) {
+        if (o.pricing) return { b: o.pricing, approx: false };
+        const b = computeBreakdown(currentParams, {
+            type: o.garment, composition: o.fabricComposition,
+            scale: o.decoration && o.decoration.scalePreset,
+            technique: o.decoration && o.decoration.technique,
+            hasPrint: !!o.decoration, drawstring: o.drawstring, zipper: o.zipper
+        });
+        return { b, approx: true };
+    }
+
+    async function render() {
+        const { data, error } = await supabase.from('income_entries').select('*')
+            .eq('business_line', 'atelier').order('order_date', { ascending: false }).limit(1000);
+        if (error) {
+            console.error(error);
+            document.getElementById('empty-note').style.display = 'block';
+            document.getElementById('empty-note').textContent = 'Не удалось загрузить заказы.';
+            return;
+        }
+        const period = document.getElementById('period').value;
+        const cutoff = period === 'all' ? 0 : Date.now() - Number(period) * 86400000;
+        const rows = (data || []).filter(r =>
+            r.atelier_order && r.atelier_order.garment === garment && new Date(r.order_date).getTime() >= cutoff);
+
+        // Сводка
+        let pcs = 0, sum = 0;
+        const byTech = { 'Без принта': 0, 'DTF-принт': 0, 'Вышивка': 0 };
+        const matrix = {};
+        SIZES.forEach(s => { matrix[s] = { black: 0, white: 0 }; });
+        rows.forEach(r => {
+            const o = r.atelier_order, q = qtyOf(o);
+            pcs += q; sum += Number(r.total_amount) || 0;
+            byTech[techLabel(o)] += q;
+            if (matrix[o.size] && matrix[o.size][o.color] !== undefined) matrix[o.size][o.color] += q;
+        });
+        document.getElementById('c-orders').textContent = rows.length;
+        document.getElementById('c-pcs').textContent = pcs;
+        document.getElementById('c-sum').textContent = eur(sum);
+        document.getElementById('tech-line').innerHTML =
+            Object.entries(byTech).map(([k, v]) => `<span>${k}: <b>${v}</b></span>`).join('');
+
+        let totBlack = 0, totWhite = 0;
+        document.getElementById('matrix').innerHTML = SIZES.map(s => {
+            const b = matrix[s].black, w = matrix[s].white;
+            totBlack += b; totWhite += w;
+            return `<tr><td>${s}</td><td class="num">${b}</td><td class="num">${w}</td><td class="num">${b + w}</td></tr>`;
+        }).join('') + `<tr class="total-row"><td>ИТОГО</td><td class="num">${totBlack}</td><td class="num">${totWhite}</td><td class="num">${totBlack + totWhite}</td></tr>`;
+
+        // Заказы
+        document.getElementById('empty-note').style.display = rows.length ? 'none' : 'block';
+        document.getElementById('empty-note').textContent = 'За выбранный период заказов нет.';
+        document.getElementById('orders').innerHTML = rows.map((r, i) => {
+            const o = r.atelier_order;
+            const { b, approx } = getPricing(o);
+            const mark = approx ? ' <span class="approx">≈</span>' : '';
+            return `
+                <tr class="order-row" data-i="${i}">
+                    <td>${new Date(r.order_date).toLocaleDateString()}</td>
+                    <td>${r.order_number}</td>
+                    <td>${COLOR_LABELS[o.color] || o.color || '—'}</td>
+                    <td>${o.size || '—'}</td>
+                    <td class="num">${qtyOf(o)}</td>
+                    <td>${techLabel(o)}</td>
+                    <td>${printDetail(o)}</td>
+                    <td class="num">${eur(b.cost)}${mark}</td>
+                    <td class="num">${eur(b.margin)}${mark}</td>
+                    <td class="num">${eur(b.retail)}${mark}</td>
+                    <td class="amount">${eur(r.total_amount)}</td>
+                </tr>
+                <tr class="detail-row" id="d-${i}" style="display:none;">
+                    <td colspan="11">
+                        Изделие ${eur(b.garment)} · Ткань ${eur(b.fabric)} · Нанесение ${eur(b.decoration)} ·
+                        Дополнения ${eur(b.extras)} · Упаковка ${eur(b.packaging)} · Накладные ${eur(b.overhead)} ·
+                        Наценка ${b.marginPercent}%
+                        ${approx ? '<br><span class="approx">≈ старый заказ: затраты пересчитаны по текущим параметрам, не по состоянию на дату заказа</span>' : ''}
+                    </td>
+                </tr>`;
+        }).join('');
+        document.querySelectorAll('tr.order-row').forEach(tr => {
+            tr.addEventListener('click', () => {
+                const d = document.getElementById('d-' + tr.dataset.i);
+                d.style.display = d.style.display === 'none' ? '' : 'none';
+            });
+        });
+    }
+
+    document.getElementById('period').addEventListener('change', render);
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-atelier').addEventListener('click', () => window.location.href = 'income-atelier.html');
+
+    render();
+</script>
+</body>
+</html>
