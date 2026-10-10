@@ -433,8 +433,7 @@
     import * as eventBus from './core/eventBus.js';
     import { supabase } from './core/supabase-init.js';
     import { openPaymentTerminal } from './modules/paymentTerminal.js';
-    import { loadPricing, computeUnitPrice, DEFAULTS } from './core/pricing.js';
-
+    import { loadPricing, computeUnitPrice, computeBreakdown, DEFAULTS } from './core/pricing.js';  
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
