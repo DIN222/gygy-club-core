@@ -1,1 +1,62 @@
+<!DOCTYPE html>
+<!-- income-atelier.html — v2.0.0 — 2026-10-10 — Приход → Ателье: выбор изделия -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Приход: Ателье</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .grid { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; }
+    .block-btn { background: #0a0a0a; border: 1px solid var(--gold-dim); color: var(--gold); padding: 16px; text-align: center; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; text-decoration: none; display: block; }
+    .block-btn:hover { border-color: var(--gold); }
+    .block-btn small { display: block; margin-top: 4px; font-family: 'Share Tech Mono', monospace; font-size: 9px; opacity: 0.65; font-weight: 400; }
+    .divider { height: 1px; background: var(--gold-dim); opacity: 0.4; margin: 6px 0; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-income">&lt;&lt;</a></div>
+<div class="page-wrap">
+    <div class="title">ПРИХОД — АТЕЛЬЕ</div>
+    <div class="grid">
+        <a class="block-btn" href="income-product.html?garment=tshirt">ФУТБОЛКА<small id="sub-tshirt">…</small></a>
+        <a class="block-btn" href="income-product.html?garment=hoodie">ХУДИ<small id="sub-hoodie">…</small></a>
+        <a class="block-btn" href="income-product.html?garment=longsleeve">ЛОНГСЛИВ<small id="sub-longsleeve">…</small></a>
+        <div class="divider"></div>
+        <a class="block-btn" href="price-params.html">ПАРАМЕТРЫ ЦЕНЫ<small>Затраты, наценка, предпросмотр цены</small></a>
+        <a class="block-btn" href="income-ledger.html?line=atelier">ВСЕ ЗАКАЗЫ (ЖУРНАЛ)<small>Общий список без разбивки</small></a>
+    </div>
+</div>
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const { data } = await supabase.from('income_entries').select('atelier_order')
+        .eq('business_line', 'atelier').limit(1000);
+    const stat = { tshirt: { orders: 0, pcs: 0 }, hoodie: { orders: 0, pcs: 0 }, longsleeve: { orders: 0, pcs: 0 } };
+    (data || []).forEach(r => {
+        const o = r.atelier_order;
+        if (o && stat[o.garment]) { stat[o.garment].orders++; stat[o.garment].pcs += Number(o.quantity) || 1; }
+    });
+    Object.keys(stat).forEach(k => {
+        document.getElementById('sub-' + k).textContent = `${stat[k].orders} заказов · ${stat[k].pcs} шт.`;
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-income').addEventListener('click', () => window.location.href = 'income.html');
+</script>
+</body>
+</html>
 
