@@ -1106,7 +1106,8 @@
                 position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
                 actualSizeOnPreview: actualPrintSizeLabel()
             } : null,
-            unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now()
+                       unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
+            pricing: computeBreakdown(pricingParams, pricingInput())
         };
 
         closeModal(document.getElementById('modal-confirm-order'));
