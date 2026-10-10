@@ -777,13 +777,14 @@
         const d = SCALE_DIMENSIONS_CM[id];
         return `${d.w}x${d.h}cm`;
     }
-    function unitPrice() {
-        return computeUnitPrice(pricingParams, {
+      function pricingInput() {
+        return {
             type: state.type, composition: state.fabricComposition,
             scale: state.scale, technique: state.technique, hasPrint: !!state.currentPrint,
             drawstring: state.drawstring, zipper: state.zipper
-        });
+        };
     }
+    function unitPrice() { return computeUnitPrice(pricingParams, pricingInput()); }
     function calculatePrice() { return Math.round(unitPrice() * Math.max(1, state.quantity) * 100) / 100; }
     function actualPrintSizeLabel() {
         if (!state.currentPrint || !state.printBox) return '';
