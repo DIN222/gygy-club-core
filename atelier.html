@@ -433,7 +433,7 @@
     import * as eventBus from './core/eventBus.js';
     import { supabase } from './core/supabase-init.js';
     import { openPaymentTerminal } from './modules/paymentTerminal.js';
-       import { loadPricing, computeUnitPrice, computeBreakdown, DEFAULTS } from './core/pricing.js';
+    import { loadPricing, computeUnitPrice, DEFAULTS } from './core/pricing.js';
 
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
@@ -778,14 +778,13 @@
         const d = SCALE_DIMENSIONS_CM[id];
         return `${d.w}x${d.h}cm`;
     }
-       function pricingInput() {
-        return {
+    function unitPrice() {
+        return computeUnitPrice(pricingParams, {
             type: state.type, composition: state.fabricComposition,
             scale: state.scale, technique: state.technique, hasPrint: !!state.currentPrint,
             drawstring: state.drawstring, zipper: state.zipper
-        };
+        });
     }
-    function unitPrice() { return computeUnitPrice(pricingParams, pricingInput()); }
     function calculatePrice() { return Math.round(unitPrice() * Math.max(1, state.quantity) * 100) / 100; }
     function actualPrintSizeLabel() {
         if (!state.currentPrint || !state.printBox) return '';
@@ -1107,8 +1106,7 @@
                 position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
                 actualSizeOnPreview: actualPrintSizeLabel()
             } : null,
-                        unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
-            pricing: computeBreakdown(pricingParams, pricingInput())
+            unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now()
         };
 
         closeModal(document.getElementById('modal-confirm-order'));
