@@ -414,12 +414,14 @@
         <div class="modal-title">ПРОВЕРЬТЕ ЗАКАЗ</div>
         <div id="confirm-order-summary" style="font-size:11px; text-align:left; line-height:1.6;"></div>
         <div style="margin-top:12px; text-align:left;">
-            <input type="text" id="confirm-recipient-name" class="modal-input" placeholder="Имя получателя">
-            <input type="text" id="confirm-recipient-address" class="modal-input" placeholder="Адрес доставки">
+                       <input type="text" id="confirm-recipient-last" class="modal-input" placeholder="Last name">
+            <input type="text" id="confirm-recipient-first" class="modal-input" placeholder="First name">
+            <input type="tel" id="confirm-recipient-phone" class="modal-input" placeholder="Phone">
+            <input type="text" id="confirm-recipient-post" class="modal-input" placeholder="Post office (number / address)">
             <select id="confirm-payment-method" class="modal-input">
-                <option value="prepayment">Предоплата</option>
-                <option value="cod">Наложенный платёж (оплата при получении)</option>
-            </select>
+                <option value="prepayment">Prepayment (pay now)</option>
+                <option value="cod">Cash on delivery (pay at the post office)</option>
+            </select> 
         </div>
         <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:10px;">ДА, ОФОРМИТЬ</button>
         <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
