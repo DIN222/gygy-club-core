@@ -1081,13 +1081,66 @@
         openModal('modal-confirm-order');
     });
 
+    async function recordOrder(order, paid) {
+        const status = document.getElementById('order-status');
+
+        const reports = get('officeAtelierReports', []);
+        reports.push(order);
+        set('officeAtelierReports', reports.slice(-50));
+
+        // Склад — по возможности; не должен мешать записи самого заказа
+        let cogsAmount = 0;
+        try {
+            const { data: stockItem } = await supabase
+                .from('warehouse_stock').select('*')
+                .eq('item_name', order.garment).eq('item_type', 'finished_good').eq('business_line', 'atelier')
+                .maybeSingle();
+            if (stockItem && Number(stockItem.quantity) >= order.quantity) {
+                cogsAmount = Number(stockItem.avg_unit_cost) * order.quantity;
+                await supabase.from('warehouse_stock').update({
+                    quantity: Number(stockItem.quantity) - order.quantity,
+                    updated_at: new Date().toISOString()
+                }).eq('id', stockItem.id);
+                await supabase.from('warehouse_movements').insert({
+                    item_name: order.garment, item_type: 'finished_good', business_line: 'atelier',
+                    movement_type: 'issue_production', quantity: -order.quantity, unit: 'шт',
+                    note: `Продажа, заказ ${order.orderNumber}`
+                });
+            } else {
+                console.warn('[Atelier] Склад недоступен или не хватает готовой продукции — себестоимость продажи не зафиксирована.');
+            }
+        } catch (e) {
+            console.warn('[Atelier] Складской учёт пропущен', e);
+        }
+
+        // Главное — запись заказа в Приход
+        const today = new Date().toISOString().slice(0, 10);
+        const { error } = await supabase.from('income_entries').insert({
+            business_line: 'atelier',
+            order_number: order.orderNumber,
+            atelier_order: order,
+            total_amount: order.totalPrice,
+            cogs_amount: cogsAmount,
+            payment_date: paid ? today : null,
+            payment_amount: paid ? order.totalPrice : null
+        });
+        if (error) {
+            console.error('[Atelier] Не удалось записать заказ в Приход', error);
+            status.textContent = 'Order saved on this device but NOT delivered to Accounting: ' + (error.message || 'unknown error');
+            return;
+        }
+        status.textContent = paid ? 'Paid. Your order has been placed!' : 'Order placed. You will pay at the post office on receipt.';
+    }
+
     document.getElementById('btn-confirm-final').addEventListener('click', () => {
-        const recipientName = document.getElementById('confirm-recipient-name').value.trim();
-        const recipientAddress = document.getElementById('confirm-recipient-address').value.trim();
+        const lastName = document.getElementById('confirm-recipient-last').value.trim();
+        const firstName = document.getElementById('confirm-recipient-first').value.trim();
+        const phone = document.getElementById('confirm-recipient-phone').value.trim();
+        const postOffice = document.getElementById('confirm-recipient-post').value.trim();
         const paymentMethod = document.getElementById('confirm-payment-method').value;
         const status = document.getElementById('order-status');
-        if (!recipientName || !recipientAddress) {
-            status.textContent = 'Заполните имя и адрес получателя.';
+        if (!lastName || !firstName || !phone || !postOffice) {
+            status.textContent = 'Please fill in last name, first name, phone and post office.';
             return;
         }
         const orderNumber = 'GY-' + Date.now().toString(36).toUpperCase();
@@ -1099,7 +1152,10 @@
             drawstring: (state.type === 'hoodie') ? state.drawstring : null,
             zipper: (state.type === 'hoodie') ? state.zipper : null,
             neckline: state.neckline, fit: state.fit, quantity: state.quantity,
-            recipientName, recipientAddress, paymentMethod,
+            recipientLastName: lastName, recipientFirstName: firstName,
+            recipientPhone: phone, recipientPostOffice: postOffice,
+            recipientName: `${lastName} ${firstName}`, recipientAddress: postOffice,
+            paymentMethod,
             decoration: state.currentPrint ? {
                 source: state.currentPrint.source,
                 shared: !!state.currentPrint.shared,
@@ -1108,64 +1164,27 @@
                 position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
                 actualSizeOnPreview: actualPrintSizeLabel()
             } : null,
-                       unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
+            unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
             pricing: computeBreakdown(pricingParams, pricingInput())
         };
 
         closeModal(document.getElementById('modal-confirm-order'));
 
+        if (paymentMethod === 'cod') {
+            recordOrder(order, false);
+            return;
+        }
         openPaymentTerminal({
             amount: order.totalPrice,
             orderNumber,
             lineItems: [
                 [`${state.type.toUpperCase()} ${state.size} ${state.color.toUpperCase()}`, `€${unitPrice().toFixed(2)}`],
-                ['Кол-во', `${state.quantity} шт.`]
+                ['Qty', `${state.quantity}`]
             ],
-            onCancel: () => { status.textContent = 'Оплата отменена, заказ не оформлен.'; },
-            onComplete: async () => {
-                const reports = get('officeAtelierReports', []);
-                reports.push(order);
-                set('officeAtelierReports', reports.slice(-50));
-
-                try {
-                    let cogsAmount = 0;
-                    const { data: stockItem } = await supabase
-                        .from('warehouse_stock').select('*')
-                        .eq('item_name', state.type).eq('item_type', 'finished_good').eq('business_line', 'atelier')
-                        .maybeSingle();
-
-                    if (stockItem && Number(stockItem.quantity) >= state.quantity) {
-                        cogsAmount = Number(stockItem.avg_unit_cost) * state.quantity;
-                        await supabase.from('warehouse_stock').update({
-                            quantity: Number(stockItem.quantity) - state.quantity,
-                            updated_at: new Date().toISOString()
-                        }).eq('id', stockItem.id);
-                        await supabase.from('warehouse_movements').insert({
-                            item_name: state.type, item_type: 'finished_good', business_line: 'atelier',
-                            movement_type: 'issue_production', quantity: -state.quantity, unit: 'шт',
-                            note: `Продажа, заказ ${orderNumber}`
-                        });
-                    } else {
-                        console.warn('[Atelier] На складе недостаточно готовой продукции — себестоимость продажи не зафиксирована.');
-                    }
-
-                    const { error } = await supabase.from('income_entries').insert({
-                        business_line: 'atelier',
-                        order_number: orderNumber,
-                        atelier_order: order,
-                        total_amount: order.totalPrice,
-                        cogs_amount: cogsAmount
-                    });
-                    if (error) throw error;
-                    status.textContent = 'Оплачено, заказ передан в Бухгалтерию!';
-                } catch (err) {
-                    console.error('[Atelier] Не удалось записать заказ в Приход', err);
-                    status.textContent = 'Оплачено, но запись в Бухгалтерию не прошла — сообщите Модермеху.';
-                }
-            }
+            onCancel: () => { status.textContent = 'Payment cancelled, order not placed.'; },
+            onComplete: () => recordOrder(order, true)
         });
     });
-
     document.getElementById('link-help').addEventListener('click', () => {
         window.open(TELEGRAM_HELP_URL, '_blank');
     });
