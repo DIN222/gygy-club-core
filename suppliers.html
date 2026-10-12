@@ -1,1 +1,229 @@
+<!DOCTYPE html>
+<!--
+  suppliers.html — v1.0.0 — 2026-10-11
+  Поставщики: 10 зарезервированных слотов (слот = категория поставки:
+  ткани, бланки, DTF-плёнка…). Строка в базе создаётся при первом сохранении
+  слота, поэтому пустые слоты не засоряют выпадающий список в «Расходе».
+  «Освободить слот» не удаляет поставщика (на него могут ссылаться расходы),
+  а только снимает с него номер слота.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Поставщики</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 22px; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .hint { font-size: 10px; color: var(--ivory); opacity: 0.65; margin-bottom: 14px; text-align: center; max-width: 520px; line-height: 1.5; }
+    .panel { width: 100%; max-width: 640px; }
 
+    details.slot { border: 1px solid var(--gold-dim); background: #0a0a0a; margin-bottom: 8px; }
+    details.slot > summary { list-style: none; cursor: pointer; padding: 11px 10px; display: flex; gap: 10px; align-items: baseline; font-size: 12px; }
+    details.slot > summary::-webkit-details-marker { display: none; }
+    details.slot[open] > summary { border-bottom: 1px solid var(--gold-dim); }
+    .s-n { color: var(--gold-dim); font-weight: 900; min-width: 22px; }
+    .s-title { color: var(--gold); font-weight: 700; }
+    .s-title.empty { color: #666; font-weight: 400; }
+    .s-sub { color: var(--ivory); opacity: 0.7; font-size: 10px; margin-left: auto; text-align: right; }
+
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
+    .fields label { display: block; font-size: 9px; color: #9a9a8a; margin-bottom: 2px; text-transform: uppercase; }
+    .fields input, .fields textarea { width: 100%; padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .fields .wide { grid-column: 1 / -1; }
+    .link-open { display: inline-block; margin-top: 4px; font-size: 10px; color: var(--gold); text-decoration: none; border: 1px solid var(--gold-dim); padding: 2px 7px; }
+    .link-open:hover { border-color: var(--gold); }
+    .bar { padding: 0 10px 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .btn-save { background: var(--gold); color: #000; border: 1px solid var(--gold); padding: 8px 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: inherit; font-size: 11px; }
+    .btn-release { background: #000; color: #9a9a8a; border: 1px solid #333; padding: 7px 12px; cursor: pointer; font-family: inherit; font-size: 10px; }
+    .btn-release:hover { color: #e74c3c; border-color: #e74c3c; }
+    .status { font-size: 11px; color: var(--ivory); }
+    .status.ok { color: #6fd48a; }
+    .status.error { color: #e74c3c; }
+    .error-note { font-size: 11px; color: #e74c3c; text-align: center; margin: 12px 0; }
+    @media (max-width: 600px) { .fields { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+
+<div class="page-wrap">
+    <div class="title">ПОСТАВЩИКИ</div>
+    <div class="hint">10 слотов. Название слота — что поставляет (например, «Ткани»). Нажмите на слот, чтобы заполнить карточку; всё можно менять по факту.</div>
+    <div class="panel">
+        <div class="error-note" id="error-note" style="display:none;"></div>
+        <div id="slots"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const SLOT_COUNT = 10;
+    const PLACEHOLDERS = { 1: 'напр. Ткани', 2: 'напр. Бланки футболок', 3: 'напр. DTF-плёнка' };
+    let rows = [];
+    const openSlots = new Set();
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function safeUrl(u) {
+        if (!u) return '';
+        const t = String(u).trim();
+        const full = /^https?:\/\//i.test(t) ? t : 'https://' + t;
+        return /^https?:\/\/[^\s]+$/i.test(full) ? full : '';
+    }
+    function messengerLink(m) {
+        return /^(https?:\/\/|t\.me\/|wa\.me\/)/i.test((m || '').trim()) ? safeUrl(m) : '';
+    }
+
+    function slotHtml(n) {
+        const r = rows.find(x => x.slot === n) || {};
+        const title = r.slot_title || '';
+        const supplierName = r.name && r.name !== title ? r.name : '';
+        const sub = [supplierName, r.phone].filter(Boolean).join(' · ');
+        const site = safeUrl(r.website);
+        const msg = messengerLink(r.messenger);
+        return `
+        <details class="slot" data-slot="${n}"${openSlots.has(n) ? ' open' : ''}>
+            <summary>
+                <span class="s-n">${n}</span>
+                <span class="s-title${title ? '' : ' empty'}">${title ? esc(title) : '— свободно —'}</span>
+                <span class="s-sub">${esc(sub)}</span>
+            </summary>
+            <div class="fields">
+                <div class="wide"><label>Что поставляет (название слота)</label><input type="text" data-f="slot_title" placeholder="${esc(PLACEHOLDERS[n] || 'что поставляет')}" value="${esc(title)}"></div>
+                <div><label>Наименование поставщика</label><input type="text" data-f="name" value="${esc(supplierName)}"></div>
+                <div><label>Контактное лицо</label><input type="text" data-f="contact_person" value="${esc(r.contact_person || '')}"></div>
+                <div><label>Телефон</label><input type="tel" data-f="phone" value="${esc(r.phone || '')}"></div>
+                <div>
+                    <label>Сайт (ссылка)</label><input type="text" data-f="website" value="${esc(r.website || '')}">
+                    ${site ? `<a class="link-open" href="${esc(site)}" target="_blank" rel="noopener noreferrer">открыть ↗</a>` : ''}
+                </div>
+                <div class="wide">
+                    <label>Мессенджер / соцсеть (ссылка или @ник) — если сайта нет</label>
+                    <input type="text" data-f="messenger" value="${esc(r.messenger || '')}">
+                    ${msg ? `<a class="link-open" href="${esc(msg)}" target="_blank" rel="noopener noreferrer">открыть ↗</a>` : ''}
+                </div>
+                <div class="wide"><label>Заметки (условия, сроки, минимальная партия)</label><textarea rows="3" data-f="notes">${esc(r.notes || '')}</textarea></div>
+            </div>
+            <div class="bar">
+                <button class="btn-save" type="button">Сохранить</button>
+                ${r.id ? '<button class="btn-release" type="button">Освободить слот</button>' : ''}
+                <span class="status"></span>
+            </div>
+        </details>`;
+    }
+
+    function render() {
+        let html = '';
+        for (let n = 1; n <= SLOT_COUNT; n++) html += slotHtml(n);
+        document.getElementById('slots').innerHTML = html;
+    }
+
+    async function load() {
+        const { data, error } = await supabase.from('suppliers').select('*');
+        const note = document.getElementById('error-note');
+        if (error) {
+            console.error(error);
+            note.style.display = 'block';
+            note.textContent = 'Не удалось загрузить поставщиков: ' + (error.message || '') + ' — проверьте, что SQL выполнен.';
+            rows = [];
+        } else {
+            note.style.display = 'none';
+            rows = data || [];
+        }
+        render();
+    }
+
+    const slotsEl = document.getElementById('slots');
+
+    // запоминаем раскрытые слоты, чтобы перерисовка их не сворачивала
+    slotsEl.addEventListener('toggle', (e) => {
+        const el = e.target;
+        if (el.classList && el.classList.contains('slot')) {
+            const n = Number(el.dataset.slot);
+            if (el.open) openSlots.add(n); else openSlots.delete(n);
+        }
+    }, true);
+
+    function setStatus(card, text, cls) {
+        const st = card.querySelector('.status');
+        if (!st) return;
+        st.className = 'status' + (cls ? ' ' + cls : '');
+        st.textContent = text;
+    }
+
+    slotsEl.addEventListener('click', async (e) => {
+        const card = e.target.closest('details.slot');
+        if (!card) return;
+        const n = Number(card.dataset.slot);
+        const row = rows.find(x => x.slot === n);
+
+        if (e.target.closest('.btn-save')) {
+            const v = (f) => {
+                const val = card.querySelector(`[data-f="${f}"]`).value.trim();
+                return val === '' ? null : val;
+            };
+            const title = v('slot_title');
+            const payload = {
+                slot: n,
+                slot_title: title,
+                name: v('name') || title || `Слот ${n}`,
+                contact_person: v('contact_person'),
+                phone: v('phone'),
+                website: v('website'),
+                messenger: v('messenger'),
+                notes: v('notes'),
+                updated_at: new Date().toISOString()
+            };
+            setStatus(card, 'Сохраняю…');
+            const query = row
+                ? supabase.from('suppliers').update(payload).eq('id', row.id).select()
+                : supabase.from('suppliers').insert(payload).select();
+            const { data, error } = await query;
+            if (error || !data || data.length === 0) {
+                console.error('[Suppliers] Не удалось сохранить', error);
+                setStatus(card, 'Не удалось сохранить: ' + (error ? error.message : 'нет прав — проверьте SQL (политика update)'), 'error');
+                return;
+            }
+            if (row) Object.assign(row, data[0]); else rows.push(data[0]);
+            openSlots.add(n);
+            render();
+            const fresh = slotsEl.querySelector(`details.slot[data-slot="${n}"]`);
+            if (fresh) setStatus(fresh, 'Сохранено', 'ok');
+            return;
+        }
+
+        if (e.target.closest('.btn-release') && row) {
+            if (!confirm(`Освободить слот ${n}? Поставщик останется в списке расходов, но слот станет свободным.`)) return;
+            const { data, error } = await supabase.from('suppliers')
+                .update({ slot: null, slot_title: null }).eq('id', row.id).select();
+            if (error || !data || data.length === 0) {
+                setStatus(card, 'Не удалось освободить слот: ' + (error ? error.message : 'нет прав'), 'error');
+                return;
+            }
+            rows = rows.filter(x => x.id !== row.id);
+            openSlots.delete(n);
+            render();
+        }
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+
+    load();
+</script>
+</body>
+</html>
