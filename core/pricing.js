@@ -1,19 +1,12 @@
 // core/pricing.js
-// v2.0.0 — 2026-10-10
-// Единая формула цены. Постоянные параметры хранятся в Supabase (pricing_params);
-// если таблица пуста или недоступна — используются DEFAULTS (равны прежним
-// ценам из кода, поэтому после внедрения цены на сайте не меняются, пока вы
-// сами не измените параметры).
+// v3.0.0 — 2026-10-12
+// Единая формула цены. Параметры хранятся в Supabase (pricing_params).
+// У каждого изделия может быть свой набор: ключ вида "hoodie|scale.a3".
+// Если своего значения нет, берётся общее (ключ без префикса), затем DEFAULTS.
 //
-// Формула:
 //   себестоимость единицы = изделие + ткань + (нанесение + техника, если есть принт)
 //                           + (шнурки/молния для худи) + упаковка + накладные
 //   цена единицы          = себестоимость × (1 + наценка/100)
-//
-// Что нового в v2.0.0: computeBreakdown возвращает полную расшифровку затрат
-// (изделие, ткань, нанесение, дополнения, упаковка, накладные, наценка в % и
-// в деньгах). Atelier сохраняет эту расшифровку в каждом заказе, а Бухгалтерия
-// (income-product.html) показывает её по строкам заказов.
 
 import { supabase } from './supabase-init.js';
 
@@ -42,6 +35,13 @@ export const PARAM_DEFS = [
 
 export const DEFAULTS = Object.fromEntries(PARAM_DEFS.map(d => [d[0], d[3]]));
 
+// Какие ткани бывают у каких изделий
+export const FABRICS_BY_GARMENT = {
+    tshirt: ['cotton100', 'stretch'],
+    hoodie: ['cotton80poly20', 'cotton100fleece'],
+    longsleeve: ['cotton100fleece']
+};
+
 export async function loadPricing() {
     try {
         const { data, error } = await supabase.from('pricing_params').select('key, value');
@@ -55,11 +55,34 @@ export async function loadPricing() {
     }
 }
 
+// Значение параметра для конкретного изделия: своё → общее → по умолчанию
+export function effectiveValue(params, type, key) {
+    const own = params[type + '|' + key];
+    const shared = params[key];
+    return Number(own ?? shared ?? DEFAULTS[key] ?? 0);
+}
+
+// Параметры, относящиеся к изделию. storeKey — под каким ключом сохранять.
+export function garmentParamDefs(type) {
+    const fabrics = FABRICS_BY_GARMENT[type] || [];
+    return PARAM_DEFS.filter(d => {
+        const k = d[0];
+        if (k.startsWith('garment.')) return k === 'garment.' + type;
+        if (k.startsWith('fabric.')) return fabrics.includes(k.slice(7));
+        if (k.startsWith('extra.')) return type === 'hoodie';
+        return true;
+    }).map(d => ({
+        key: d[0],
+        storeKey: d[0].startsWith('garment.') ? d[0] : type + '|' + d[0],
+        label: d[1],
+        group: d[2],
+        def: d[3]
+    }));
+}
+
 // o: { type, composition, scale, technique, hasPrint, drawstring, zipper }
-// Возвращает: { garment, fabric, decoration, extras, packaging, overhead,
-//               cost, marginPercent, margin, retail } — всё на ОДНУ единицу.
 export function computeBreakdown(params, o) {
-    const g = (k) => Number(params[k] ?? DEFAULTS[k] ?? 0);
+    const g = (k) => effectiveValue(params, o.type, k);
     const round = (n) => Math.round(n * 100) / 100;
 
     const garment = g('garment.' + o.type);
@@ -78,16 +101,9 @@ export function computeBreakdown(params, o) {
     const retail = cost * (1 + marginPercent / 100);
 
     return {
-        garment: round(garment),
-        fabric: round(fabric),
-        decoration: round(decoration),
-        extras: round(extras),
-        packaging: round(packaging),
-        overhead: round(overhead),
-        cost: round(cost),
-        marginPercent,
-        margin: round(retail - cost),
-        retail: round(retail)
+        garment: round(garment), fabric: round(fabric), decoration: round(decoration), extras: round(extras),
+        packaging: round(packaging), overhead: round(overhead),
+        cost: round(cost), marginPercent, margin: round(retail - cost), retail: round(retail)
     };
 }
 
