@@ -121,7 +121,7 @@
 <script type="module">
     import { requireAuth } from './core/auth.js';
     import { supabase } from './core/supabase-init.js';
-    import { DEFAULTS, loadPricing, computeBreakdown } from './core/pricing.js';
+       import { DEFAULTS, loadPricing, computeBreakdown, garmentParamDefs, effectiveValue } from './core/pricing.js';
 
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
