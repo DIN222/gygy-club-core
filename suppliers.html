@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <!--
-  suppliers.html — v1.0.0 — 2026-10-11
-  Поставщики: 10 зарезервированных слотов (слот = категория поставки:
-  ткани, бланки, DTF-плёнка…). Строка в базе создаётся при первом сохранении
-  слота, поэтому пустые слоты не засоряют выпадающий список в «Расходе».
-  «Освободить слот» не удаляет поставщика (на него могут ссылаться расходы),
-  а только снимает с него номер слота.
+  suppliers.html — v2.0.0 — 2026-10-12
+  Поставщики: 10 слотов + заказы поставщику (ручное заполнение).
+  «Принять на склад» вызывает функцию receive_supplier_order в базе:
+  приход на склад (сырьё), запись в «Расход», доставка распределяется
+  по позициям пропорционально стоимости и входит в себестоимость.
 -->
 <html lang="en">
 <head>
@@ -23,7 +22,7 @@
     .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
     .title { font-family: 'Cinzel', serif; font-size: 22px; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
     .hint { font-size: 10px; color: var(--ivory); opacity: 0.65; margin-bottom: 14px; text-align: center; max-width: 520px; line-height: 1.5; }
-    .panel { width: 100%; max-width: 640px; }
+    .panel { width: 100%; max-width: 680px; }
 
     details.slot { border: 1px solid var(--gold-dim); background: #0a0a0a; margin-bottom: 8px; }
     details.slot > summary { list-style: none; cursor: pointer; padding: 11px 10px; display: flex; gap: 10px; align-items: baseline; font-size: 12px; }
@@ -34,9 +33,12 @@
     .s-title.empty { color: #666; font-weight: 400; }
     .s-sub { color: var(--ivory); opacity: 0.7; font-size: 10px; margin-left: auto; text-align: right; }
 
-    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
-    .fields label { display: block; font-size: 9px; color: #9a9a8a; margin-bottom: 2px; text-transform: uppercase; }
-    .fields input, .fields textarea { width: 100%; padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .fields, .ord-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fields { padding: 10px; }
+    .fields label, .ord-fields label, .fields-note label { display: block; font-size: 9px; color: #9a9a8a; margin-bottom: 2px; text-transform: uppercase; }
+    .fields input, .fields textarea, .ord-fields input, .ord-fields select, .fields-note textarea, table.items input {
+        width: 100%; padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
+    }
     .fields .wide { grid-column: 1 / -1; }
     .link-open { display: inline-block; margin-top: 4px; font-size: 10px; color: var(--gold); text-decoration: none; border: 1px solid var(--gold-dim); padding: 2px 7px; }
     .link-open:hover { border-color: var(--gold); }
@@ -44,20 +46,52 @@
     .btn-save { background: var(--gold); color: #000; border: 1px solid var(--gold); padding: 8px 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: inherit; font-size: 11px; }
     .btn-release { background: #000; color: #9a9a8a; border: 1px solid #333; padding: 7px 12px; cursor: pointer; font-family: inherit; font-size: 10px; }
     .btn-release:hover { color: #e74c3c; border-color: #e74c3c; }
-    .status { font-size: 11px; color: var(--ivory); }
-    .status.ok { color: #6fd48a; }
-    .status.error { color: #e74c3c; }
+    .status, .ord-status { font-size: 11px; color: var(--ivory); }
+    .status.ok, .ord-status.ok { color: #6fd48a; }
+    .status.error, .ord-status.error { color: #e74c3c; }
     .error-note { font-size: 11px; color: #e74c3c; text-align: center; margin: 12px 0; }
-    @media (max-width: 600px) { .fields { grid-template-columns: 1fr; } }
+
+    .orders { margin: 0 10px 10px; border-top: 1px dashed var(--gold-dim); padding-top: 10px; }
+    .orders-h { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .orders-note { font-size: 10px; color: #777; margin-bottom: 8px; }
+    details.ord { border: 1px solid #333; background: #060606; margin-bottom: 6px; }
+    details.ord > summary { list-style: none; cursor: pointer; padding: 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 11px; color: var(--ivory); }
+    details.ord > summary::-webkit-details-marker { display: none; }
+    details.ord[open] > summary { border-bottom: 1px solid #333; }
+    .o-ref { color: var(--gold); font-weight: 700; }
+    .o-sum { margin-left: auto; color: var(--gold); font-weight: 900; }
+    .chip { border: 1px solid var(--gold-dim); padding: 2px 6px; font-size: 9px; text-transform: uppercase; }
+    .chip.ok { border-color: #6fd48a; color: #6fd48a; }
+    .chip.warn { border-color: #e0a030; color: #e0a030; }
+    .chip.dim { border-color: #555; color: #777; }
+    .ord-body { padding: 8px; }
+    .ro-line { font-size: 11px; color: var(--ivory); padding: 2px 0; }
+    table.items { width: 100%; border-collapse: collapse; margin: 8px 0 4px; }
+    table.items th { font-size: 9px; text-align: left; color: #9a9a8a; padding: 2px 3px; text-transform: uppercase; }
+    table.items td { padding: 2px 3px; }
+    table.items td:nth-child(2) { width: 70px; } table.items td:nth-child(3) { width: 56px; }
+    table.items td:nth-child(4) { width: 80px; } table.items td:nth-child(5) { width: 28px; }
+    .fields-note { margin-top: 8px; }
+    .fields-note textarea { resize: vertical; }
+    .ord-totals { font-size: 11px; color: var(--gold); margin: 8px 0; }
+    .ord-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+    .btn-mini { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 6px 10px; font-size: 10px; cursor: pointer; font-family: inherit; }
+    .btn-mini:hover { border-color: var(--gold); }
+    .btn-mini.primary { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 900; }
+    .btn-mini:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-x { background: #000; color: #9a9a8a; border: 1px solid #333; width: 24px; height: 24px; cursor: pointer; }
+    .btn-new-order { margin-top: 4px; }
+    @media (max-width: 600px) { .fields, .ord-fields { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <div class="header-right">GY-GY</div>
 <div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+<datalist id="wh-names"></datalist>
 
 <div class="page-wrap">
     <div class="title">ПОСТАВЩИКИ</div>
-    <div class="hint">10 слотов. Название слота — что поставляет (например, «Ткани»). Нажмите на слот, чтобы заполнить карточку; всё можно менять по факту.</div>
+    <div class="hint">10 слотов. Название слота — что поставляет (например, «Ткани»). Нажмите на слот, чтобы заполнить карточку и вести заказы поставщику; всё можно менять по факту.</div>
     <div class="panel">
         <div class="error-note" id="error-note" style="display:none;"></div>
         <div id="slots"></div>
@@ -73,9 +107,16 @@
 
     const SLOT_COUNT = 10;
     const PLACEHOLDERS = { 1: 'напр. Ткани', 2: 'напр. Бланки футболок', 3: 'напр. DTF-плёнка' };
-    let rows = [];
-    const openSlots = new Set();
+    const SOURCES = ['Сайт', 'Мессенджер', 'Соцсеть', 'Телефон', 'Почта', 'Другое'];
+    const STATUS_LABEL = { ordered: 'заказан', received: 'принят на склад', cancelled: 'отменён' };
+    const STATUS_CLASS = { ordered: 'warn', received: 'ok', cancelled: 'dim' };
 
+    let rows = [];
+    let orders = [];
+    const openSlots = new Set();
+    const openOrders = new Set();
+
+    const eur = (n) => `€${Number(n || 0).toFixed(2)}`;
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
     function safeUrl(u) {
@@ -88,6 +129,125 @@
         return /^(https?:\/\/|t\.me\/|wa\.me\/)/i.test((m || '').trim()) ? safeUrl(m) : '';
     }
 
+    // ---------- заказы ----------
+    function itemRowHtml(it = {}) {
+        return `<tr class="item-row">
+            <td><input type="text" list="wh-names" data-i="item_name" placeholder="Название позиции" value="${esc(it.item_name || '')}"></td>
+            <td><input type="number" step="0.01" min="0" data-i="quantity" value="${it.quantity ?? ''}"></td>
+            <td><input type="text" data-i="unit" value="${esc(it.unit || 'шт')}"></td>
+            <td><input type="number" step="0.01" min="0" data-i="unit_price" value="${it.unit_price ?? ''}"></td>
+            <td><button type="button" class="btn-x btn-del-item">✕</button></td>
+        </tr>`;
+    }
+
+    function orderHtml(o) {
+        const items = o.supplier_order_items || [];
+        const goods = items.reduce((s, i) => s + Number(i.quantity) * Number(i.unit_price), 0);
+        const total = goods + Number(o.delivery_cost || 0);
+        const label = o.reference ? o.reference : '№' + String(o.id).slice(0, 6);
+        const open = openOrders.has(o.id) ? ' open' : '';
+        const head = `<summary>
+            <span class="o-ref">${esc(label)}</span><span>${esc(o.order_date)}</span>
+            <span class="chip ${STATUS_CLASS[o.status] || 'dim'}">${STATUS_LABEL[o.status] || esc(o.status)}</span>
+            <span class="o-sum">${eur(total)}</span></summary>`;
+
+        if (o.status !== 'ordered') {
+            return `<details class="ord" data-oid="${esc(o.id)}"${open}>${head}<div class="ord-body">
+                ${items.map(i => `<div class="ro-line">${esc(i.item_name)} — ${Number(i.quantity)} ${esc(i.unit)} × ${eur(i.unit_price)}</div>`).join('')}
+                <div class="ro-line">Доставка: ${eur(o.delivery_cost)}</div>
+                ${o.received_date ? `<div class="ro-line">Принят: ${esc(o.received_date)}</div>` : ''}
+                ${o.source ? `<div class="ro-line">Источник: ${esc(o.source)}</div>` : ''}
+                ${o.note ? `<div class="ro-line">Заметка: ${esc(o.note)}</div>` : ''}
+                <div class="ord-bar">${o.status === 'cancelled' ? '<button class="btn-mini btn-delete-order" type="button">Удалить</button>' : ''}<span class="ord-status"></span></div>
+            </div></details>`;
+        }
+
+        return `<details class="ord" data-oid="${esc(o.id)}"${open}>${head}<div class="ord-body">
+            <div class="ord-fields">
+                <div><label>Дата заказа</label><input type="date" data-of="order_date" value="${esc(o.order_date)}"></div>
+                <div><label>№ заказа / счёта у поставщика</label><input type="text" data-of="reference" value="${esc(o.reference || '')}"></div>
+                <div><label>Откуда информация</label><select data-of="source"><option value=""></option>${SOURCES.map(s => `<option${o.source === s ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div><label>Доставка, €</label><input type="number" step="0.01" min="0" data-of="delivery_cost" value="${Number(o.delivery_cost || 0)}"></div>
+            </div>
+            <table class="items">
+                <thead><tr><th>Позиция</th><th>Кол-во</th><th>Ед.</th><th>Цена, €</th><th></th></tr></thead>
+                <tbody>${items.map(itemRowHtml).join('') || itemRowHtml()}</tbody>
+            </table>
+            <button class="btn-mini btn-add-item" type="button">+ позиция</button>
+            <div class="fields-note"><label>Заметка</label><textarea rows="2" data-of="note">${esc(o.note || '')}</textarea></div>
+            <div class="ord-totals">Товары ${eur(goods)} + доставка ${eur(o.delivery_cost)} = ${eur(total)}</div>
+            <div class="ord-bar">
+                <button class="btn-mini btn-save-order" type="button">Сохранить заказ</button>
+                <button class="btn-mini primary btn-receive" type="button">Принять на склад</button>
+                <button class="btn-mini btn-cancel-order" type="button">Отменить заказ</button>
+                <button class="btn-mini btn-delete-order" type="button">Удалить</button>
+                <span class="ord-status"></span>
+            </div>
+        </div></details>`;
+    }
+
+    function ordersHtml(r) {
+        if (!r.id) return `<div class="orders"><div class="orders-note">Чтобы вести заказы, сначала сохраните карточку поставщика.</div></div>`;
+        const list = orders.filter(o => o.supplier_id === r.id);
+        return `<div class="orders">
+            <div class="orders-h">Заказы поставщику</div>
+            ${list.map(orderHtml).join('') || '<div class="orders-note">Заказов пока нет.</div>'}
+            <button class="btn-mini btn-new-order" type="button">+ Новый заказ</button>
+        </div>`;
+    }
+
+    function recalc(card) {
+        let goods = 0;
+        card.querySelectorAll('tr.item-row').forEach(tr => {
+            const q = Number(tr.querySelector('[data-i="quantity"]').value) || 0;
+            const p = Number(tr.querySelector('[data-i="unit_price"]').value) || 0;
+            goods += q * p;
+        });
+        const delEl = card.querySelector('[data-of="delivery_cost"]');
+        const del = delEl ? (Number(delEl.value) || 0) : 0;
+        const el = card.querySelector('.ord-totals');
+        if (el) el.textContent = `Товары ${eur(goods)} + доставка ${eur(del)} = ${eur(goods + del)}`;
+    }
+
+    function readOrder(card) {
+        const header = {};
+        card.querySelectorAll('[data-of]').forEach(el => {
+            const k = el.dataset.of;
+            let v = el.value.trim();
+            if (k === 'delivery_cost') v = v === '' ? 0 : Number(v);
+            else if (k === 'order_date') v = v || new Date().toISOString().slice(0, 10);
+            else v = v === '' ? null : v;
+            header[k] = v;
+        });
+        const items = [];
+        card.querySelectorAll('tr.item-row').forEach(tr => {
+            const g = (f) => tr.querySelector(`[data-i="${f}"]`).value.trim();
+            const name = g('item_name');
+            if (!name) return;
+            const qty = Number(g('quantity'));
+            if (!(qty > 0)) throw new Error(`У позиции «${name}» не указано количество`);
+            items.push({ item_name: name, quantity: qty, unit: g('unit') || 'шт', unit_price: Number(g('unit_price')) || 0 });
+        });
+        return { header, items };
+    }
+
+    async function saveOrderData(card, o) {
+        const { header, items } = readOrder(card);
+        const { data, error } = await supabase.from('supplier_orders')
+            .update(header).eq('id', o.id).eq('status', 'ordered').select('id');
+        if (error || !data || !data.length) throw new Error(error ? error.message : 'Заказ уже не в статусе «заказан»');
+        const oldIds = (o.supplier_order_items || []).map(i => i.id);
+        if (items.length) {
+            const { error: e2 } = await supabase.from('supplier_order_items').insert(items.map(i => ({ ...i, order_id: o.id })));
+            if (e2) throw new Error(e2.message);
+        }
+        if (oldIds.length) {
+            const { error: e3 } = await supabase.from('supplier_order_items').delete().in('id', oldIds);
+            if (e3) throw new Error(e3.message);
+        }
+    }
+
+    // ---------- слоты ----------
     function slotHtml(n) {
         const r = rows.find(x => x.slot === n) || {};
         const title = r.slot_title || '';
@@ -123,40 +283,72 @@
                 ${r.id ? '<button class="btn-release" type="button">Освободить слот</button>' : ''}
                 <span class="status"></span>
             </div>
+            ${ordersHtml(r)}
         </details>`;
-    }
-
-    function render() {
-        let html = '';
-        for (let n = 1; n <= SLOT_COUNT; n++) html += slotHtml(n);
-        document.getElementById('slots').innerHTML = html;
-    }
-
-    async function load() {
-        const { data, error } = await supabase.from('suppliers').select('*');
-        const note = document.getElementById('error-note');
-        if (error) {
-            console.error(error);
-            note.style.display = 'block';
-            note.textContent = 'Не удалось загрузить поставщиков: ' + (error.message || '') + ' — проверьте, что SQL выполнен.';
-            rows = [];
-        } else {
-            note.style.display = 'none';
-            rows = data || [];
-        }
-        render();
     }
 
     const slotsEl = document.getElementById('slots');
 
-    // запоминаем раскрытые слоты, чтобы перерисовка их не сворачивала
+    function render() {
+        let html = '';
+        for (let n = 1; n <= SLOT_COUNT; n++) html += slotHtml(n);
+        slotsEl.innerHTML = html;
+    }
+    function renderSlot(n) {
+        const old = slotsEl.querySelector(`details.slot[data-slot="${n}"]`);
+        const tmp = document.createElement('div');
+        tmp.innerHTML = slotHtml(n);
+        const fresh = tmp.firstElementChild;
+        if (old) old.replaceWith(fresh); else slotsEl.appendChild(fresh);
+        return fresh;
+    }
+
+    function showError(text) {
+        const note = document.getElementById('error-note');
+        note.style.display = text ? 'block' : 'none';
+        note.textContent = text || '';
+    }
+
+    async function loadSuppliers() {
+        const { data, error } = await supabase.from('suppliers').select('*');
+        if (error) { console.error(error); showError('Не удалось загрузить поставщиков: ' + (error.message || '') + ' — проверьте, что SQL выполнен.'); rows = []; }
+        else rows = data || [];
+    }
+    async function loadOrders() {
+        const { data, error } = await supabase.from('supplier_orders')
+            .select('*, supplier_order_items(*)').order('order_date', { ascending: false });
+        if (error) { console.error(error); showError('Заказы недоступны: ' + (error.message || '') + ' — проверьте, что SQL выполнен.'); orders = []; }
+        else orders = data || [];
+    }
+    async function loadNames() {
+        const names = new Set();
+        try {
+            const { data } = await supabase.from('warehouse_stock').select('item_name').eq('item_type', 'raw_material');
+            (data || []).forEach(r => names.add(r.item_name));
+        } catch (e) { /* подсказки необязательны */ }
+        try {
+            const { data } = await supabase.from('production_norms').select('material_name');
+            (data || []).forEach(r => names.add(r.material_name));
+        } catch (e) { /* подсказки необязательны */ }
+        document.getElementById('wh-names').innerHTML = [...names].map(n => `<option value="${esc(n)}"></option>`).join('');
+    }
+
+    // запоминаем раскрытые слоты и заказы, чтобы перерисовка их не сворачивала
     slotsEl.addEventListener('toggle', (e) => {
         const el = e.target;
-        if (el.classList && el.classList.contains('slot')) {
+        if (!el.classList) return;
+        if (el.classList.contains('slot')) {
             const n = Number(el.dataset.slot);
             if (el.open) openSlots.add(n); else openSlots.delete(n);
+        } else if (el.classList.contains('ord')) {
+            if (el.open) openOrders.add(el.dataset.oid); else openOrders.delete(el.dataset.oid);
         }
     }, true);
+
+    slotsEl.addEventListener('input', (e) => {
+        const card = e.target.closest('details.ord');
+        if (card) recalc(card);
+    });
 
     function setStatus(card, text, cls) {
         const st = card.querySelector('.status');
@@ -164,12 +356,109 @@
         st.className = 'status' + (cls ? ' ' + cls : '');
         st.textContent = text;
     }
+    function flashOrder(oid, text, cls) {
+        const st = slotsEl.querySelector(`details.ord[data-oid="${oid}"] .ord-status`);
+        if (st) { st.className = 'ord-status' + (cls ? ' ' + cls : ''); st.textContent = text; }
+    }
+
+    async function handleOrderClick(e, ordCard, n) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const oid = ordCard.dataset.oid;
+        const o = orders.find(x => x.id === oid);
+        if (!o) return;
+        const setSt = (t, cls) => {
+            const st = ordCard.querySelector('.ord-status');
+            if (st) { st.className = 'ord-status' + (cls ? ' ' + cls : ''); st.textContent = t; }
+        };
+
+        if (btn.classList.contains('btn-add-item')) {
+            ordCard.querySelector('tbody').insertAdjacentHTML('beforeend', itemRowHtml());
+            return;
+        }
+        if (btn.classList.contains('btn-del-item')) {
+            const tbody = ordCard.querySelector('tbody');
+            btn.closest('tr').remove();
+            if (!tbody.querySelector('tr')) tbody.insertAdjacentHTML('beforeend', itemRowHtml());
+            recalc(ordCard);
+            return;
+        }
+
+        if (btn.classList.contains('btn-save-order')) {
+            setSt('Сохраняю…');
+            try {
+                await saveOrderData(ordCard, o);
+                openOrders.add(oid);
+                await loadOrders();
+                renderSlot(n);
+                flashOrder(oid, 'Сохранено', 'ok');
+            } catch (err) { setSt('Ошибка: ' + err.message, 'error'); }
+            return;
+        }
+
+        if (btn.classList.contains('btn-receive')) {
+            if (!confirm('Принять заказ на склад?\n\nПозиции придут на склад, закупка запишется в «Расход», доставка войдёт в себестоимость позиций. Отменить это действие будет нельзя.')) return;
+            btn.disabled = true;
+            setSt('Принимаю…');
+            try {
+                await saveOrderData(ordCard, o);
+                const { error } = await supabase.rpc('receive_supplier_order', { p_order_id: oid });
+                if (error) throw new Error(error.message);
+                openOrders.add(oid);
+                await loadOrders();
+                renderSlot(n);
+                flashOrder(oid, 'Принято на склад', 'ok');
+            } catch (err) {
+                btn.disabled = false;
+                setSt('Ошибка: ' + err.message, 'error');
+            }
+            return;
+        }
+
+        if (btn.classList.contains('btn-cancel-order')) {
+            if (!confirm('Отменить заказ?')) return;
+            const { data, error } = await supabase.from('supplier_orders')
+                .update({ status: 'cancelled' }).eq('id', oid).eq('status', 'ordered').select('id');
+            if (error || !data || !data.length) { setSt('Ошибка: ' + (error ? error.message : 'заказ уже не в статусе «заказан»'), 'error'); return; }
+            openOrders.add(oid);
+            await loadOrders();
+            renderSlot(n);
+            return;
+        }
+
+        if (btn.classList.contains('btn-delete-order')) {
+            if (!confirm('Удалить заказ?')) return;
+            const { data, error } = await supabase.from('supplier_orders')
+                .delete().eq('id', oid).neq('status', 'received').select('id');
+            if (error || !data || !data.length) { setSt('Ошибка: ' + (error ? error.message : 'принятый заказ удалить нельзя'), 'error'); return; }
+            openOrders.delete(oid);
+            await loadOrders();
+            renderSlot(n);
+        }
+    }
 
     slotsEl.addEventListener('click', async (e) => {
         const card = e.target.closest('details.slot');
         if (!card) return;
         const n = Number(card.dataset.slot);
         const row = rows.find(x => x.slot === n);
+
+        const ordCard = e.target.closest('details.ord');
+        if (ordCard) { await handleOrderClick(e, ordCard, n); return; }
+
+        if (e.target.closest('.btn-new-order') && row) {
+            const { data, error } = await supabase.from('supplier_orders')
+                .insert({ supplier_id: row.id }).select('*, supplier_order_items(*)');
+            if (error || !data || !data.length) {
+                console.error(error);
+                setStatus(card, 'Не удалось создать заказ: ' + (error ? error.message : 'нет прав'), 'error');
+                return;
+            }
+            orders.unshift(data[0]);
+            openOrders.add(data[0].id);
+            renderSlot(n);
+            return;
+        }
 
         if (e.target.closest('.btn-save')) {
             const v = (f) => {
@@ -200,14 +489,13 @@
             }
             if (row) Object.assign(row, data[0]); else rows.push(data[0]);
             openSlots.add(n);
-            render();
-            const fresh = slotsEl.querySelector(`details.slot[data-slot="${n}"]`);
-            if (fresh) setStatus(fresh, 'Сохранено', 'ok');
+            const fresh = renderSlot(n);
+            setStatus(fresh, 'Сохранено', 'ok');
             return;
         }
 
         if (e.target.closest('.btn-release') && row) {
-            if (!confirm(`Освободить слот ${n}? Поставщик останется в списке расходов, но слот станет свободным.`)) return;
+            if (!confirm(`Освободить слот ${n}? Поставщик и его заказы сохранятся в базе, но слот станет свободным.`)) return;
             const { data, error } = await supabase.from('suppliers')
                 .update({ slot: null, slot_title: null }).eq('id', row.id).select();
             if (error || !data || data.length === 0) {
@@ -216,14 +504,17 @@
             }
             rows = rows.filter(x => x.id !== row.id);
             openSlots.delete(n);
-            render();
+            renderSlot(n);
         }
     });
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
 
-    load();
+    await loadSuppliers();
+    await loadOrders();
+    render();
+    loadNames();
 </script>
 </body>
 </html>
