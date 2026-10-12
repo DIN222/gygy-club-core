@@ -426,7 +426,47 @@
     document.getElementById('status-filter').addEventListener('change', render);
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-atelier').addEventListener('click', () => window.location.href = 'income-atelier.html');
+    function renderParams() {
+        document.getElementById('params-title').textContent = TITLES[garment];
+        const defs = garmentParamDefs(garment);
+        const groups = {};
+        defs.forEach(d => { (groups[d.group] = groups[d.group] || []).push(d); });
+        document.getElementById('params-body').innerHTML = Object.entries(groups).map(([group, list]) => `
+            <div class="param-group"><h5>${esc(group)}</h5>
+            ${list.map(d => `<div class="param-row"><span>${esc(d.label)}</span>
+                <input type="number" step="0.01" data-storekey="${esc(d.storeKey)}" value="${effectiveValue(currentParams, garment, d.key)}"></div>`).join('')}
+            </div>`).join('');
+    }
 
+    document.getElementById('btn-save-params').addEventListener('click', async () => {
+        const st = document.getElementById('params-status');
+        st.className = 'save-status';
+        st.textContent = 'Сохраняю…';
+        const defs = garmentParamDefs(garment);
+        const toSave = [];
+        document.querySelectorAll('#params-body input').forEach(inp => {
+            const d = defs.find(x => x.storeKey === inp.dataset.storekey);
+            if (!d) return;
+            toSave.push({
+                key: d.storeKey, value: parseFloat(inp.value) || 0,
+                label: `${d.label} [${garment}]`, param_group: d.group,
+                updated_at: new Date().toISOString()
+            });
+        });
+        const { error } = await supabase.from('pricing_params').upsert(toSave);
+        if (error) {
+            console.error('[Income] Не удалось сохранить параметры', error);
+            st.textContent = 'Не удалось сохранить: ' + (error.message || '');
+            st.classList.add('error');
+            return;
+        }
+        toSave.forEach(r => { currentParams[r.key] = r.value; });
+        st.textContent = 'Сохранено — клиенты в Ателье увидят новые цены.';
+        st.classList.add('ok');
+        render();
+    });
+
+    renderParams();
     load();
 </script>
 </body>
