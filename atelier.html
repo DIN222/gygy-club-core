@@ -862,7 +862,7 @@
         if (isEmb) {
             const label = document.createElement('span');
             label.className = 'embroidery-label';
-            label.textContent = 'ВЫШИВКА';
+            label.textContent = anyItems ? 'ВЫШИВКА' : 'ВЫШИВКА — эскизов пока нет';
             strip.appendChild(label);
         }
         document.getElementById('print-next').disabled = !anyItems;
