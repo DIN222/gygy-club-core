@@ -1,26 +1,19 @@
 // core/clubBase.js
-// v1.3.0 — 2026-09-24
-// Изменения относительно v1.2.0:
-// (1) addPrint принимает publicLikesAllowed (согласие автора на публичное
-//     обсуждение/лайки) — по умолчанию false, если явно не передано.
-// (2) Лайки теперь ограничены не браузером, а паспортом: таблица
-//     print_likes с первичным ключом (print_id, passport_id) —
-//     повторный лайк с того же паспорта отклоняется самой базой данных
-//     (ошибка 23505 unique_violation), а не JS-проверкой, которую
-//     легко обойти.
-// (3) getFeatured фильтрует только принты с public_likes_allowed=true —
-//     без согласия автора принт не попадёт в Зал славы, даже если
-//     как-то накопит лайки.
+// v1.4.0 — 2026-10-12
+// Шесть категорий: пять откликов (лента DTF) + embroidery (лента вышивки).
+// Принты с согласием автора на публичность попадают в «Это круто»;
+// лайки ограничены паспортом (таблица print_likes).
 
 import { supabase } from './supabase-init.js';
 
 const TABLE = 'club_prints';
 const BUCKET = 'club-prints';
 const MAX_PER_CATEGORY = 20;
-const CATEGORIES = ['rebellion', 'motivation', 'intellect', 'aesthetic', 'humor'];
+const CATEGORIES = ['rebellion', 'motivation', 'intellect', 'aesthetic', 'humor', 'embroidery'];
+const emptyCache = () => Object.fromEntries(CATEGORIES.map(c => [c, []]));
 
 let realtimeChannel = null;
-let cache = { rebellion: [], motivation: [], intellect: [], aesthetic: [], humor: [] };
+let cache = emptyCache();
 let eventBus = null;
 
 async function refreshCache() {
@@ -32,7 +25,7 @@ async function refreshCache() {
         console.error('[clubBase] Ошибка чтения таблицы — проверьте RLS-политики.', error);
         return;
     }
-    const next = { rebellion: [], motivation: [], intellect: [], aesthetic: [], humor: [] };
+    const next = emptyCache();
     (data || []).forEach(row => {
         if (next[row.category]) next[row.category].push(row);
     });
