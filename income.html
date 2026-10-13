@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- income.html — v2.0.0 — 2026-10-03 — Приход: выбор зоны -->
+<!-- income.html — v3.0.0 — 2026-10-13 — Приход: три зоны + общий журнал -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -19,6 +19,8 @@
     .block-btn { background: #0a0a0a; border: 1px solid var(--gold-dim); color: var(--gold); padding: 16px; text-align: center; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; text-decoration: none; display: block; }
     .block-btn:hover { border-color: var(--gold); }
     .block-btn small { display: block; margin-top: 4px; font-family: 'Share Tech Mono', monospace; font-size: 9px; opacity: 0.6; font-weight: 400; }
+    .journal-wrap { width: 100%; max-width: 860px; margin-top: 30px; }
+    .journal-heading { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -27,15 +29,24 @@
 <div class="page-wrap">
     <div class="title">ПРИХОД</div>
     <div class="grid">
-        <a class="block-btn" href="income-atelier.html">1. АТЕЛЬЕ<small>Параметры цены, предпросмотр, заказы</small></a>
+        <a class="block-btn" href="income-atelier.html">1. АТЕЛЬЕ<small>Футболка, худи, лонгслив</small></a>
         <a class="block-btn" href="income-ledger.html?line=store">2. ЛАВКА ДРЕВНОСТЕЙ<small>Журнал продаж</small></a>
         <a class="block-btn" href="income-ledger.html?line=souvenirs">3. СУВЕНИРЫ<small>Журнал продаж</small></a>
+    </div>
+    <div class="journal-wrap">
+        <div class="journal-heading">Общий журнал прихода (Ателье, Лавка, Сувениры)</div>
+        <div id="journal"></div>
     </div>
 </div>
 <script type="module">
     import { requireAuth } from './core/auth.js';
+    import { renderJournal } from './modules/incomeJournal.js';
+
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
+
+    renderJournal(document.getElementById('journal'), { line: null });
+
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
 </script>
