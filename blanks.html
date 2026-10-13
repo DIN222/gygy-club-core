@@ -1,1 +1,121 @@
+<!DOCTYPE html>
+<!-- blanks.html — v1.0.0 — 2026-10-14 — Склад: потребность в бланках по заказам Ателье -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Склад: потребность в бланках</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 8px; text-align: center; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .hint { font-size: 10px; color: var(--ivory); opacity: 0.65; margin-bottom: 14px; text-align: center; max-width: 560px; line-height: 1.5; }
+    .panel { width: 100%; max-width: 600px; }
+    .filters { margin-bottom: 12px; }
+    .filters select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .block { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 10px; margin-bottom: 12px; }
+    .block h3 { font-family: 'Cinzel', serif; font-size: 14px; margin-bottom: 4px; }
+    .stock-line { font-size: 10px; color: var(--ivory); opacity: 0.75; margin-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th { text-align: left; color: var(--gold-dim); padding: 5px; border-bottom: 1px solid var(--gold-dim); font-size: 10px; text-transform: uppercase; }
+    td { padding: 5px; border-bottom: 1px solid #1a1a1a; color: var(--ivory); }
+    td.num, th.num { text-align: right; }
+    tr.total-row td { font-weight: 900; color: var(--gold); border-top: 1px solid var(--gold-dim); }
+    .note { font-size: 11px; color: #e74c3c; text-align: center; padding: 14px; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+<div class="page-wrap">
+    <div class="title">СКЛАД — ПОТРЕБНОСТЬ В БЛАНКАХ</div>
+    <div class="hint">Сколько штук каких размеров и цветов заказывали клиенты Ателье за период. Ориентир для закупки бланков.</div>
+    <div class="panel">
+        <div class="filters">
+            <select id="period">
+                <option value="all">За всё время</option>
+                <option value="90">Последние 90 дней</option>
+                <option value="30">Последние 30 дней</option>
+                <option value="7">Последние 7 дней</option>
+            </select>
+        </div>
+        <div class="note" id="note" style="display:none;"></div>
+        <div id="blocks"></div>
+    </div>
+</div>
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
 
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const GARMENTS = [['tshirt', 'ФУТБОЛКА'], ['hoodie', 'ХУДИ'], ['longsleeve', 'ЛОНГСЛИВ']];
+    const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+
+    let orders = [];
+    let finishedStock = {};
+
+    async function load() {
+        const { data, error } = await supabase.from('income_entries')
+            .select('atelier_order, order_date').eq('business_line', 'atelier')
+            .order('order_date', { ascending: false }).limit(2000);
+        const note = document.getElementById('note');
+        if (error) {
+            console.error(error);
+            note.style.display = 'block';
+            note.textContent = 'Не удалось загрузить заказы: ' + (error.message || '');
+            return;
+        }
+        orders = data || [];
+        try {
+            const { data: st } = await supabase.from('warehouse_stock').select('item_name, quantity')
+                .eq('item_type', 'finished_good').eq('business_line', 'atelier');
+            (st || []).forEach(r => { finishedStock[r.item_name] = Number(r.quantity); });
+        } catch (e) { /* остаток необязателен */ }
+        render();
+    }
+
+    function render() {
+        const period = document.getElementById('period').value;
+        const cutoff = period === 'all' ? 0 : Date.now() - Number(period) * 86400000;
+        const rows = orders.filter(r => r.atelier_order && new Date(r.order_date).getTime() >= cutoff);
+
+        document.getElementById('blocks').innerHTML = GARMENTS.map(([key, title]) => {
+            const matrix = {};
+            SIZES.forEach(s => { matrix[s] = { black: 0, white: 0 }; });
+            rows.filter(r => r.atelier_order.garment === key).forEach(r => {
+                const o = r.atelier_order, q = Number(o.quantity) || 1;
+                if (matrix[o.size] && matrix[o.size][o.color] !== undefined) matrix[o.size][o.color] += q;
+            });
+            let tb = 0, tw = 0;
+            const body = SIZES.map(s => {
+                tb += matrix[s].black; tw += matrix[s].white;
+                return `<tr><td>${s}</td><td class="num">${matrix[s].black}</td><td class="num">${matrix[s].white}</td><td class="num">${matrix[s].black + matrix[s].white}</td></tr>`;
+            }).join('');
+            const stock = finishedStock[key];
+            return `<div class="block">
+                <h3>${title}</h3>
+                <div class="stock-line">Готовой продукции на складе: ${stock != null ? stock : 'нет данных'}</div>
+                <table>
+                    <thead><tr><th>Размер</th><th class="num">Чёрный</th><th class="num">Белый</th><th class="num">Всего</th></tr></thead>
+                    <tbody>${body}<tr class="total-row"><td>ИТОГО</td><td class="num">${tb}</td><td class="num">${tw}</td><td class="num">${tb + tw}</td></tr></tbody>
+                </table>
+            </div>`;
+        }).join('');
+    }
+
+    document.getElementById('period').addEventListener('change', render);
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+
+    load();
+</script>
+</body>
+</html>
