@@ -1,25 +1,20 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.20.0 — 2026-10-10
-  Сборка всех принятых правок:
-  (1) Исправлена синтаксическая ошибка (pricingParams внутри catch).
-  (2) Вышивка: переключатель техники сверху решает, что показывает лента.
-      DTF — 5 иконок откликов; Вышивка — одна иконка полосы 'embroidery'.
-      В меню "Поделиться" есть пункт Embroidery. Своих PNG в режиме
-      вышивки загружать нельзя (нужна оцифровка).
-  (3) Размер принта: пункт "Фактический размер" — поля W/H видны только
-      при нём.
-  (4) Цена считается core/pricing.js из заказа клиента + постоянных
-      параметров Бухгалтерии (таблица pricing_params); старые зашитые
-      константы цен удалены.
-  (5) Цены выводятся с двумя знаками после запятой.
+  v4.21.0 — 2026-10-14
+  (1) Лента клубных принтов — одна непрерывная, листается стрелками и пальцем,
+      без пустых ячеек. Категории по психологическому отклику убраны.
+      Техника «Вышивка» показывает свою ленту эскизов вышивки.
+  (2) При «Поделиться с клубом» выбор: Print (DTF) или Embroidery design.
+  (3) Промпт-билдер без выбора «отклика».
+  (4) Блок «Leave a review» (отзывы читаются в Бухгалтерии).
+  Остальное — как в v4.20.0 + получатель, терминал, снимки принта, цена из Бухгалтерии.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.20.0</title>
+<title>GY-GY Club — Atelier v4.21.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -169,11 +164,15 @@
     .btn-cfg.small { padding: 7px 8px; font-size: 10px; flex: 1; text-align: center; }
     .btn-cfg.wide { text-align: center; }
 
+    /* Непрерывная лента принтов: прокручивается стрелками и пальцем */
     .print-strip-row { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-    .print-strip { display: flex; gap: 5px; flex: 1; }
-    .print-strip.single { justify-content: flex-start; align-items: center; gap: 10px; }
-    .print-strip.single .print-icon-wrap { flex: 0 0 56px; }
-    .print-icon-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .print-strip {
+        display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto;
+        scroll-snap-type: x proximity; scrollbar-width: none;
+    }
+    .print-strip::-webkit-scrollbar { display: none; }
+    .print-icon-wrap { flex: 0 0 46px; display: flex; flex-direction: column; gap: 2px; scroll-snap-align: start; }
+    .strip-empty { font-size: 10px; color: var(--ivory); opacity: 0.7; padding: 6px 4px; }
     .print-author {
         font-size: 7px; color: var(--ivory); opacity: 0.75; text-align: center;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -185,10 +184,8 @@
     }
     .print-icon:hover { border-color: var(--gold); }
     .print-icon img { width: 100%; height: 100%; object-fit: cover; }
-    .print-icon.empty { background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 4px, #1a1a1a 4px, #1a1a1a 8px); cursor: default; border-color: #333; }
     .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold); width: 30px; height: 30px; cursor: pointer; font-weight: 900; font-size: 14px; flex-shrink: 0; }
     .print-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
-    .embroidery-label { font-size: 10px; font-weight: 700; color: var(--ivory); letter-spacing: 0.5px; }
 
     .share-row { display: none; gap: 8px; margin-top: 4px; }
     .share-row.visible { display: flex; }
@@ -218,7 +215,7 @@
     .modal-card {
         background: var(--ivory); border: 1px solid var(--gold); border-radius: 4px;
         padding: 24px; width: 300px; color: #1a1408; text-align: center; position: relative;
-        font-family: 'Share Tech Mono', monospace;
+        font-family: 'Share Tech Mono', monospace; max-height: 94vh; overflow-y: auto;
     }
     .modal-close { position: absolute; top: 8px; right: 12px; font-size: 26px; cursor: pointer; }
     .modal-title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 15px; margin-bottom: 12px; }
@@ -306,12 +303,8 @@
             </div>
             <div class="category-picker" id="category-picker">
                 <select id="share-category">
-                    <option value="rebellion">Rebellion</option>
-                    <option value="motivation">Motivation</option>
-                    <option value="intellect">Intellect</option>
-                    <option value="aesthetic">Aesthetic</option>
-                    <option value="humor">Humor</option>
-                    <option value="embroidery">Embroidery</option>
+                    <option value="dtf">Print (DTF)</option>
+                    <option value="embroidery">Embroidery design</option>
                 </select>
                 <div class="checkbox-row">
                     <input type="checkbox" id="check-public-likes">
@@ -323,13 +316,6 @@
             <button class="btn-cfg" id="btn-open-prompt" style="margin-top:6px;">ОПИШИТЕ ВАШ ПРИНТ</button>
             <div class="prompt-builder" id="prompt-builder">
                 <span style="font-size:9px; font-weight:700; opacity:0.7;">PROMPT BUILDER (no API — copy to any AI image tool)</span>
-                <select id="pb-mood">
-                    <option value="rebellion">Rebellion / Bold</option>
-                    <option value="motivation">Motivation</option>
-                    <option value="intellect">Intellect</option>
-                    <option value="aesthetic">Aesthetic</option>
-                    <option value="humor">Humor</option>
-                </select>
                 <input type="text" id="pb-idea" placeholder="Describe your idea...">
                 <button class="btn-cfg" id="btn-build-prompt" style="width:100%; text-align:center;">BUILD PROMPT</button>
                 <div class="prompt-output" id="prompt-output" style="display:none;"></div>
@@ -393,6 +379,7 @@
             <div class="status-line" id="order-status"></div>
             <button class="btn-cfg wide" id="link-help" style="margin-top:8px;">ПОГОВОРИТЬ С ДРУЗЬЯМИ (TELEGRAM)</button>
             <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:6px;">CONFIRM ORDER</button>
+            <div id="review-box" style="margin-top:10px;"></div>
         </div>
     </div>
 
@@ -414,16 +401,16 @@
         <div class="modal-title">ПРОВЕРЬТЕ ЗАКАЗ</div>
         <div id="confirm-order-summary" style="font-size:11px; text-align:left; line-height:1.6;"></div>
         <div style="margin-top:12px; text-align:left;">
-                       <input type="text" id="confirm-recipient-last" class="modal-input" placeholder="Last name">
+            <input type="text" id="confirm-recipient-last" class="modal-input" placeholder="Last name">
             <input type="text" id="confirm-recipient-first" class="modal-input" placeholder="First name">
             <input type="tel" id="confirm-recipient-phone" class="modal-input" placeholder="Phone">
             <input type="text" id="confirm-recipient-post" class="modal-input" placeholder="Post office (number / address)">
             <select id="confirm-payment-method" class="modal-input">
                 <option value="prepayment">Prepayment (pay now)</option>
                 <option value="cod">Cash on delivery (pay at the post office)</option>
-            </select> 
+            </select>
         </div>
-              <div id="confirm-error" style="color:#a02020; font-size:11px; text-align:left; margin-top:4px; min-height:14px;"></div>
+        <div id="confirm-error" style="color:#a02020; font-size:11px; text-align:left; margin-top:4px; min-height:14px;"></div>
         <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:10px;">ДА, ОФОРМИТЬ</button>
         <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
     </div>
@@ -436,12 +423,14 @@
     import * as eventBus from './core/eventBus.js';
     import { supabase } from './core/supabase-init.js';
     import { openPaymentTerminal } from './modules/paymentTerminal.js';
-       import { loadPricing, computeUnitPrice, computeBreakdown, DEFAULTS } from './core/pricing.js';
+    import { mountReviewBox } from './modules/reviewBox.js';
+    import { loadPricing, computeUnitPrice, computeBreakdown, DEFAULTS } from './core/pricing.js';
+
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
     let clubBase = {
-        getAll: () => ({ rebellion: [], motivation: [], intellect: [], aesthetic: [], humor: [], embroidery: [] }),
+        getAll: () => ({ dtf: [], embroidery: [] }),
         init: async () => {},
         addPrint: async () => { throw new Error('Модуль базы клуба недоступен (core/clubBase.js не найден).'); }
     };
@@ -484,6 +473,7 @@
     const OUTSTRETCH_FACTOR = 1.5;
     const DEFAULT_ANCHOR_Y_PCT = 42;
     const BG_REMOVE_THRESHOLD = 32;
+    const EMBROIDERY_CAT = 'embroidery';
 
     function pxPerCmApprox(type, size) {
         const basePxPerCm = GARMENT_PHOTO_BBOX_W[type] / (GARMENT_CHEST_CM[type].M * OUTSTRETCH_FACTOR);
@@ -613,9 +603,6 @@
             ]
         }
     };
-
-    const CATEGORIES = ['rebellion', 'motivation', 'intellect', 'aesthetic', 'humor']; // лента DTF
-    const EMBROIDERY_CAT = 'embroidery';                                               // лента вышивки
 
     function populateFabricOptions(type) {
         const densitySel = document.getElementById('select-fabric-density');
@@ -780,7 +767,7 @@
         const d = SCALE_DIMENSIONS_CM[id];
         return `${d.w}x${d.h}cm`;
     }
-        function pricingInput() {
+    function pricingInput() {
         return {
             type: state.type, composition: state.fabricComposition,
             scale: state.scale, technique: state.technique, hasPrint: !!state.currentPrint,
@@ -819,62 +806,46 @@
         if (!isOwnUnshared) document.getElementById('category-picker').classList.remove('open');
     }
 
-    // Лента: в режиме DTF — 5 категорий откликов, в режиме вышивки — одна полоса
-    // 'embroidery'. Каждая категория листается независимо и по кругу.
-    let depthPointers = { rebellion: 0, motivation: 0, intellect: 0, aesthetic: 0, humor: 0, embroidery: 0 };
-
+    // Непрерывная лента: в режиме DTF — все клубные принты подряд, в режиме
+    // вышивки — эскизы вышивки. Пустых ячеек нет; листается стрелками и пальцем.
     function renderPrintStrip() {
         const data = clubBase.getAll();
         const strip = document.getElementById('print-strip');
-        strip.innerHTML = '';
         const isEmb = state.technique === 'embroidery';
-        const cats = isEmb ? [EMBROIDERY_CAT] : CATEGORIES;
-        strip.classList.toggle('single', isEmb);
-        let anyItems = false;
-        cats.forEach(cat => {
-            const list = data[cat] || [];
-            let item = null;
-            if (list.length > 0) {
-                anyItems = true;
-                depthPointers[cat] = (((depthPointers[cat] || 0) % list.length) + list.length) % list.length;
-                item = list[depthPointers[cat]];
-            }
+        const list = (isEmb ? data.embroidery : data.dtf) || [];
+        const scrollLeft = strip.scrollLeft;
+        strip.innerHTML = '';
+        list.forEach(item => {
             const wrap = document.createElement('div');
             wrap.className = 'print-icon-wrap';
             const cell = document.createElement('div');
-            cell.className = 'print-icon' + (item ? '' : ' empty');
-            if (item) {
-                cell.innerHTML = `<img src="${item.image_url}">`;
-                cell.addEventListener('click', () => {
-                    state.currentPrint = { source: 'club', design: item.image_url, category: cat, shared: true };
-                    renderPrintOverlay(true);
-                    updateShareRowVisibility();
-                });
-                const author = document.createElement('div');
-                author.className = 'print-author';
-                author.textContent = item.public_likes_allowed ? (item.from_user_name || '') : '';
-                wrap.appendChild(cell);
-                wrap.appendChild(author);
-            } else {
-                wrap.appendChild(cell);
-            }
+            cell.className = 'print-icon';
+            cell.innerHTML = `<img src="${item.image_url}" loading="lazy" alt="">`;
+            cell.addEventListener('click', () => {
+                state.currentPrint = { source: 'club', design: item.image_url, category: item.category, shared: true };
+                renderPrintOverlay(true);
+                updateShareRowVisibility();
+            });
+            const author = document.createElement('div');
+            author.className = 'print-author';
+            author.textContent = item.public_likes_allowed ? (item.from_user_name || '') : '';
+            wrap.appendChild(cell);
+            wrap.appendChild(author);
             strip.appendChild(wrap);
         });
-        if (isEmb) {
-            const label = document.createElement('span');
-            label.className = 'embroidery-label';
-            label.textContent = anyItems ? 'ВЫШИВКА' : 'ВЫШИВКА — эскизов пока нет';
-            strip.appendChild(label);
+        if (!list.length) {
+            strip.innerHTML = `<span class="strip-empty">${isEmb ? 'No embroidery designs yet' : 'No club prints yet'}</span>`;
         }
-        document.getElementById('print-next').disabled = !anyItems;
-        document.getElementById('print-prev').disabled = !anyItems;
+        strip.scrollLeft = scrollLeft;
+        document.getElementById('print-prev').disabled = !list.length;
+        document.getElementById('print-next').disabled = !list.length;
     }
-    function stepPointers(delta) {
-        [...CATEGORIES, EMBROIDERY_CAT].forEach(cat => { depthPointers[cat] = (depthPointers[cat] || 0) + delta; });
-        renderPrintStrip();
-    }
-    document.getElementById('print-next').addEventListener('click', () => stepPointers(1));
-    document.getElementById('print-prev').addEventListener('click', () => stepPointers(-1));
+    document.getElementById('print-next').addEventListener('click', () => {
+        document.getElementById('print-strip').scrollBy({ left: 104, behavior: 'smooth' });
+    });
+    document.getElementById('print-prev').addEventListener('click', () => {
+        document.getElementById('print-strip').scrollBy({ left: -104, behavior: 'smooth' });
+    });
 
     document.getElementById('btn-lock-size').addEventListener('click', () => {
         if (!state.currentPrint || !state.printBox) return;
@@ -976,21 +947,12 @@
         document.getElementById('prompt-builder').classList.toggle('open');
     });
     document.getElementById('btn-build-prompt').addEventListener('click', () => {
-        const moodMap = {
-            rebellion: 'bold rebellious streetwear graphic, high contrast, graffiti-inspired',
-            motivation: 'motivational typography-driven design, dynamic composition, energetic colors',
-            intellect: 'intellectual minimalist symbolic illustration, clean lines, thoughtful composition',
-            aesthetic: 'elegant aesthetic illustration, refined color palette, artistic linework',
-            humor: 'humorous comedic illustration, playful witty visual gag, lighthearted cartoonish style'
-        };
-        const mood = document.getElementById('pb-mood').value;
         const idea = document.getElementById('pb-idea').value.trim() || 'an abstract emblem';
-        const prompt = `A t-shirt print design of ${idea}, ${moodMap[mood]}, professional print-ready vector-style artwork, centered composition, transparent background, high detail, print-safe color palette.`;
+        const prompt = `A t-shirt print design of ${idea}, professional print-ready vector-style artwork, centered composition, transparent background, high detail, print-safe color palette.`;
         const out = document.getElementById('prompt-output');
         out.textContent = prompt;
         out.style.display = 'block';
         document.getElementById('prompt-ai-links').classList.add('visible');
-        document.getElementById('share-category').value = mood;
     });
     document.getElementById('btn-copy-prompt').addEventListener('click', () => {
         const text = document.getElementById('prompt-output').textContent;
@@ -1023,7 +985,7 @@
         state.technique = e.target.value;
         const isEmb = state.technique === 'embroidery';
         const cat = state.currentPrint && state.currentPrint.category;
-        // принт из другого режима не подходит: в вышивке — только из полосы вышивки, в DTF — не из неё
+        // принт из другого режима не подходит: в вышивке — только эскизы вышивки, в DTF — не они
         if (state.currentPrint && ((isEmb && cat !== EMBROIDERY_CAT) || (!isEmb && cat === EMBROIDERY_CAT))) {
             state.currentPrint = null;
         }
@@ -1082,7 +1044,7 @@
         openModal('modal-confirm-order');
     });
 
-       function loadImage(src) {
+    function loadImage(src) {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
@@ -1268,6 +1230,7 @@
             delete btn.dataset.busy;
         }
     });
+
     document.getElementById('link-help').addEventListener('click', () => {
         window.open(TELEGRAM_HELP_URL, '_blank');
     });
@@ -1297,11 +1260,22 @@
         if (typeof onFn === 'function') onFn('CLUBBASE_UPDATED', renderPrintStrip);
     } catch (e) { /* eventBus недоступен */ }
 
+    mountReviewBox(document.getElementById('review-box'), {
+        location: 'atelier',
+        getContext: () => ({
+            garment: state.type,
+            technique: state.technique,
+            printCategory: (state.currentPrint && state.currentPrint.category) || null,
+            printUrl: (state.currentPrint && /^https:\/\//i.test(state.currentPrint.design)) ? state.currentPrint.design : null
+        })
+    });
+
     populateFabricOptions(state.type);
     renderNecklineFitFields();
     renderGarmentPhoto();
     renderPrintOverlay();
     renderSpecPanel();
+    renderPrintStrip();
 </script>
 
 </body>
