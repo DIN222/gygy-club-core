@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <!--
-  income-product.html
-  v2.0.0 — 2026-10-11
+  income-product.html — v3.0.0 — 2026-10-13
   Приход → Ателье → изделие (?garment=tshirt|hoodie|longsleeve).
-  Список заказов; у каждого заказа по порядку: дата и номер; данные заказа из
-  Ателье; данные бухгалтерии (расшифровка затрат); цена для заказчика;
-  получатель; отправка (дата и № квитанции, сообщение); получение;
-  оплата (дата, сумма; предоплата или наложенный платёж); примечание.
-  Сводка «бланки к заготовке» свёрнута вверху.
+  Параметры цены этого изделия (свёрнуто), сводка «бланки к заготовке»,
+  список заказов. В заказе: данные заказа + картинки (макет и принт/вышивка),
+  данные бухгалтерии, цена, получатель, отправка, получение, оплата, примечание.
 -->
 <html lang="en">
 <head>
@@ -44,6 +41,10 @@
     td.num, th.num { text-align: right; }
     tr.total-row td { font-weight: 900; color: var(--gold); border-top: 1px solid var(--gold-dim); }
 
+    .param-group h5 { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 4px; }
+    .param-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 3px 0; font-size: 11px; color: var(--ivory); }
+    .param-row input { width: 90px; padding: 5px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; text-align: right; }
+
     details.order { border: 1px solid var(--gold-dim); background: #0a0a0a; margin-bottom: 8px; }
     details.order > summary { list-style: none; cursor: pointer; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 11px; color: var(--ivory); }
     details.order > summary::-webkit-details-marker { display: none; }
@@ -58,6 +59,9 @@
     .sec h4 { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
     .kv { display: grid; grid-template-columns: 170px 1fr; gap: 3px 10px; font-size: 11px; color: var(--ivory); }
     .kv span:nth-child(odd) { color: #9a9a8a; }
+    .previews { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+    .previews a { display: block; width: 170px; text-decoration: none; color: var(--ivory); font-size: 9px; text-align: center; }
+    .previews img { width: 100%; display: block; border: 1px solid var(--gold-dim); background: #222; margin-bottom: 3px; }
     .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
     .fields label { display: block; font-size: 9px; color: #9a9a8a; margin-bottom: 2px; text-transform: uppercase; }
     .fields input, .fields textarea { width: 100%; padding: 6px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
@@ -82,6 +86,17 @@
     <div class="title" id="title">ФУТБОЛКА</div>
     <div class="panel">
 
+        <details class="sum" id="params-box">
+            <summary>Параметры цены — <span id="params-title"></span></summary>
+            <div class="sum-body">
+                <div id="params-body"></div>
+                <div class="save-bar" style="padding:8px 0 0;">
+                    <button class="btn-save" id="btn-save-params" type="button">Сохранить параметры</button>
+                    <span class="save-status" id="params-status"></span>
+                </div>
+            </div>
+        </details>
+
         <div class="filters">
             <select id="period">
                 <option value="all">За всё время</option>
@@ -98,16 +113,6 @@
         </div>
 
         <details class="sum">
-                  <details class="sum" id="params-box">
-            <summary>Параметры цены — <span id="params-title"></span></summary>
-            <div class="sum-body">
-                <div id="params-body"></div>
-                <div class="save-bar" style="padding:8px 0 0;">
-                    <button class="btn-save" id="btn-save-params" type="button">Сохранить параметры</button>
-                    <span class="save-status" id="params-status"></span>
-                </div>
-            </div>
-        </details>
             <summary>Бланки к заготовке и итоги</summary>
             <div class="sum-body">
                 <div class="cards">
@@ -127,13 +132,11 @@
         <div class="empty-note" id="empty-note" style="display:none;"></div>
     </div>
 </div>
-    .param-group h5 { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 4px; }
-    .param-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 3px 0; font-size: 11px; color: var(--ivory); }
-    .param-row input { width: 90px; padding: 5px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; text-align: right; }
+
 <script type="module">
     import { requireAuth } from './core/auth.js';
     import { supabase } from './core/supabase-init.js';
-       import { DEFAULTS, loadPricing, computeBreakdown, garmentParamDefs, effectiveValue } from './core/pricing.js';
+    import { DEFAULTS, loadPricing, computeBreakdown, garmentParamDefs, effectiveValue } from './core/pricing.js';
 
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
@@ -151,6 +154,7 @@
     const eur = (n) => `€${Number(n || 0).toFixed(2)}`;
     const qtyOf = (o) => Number(o.quantity) || 1;
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const safeHttps = (u) => /^https:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
     const kv = (pairs) => `<div class="kv">${pairs.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join('')}</div>`;
 
     let allRows = [];
@@ -234,6 +238,15 @@
             orderPairs.push(['Шнурки', o.drawstring ? 'да' : 'нет'], ['Молния', o.zipper ? 'да' : 'нет']);
         }
 
+        const mockup = safeHttps(o.mockupUrl);
+        const design = safeHttps(o.designUrl);
+        const previewsHtml = (mockup || design)
+            ? `<div class="previews">
+                ${mockup ? `<a href="${esc(mockup)}" target="_blank" rel="noopener noreferrer"><img src="${esc(mockup)}" alt="Макет"><span>макет на изделии</span></a>` : ''}
+                ${design ? `<a href="${esc(design)}" target="_blank" rel="noopener noreferrer"><img src="${esc(design)}" alt="Принт"><span>${d && d.technique === 'embroidery' ? 'вышивка (эскиз)' : 'принт'}</span></a>` : ''}
+              </div>`
+            : (d ? '<div class="approx">Картинка принта у этого заказа не сохранена (оформлен до появления этой функции)</div>' : '');
+
         return `
         <details class="order" data-id="${esc(r.id)}"${openAttr}>
             <summary>
@@ -244,12 +257,15 @@
                 <span class="s-amt">${eur(r.total_amount)}</span>
             </summary>
 
-            <div class="sec"><h4>1. Данные заказа из Ателье</h4>${kv(orderPairs)}</div>
+            <div class="sec"><h4>1. Данные заказа из Ателье</h4>${kv(orderPairs)}${previewsHtml}</div>
 
             <div class="sec"><h4>2. Данные бухгалтерии (определение цены)</h4>
                 ${kv([
-                    ['Изделие', eur(b.garment)], ['Ткань', eur(b.fabric)], ['Нанесение', eur(b.decoration)],
-                    ['Дополнения', eur(b.extras)], ['Упаковка', eur(b.packaging)], ['Накладные', eur(b.overhead)],
+                    ['Изделие', eur(b.garment)], ['Ткань', eur(b.fabric)],
+                    ['Обтачка', eur(b.facing)], ['Киперная лента', eur(b.tape)],
+                    ['Нанесение', eur(b.decoration)],
+                    ['Дополнения (бирки, шнурки, молния)', eur(b.extras)],
+                    ['Упаковка', eur(b.packaging)], ['Накладные', eur(b.overhead)],
                     ['Себестоимость ед.', eur(b.cost)], ['Наценка', `${esc(b.marginPercent)}% = ${eur(b.margin)}`]
                 ])}
                 ${approx ? '<div class="approx">≈ старый заказ: затраты пересчитаны по текущим параметрам, а не по состоянию на дату заказа</div>' : ''}
@@ -356,7 +372,6 @@
 
     const list = document.getElementById('list');
 
-    // запоминаем, какие карточки раскрыты, чтобы перерисовка не сворачивала их
     list.addEventListener('toggle', (e) => {
         const el = e.target;
         if (el.classList && el.classList.contains('order')) {
@@ -406,7 +421,6 @@
             const statusEl = card.querySelector('.save-status');
             statusEl.className = 'save-status';
             statusEl.textContent = 'Сохраняю…';
-            // .select() нужен, чтобы заметить «тихий» отказ из-за политики доступа
             const { data, error } = await supabase.from('income_entries').update(payload).eq('id', id).select('id');
             if (error || !data || data.length === 0) {
                 console.error('[Income] Не удалось сохранить', error);
@@ -422,18 +436,14 @@
         }
     });
 
-    document.getElementById('period').addEventListener('change', render);
-    document.getElementById('status-filter').addEventListener('change', render);
-    document.getElementById('btn-back').addEventListener('click', () => history.back());
-    document.getElementById('btn-atelier').addEventListener('click', () => window.location.href = 'income-atelier.html');
     function renderParams() {
         document.getElementById('params-title').textContent = TITLES[garment];
         const defs = garmentParamDefs(garment);
         const groups = {};
         defs.forEach(d => { (groups[d.group] = groups[d.group] || []).push(d); });
-        document.getElementById('params-body').innerHTML = Object.entries(groups).map(([group, list]) => `
+        document.getElementById('params-body').innerHTML = Object.entries(groups).map(([group, items]) => `
             <div class="param-group"><h5>${esc(group)}</h5>
-            ${list.map(d => `<div class="param-row"><span>${esc(d.label)}</span>
+            ${items.map(d => `<div class="param-row"><span>${esc(d.label)}</span>
                 <input type="number" step="0.01" data-storekey="${esc(d.storeKey)}" value="${effectiveValue(currentParams, garment, d.key)}"></div>`).join('')}
             </div>`).join('');
     }
@@ -465,6 +475,11 @@
         st.classList.add('ok');
         render();
     });
+
+    document.getElementById('period').addEventListener('change', render);
+    document.getElementById('status-filter').addEventListener('change', render);
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-atelier').addEventListener('click', () => window.location.href = 'income-atelier.html');
 
     renderParams();
     load();
