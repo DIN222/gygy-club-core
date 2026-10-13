@@ -163,6 +163,7 @@
     import { init as initPassport } from './modules/passport.js';
     import { supabase } from './core/supabase-init.js';
       import { openPaymentTerminal } from './modules/paymentTerminal.js';
+      import { mountReviewBox } from './modules/reviewBox.js';
 
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
@@ -298,6 +299,10 @@
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+      mountReviewBox(document.getElementById('review-box'), {
+        location: 'store',
+        getContext: () => activeItem ? { itemId: activeItem.id, itemName: activeItem.name } : null
+    });
 
     loadItems();
 </script>
