@@ -1082,8 +1082,73 @@
         openModal('modal-confirm-order');
     });
 
-    async function recordOrder(order, paid) {
+       function loadImage(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('image load failed'));
+            img.src = src;
+        });
+    }
+
+    // Снимок «как видел заказчик»: фото изделия + принт в выбранном месте.
+    // Не получилось — заказ всё равно оформится, просто без картинки.
+    async function renderMockupBlob() {
+        try {
+            if (!state.currentPrint || !state.printBox) return null;
+            const frame = document.getElementById('preview-frame');
+            const W = frame.clientWidth, H = frame.clientHeight;
+            const garmentEl = document.getElementById('garment-photo');
+            if (!garmentEl.naturalWidth) return null;
+            const canvas = document.createElement('canvas');
+            canvas.width = W * 2; canvas.height = H * 2;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(2, 2);
+            ctx.fillStyle = state.color === 'black' ? '#8a8a8a' : '#111111';
+            ctx.fillRect(0, 0, W, H);
+            const k = Math.min(W / garmentEl.naturalWidth, H / garmentEl.naturalHeight);
+            const gw = garmentEl.naturalWidth * k, gh = garmentEl.naturalHeight * k;
+            ctx.drawImage(garmentEl, (W - gw) / 2, (H - gh) / 2, gw, gh);
+
+            const img = await loadImage(state.currentPrint.design);
+            const b = state.printBox;
+            const ir = img.width / img.height, br = b.width / b.height;
+            let sx = 0, sy = 0, sw = img.width, sh = img.height;
+            if (ir > br) { sw = img.height * br; sx = (img.width - sw) / 2; }
+            else { sh = img.width / br; sy = (img.height - sh) / 2; }
+            ctx.save();
+            ctx.translate(b.left + b.width / 2, b.top + b.height / 2);
+            ctx.rotate((b.rotation || 0) * Math.PI / 180);
+            if (state.color === 'white') ctx.globalCompositeOperation = 'multiply';
+            ctx.drawImage(img, sx, sy, sw, sh, -b.width / 2, -b.height / 2, b.width, b.height);
+            ctx.restore();
+            return await new Promise(res => canvas.toBlob(res, 'image/png'));
+        } catch (e) {
+            console.warn('[Atelier] Снимок для бухгалтерии не получился', e);
+            return null;
+        }
+    }
+
+    async function uploadOrderAsset(path, blob) {
+        const { error } = await supabase.storage.from('club-prints').upload(path, blob, { contentType: 'image/png' });
+        if (error) throw error;
+        return supabase.storage.from('club-prints').getPublicUrl(path).data.publicUrl;
+    }
+
+    async function recordOrder(order, paid, assets) {
         const status = document.getElementById('order-status');
+
+        // Картинки для бухгалтерии — по возможности, заказ от них не зависит
+        try {
+            if (order.decoration) {
+                if (assets.designBlob) order.designUrl = await uploadOrderAsset(`orders/${order.orderNumber}-design.png`, assets.designBlob);
+                else if (assets.designUrl) order.designUrl = assets.designUrl;
+                if (assets.mockupBlob) order.mockupUrl = await uploadOrderAsset(`orders/${order.orderNumber}-mockup.png`, assets.mockupBlob);
+            }
+        } catch (e) {
+            console.warn('[Atelier] Картинки заказа не загрузились', e);
+        }
 
         const reports = get('officeAtelierReports', []);
         reports.push(order);
@@ -1133,58 +1198,75 @@
         status.textContent = paid ? 'Paid. Your order has been placed!' : 'Order placed. You will pay at the post office on receipt.';
     }
 
-    document.getElementById('btn-confirm-final').addEventListener('click', () => {
-        const lastName = document.getElementById('confirm-recipient-last').value.trim();
-        const firstName = document.getElementById('confirm-recipient-first').value.trim();
-        const phone = document.getElementById('confirm-recipient-phone').value.trim();
-        const postOffice = document.getElementById('confirm-recipient-post').value.trim();
-        const paymentMethod = document.getElementById('confirm-payment-method').value;
-        const status = document.getElementById('order-status');
-        if (!lastName || !firstName || !phone || !postOffice) {
-            status.textContent = 'Please fill in last name, first name, phone and post office.';
-            return;
-        }
-        const orderNumber = 'GY-' + Date.now().toString(36).toUpperCase();
-        const order = {
-            orderNumber,
-            type: 'blank',
-            garment: state.type, size: state.size, color: state.color,
-            fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
-            drawstring: (state.type === 'hoodie') ? state.drawstring : null,
-            zipper: (state.type === 'hoodie') ? state.zipper : null,
-            neckline: state.neckline, fit: state.fit, quantity: state.quantity,
-            recipientLastName: lastName, recipientFirstName: firstName,
-            recipientPhone: phone, recipientPostOffice: postOffice,
-            recipientName: `${lastName} ${firstName}`, recipientAddress: postOffice,
-            paymentMethod,
-            decoration: state.currentPrint ? {
-                source: state.currentPrint.source,
-                shared: !!state.currentPrint.shared,
-                category: state.currentPrint.category || null,
-                technique: state.technique,
-                position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
-                actualSizeOnPreview: actualPrintSizeLabel()
-            } : null,
-            unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
-            pricing: computeBreakdown(pricingParams, pricingInput())
-        };
+    document.getElementById('btn-confirm-final').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-confirm-final');
+        const errEl = document.getElementById('confirm-error');
+        errEl.textContent = '';
+        if (btn.dataset.busy) return;
+        btn.dataset.busy = '1';
+        try {
+            const lastName = document.getElementById('confirm-recipient-last').value.trim();
+            const firstName = document.getElementById('confirm-recipient-first').value.trim();
+            const phone = document.getElementById('confirm-recipient-phone').value.trim();
+            const postOffice = document.getElementById('confirm-recipient-post').value.trim();
+            const paymentMethod = document.getElementById('confirm-payment-method').value;
+            if (!lastName || !firstName || !phone || !postOffice) {
+                errEl.textContent = 'Please fill in last name, first name, phone and post office.';
+                return;
+            }
+            const status = document.getElementById('order-status');
+            const orderNumber = 'GY-' + Date.now().toString(36).toUpperCase();
+            const order = {
+                orderNumber,
+                type: 'blank',
+                garment: state.type, size: state.size, color: state.color,
+                fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
+                drawstring: (state.type === 'hoodie') ? state.drawstring : null,
+                zipper: (state.type === 'hoodie') ? state.zipper : null,
+                neckline: state.neckline, fit: state.fit, quantity: state.quantity,
+                recipientLastName: lastName, recipientFirstName: firstName,
+                recipientPhone: phone, recipientPostOffice: postOffice,
+                recipientName: `${lastName} ${firstName}`, recipientAddress: postOffice,
+                paymentMethod,
+                decoration: state.currentPrint ? {
+                    source: state.currentPrint.source,
+                    shared: !!state.currentPrint.shared,
+                    category: state.currentPrint.category || null,
+                    technique: state.technique,
+                    position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
+                    actualSizeOnPreview: actualPrintSizeLabel()
+                } : null,
+                unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
+                pricing: computeBreakdown(pricingParams, pricingInput())
+            };
+            const assets = {
+                designUrl: (state.currentPrint && /^https:\/\//i.test(state.currentPrint.design)) ? state.currentPrint.design : null,
+                designBlob: (state.currentPrint && state.currentPrint.blob) || null,
+                mockupBlob: await renderMockupBlob()
+            };
 
-        closeModal(document.getElementById('modal-confirm-order'));
+            closeModal(document.getElementById('modal-confirm-order'));
 
-        if (paymentMethod === 'cod') {
-            recordOrder(order, false);
-            return;
+            if (paymentMethod === 'cod') {
+                recordOrder(order, false, assets);
+                return;
+            }
+            openPaymentTerminal({
+                amount: order.totalPrice,
+                orderNumber,
+                lineItems: [
+                    [`${state.type.toUpperCase()} ${state.size} ${state.color.toUpperCase()}`, `€${unitPrice().toFixed(2)}`],
+                    ['Qty', `${state.quantity}`]
+                ],
+                onCancel: () => { status.textContent = 'Payment cancelled, order not placed.'; },
+                onComplete: () => recordOrder(order, true, assets)
+            });
+        } catch (e) {
+            console.error('[Atelier] Не удалось оформить заказ', e);
+            errEl.textContent = 'Could not place the order: ' + (e.message || e);
+        } finally {
+            delete btn.dataset.busy;
         }
-        openPaymentTerminal({
-            amount: order.totalPrice,
-            orderNumber,
-            lineItems: [
-                [`${state.type.toUpperCase()} ${state.size} ${state.color.toUpperCase()}`, `€${unitPrice().toFixed(2)}`],
-                ['Qty', `${state.quantity}`]
-            ],
-            onCancel: () => { status.textContent = 'Payment cancelled, order not placed.'; },
-            onComplete: () => recordOrder(order, true)
-        });
     });
     document.getElementById('link-help').addEventListener('click', () => {
         window.open(TELEGRAM_HELP_URL, '_blank');
