@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.21.0 — 2026-10-14
-  (1) Лента клубных принтов — одна непрерывная, листается стрелками и пальцем,
-      без пустых ячеек. Категории по психологическому отклику убраны.
-      Техника «Вышивка» показывает свою ленту эскизов вышивки.
-  (2) При «Поделиться с клубом» выбор: Print (DTF) или Embroidery design.
-  (3) Промпт-билдер без выбора «отклика».
-  (4) Блок «Leave a review» (отзывы читаются в Бухгалтерии).
-  Остальное — как в v4.20.0 + получатель, терминал, снимки принта, цена из Бухгалтерии.
+  v4.22.0 — 2026-10-14
+  (1) Миниатюры принтов на шашечной подложке (виден любой рисунок);
+      битые картинки автоматически убираются из ленты.
+  (2) Название и плотность ткани берутся из Бухгалтерии (storefront_config);
+      если настроек нет — значения по умолчанию.
+  (3) В заказе: поле «мессенджер» (необязательное).
+  (4) Цена — по построчной себестоимости из Бухгалтерии (core/pricing.js v4).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.21.0</title>
+<title>GY-GY Club — Atelier v4.22.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -178,12 +177,13 @@
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .print-icon {
-        width: 100%; aspect-ratio: 1; border: 1px solid var(--gold); background: var(--ivory);
+        width: 100%; aspect-ratio: 1; border: 1px solid var(--gold);
+        background: repeating-conic-gradient(#5a5a5a 0% 25%, #8a8a8a 0% 50%) 50% / 10px 10px;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
         overflow: hidden; position: relative; transition: border-color 0.2s;
     }
     .print-icon:hover { border-color: var(--gold); }
-    .print-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .print-icon img { width: 100%; height: 100%; object-fit: contain; }
     .print-arrow { background: #000; color: var(--gold); border: 1px solid var(--gold); width: 30px; height: 30px; cursor: pointer; font-weight: 900; font-size: 14px; flex-shrink: 0; }
     .print-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
@@ -404,6 +404,7 @@
             <input type="text" id="confirm-recipient-last" class="modal-input" placeholder="Last name">
             <input type="text" id="confirm-recipient-first" class="modal-input" placeholder="First name">
             <input type="tel" id="confirm-recipient-phone" class="modal-input" placeholder="Phone">
+            <input type="text" id="confirm-recipient-messenger" class="modal-input" placeholder="Messenger: Telegram / WhatsApp / Viber (optional)">
             <input type="text" id="confirm-recipient-post" class="modal-input" placeholder="Post office (number / address)">
             <select id="confirm-payment-method" class="modal-input">
                 <option value="prepayment">Prepayment (pay now)</option>
@@ -603,6 +604,27 @@
             ]
         }
     };
+
+    // Название и плотность ткани можно менять из Бухгалтерии (таблица storefront_config).
+    // Нет настроек или база недоступна — остаются значения по умолчанию выше.
+    try {
+        const { data: cfgRows } = await supabase.from('storefront_config').select('key, value')
+            .in('key', ['fabric.tshirt', 'fabric.hoodie', 'fabric.longsleeve']);
+        const clean = (s) => String(s ?? '').replace(/[<>&"]/g, '').trim();
+        (cfgRows || []).forEach(row => {
+            const g = row.key.replace('fabric.', '');
+            const cfg = row.value || {};
+            if (!FABRIC_OPTIONS[g]) return;
+            const d = clean(cfg.density);
+            if (d) FABRIC_OPTIONS[g].density = [{ value: d, label: d.replace('-', '–') + ' g/m²' }];
+            FABRIC_OPTIONS[g].composition.forEach(c => {
+                const l = cfg.labels && clean(cfg.labels[c.value]);
+                if (l) c.label = l;
+            });
+        });
+    } catch (e) {
+        console.warn('[Atelier] Настройки витрины недоступны — значения по умолчанию.', e);
+    }
 
     function populateFabricOptions(type) {
         const densitySel = document.getElementById('select-fabric-density');
@@ -820,7 +842,7 @@
             wrap.className = 'print-icon-wrap';
             const cell = document.createElement('div');
             cell.className = 'print-icon';
-            cell.innerHTML = `<img src="${item.image_url}" loading="lazy" alt="">`;
+            cell.innerHTML = `<img src="${item.image_url}" loading="lazy" alt="" onerror="this.closest('.print-icon-wrap').remove()">`;
             cell.addEventListener('click', () => {
                 state.currentPrint = { source: 'club', design: item.image_url, category: item.category, shared: true };
                 renderPrintOverlay(true);
@@ -1170,6 +1192,7 @@
             const lastName = document.getElementById('confirm-recipient-last').value.trim();
             const firstName = document.getElementById('confirm-recipient-first').value.trim();
             const phone = document.getElementById('confirm-recipient-phone').value.trim();
+            const messenger = document.getElementById('confirm-recipient-messenger').value.trim();
             const postOffice = document.getElementById('confirm-recipient-post').value.trim();
             const paymentMethod = document.getElementById('confirm-payment-method').value;
             if (!lastName || !firstName || !phone || !postOffice) {
@@ -1187,7 +1210,7 @@
                 zipper: (state.type === 'hoodie') ? state.zipper : null,
                 neckline: state.neckline, fit: state.fit, quantity: state.quantity,
                 recipientLastName: lastName, recipientFirstName: firstName,
-                recipientPhone: phone, recipientPostOffice: postOffice,
+                recipientPhone: phone, recipientMessenger: messenger, recipientPostOffice: postOffice,
                 recipientName: `${lastName} ${firstName}`, recipientAddress: postOffice,
                 paymentMethod,
                 decoration: state.currentPrint ? {
