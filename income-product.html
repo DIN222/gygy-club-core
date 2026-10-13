@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <!--
-  income-product.html — v3.0.0 — 2026-10-13
+  income-product.html — v4.0.0 — 2026-10-14
   Приход → Ателье → изделие (?garment=tshirt|hoodie|longsleeve).
-  Параметры цены этого изделия (свёрнуто), сводка «бланки к заготовке»,
-  список заказов. В заказе: данные заказа + картинки (макет и принт/вышивка),
-  данные бухгалтерии, цена, получатель, отправка, получение, оплата, примечание.
+  Фильтры вверху. «Параметры цены»: ткань на витрине (название, плотность) +
+  построчная себестоимость → ИТОГО → наценка в % → наценка в € → ИТОГО розница.
+  Заказы: данные заказа + картинки, бухгалтерия, цена, получатель,
+  передача перевозчику, получение, оплата, примечание.
 -->
 <html lang="en">
 <head>
@@ -22,28 +23,26 @@
     .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
     .title { font-family: 'Cinzel', serif; font-size: 22px; margin-bottom: 14px; text-align: center; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
     .panel { width: 100%; max-width: 860px; }
-    .filters { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .filters select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
 
     details.sum { border: 1px solid var(--gold-dim); background: #0a0a0a; margin-bottom: 12px; }
     details.sum > summary { cursor: pointer; padding: 10px; font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
     .sum-body { padding: 0 10px 10px; }
-    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 10px; }
-    .card { border: 1px solid var(--gold-dim); padding: 8px; text-align: center; }
-    .card .num { font-size: 18px; font-weight: 900; color: var(--gold); }
-    .card .cap { font-size: 9px; color: var(--ivory); opacity: 0.7; text-transform: uppercase; }
-    .tech-line { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-    .tech-line span { border: 1px solid var(--gold-dim); padding: 4px 9px; font-size: 11px; color: var(--ivory); }
-    .tech-line b { color: var(--gold); }
-    table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    th { text-align: left; color: var(--gold-dim); padding: 5px; border-bottom: 1px solid var(--gold-dim); font-size: 10px; text-transform: uppercase; }
-    td { padding: 5px; border-bottom: 1px solid #1a1a1a; color: var(--ivory); }
-    td.num, th.num { text-align: right; }
-    tr.total-row td { font-weight: 900; color: var(--gold); border-top: 1px solid var(--gold-dim); }
 
-    .param-group h5 { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 4px; }
-    .param-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 3px 0; font-size: 11px; color: var(--ivory); }
-    .param-row input { width: 90px; padding: 5px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; text-align: right; }
+    .p-sec { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 12px 0 6px; }
+    .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .p-grid label { display: block; font-size: 9px; color: #9a9a8a; text-transform: uppercase; }
+    .p-grid input, .p-grid select { width: 100%; margin-top: 2px; padding: 6px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .p-grid .chk { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ivory); text-transform: none; }
+    .p-grid .chk input { width: auto; margin: 0; }
+    .ptable { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px; }
+    .ptable td { padding: 3px 4px; color: var(--ivory); border-bottom: 1px solid #141414; }
+    .ptable td:last-child { width: 120px; text-align: right; }
+    .ptable tr.grp td { color: var(--gold-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding-top: 10px; border-bottom: none; }
+    .ptable tr.off td { opacity: 0.35; }
+    .ptable tr.tot td { color: var(--gold); font-weight: 900; border-top: 1px solid var(--gold-dim); font-size: 12px; padding-top: 6px; }
+    .ptable input { width: 100px; padding: 5px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; text-align: right; }
 
     details.order { border: 1px solid var(--gold-dim); background: #0a0a0a; margin-bottom: 8px; }
     details.order > summary { list-style: none; cursor: pointer; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 11px; color: var(--ivory); }
@@ -57,8 +56,10 @@
 
     .sec { padding: 10px; border-bottom: 1px solid #1a1a1a; }
     .sec h4 { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-    .kv { display: grid; grid-template-columns: 170px 1fr; gap: 3px 10px; font-size: 11px; color: var(--ivory); }
+    .kv { display: grid; grid-template-columns: 190px 1fr; gap: 3px 10px; font-size: 11px; color: var(--ivory); }
     .kv span:nth-child(odd) { color: #9a9a8a; }
+    .kv .tot { color: var(--gold); font-weight: 900; }
+    .tel { color: var(--gold); }
     .previews { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
     .previews a { display: block; width: 170px; text-decoration: none; color: var(--ivory); font-size: 9px; text-align: center; }
     .previews img { width: 100%; display: block; border: 1px solid var(--gold-dim); background: #222; margin-bottom: 3px; }
@@ -66,7 +67,7 @@
     .fields label { display: block; font-size: 9px; color: #9a9a8a; margin-bottom: 2px; text-transform: uppercase; }
     .fields input, .fields textarea { width: 100%; padding: 6px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
     .fields .wide { grid-column: 1 / -1; }
-    .mini-btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 5px 9px; font-size: 10px; cursor: pointer; font-family: inherit; margin-top: 6px; }
+    .mini-btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 5px 9px; font-size: 10px; cursor: pointer; font-family: inherit; margin-top: 6px; margin-right: 6px; }
     .mini-btn:hover { border-color: var(--gold); }
     .save-bar { padding: 10px; display: flex; align-items: center; gap: 10px; }
     .btn-save { background: var(--gold); color: #000; border: 1px solid var(--gold); padding: 8px 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: inherit; font-size: 11px; }
@@ -75,7 +76,7 @@
     .save-status.error { color: #e74c3c; }
     .approx { opacity: 0.65; font-style: italic; font-size: 10px; margin-top: 6px; }
     .empty-note { font-size: 11px; color: #666; text-align: center; padding: 20px; }
-    @media (max-width: 600px) { .kv { grid-template-columns: 120px 1fr; } .fields { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .kv { grid-template-columns: 120px 1fr; } .fields, .p-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -86,17 +87,6 @@
     <div class="title" id="title">ФУТБОЛКА</div>
     <div class="panel">
 
-        <details class="sum" id="params-box">
-            <summary>Параметры цены — <span id="params-title"></span></summary>
-            <div class="sum-body">
-                <div id="params-body"></div>
-                <div class="save-bar" style="padding:8px 0 0;">
-                    <button class="btn-save" id="btn-save-params" type="button">Сохранить параметры</button>
-                    <span class="save-status" id="params-status"></span>
-                </div>
-            </div>
-        </details>
-
         <div class="filters">
             <select id="period">
                 <option value="all">За всё время</option>
@@ -105,15 +95,16 @@
             </select>
             <select id="status-filter">
                 <option value="all">Все заказы</option>
-                <option value="unshipped">Не отправлены</option>
-                <option value="transit">В пути</option>
+                <option value="unshipped">Не переданы перевозчику</option>
+                <option value="transit">У перевозчика (в пути)</option>
                 <option value="received">Получены</option>
                 <option value="unpaid">Не оплачены</option>
             </select>
         </div>
 
-        <details class="sum">
-           
+        <details class="sum" id="params-box">
+            <summary>Параметры цены</summary>
+            <div class="sum-body" id="params-body"></div>
         </details>
 
         <div id="list"></div>
@@ -124,30 +115,148 @@
 <script type="module">
     import { requireAuth } from './core/auth.js';
     import { supabase } from './core/supabase-init.js';
-    import { DEFAULTS, loadPricing, computeBreakdown, garmentParamDefs, effectiveValue } from './core/pricing.js';
+    import {
+        PARAM_DEFS, COMPOSITION_LABELS, FABRICS_BY_GARMENT,
+        loadPricing, loadStorefrontConfig, computeBreakdown, garmentParamDefs, effectiveValue
+    } from './core/pricing.js';
 
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
 
     const GARMENTS = ['tshirt', 'hoodie', 'longsleeve'];
     const TITLES = { tshirt: 'ФУТБОЛКА', hoodie: 'ХУДИ', longsleeve: 'ЛОНГСЛИВ' };
-    const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
     const COLOR_LABELS = { black: 'ЧЁРНЫЙ', white: 'БЕЛЫЙ' };
+    const SCALE_OPTIONS = [['a3', 'A3'], ['a4', 'A4'], ['logo-chest', 'Лого на груди'], ['logo-sleeve', 'Лого на рукаве'], ['custom', 'Фактический размер']];
 
     const urlGarment = new URLSearchParams(location.search).get('garment');
     const garment = GARMENTS.includes(urlGarment) ? urlGarment : 'tshirt';
     document.getElementById('title').textContent = TITLES[garment];
 
-    const currentParams = { ...DEFAULTS, ...(await loadPricing()) };
+    const currentParams = await loadPricing();
+    const storefront = await loadStorefrontConfig(garment);
+
     const eur = (n) => `€${Number(n || 0).toFixed(2)}`;
     const qtyOf = (o) => Number(o.quantity) || 1;
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const safeHttps = (u) => /^https:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
-    const kv = (pairs) => `<div class="kv">${pairs.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join('')}</div>`;
+    const kv = (pairs) => `<div class="kv">${pairs.map(([k, v, cls]) => `<span class="${cls || ''}">${k}</span><span class="${cls || ''}">${v}</span>`).join('')}</div>`;
 
     let allRows = [];
     const openIds = new Set();
 
+    // ---------- Параметры цены ----------
+    const sample = { composition: FABRICS_BY_GARMENT[garment][0], hasPrint: true, scale: 'a3', technique: 'dtf', drawstring: false, zipper: false };
+    const paramsBody = document.getElementById('params-body');
+
+    function rowApplies(key) {
+        if (key.startsWith('fab.')) return key === 'fab.' + sample.composition;
+        if (key.startsWith('scale.')) return sample.hasPrint && key === 'scale.' + sample.scale;
+        if (key.startsWith('tech.')) return sample.hasPrint && key === 'tech.' + sample.technique;
+        if (key === 'extra.drawstring') return sample.drawstring;
+        if (key === 'extra.zipper') return sample.zipper;
+        return true;
+    }
+
+    function readInputs() {
+        const m = {};
+        paramsBody.querySelectorAll('input[data-storekey]').forEach(i => { m[i.dataset.storekey] = parseFloat(i.value) || 0; });
+        return m;
+    }
+
+    function updateTotals() {
+        const b = computeBreakdown(readInputs(), {
+            type: garment, composition: sample.composition, scale: sample.scale,
+            technique: sample.technique, hasPrint: sample.hasPrint,
+            drawstring: sample.drawstring, zipper: sample.zipper
+        });
+        paramsBody.querySelector('#t-cost').textContent = eur(b.cost);
+        paramsBody.querySelector('#t-margin').textContent = eur(b.margin);
+        paramsBody.querySelector('#t-retail').textContent = eur(b.retail);
+        paramsBody.querySelectorAll('tr.prow').forEach(tr => tr.classList.toggle('off', !rowApplies(tr.dataset.key)));
+    }
+
+    function renderParams() {
+        const defs = garmentParamDefs(garment).filter(d => d.key !== 'margin.percent');
+        const groups = [...new Set(defs.map(d => d.group))];
+        const comps = FABRICS_BY_GARMENT[garment];
+
+        const rows = groups.map(group => {
+            const items = defs.filter(d => d.group === group);
+            return `<tr class="grp"><td colspan="2">${esc(group)}</td></tr>` + items.map(d => `
+                <tr class="prow" data-key="${esc(d.key)}"><td>${esc(d.label)}</td>
+                <td><input type="number" step="0.01" data-storekey="${esc(d.storeKey)}" value="${effectiveValue(currentParams, garment, d.key)}"></td></tr>`).join('');
+        }).join('');
+
+        paramsBody.innerHTML = `
+            <div class="p-sec">Ткань на витрине</div>
+            <div class="p-grid">
+                ${comps.map(c => `<label>${esc(COMPOSITION_LABELS[c])}<input type="text" data-sf-label="${esc(c)}" value="${esc(storefront.labels[c] || '')}"></label>`).join('')}
+                <label>Плотность, g/m²<input type="text" data-sf-density value="${esc(storefront.density)}"></label>
+            </div>
+
+            <div class="p-sec">Расчёт итога для</div>
+            <div class="p-grid">
+                <label>Ткань<select id="s-comp">${comps.map(c => `<option value="${esc(c)}">${esc(COMPOSITION_LABELS[c])}</option>`).join('')}</select></label>
+                <label>Размер нанесения<select id="s-scale">${SCALE_OPTIONS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></label>
+                <label>Техника<select id="s-tech"><option value="dtf">DTF-печать</option><option value="embroidery">Вышивка</option></select></label>
+                <label class="chk"><input type="checkbox" id="s-print" checked> с принтом</label>
+                ${garment === 'hoodie' ? `<label class="chk"><input type="checkbox" id="s-draw"> шнурки</label><label class="chk"><input type="checkbox" id="s-zip"> молния</label>` : ''}
+            </div>
+
+            <table class="ptable">
+                ${rows}
+                <tr class="tot"><td>ИТОГО себестоимость</td><td id="t-cost">€0.00</td></tr>
+                <tr><td>Наценка, % от себестоимости</td>
+                    <td><input type="number" step="0.1" data-storekey="${esc(garment + '|margin.percent')}" value="${effectiveValue(currentParams, garment, 'margin.percent')}"></td></tr>
+                <tr><td>Наценка, €</td><td id="t-margin">€0.00</td></tr>
+                <tr class="tot"><td>ИТОГО розничная цена</td><td id="t-retail">€0.00</td></tr>
+            </table>
+
+            <div class="save-bar" style="padding:10px 0 0;">
+                <button class="btn-save" id="btn-save-params" type="button">Сохранить</button>
+                <span class="save-status" id="params-status"></span>
+            </div>`;
+
+        paramsBody.querySelectorAll('input[data-storekey]').forEach(i => i.addEventListener('input', updateTotals));
+        const bind = (id, fn) => { const el = paramsBody.querySelector(id); if (el) el.addEventListener('change', () => { fn(el); updateTotals(); }); };
+        bind('#s-comp', el => { sample.composition = el.value; });
+        bind('#s-scale', el => { sample.scale = el.value; });
+        bind('#s-tech', el => { sample.technique = el.value; });
+        bind('#s-print', el => { sample.hasPrint = el.checked; });
+        bind('#s-draw', el => { sample.drawstring = el.checked; });
+        bind('#s-zip', el => { sample.zipper = el.checked; });
+        paramsBody.querySelector('#btn-save-params').addEventListener('click', saveParams);
+        updateTotals();
+    }
+
+    async function saveParams() {
+        const st = paramsBody.querySelector('#params-status');
+        st.className = 'save-status';
+        st.textContent = 'Сохраняю…';
+        const now = new Date().toISOString();
+        const rows = [];
+        paramsBody.querySelectorAll('input[data-storekey]').forEach(inp => {
+            const sk = inp.dataset.storekey;
+            const key = sk.split('|')[1];
+            const d = PARAM_DEFS.find(x => x[0] === key);
+            rows.push({ key: sk, value: parseFloat(inp.value) || 0, label: `${d ? d[1] : key} [${garment}]`, param_group: d ? d[2] : '', updated_at: now });
+        });
+        const e1 = (await supabase.from('pricing_params').upsert(rows)).error;
+        if (e1) { console.error(e1); st.textContent = 'Не удалось сохранить цены: ' + e1.message; st.classList.add('error'); return; }
+
+        const labels = {};
+        paramsBody.querySelectorAll('[data-sf-label]').forEach(i => { labels[i.dataset.sfLabel] = i.value.trim(); });
+        const density = paramsBody.querySelector('[data-sf-density]').value.trim();
+        const e2 = (await supabase.from('storefront_config').upsert({ key: 'fabric.' + garment, value: { density, labels }, updated_at: now })).error;
+        if (e2) { console.error(e2); st.textContent = 'Цены сохранены, витрина — нет: ' + e2.message; st.classList.add('error'); return; }
+
+        rows.forEach(r => { currentParams[r.key] = r.value; });
+        st.textContent = 'Сохранено — клиенты в Ателье увидят изменения.';
+        st.classList.add('ok');
+        render();
+    }
+
+    // ---------- Заказы ----------
     function techLabel(o) {
         if (!o.decoration) return 'Без принта';
         return o.decoration.technique === 'embroidery' ? 'Вышивка' : 'DTF-принт';
@@ -155,7 +264,7 @@
     function printDetail(o) {
         const d = o.decoration;
         if (!d) return '—';
-        return [d.scaleCm, d.category || (d.source === 'own' ? 'свой' : 'клуб')].filter(Boolean).join(' · ');
+        return [d.scaleCm, d.category === 'embroidery' ? 'вышивка' : (d.source === 'own' ? 'свой' : 'клуб')].filter(Boolean).join(' · ');
     }
     function getPricing(o) {
         if (o.pricing) return { b: o.pricing, approx: false };
@@ -167,15 +276,24 @@
         });
         return { b, approx: true };
     }
+    function breakdownPairs(b) {
+        let pairs;
+        if (Array.isArray(b.lines)) {
+            pairs = b.lines.map(l => [esc(l.label), eur(l.amount)]);
+        } else { // заказ оформлен по прежней структуре затрат
+            pairs = [['Изделие', eur(b.garment)], ['Ткань', eur(b.fabric)], ['Обтачка', eur(b.facing)],
+                ['Киперная лента', eur(b.tape)], ['Нанесение', eur(b.decoration)], ['Дополнения', eur(b.extras)],
+                ['Упаковка', eur(b.packaging)], ['Накладные', eur(b.overhead)]];
+        }
+        pairs.push(['ИТОГО себестоимость', eur(b.cost), 'tot'],
+            ['Наценка', `${esc(b.marginPercent)}% = ${eur(b.margin)}`],
+            ['ИТОГО розница за ед.', eur(b.retail), 'tot']);
+        return pairs;
+    }
 
     function statusOf(r) {
         const o = r.atelier_order || {};
-        return {
-            shipped: !!r.shipping_receipt_number,
-            received: !!r.delivery_confirmed_date,
-            paid: !!r.payment_date,
-            cod: o.paymentMethod === 'cod'
-        };
+        return { shipped: !!r.shipping_receipt_number, received: !!r.delivery_confirmed_date, paid: !!r.payment_date, cod: o.paymentMethod === 'cod' };
     }
     function matchesStatus(r, f) {
         const s = statusOf(r);
@@ -188,8 +306,8 @@
     function chipsHtml(r) {
         const s = statusOf(r);
         const ship = s.received ? '<span class="chip ok">получено</span>'
-            : s.shipped ? '<span class="chip warn">в пути</span>'
-            : '<span class="chip warn">не отправлено</span>';
+            : s.shipped ? '<span class="chip warn">передано перевозчику</span>'
+            : '<span class="chip warn">не передано</span>';
         const pay = s.paid ? '<span class="chip ok">оплачено</span>'
             : s.cod ? '<span class="chip warn">наложенный: ждёт</span>'
             : '<span class="chip warn">ждёт оплаты</span>';
@@ -207,6 +325,9 @@
         const oldFullName = (!last && !first) ? (o.recipientName || '') : '';
         const post = o.recipientPostOffice || o.recipientAddress || '';
         const phone = o.recipientPhone || '';
+        const messenger = o.recipientMessenger || '';
+        const phoneDigits = String(phone).replace(/[^\d+]/g, '');
+        const phoneHtml = phone ? (phoneDigits ? `<a class="tel" href="tel:${esc(phoneDigits)}">${esc(phone)}</a>` : esc(phone)) : '—';
         const method = o.paymentMethod === 'cod' ? 'Наложенный платёж (оплата при получении на почте)' : 'Предоплата';
         const openAttr = openIds.has(r.id) ? ' open' : '';
 
@@ -222,9 +343,7 @@
             ['Принт', esc(printDetail(o))],
             ['Положение принта', d ? esc((d.position || '').toUpperCase()) : '—']
         ];
-        if (o.garment === 'hoodie') {
-            orderPairs.push(['Шнурки', o.drawstring ? 'да' : 'нет'], ['Молния', o.zipper ? 'да' : 'нет']);
-        }
+        if (o.garment === 'hoodie') orderPairs.push(['Шнурки', o.drawstring ? 'да' : 'нет'], ['Молния', o.zipper ? 'да' : 'нет']);
 
         const mockup = safeHttps(o.mockupUrl);
         const design = safeHttps(o.designUrl);
@@ -248,35 +367,31 @@
             <div class="sec"><h4>1. Данные заказа из Ателье</h4>${kv(orderPairs)}${previewsHtml}</div>
 
             <div class="sec"><h4>2. Данные бухгалтерии (определение цены)</h4>
-                ${kv([
-                    ['Изделие', eur(b.garment)], ['Ткань', eur(b.fabric)],
-                    ['Обтачка', eur(b.facing)], ['Киперная лента', eur(b.tape)],
-                    ['Нанесение', eur(b.decoration)],
-                    ['Дополнения (бирки, шнурки, молния)', eur(b.extras)],
-                    ['Упаковка', eur(b.packaging)], ['Накладные', eur(b.overhead)],
-                    ['Себестоимость ед.', eur(b.cost)], ['Наценка', `${esc(b.marginPercent)}% = ${eur(b.margin)}`]
-                ])}
+                ${kv(breakdownPairs(b))}
                 ${approx ? '<div class="approx">≈ старый заказ: затраты пересчитаны по текущим параметрам, а не по состоянию на дату заказа</div>' : ''}
             </div>
 
             <div class="sec"><h4>3. Цена, переданная заказчику в Ателье</h4>
-                ${kv([['Цена за единицу', eur(unit)], ['Количество', q], ['Итого', eur(r.total_amount)]])}
+                ${kv([['Цена за единицу', eur(unit)], ['Количество', q], ['Итого', eur(r.total_amount), 'tot']])}
             </div>
 
             <div class="sec"><h4>4. Получатель</h4>
                 ${kv([
                     ['Фамилия', esc(last || oldFullName || '—')], ['Имя', esc(first || '—')],
-                    ['Телефон', esc(phone || '—')], ['Почтовое отделение', esc(post || '—')]
+                    ['Телефон', phoneHtml], ['Мессенджер', esc(messenger || '—')],
+                    ['Почтовое отделение', esc(post || '—')]
                 ])}
             </div>
 
-            <div class="sec"><h4>5. Отправка</h4>
+            <div class="sec"><h4>5. Передача перевозчику</h4>
+                ${kv([['Связь с клиентом: телефон', phoneHtml], ['Связь с клиентом: мессенджер', esc(messenger || '—')]])}
                 <div class="fields">
-                    <div><label>Дата квитанции об отправке</label><input type="date" data-f="shipping_receipt_date" value="${esc(r.shipping_receipt_date || '')}"></div>
+                    <div><label>Дата квитанции</label><input type="date" data-f="shipping_receipt_date" value="${esc(r.shipping_receipt_date || '')}"></div>
                     <div><label>Номер квитанции</label><input type="text" data-f="shipping_receipt_number" value="${esc(r.shipping_receipt_number || '')}"></div>
-                    <div class="wide"><label>Сообщение об отправке</label><textarea rows="4" data-f="shipping_message">${esc(r.shipping_message || '')}</textarea></div>
+                    <div class="wide"><label>Сообщение клиенту</label><textarea rows="4" data-f="shipping_message">${esc(r.shipping_message || '')}</textarea></div>
                 </div>
                 <button class="mini-btn btn-gen" type="button">Сформировать сообщение</button>
+                <button class="mini-btn btn-copy" type="button">Скопировать</button>
             </div>
 
             <div class="sec"><h4>6. Получение</h4>
@@ -309,36 +424,9 @@
             r.atelier_order && r.atelier_order.garment === garment && new Date(r.order_date).getTime() >= cutoff);
     }
 
-        function renderSummary(rows) {
-        if (!document.getElementById('c-orders')) return;
-        let pcs = 0, sum = 0;
-        const byTech = { 'Без принта': 0, 'DTF-принт': 0, 'Вышивка': 0 };
-        const matrix = {};
-        SIZES.forEach(s => { matrix[s] = { black: 0, white: 0 }; });
-        rows.forEach(r => {
-            const o = r.atelier_order, q = qtyOf(o);
-            pcs += q; sum += Number(r.total_amount) || 0;
-            byTech[techLabel(o)] += q;
-            if (matrix[o.size] && matrix[o.size][o.color] !== undefined) matrix[o.size][o.color] += q;
-        });
-        document.getElementById('c-orders').textContent = rows.length;
-        document.getElementById('c-pcs').textContent = pcs;
-        document.getElementById('c-sum').textContent = eur(sum);
-        document.getElementById('tech-line').innerHTML =
-            Object.entries(byTech).map(([k, v]) => `<span>${k}: <b>${v}</b></span>`).join('');
-        let tb = 0, tw = 0;
-        document.getElementById('matrix').innerHTML = SIZES.map(s => {
-            const b = matrix[s].black, w = matrix[s].white;
-            tb += b; tw += w;
-            return `<tr><td>${s}</td><td class="num">${b}</td><td class="num">${w}</td><td class="num">${b + w}</td></tr>`;
-        }).join('') + `<tr class="total-row"><td>ИТОГО</td><td class="num">${tb}</td><td class="num">${tw}</td><td class="num">${tb + tw}</td></tr>`;
-    }
-
     function render() {
-        const rows = periodRows();
-        renderSummary(rows);
         const f = document.getElementById('status-filter').value;
-        const shown = rows.filter(r => matchesStatus(r, f));
+        const shown = periodRows().filter(r => matchesStatus(r, f));
         document.getElementById('list').innerHTML = shown.map(cardHtml).join('');
         const note = document.getElementById('empty-note');
         note.style.display = shown.length ? 'none' : 'block';
@@ -384,11 +472,19 @@
             const date = field('shipping_receipt_date').value;
             const num = field('shipping_receipt_number').value;
             field('shipping_message').value = [
-                `Hello${first ? ', ' + first : ''}! Your order ${row.order_number} has been shipped${date ? ' on ' + date : ''}.`,
+                `Hello${first ? ', ' + first : ''}! Your order ${row.order_number} has been handed over to the carrier${date ? ' on ' + date : ''}.`,
                 `Receipt No.: ${num || '—'}. Post office: ${post || '—'}.`,
                 cod ? `Amount to pay on receipt: ${eur(row.total_amount)}.` : 'Your order is already paid.',
                 'Thank you for choosing GY-GY Club!'
             ].join('\n');
+            return;
+        }
+
+        if (e.target.closest('.btn-copy')) {
+            const btn = e.target.closest('.btn-copy');
+            try { await navigator.clipboard.writeText(field('shipping_message').value); btn.textContent = 'Скопировано'; }
+            catch (err) { btn.textContent = 'Не удалось скопировать'; }
+            setTimeout(() => { btn.textContent = 'Скопировать'; }, 1500);
             return;
         }
 
@@ -423,46 +519,6 @@
             const fresh = list.querySelector(`details.order[data-id="${id}"] .save-status`);
             if (fresh) { fresh.textContent = 'Сохранено'; fresh.classList.add('ok'); }
         }
-    });
-
-    function renderParams() {
-        document.getElementById('params-title').textContent = TITLES[garment];
-        const defs = garmentParamDefs(garment);
-        const groups = {};
-        defs.forEach(d => { (groups[d.group] = groups[d.group] || []).push(d); });
-        document.getElementById('params-body').innerHTML = Object.entries(groups).map(([group, items]) => `
-            <div class="param-group"><h5>${esc(group)}</h5>
-            ${items.map(d => `<div class="param-row"><span>${esc(d.label)}</span>
-                <input type="number" step="0.01" data-storekey="${esc(d.storeKey)}" value="${effectiveValue(currentParams, garment, d.key)}"></div>`).join('')}
-            </div>`).join('');
-    }
-
-    document.getElementById('btn-save-params').addEventListener('click', async () => {
-        const st = document.getElementById('params-status');
-        st.className = 'save-status';
-        st.textContent = 'Сохраняю…';
-        const defs = garmentParamDefs(garment);
-        const toSave = [];
-        document.querySelectorAll('#params-body input').forEach(inp => {
-            const d = defs.find(x => x.storeKey === inp.dataset.storekey);
-            if (!d) return;
-            toSave.push({
-                key: d.storeKey, value: parseFloat(inp.value) || 0,
-                label: `${d.label} [${garment}]`, param_group: d.group,
-                updated_at: new Date().toISOString()
-            });
-        });
-        const { error } = await supabase.from('pricing_params').upsert(toSave);
-        if (error) {
-            console.error('[Income] Не удалось сохранить параметры', error);
-            st.textContent = 'Не удалось сохранить: ' + (error.message || '');
-            st.classList.add('error');
-            return;
-        }
-        toSave.forEach(r => { currentParams[r.key] = r.value; });
-        st.textContent = 'Сохранено — клиенты в Ателье увидят новые цены.';
-        st.classList.add('ok');
-        render();
     });
 
     document.getElementById('period').addEventListener('change', render);
