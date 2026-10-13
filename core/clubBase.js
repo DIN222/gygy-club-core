@@ -1,6 +1,7 @@
 // core/clubBase.js
-// v1.4.0 — 2026-10-12
-// Шесть категорий: пять откликов (лента DTF) + embroidery (лента вышивки).
+// v2.0.0 — 2026-10-14
+// Две ленты: dtf (единая лента принтов, без категорий отклика) и embroidery
+// (эскизы вышивки). Любая старая категория отклика считается dtf.
 // Принты с согласием автора на публичность попадают в «Это круто»;
 // лайки ограничены паспортом (таблица print_likes).
 
@@ -8,9 +9,10 @@ import { supabase } from './supabase-init.js';
 
 const TABLE = 'club_prints';
 const BUCKET = 'club-prints';
-const MAX_PER_CATEGORY = 20;
-const CATEGORIES = ['rebellion', 'motivation', 'intellect', 'aesthetic', 'humor', 'embroidery'];
-const emptyCache = () => Object.fromEntries(CATEGORIES.map(c => [c, []]));
+const CATEGORIES = ['dtf', 'embroidery'];
+const CAPS = { dtf: 100, embroidery: 30 };
+const KEEP_LIKES = 10; // популярные принты при чистке не трогаем
+const emptyCache = () => ({ dtf: [], embroidery: [] });
 
 let realtimeChannel = null;
 let cache = emptyCache();
@@ -27,7 +29,8 @@ async function refreshCache() {
     }
     const next = emptyCache();
     (data || []).forEach(row => {
-        if (next[row.category]) next[row.category].push(row);
+        const key = row.category === 'embroidery' ? 'embroidery' : 'dtf';
+        next[key].push({ ...row, category: key });
     });
     cache = next;
     if (eventBus && eventBus.emit) eventBus.emit('CLUBBASE_UPDATED', cache);
@@ -50,29 +53,30 @@ export function destroy() {
 
 export function getAll() { return cache; }
 export function getFlat() {
-    return CATEGORIES.flatMap(cat => cache[cat].map(item => ({ ...item, category: cat })))
+    return CATEGORIES.flatMap(cat => cache[cat])
         .sort((a, b) => new Date(b.added_at) - new Date(a.added_at));
 }
 
 async function enforceLimit(category) {
+    const cap = CAPS[category] || 50;
     const { data, error } = await supabase
         .from(TABLE)
-        .select('id, storage_path')
+        .select('id, storage_path, likes, added_at')
         .eq('category', category)
         .order('added_at', { ascending: true });
     if (error) {
-        console.warn('[clubBase] Не удалось проверить лимит категории.', error);
+        console.warn('[clubBase] Не удалось проверить лимит ленты.', error);
         return;
     }
-    if (data && data.length >= MAX_PER_CATEGORY) {
-        const oldest = data[0];
-        await supabase.storage.from(BUCKET).remove([oldest.storage_path]);
-        await supabase.from(TABLE).delete().eq('id', oldest.id);
+    if (data && data.length >= cap) {
+        const victim = data.find(r => (r.likes || 0) < KEEP_LIKES) || data[0];
+        await supabase.storage.from(BUCKET).remove([victim.storage_path]);
+        await supabase.from(TABLE).delete().eq('id', victim.id);
     }
 }
 
 export async function addPrint(blob, category, meta = {}) {
-    if (!CATEGORIES.includes(category)) throw new Error(`[clubBase] Неизвестная категория: ${category}`);
+    if (!CATEGORIES.includes(category)) throw new Error(`[clubBase] Неизвестная лента: ${category}`);
     await enforceLimit(category);
 
     const storagePath = `${category}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.png`;
