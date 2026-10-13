@@ -113,19 +113,7 @@
         </div>
 
         <details class="sum">
-            <summary>Бланки к заготовке и итоги</summary>
-            <div class="sum-body">
-                <div class="cards">
-                    <div class="card"><div class="num" id="c-orders">0</div><div class="cap">заказов</div></div>
-                    <div class="card"><div class="num" id="c-pcs">0</div><div class="cap">штук</div></div>
-                    <div class="card"><div class="num" id="c-sum">€0.00</div><div class="cap">выручка</div></div>
-                </div>
-                <div class="tech-line" id="tech-line"></div>
-                <table>
-                    <thead><tr><th>Размер</th><th class="num">Чёрный</th><th class="num">Белый</th><th class="num">Всего</th></tr></thead>
-                    <tbody id="matrix"></tbody>
-                </table>
-            </div>
+           
         </details>
 
         <div id="list"></div>
@@ -321,7 +309,8 @@
             r.atelier_order && r.atelier_order.garment === garment && new Date(r.order_date).getTime() >= cutoff);
     }
 
-    function renderSummary(rows) {
+        function renderSummary(rows) {
+        if (!document.getElementById('c-orders')) return;
         let pcs = 0, sum = 0;
         const byTech = { 'Без принта': 0, 'DTF-принт': 0, 'Вышивка': 0 };
         const matrix = {};
