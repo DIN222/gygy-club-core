@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- income-atelier.html — v2.0.0 — 2026-10-10 — Приход → Ателье: выбор изделия -->
+<!-- income-atelier.html — v3.0.0 — 2026-10-13 — Приход → Ателье: изделия + журнал Ателье -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -19,7 +19,8 @@
     .block-btn { background: #0a0a0a; border: 1px solid var(--gold-dim); color: var(--gold); padding: 16px; text-align: center; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; text-decoration: none; display: block; }
     .block-btn:hover { border-color: var(--gold); }
     .block-btn small { display: block; margin-top: 4px; font-family: 'Share Tech Mono', monospace; font-size: 9px; opacity: 0.65; font-weight: 400; }
-    .divider { height: 1px; background: var(--gold-dim); opacity: 0.4; margin: 6px 0; }
+    .journal-wrap { width: 100%; max-width: 860px; margin-top: 30px; }
+    .journal-heading { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -31,14 +32,16 @@
         <a class="block-btn" href="income-product.html?garment=tshirt">ФУТБОЛКА<small id="sub-tshirt">…</small></a>
         <a class="block-btn" href="income-product.html?garment=hoodie">ХУДИ<small id="sub-hoodie">…</small></a>
         <a class="block-btn" href="income-product.html?garment=longsleeve">ЛОНГСЛИВ<small id="sub-longsleeve">…</small></a>
-        <div class="divider"></div>
-        
-        <a class="block-btn" href="income-ledger.html?line=atelier">ВСЕ ЗАКАЗЫ (ЖУРНАЛ)<small>Общий список без разбивки</small></a>
+    </div>
+    <div class="journal-wrap">
+        <div class="journal-heading">Журнал Ателье</div>
+        <div id="journal"></div>
     </div>
 </div>
 <script type="module">
     import { requireAuth } from './core/auth.js';
     import { supabase } from './core/supabase-init.js';
+    import { renderJournal } from './modules/incomeJournal.js';
 
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
@@ -53,6 +56,8 @@
     Object.keys(stat).forEach(k => {
         document.getElementById('sub-' + k).textContent = `${stat[k].orders} заказов · ${stat[k].pcs} шт.`;
     });
+
+    renderJournal(document.getElementById('journal'), { line: 'atelier' });
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-income').addEventListener('click', () => window.location.href = 'income.html');
