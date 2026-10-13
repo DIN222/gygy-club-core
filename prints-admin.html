@@ -1,1 +1,205 @@
+<!DOCTYPE html>
+<!-- prints-admin.html — v1.0.0 — 2026-10-14 — Принты клуба: просмотр и удаление (только сотрудники) -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Принты клуба</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 22px; margin-bottom: 14px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 900px; }
+    .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .bar select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 7px 12px; font-size: 11px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+    .btn:hover { border-color: var(--gold); }
+    .btn.danger { color: #e74c3c; border-color: #e74c3c; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .progress { font-size: 11px; color: var(--ivory); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .pc { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 6px; }
+    .pc.flagged { border-color: #e74c3c; }
+    .thumb { width: 100%; aspect-ratio: 1; background: repeating-conic-gradient(#5a5a5a 0% 25%, #8a8a8a 0% 50%) 50% / 14px 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .meta { font-size: 9px; color: #9a9a8a; margin: 5px 0; line-height: 1.4; }
+    .flag { font-size: 10px; color: #e74c3c; margin-bottom: 4px; }
+    .del { width: 100%; background: #000; color: #9a9a8a; border: 1px solid #333; padding: 4px; font-size: 10px; cursor: pointer; font-family: inherit; }
+    .del:hover { color: #e74c3c; border-color: #e74c3c; }
+    .note { font-size: 11px; color: #666; text-align: center; padding: 20px; }
+    .note.error { color: #e74c3c; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+<div class="page-wrap">
+    <div class="title">ПРИНТЫ КЛУБА</div>
+    <div class="panel">
+        <div class="bar">
+            <select id="cat-filter">
+                <option value="all">Все</option>
+                <option value="dtf">Принты</option>
+                <option value="embroidery">Вышивка</option>
+            </select>
+            <button class="btn" id="btn-scan">Проверить на пустые</button>
+            <button class="btn danger" id="btn-del-flagged" disabled>Удалить помеченные</button>
+            <span class="progress" id="progress"></span>
+        </div>
+        <div class="note" id="note" style="display:none;"></div>
+        <div class="grid" id="grid"></div>
+    </div>
+</div>
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
 
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const safeHttps = (u) => /^https:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
+
+    let rows = [];
+    const flags = new Map(); // id -> причина
+
+    function render() {
+        const f = document.getElementById('cat-filter').value;
+        const shown = rows.filter(r => {
+            const cat = r.category === 'embroidery' ? 'embroidery' : 'dtf';
+            return f === 'all' || cat === f;
+        });
+        document.getElementById('grid').innerHTML = shown.map(r => {
+            const flag = flags.get(r.id);
+            const cat = r.category === 'embroidery' ? 'Вышивка' : 'Принт';
+            return `<div class="pc${flag ? ' flagged' : ''}" data-id="${esc(r.id)}">
+                <div class="thumb"><img src="${esc(safeHttps(r.image_url))}" alt="" loading="lazy"></div>
+                <div class="meta">${cat} · ${esc(new Date(r.added_at).toLocaleDateString())}<br>${esc(r.from_user_name || '—')} · ♥ ${r.likes || 0}${r.public_likes_allowed ? ' · публичный' : ''}</div>
+                ${flag ? `<div class="flag">⚠ ${esc(flag)}</div>` : ''}
+                <button class="del" type="button">Удалить</button>
+            </div>`;
+        }).join('');
+        const note = document.getElementById('note');
+        note.className = 'note';
+        note.style.display = shown.length ? 'none' : 'block';
+        note.textContent = 'Принтов нет.';
+        document.getElementById('btn-del-flagged').disabled = flags.size === 0;
+    }
+
+    async function load() {
+        const { data, error } = await supabase.from('club_prints').select('*').order('added_at', { ascending: false }).limit(500);
+        const note = document.getElementById('note');
+        if (error) {
+            console.error(error);
+            note.className = 'note error';
+            note.style.display = 'block';
+            note.textContent = 'Не удалось загрузить принты: ' + (error.message || '');
+            return;
+        }
+        rows = data || [];
+        render();
+    }
+
+    function loadImage(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('load'));
+            img.src = src;
+        });
+    }
+
+    // Возвращает причину, если изображение «пустое», иначе null
+    async function analyze(url) {
+        let img;
+        try { img = await loadImage(url); } catch (e) { return 'не загружается'; }
+        try {
+            const N = 48;
+            const c = document.createElement('canvas');
+            c.width = N; c.height = N;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0, N, N);
+            const d = ctx.getImageData(0, 0, N, N).data;
+            let opaque = 0, minL = 255, maxL = 0;
+            for (let i = 0; i < d.length; i += 4) {
+                if (d[i + 3] > 25) {
+                    opaque++;
+                    const L = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+                    if (L < minL) minL = L;
+                    if (L > maxL) maxL = L;
+                }
+            }
+            const ratio = opaque / (N * N);
+            if (ratio < 0.01) return 'полностью прозрачное';
+            if (ratio > 0.98 && (maxL - minL) < 12) return 'сплошной однотонный квадрат';
+            return null;
+        } catch (e) {
+            return null; // не удалось прочитать пиксели — не помечаем
+        }
+    }
+
+    async function scan() {
+        const btn = document.getElementById('btn-scan');
+        const prog = document.getElementById('progress');
+        btn.disabled = true;
+        flags.clear();
+        for (let i = 0; i < rows.length; i++) {
+            prog.textContent = `Проверено ${i} из ${rows.length}`;
+            const reason = await analyze(safeHttps(rows[i].image_url));
+            if (reason) flags.set(rows[i].id, reason);
+        }
+        prog.textContent = `Готово: помечено ${flags.size} из ${rows.length}`;
+        btn.disabled = false;
+        render();
+    }
+
+    async function deleteRow(r) {
+        const { error: storageError } = await supabase.storage.from('club-prints').remove([r.storage_path]);
+        if (storageError) console.warn('[PrintsAdmin] Файл не удалён из хранилища', storageError);
+        const { data, error } = await supabase.from('club_prints').delete().eq('id', r.id).select('id');
+        if (error || !data || !data.length) throw new Error(error ? error.message : 'нет прав — проверьте SQL (политика удаления)');
+    }
+
+    document.getElementById('grid').addEventListener('click', async (e) => {
+        const btn = e.target.closest('.del');
+        if (!btn) return;
+        const id = btn.closest('.pc').dataset.id;
+        const r = rows.find(x => String(x.id) === id);
+        if (!r || !confirm('Удалить принт насовсем?')) return;
+        try {
+            await deleteRow(r);
+            rows = rows.filter(x => x.id !== r.id);
+            flags.delete(r.id);
+            render();
+        } catch (err) { alert('Не удалось удалить: ' + err.message); }
+    });
+
+    document.getElementById('btn-del-flagged').addEventListener('click', async () => {
+        const targets = rows.filter(r => flags.has(r.id));
+        if (!targets.length || !confirm(`Удалить помеченные принты (${targets.length}) насовсем?`)) return;
+        const prog = document.getElementById('progress');
+        let done = 0;
+        for (const r of targets) {
+            try { await deleteRow(r); rows = rows.filter(x => x.id !== r.id); flags.delete(r.id); done++; }
+            catch (err) { prog.textContent = 'Остановлено: ' + err.message; break; }
+            prog.textContent = `Удалено ${done} из ${targets.length}`;
+        }
+        render();
+    });
+
+    document.getElementById('cat-filter').addEventListener('change', render);
+    document.getElementById('btn-scan').addEventListener('click', scan);
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+
+    load();
+</script>
+</body>
+</html>
