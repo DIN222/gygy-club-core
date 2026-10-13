@@ -1,14 +1,17 @@
 // core/pricing.js
-// v3.0.0 — 2026-10-12
+// v3.1.0 — 2026-10-13
 // Единая формула цены. Параметры хранятся в Supabase (pricing_params).
-// У каждого изделия может быть свой набор: ключ вида "hoodie|scale.a3".
+// У каждого изделия свой набор: ключ вида "hoodie|scale.a3".
 // Если своего значения нет, берётся общее (ключ без префикса), затем DEFAULTS.
 //
-//   себестоимость единицы = изделие + ткань + (нанесение + техника, если есть принт)
-//                           + (шнурки/молния для худи) + упаковка + накладные
+//   себестоимость единицы = изделие + ткань + обтачка + киперная лента
+//                           + (нанесение + техника, если есть принт)
+//                           + дополнения (бирки; шнурки/молния у худи) + упаковка + накладные
 //   цена единицы          = себестоимость × (1 + наценка/100)
 
 import { supabase } from './supabase-init.js';
+
+const EXTRAS = 'Дополнения (бирки постоянные, съёмные; шнурки, молния)';
 
 // [ключ, подпись, группа, значение по умолчанию]
 export const PARAM_DEFS = [
@@ -19,6 +22,8 @@ export const PARAM_DEFS = [
     ['fabric.stretch', 'Стрейч (доплата)', 'Ткань', 4],
     ['fabric.cotton80poly20', '80% хлопок / 20% полиэстер (доплата)', 'Ткань', 0],
     ['fabric.cotton100fleece', '100% хлопок, начёс (доплата)', 'Ткань', 3],
+    ['material.facing', 'Материал обтачки', 'Материалы', 0],
+    ['material.tape', 'Киперная (силиконовая) лента — усиление швов', 'Материалы', 0],
     ['scale.a3', 'Нанесение A3', 'Нанесение', 12],
     ['scale.a4', 'Нанесение A4', 'Нанесение', 8],
     ['scale.logo-chest', 'Нанесение: лого на груди', 'Нанесение', 4],
@@ -26,8 +31,10 @@ export const PARAM_DEFS = [
     ['scale.custom', 'Нанесение: фактический размер', 'Нанесение', 10],
     ['tech.dtf', 'Техника: DTF-печать', 'Техника', 0],
     ['tech.embroidery', 'Техника: вышивка', 'Техника', 7],
-    ['extra.drawstring', 'Худи: шнурки', 'Дополнения', 0],
-    ['extra.zipper', 'Худи: молния', 'Дополнения', 0],
+    ['extra.label_permanent', 'Бирка постоянная (пришивная)', EXTRAS, 0],
+    ['extra.label_removable', 'Бирка съёмная', EXTRAS, 0],
+    ['extra.drawstring', 'Худи: шнурки', EXTRAS, 0],
+    ['extra.zipper', 'Худи: молния', EXTRAS, 0],
     ['packaging', 'Упаковка на единицу', 'Общие', 0],
     ['overhead', 'Накладные на единицу (аренда, коммуналка, зарплата…)', 'Общие', 0],
     ['margin.percent', 'Наценка, %', 'Общие', 0]
@@ -69,7 +76,7 @@ export function garmentParamDefs(type) {
         const k = d[0];
         if (k.startsWith('garment.')) return k === 'garment.' + type;
         if (k.startsWith('fabric.')) return fabrics.includes(k.slice(7));
-        if (k.startsWith('extra.')) return type === 'hoodie';
+        if (k === 'extra.drawstring' || k === 'extra.zipper') return type === 'hoodie';
         return true;
     }).map(d => ({
         key: d[0],
@@ -87,8 +94,10 @@ export function computeBreakdown(params, o) {
 
     const garment = g('garment.' + o.type);
     const fabric = g('fabric.' + o.composition);
+    const facing = g('material.facing');
+    const tape = g('material.tape');
     const decoration = o.hasPrint ? g('scale.' + o.scale) + g('tech.' + o.technique) : 0;
-    let extras = 0;
+    let extras = g('extra.label_permanent') + g('extra.label_removable');
     if (o.type === 'hoodie') {
         if (o.drawstring) extras += g('extra.drawstring');
         if (o.zipper) extras += g('extra.zipper');
@@ -96,12 +105,13 @@ export function computeBreakdown(params, o) {
     const packaging = g('packaging');
     const overhead = g('overhead');
 
-    const cost = garment + fabric + decoration + extras + packaging + overhead;
+    const cost = garment + fabric + facing + tape + decoration + extras + packaging + overhead;
     const marginPercent = g('margin.percent');
     const retail = cost * (1 + marginPercent / 100);
 
     return {
-        garment: round(garment), fabric: round(fabric), decoration: round(decoration), extras: round(extras),
+        garment: round(garment), fabric: round(fabric), facing: round(facing), tape: round(tape),
+        decoration: round(decoration), extras: round(extras),
         packaging: round(packaging), overhead: round(overhead),
         cost: round(cost), marginPercent, margin: round(retail - cost), retail: round(retail)
     };
