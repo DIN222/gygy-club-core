@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- reviews.html — v1.0.0 — 2026-10-14 — отзывы клиентов (читают только сотрудники) -->
+<!-- reviews.html — v2.0.0 — 2026-10-14 — отзывы: сотрудник видит все, может скрыть/показать/удалить -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -22,14 +22,17 @@
     .averages span { border: 1px solid var(--gold-dim); padding: 5px 10px; font-size: 11px; color: var(--ivory); }
     .averages b { color: var(--gold); }
     .review { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 10px; margin-bottom: 8px; }
+    .review.hidden { opacity: 0.5; border-style: dashed; }
     .r-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 10px; color: #9a9a8a; margin-bottom: 6px; }
     .r-loc { color: var(--gold); font-weight: 700; text-transform: uppercase; }
     .r-stars { color: var(--gold); }
     .r-body { font-size: 12px; color: var(--ivory); line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
     .r-ctx { margin-top: 6px; font-size: 10px; color: #9a9a8a; }
     .r-ctx img { display: block; width: 70px; margin-top: 4px; border: 1px solid var(--gold-dim); background: #222; }
-    .r-del { margin-left: auto; background: #000; color: #9a9a8a; border: 1px solid #333; padding: 2px 8px; font-size: 9px; cursor: pointer; font-family: inherit; }
-    .r-del:hover { color: #e74c3c; border-color: #e74c3c; }
+    .r-actions { margin-left: auto; display: flex; gap: 6px; }
+    .r-btn { background: #000; color: #9a9a8a; border: 1px solid #333; padding: 2px 8px; font-size: 9px; cursor: pointer; font-family: inherit; }
+    .r-btn:hover { color: var(--gold); border-color: var(--gold); }
+    .r-btn.del:hover { color: #e74c3c; border-color: #e74c3c; }
     .note { font-size: 11px; color: #666; text-align: center; padding: 20px; }
     .note.error { color: #e74c3c; }
 </style>
@@ -83,7 +86,7 @@
         const shown = rows.filter(r => f === 'all' || r.location === f);
 
         const sums = {};
-        rows.forEach(r => {
+        rows.filter(r => !r.hidden).forEach(r => {
             const s = sums[r.location] || (sums[r.location] = { n: 0, rn: 0, rs: 0 });
             s.n++;
             if (r.rating) { s.rn++; s.rs += r.rating; }
@@ -92,13 +95,17 @@
             `<span>${esc(LOC[loc] || loc)}: <b>${s.n}</b> отз.${s.rn ? ` · средняя <b>${(s.rs / s.rn).toFixed(1)}</b>` : ''}</span>`).join('');
 
         document.getElementById('list').innerHTML = shown.map(r => `
-            <div class="review" data-id="${esc(r.id)}">
+            <div class="review${r.hidden ? ' hidden' : ''}" data-id="${esc(r.id)}">
                 <div class="r-head">
                     <span class="r-loc">${esc(LOC[r.location] || r.location)}</span>
                     <span>${esc(new Date(r.created_at).toLocaleString())}</span>
                     ${r.rating ? `<span class="r-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>` : ''}
                     ${r.author_name ? `<span>${esc(r.author_name)}</span>` : ''}
-                    <button class="r-del" type="button">Удалить</button>
+                    ${r.hidden ? '<span>скрыт от посетителей</span>' : ''}
+                    <span class="r-actions">
+                        <button class="r-btn r-toggle" type="button">${r.hidden ? 'Показать' : 'Скрыть'}</button>
+                        <button class="r-btn del r-del" type="button">Удалить</button>
+                    </span>
                 </div>
                 <div class="r-body">${esc(r.body)}</div>
                 ${ctxHtml(r.context)}
@@ -124,14 +131,26 @@
     }
 
     document.getElementById('list').addEventListener('click', async (e) => {
-        const btn = e.target.closest('.r-del');
-        if (!btn) return;
-        const id = btn.closest('.review').dataset.id;
-        if (!confirm('Удалить отзыв?')) return;
-        const { data, error } = await supabase.from('reviews').delete().eq('id', id).select('id');
-        if (error || !data || !data.length) { alert('Не удалось удалить: ' + (error ? error.message : 'нет прав')); return; }
-        rows = rows.filter(r => r.id !== id);
-        render();
+        const card = e.target.closest('.review');
+        if (!card) return;
+        const id = card.dataset.id;
+        const row = rows.find(r => String(r.id) === id);
+        if (!row) return;
+
+        if (e.target.closest('.r-toggle')) {
+            const { data, error } = await supabase.from('reviews').update({ hidden: !row.hidden }).eq('id', id).select('id');
+            if (error || !data || !data.length) { alert('Не удалось изменить: ' + (error ? error.message : 'нет прав')); return; }
+            row.hidden = !row.hidden;
+            render();
+            return;
+        }
+        if (e.target.closest('.r-del')) {
+            if (!confirm('Удалить отзыв насовсем?')) return;
+            const { data, error } = await supabase.from('reviews').delete().eq('id', id).select('id');
+            if (error || !data || !data.length) { alert('Не удалось удалить: ' + (error ? error.message : 'нет прав')); return; }
+            rows = rows.filter(r => String(r.id) !== id);
+            render();
+        }
     });
 
     document.getElementById('loc-filter').addEventListener('change', render);
