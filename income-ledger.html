@@ -1,44 +1,78 @@
 <!DOCTYPE html>
-<!-- income.html — v2.0.0 — 2026-10-03 — Приход: выбор зоны -->
+<!-- income-ledger.html — v3.0.0 — 2026-10-13 — журнал Лавки / Сувениров (?line=store|souvenirs) -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Приход</title>
+<title>GY-GY Club — Журнал прихода</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-    :root { --gold: #FFD700; --gold-dim: #8a6f24; }
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
     .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
     .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
     .back-arrow { color: var(--gold); cursor: pointer; }
     .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
-    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
-    .grid { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; }
-    .block-btn { background: #0a0a0a; border: 1px solid var(--gold-dim); color: var(--gold); padding: 16px; text-align: center; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; text-decoration: none; display: block; }
-    .block-btn:hover { border-color: var(--gold); }
-    .block-btn small { display: block; margin-top: 4px; font-family: 'Share Tech Mono', monospace; font-size: 9px; opacity: 0.6; font-weight: 400; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 16px; text-shadow: 0 0 10px rgba(255,215,0,0.4); text-align: center; }
+    .panel { width: 100%; max-width: 760px; }
+    .manual { display: grid; grid-template-columns: 1fr 2fr 1fr auto; gap: 6px; margin-bottom: 18px; padding: 10px; border: 1px dashed var(--gold-dim); }
+    .manual input { padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; min-width: 0; }
+    .manual button { background: var(--gold); color: #000; border: 1px solid var(--gold); padding: 7px 12px; font-weight: 900; cursor: pointer; font-family: inherit; font-size: 11px; text-transform: uppercase; }
+    .manual-note { font-size: 9px; color: #9a9a8a; margin: -12px 0 14px; }
+    @media (max-width: 600px) { .manual { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
 <div class="header-right">GY-GY</div>
-<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-income">&lt;&lt;</a></div>
 <div class="page-wrap">
-    <div class="title">ПРИХОД</div>
-    <div class="grid">
-        <a class="block-btn" href="income-atelier.html">1. АТЕЛЬЕ<small>Параметры цены, предпросмотр, заказы</small></a>
-        <a class="block-btn" href="income-ledger.html?line=store">2. ЛАВКА ДРЕВНОСТЕЙ<small>Журнал продаж</small></a>
-        <a class="block-btn" href="income-ledger.html?line=souvenirs">3. СУВЕНИРЫ<small>Журнал продаж</small></a>
+    <div class="title" id="title">ПРИХОД</div>
+    <div class="panel">
+        <div class="manual">
+            <input type="text" id="m-number" placeholder="№ заказа (необязательно)">
+            <input type="text" id="m-desc" placeholder="Что продано">
+            <input type="number" id="m-amount" placeholder="Сумма, €" min="0" step="0.01">
+            <button id="m-add">Добавить</button>
+        </div>
+        <div class="manual-note">Ручной ввод: у этого направления пока нет своего интерфейса заказа.</div>
+        <div id="journal"></div>
     </div>
 </div>
 <script type="module">
     import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+    import { renderJournal } from './modules/incomeJournal.js';
+
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
+
+    const LINES = { store: 'ЛАВКА ДРЕВНОСТЕЙ', souvenirs: 'СУВЕНИРЫ' };
+    const param = new URLSearchParams(location.search).get('line');
+    const line = LINES[param] ? param : 'store';
+    document.getElementById('title').textContent = `ПРИХОД — ${LINES[line]}`;
+
+    const journal = document.getElementById('journal');
+    renderJournal(journal, { line });
+
+    document.getElementById('m-add').addEventListener('click', async () => {
+        const desc = document.getElementById('m-desc').value.trim();
+        const amount = parseFloat(document.getElementById('m-amount').value) || 0;
+        const number = document.getElementById('m-number').value.trim() || ('M-' + Date.now().toString(36).toUpperCase());
+        if (!desc || amount <= 0) { alert('Укажите, что продано, и сумму.'); return; }
+        const { error } = await supabase.from('income_entries').insert({
+            business_line: line, order_number: number,
+            atelier_order: { description: desc }, total_amount: amount
+        });
+        if (error) { alert('Не удалось добавить: ' + error.message); return; }
+        document.getElementById('m-desc').value = '';
+        document.getElementById('m-amount').value = '';
+        document.getElementById('m-number').value = '';
+        renderJournal(journal, { line });
+    });
+
     document.getElementById('btn-back').addEventListener('click', () => history.back());
-       document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'income.html');
+    document.getElementById('btn-income').addEventListener('click', () => window.location.href = 'income.html');
 </script>
 </body>
 </html>
-
