@@ -1,11 +1,12 @@
 // modules/reviewBox.js
-// v1.0.0 — 2026-10-14
+// v2.0.0 — 2026-10-14
 // mountReviewBox(контейнер, { location, getContext })
-// location: 'atelier' | 'store' | 'souvenirs' | 'bar' | 'other'
-// getContext() — необязательная функция: что клиент смотрел (попадёт в отзыв).
-// Оставить отзыв может любой посетитель; читают их только сотрудники (Бухгалтерия → Отзывы).
+// Форма отзыва + последние публичные отзывы этого места.
+// Скрытые сотрудником (hidden=true) посетителям не показываются.
 
 import { supabase } from '../core/supabase-init.js';
+
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function injectStyles() {
     if (document.getElementById('rv-styles')) return;
@@ -24,6 +25,12 @@ function injectStyles() {
         .rv-status { font-size: 10px; min-height: 13px; color: #F0EAD6; }
         .rv-status.rv-ok { color: #6fd48a; }
         .rv-status.rv-err { color: #e74c3c; }
+        .rv-list { margin-top: 6px; border-top: 1px dashed #8a6f24; padding-top: 8px; max-height: 260px; overflow-y: auto; }
+        .rv-item { padding: 6px 0; border-bottom: 1px solid #1a1a1a; font-size: 11px; color: #F0EAD6; line-height: 1.45; }
+        .rv-item .rv-meta { font-size: 9px; color: #9a9a8a; margin-bottom: 2px; }
+        .rv-item .rv-stars { color: #FFD700; }
+        .rv-item .rv-text { white-space: pre-wrap; word-break: break-word; }
+        .rv-empty { font-size: 10px; color: #777; }
     `;
     document.head.appendChild(s);
 }
@@ -33,7 +40,7 @@ export function mountReviewBox(container, { location = 'other', getContext = nul
     injectStyles();
     container.innerHTML = `
         <details class="rv">
-            <summary>Leave a review</summary>
+            <summary>Reviews</summary>
             <div class="rv-body">
                 <select class="rv-rating">
                     <option value="">Rating (optional)</option>
@@ -47,10 +54,36 @@ export function mountReviewBox(container, { location = 'other', getContext = nul
                 <input class="rv-name" type="text" maxlength="60" placeholder="Name (optional)">
                 <button class="rv-send" type="button">Send</button>
                 <div class="rv-status"></div>
+                <div class="rv-list"></div>
             </div>
         </details>`;
 
     const q = (sel) => container.querySelector(sel);
+
+    async function loadList() {
+        const box = q('.rv-list');
+        const { data, error } = await supabase.from('reviews')
+            .select('rating, body, author_name, created_at')
+            .eq('location', location)
+            .order('created_at', { ascending: false })
+            .limit(10);
+        if (error) { box.innerHTML = ''; return; }
+        if (!data || !data.length) { box.innerHTML = '<div class="rv-empty">No reviews yet — be the first.</div>'; return; }
+        box.innerHTML = data.map(r => `
+            <div class="rv-item">
+                <div class="rv-meta">
+                    ${r.rating ? `<span class="rv-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span> ` : ''}
+                    ${esc(r.author_name || 'Guest')} · ${esc(new Date(r.created_at).toLocaleDateString())}
+                </div>
+                <div class="rv-text">${esc(r.body)}</div>
+            </div>`).join('');
+    }
+
+    let loaded = false;
+    q('details.rv').addEventListener('toggle', (e) => {
+        if (e.target.open && !loaded) { loaded = true; loadList(); }
+    });
+
     q('.rv-send').addEventListener('click', async () => {
         const status = q('.rv-status');
         status.className = 'rv-status';
@@ -82,5 +115,7 @@ export function mountReviewBox(container, { location = 'other', getContext = nul
         q('.rv-text').value = '';
         status.textContent = 'Thank you for your review!';
         status.classList.add('rv-ok');
+        loaded = true;
+        loadList();
     });
 }
