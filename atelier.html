@@ -1298,8 +1298,12 @@
     renderNecklineFitFields();
     renderGarmentPhoto();
     renderPrintOverlay();
-    renderSpecPanel();
+      renderSpecPanel();
     renderPrintStrip();
+    mountThumbBackground(document.getElementById('print-strip'), {
+        getColor: () => document.getElementById('select-color').value
+    });
+</script>
 </script>
 
 </body>
