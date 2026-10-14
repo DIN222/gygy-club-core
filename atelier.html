@@ -429,8 +429,7 @@
     import { openPaymentTerminal } from './modules/paymentTerminal.js';
     import { mountReviewBox } from './modules/reviewBox.js';
     import { loadPricing, computeUnitPrice, computeBreakdown, DEFAULTS } from './core/pricing.js';
-      import { mountThumbBackground } from './modules/thumbBg.js';
-
+     
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
@@ -846,6 +845,9 @@
             wrap.className = 'print-icon-wrap';
             const cell = document.createElement('div');
             cell.className = 'print-icon';
+                      cell.className = 'print-icon';
+            if (item.bg === 'light') cell.style.background = '#ececec';
+            else if (item.bg === 'dark') cell.style.background = '#151515';
             cell.innerHTML = `<img src="${item.image_url}" loading="lazy" alt="" onerror="this.closest('.print-icon-wrap').remove()">`;
             cell.addEventListener('click', () => {
                 state.currentPrint = { source: 'club', design: item.image_url, category: item.category, shared: true };
@@ -1301,12 +1303,8 @@
     renderNecklineFitFields();
     renderGarmentPhoto();
     renderPrintOverlay();
-      renderSpecPanel();
+          renderSpecPanel();
     renderPrintStrip();
-    mountThumbBackground(document.getElementById('print-strip'), {
-        getColor: () => document.getElementById('select-color').value
-    });
-</script>
 </script>
 
 </body>
