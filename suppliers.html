@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
-  suppliers.html — v2.0.0 — 2026-10-12
+  suppliers.html — v3.0.0 — 2026-10-15
   Поставщики: 10 слотов + заказы поставщику (ручное заполнение).
-  «Принять на склад» вызывает функцию receive_supplier_order в базе:
-  приход на склад (сырьё), запись в «Расход», доставка распределяется
-  по позициям пропорционально стоимости и входит в себестоимость.
+  Блок данных поставщика визуально выделен; ссылки — синие с подчёркиванием;
+  сайт и мессенджер поставщика дублируются у поля «Откуда информация» в заказе.
+  «Принять на склад» вызывает функцию receive_supplier_order в базе.
 -->
 <html lang="en">
 <head>
@@ -24,6 +24,10 @@
     .hint { font-size: 10px; color: var(--ivory); opacity: 0.65; margin-bottom: 14px; text-align: center; max-width: 520px; line-height: 1.5; }
     .panel { width: 100%; max-width: 680px; }
 
+    /* традиционные ссылки: синие, подчёркнутые */
+    .lnk { color: #4da3ff; text-decoration: underline; word-break: break-all; }
+    .lnk:hover { color: #7dbcff; }
+
     details.slot { border: 1px solid var(--gold-dim); background: #0a0a0a; margin-bottom: 8px; }
     details.slot > summary { list-style: none; cursor: pointer; padding: 11px 10px; display: flex; gap: 10px; align-items: baseline; font-size: 12px; }
     details.slot > summary::-webkit-details-marker { display: none; }
@@ -33,6 +37,10 @@
     .s-title.empty { color: #666; font-weight: 400; }
     .s-sub { color: var(--ivory); opacity: 0.7; font-size: 10px; margin-left: auto; text-align: right; }
 
+    /* блок данных поставщика — выделен */
+    .sup-block { margin: 10px; background: #1b1608; border: 1px solid var(--gold); border-left: 5px solid var(--gold); }
+    .sup-head { padding: 6px 10px; font-size: 10px; font-weight: 900; letter-spacing: 2px; color: #000; background: var(--gold); text-transform: uppercase; }
+
     .fields, .ord-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .fields { padding: 10px; }
     .fields label, .ord-fields label, .fields-note label { display: block; font-size: 9px; color: #9a9a8a; margin-bottom: 2px; text-transform: uppercase; }
@@ -40,8 +48,8 @@
         width: 100%; padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
     }
     .fields .wide { grid-column: 1 / -1; }
-    .link-open { display: inline-block; margin-top: 4px; font-size: 10px; color: var(--gold); text-decoration: none; border: 1px solid var(--gold-dim); padding: 2px 7px; }
-    .link-open:hover { border-color: var(--gold); }
+    .fields .lnk, .src-links .lnk { font-size: 10px; }
+    .fields .lnk { display: inline-block; margin-top: 4px; }
     .bar { padding: 0 10px 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .btn-save { background: var(--gold); color: #000; border: 1px solid var(--gold); padding: 8px 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; font-family: inherit; font-size: 11px; }
     .btn-release { background: #000; color: #9a9a8a; border: 1px solid #333; padding: 7px 12px; cursor: pointer; font-family: inherit; font-size: 10px; }
@@ -66,6 +74,7 @@
     .chip.dim { border-color: #555; color: #777; }
     .ord-body { padding: 8px; }
     .ro-line { font-size: 11px; color: var(--ivory); padding: 2px 0; }
+    .src-links { margin-top: 4px; font-size: 10px; color: #9a9a8a; line-height: 1.6; }
     table.items { width: 100%; border-collapse: collapse; margin: 8px 0 4px; }
     table.items th { font-size: 9px; text-align: left; color: #9a9a8a; padding: 2px 3px; text-transform: uppercase; }
     table.items td { padding: 2px 3px; }
@@ -128,6 +137,23 @@
     function messengerLink(m) {
         return /^(https?:\/\/|t\.me\/|wa\.me\/)/i.test((m || '').trim()) ? safeUrl(m) : '';
     }
+    function linkText(u) {
+        const t = u.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+        return t.length > 48 ? t.slice(0, 47) + '…' : t;
+    }
+    function linkHtml(url) {
+        return url ? `<a class="lnk" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(linkText(url))}</a>` : '';
+    }
+    // Сайт и мессенджер поставщика — для поля «Откуда информация» в заказе
+    function sourceLinks(sup) {
+        const parts = [];
+        const site = safeUrl(sup.website);
+        const msg = messengerLink(sup.messenger);
+        if (site) parts.push('Сайт: ' + linkHtml(site));
+        if (msg) parts.push('Мессенджер: ' + linkHtml(msg));
+        else if (sup.messenger) parts.push('Мессенджер: ' + esc(sup.messenger));
+        return parts.length ? `<div class="src-links">${parts.join('<br>')}</div>` : '';
+    }
 
     // ---------- заказы ----------
     function itemRowHtml(it = {}) {
@@ -140,7 +166,7 @@
         </tr>`;
     }
 
-    function orderHtml(o) {
+    function orderHtml(o, sup) {
         const items = o.supplier_order_items || [];
         const goods = items.reduce((s, i) => s + Number(i.quantity) * Number(i.unit_price), 0);
         const total = goods + Number(o.delivery_cost || 0);
@@ -157,6 +183,7 @@
                 <div class="ro-line">Доставка: ${eur(o.delivery_cost)}</div>
                 ${o.received_date ? `<div class="ro-line">Принят: ${esc(o.received_date)}</div>` : ''}
                 ${o.source ? `<div class="ro-line">Источник: ${esc(o.source)}</div>` : ''}
+                ${sourceLinks(sup)}
                 ${o.note ? `<div class="ro-line">Заметка: ${esc(o.note)}</div>` : ''}
                 <div class="ord-bar">${o.status === 'cancelled' ? '<button class="btn-mini btn-delete-order" type="button">Удалить</button>' : ''}<span class="ord-status"></span></div>
             </div></details>`;
@@ -166,7 +193,10 @@
             <div class="ord-fields">
                 <div><label>Дата заказа</label><input type="date" data-of="order_date" value="${esc(o.order_date)}"></div>
                 <div><label>№ заказа / счёта у поставщика</label><input type="text" data-of="reference" value="${esc(o.reference || '')}"></div>
-                <div><label>Откуда информация</label><select data-of="source"><option value=""></option>${SOURCES.map(s => `<option${o.source === s ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div><label>Откуда информация</label>
+                    <select data-of="source"><option value=""></option>${SOURCES.map(s => `<option${o.source === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
+                    ${sourceLinks(sup)}
+                </div>
                 <div><label>Доставка, €</label><input type="number" step="0.01" min="0" data-of="delivery_cost" value="${Number(o.delivery_cost || 0)}"></div>
             </div>
             <table class="items">
@@ -191,7 +221,7 @@
         const list = orders.filter(o => o.supplier_id === r.id);
         return `<div class="orders">
             <div class="orders-h">Заказы поставщику</div>
-            ${list.map(orderHtml).join('') || '<div class="orders-note">Заказов пока нет.</div>'}
+            ${list.map(o => orderHtml(o, r)).join('') || '<div class="orders-note">Заказов пока нет.</div>'}
             <button class="btn-mini btn-new-order" type="button">+ Новый заказ</button>
         </div>`;
     }
@@ -262,26 +292,29 @@
                 <span class="s-title${title ? '' : ' empty'}">${title ? esc(title) : '— свободно —'}</span>
                 <span class="s-sub">${esc(sub)}</span>
             </summary>
-            <div class="fields">
-                <div class="wide"><label>Что поставляет (название слота)</label><input type="text" data-f="slot_title" placeholder="${esc(PLACEHOLDERS[n] || 'что поставляет')}" value="${esc(title)}"></div>
-                <div><label>Наименование поставщика</label><input type="text" data-f="name" value="${esc(supplierName)}"></div>
-                <div><label>Контактное лицо</label><input type="text" data-f="contact_person" value="${esc(r.contact_person || '')}"></div>
-                <div><label>Телефон</label><input type="tel" data-f="phone" value="${esc(r.phone || '')}"></div>
-                <div>
-                    <label>Сайт (ссылка)</label><input type="text" data-f="website" value="${esc(r.website || '')}">
-                    ${site ? `<a class="link-open" href="${esc(site)}" target="_blank" rel="noopener noreferrer">открыть ↗</a>` : ''}
+            <div class="sup-block">
+                <div class="sup-head">Поставщик</div>
+                <div class="fields">
+                    <div class="wide"><label>Что поставляет (название слота)</label><input type="text" data-f="slot_title" placeholder="${esc(PLACEHOLDERS[n] || 'что поставляет')}" value="${esc(title)}"></div>
+                    <div><label>Наименование поставщика</label><input type="text" data-f="name" value="${esc(supplierName)}"></div>
+                    <div><label>Контактное лицо</label><input type="text" data-f="contact_person" value="${esc(r.contact_person || '')}"></div>
+                    <div><label>Телефон</label><input type="tel" data-f="phone" value="${esc(r.phone || '')}"></div>
+                    <div>
+                        <label>Сайт (ссылка)</label><input type="text" data-f="website" value="${esc(r.website || '')}">
+                        ${linkHtml(site)}
+                    </div>
+                    <div class="wide">
+                        <label>Мессенджер / соцсеть (ссылка или @ник) — если сайта нет</label>
+                        <input type="text" data-f="messenger" value="${esc(r.messenger || '')}">
+                        ${linkHtml(msg)}
+                    </div>
+                    <div class="wide"><label>Заметки (условия, сроки, минимальная партия)</label><textarea rows="3" data-f="notes">${esc(r.notes || '')}</textarea></div>
                 </div>
-                <div class="wide">
-                    <label>Мессенджер / соцсеть (ссылка или @ник) — если сайта нет</label>
-                    <input type="text" data-f="messenger" value="${esc(r.messenger || '')}">
-                    ${msg ? `<a class="link-open" href="${esc(msg)}" target="_blank" rel="noopener noreferrer">открыть ↗</a>` : ''}
+                <div class="bar">
+                    <button class="btn-save" type="button">Сохранить</button>
+                    ${r.id ? '<button class="btn-release" type="button">Освободить слот</button>' : ''}
+                    <span class="status"></span>
                 </div>
-                <div class="wide"><label>Заметки (условия, сроки, минимальная партия)</label><textarea rows="3" data-f="notes">${esc(r.notes || '')}</textarea></div>
-            </div>
-            <div class="bar">
-                <button class="btn-save" type="button">Сохранить</button>
-                ${r.id ? '<button class="btn-release" type="button">Освободить слот</button>' : ''}
-                <span class="status"></span>
             </div>
             ${ordersHtml(r)}
         </details>`;
