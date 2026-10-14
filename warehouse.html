@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <!--
   warehouse.html
-  v1.0.0 — 2026-10-01
-  Склад: текущие остатки (сырьё + готовая продукция), ручной приход
-  закупленного сырья (временно — пока нет автосвязи с Расходом),
-  возврат готовой продукции обратно на склад.
+  v2.0.0 — 2026-10-15
+  Две вкладки: «Остатки» (приход сырья, возврат готовой продукции, текущие остатки)
+  и «Потребность в бланках» (сколько штук каких размеров и цветов заказывали клиенты).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Склад v1.0.0</title>
+<title>GY-GY Club — Склад</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
     :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
@@ -21,18 +20,32 @@
     .back-arrow { color: var(--gold); cursor: pointer; }
     .back-arrow:hover { opacity: 0.6; }
     .page-wrap { position: relative; min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
-    .title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 20px; margin-bottom: 16px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .title { font-family: 'Cinzel', serif; font-weight: 900; font-size: 20px; margin-bottom: 14px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
     .panel { width: 100%; max-width: 640px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .tab { flex: 1; background: #0a0a0a; color: var(--gold); border: 1px solid var(--gold-dim); padding: 10px; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+    .tab.active { background: var(--gold); color: #000; border-color: var(--gold); }
+    .pane { display: none; }
+    .pane.active { display: block; }
     .section-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px; }
+    .hint { font-size: 10px; color: var(--ivory); opacity: 0.7; line-height: 1.5; margin-bottom: 8px; }
     .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-    .form-grid input, .form-grid select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 10px; }
+    .form-grid input, .form-grid select, .filters select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 10px; }
+    .filters { margin-bottom: 12px; }
+    .filters select { font-size: 11px; }
     .btn-cfg { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 8px 12px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-family: inherit; font-size: 11px; }
     .btn-cfg:hover { border-color: var(--gold); }
     table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
     th { text-align: left; color: var(--gold-dim); padding: 6px 4px; border-bottom: 1px solid var(--gold-dim); font-size: 10px; text-transform: uppercase; }
     td { padding: 6px 4px; border-bottom: 1px solid #1a1a1a; color: var(--ivory); }
     td.amount { color: var(--gold); text-align: right; white-space: nowrap; }
+    td.num, th.num { text-align: right; }
+    tr.total-row td { font-weight: 900; color: var(--gold); border-top: 1px solid var(--gold-dim); }
     .low-stock { color: #e74c3c; }
+    .block { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 10px; margin-bottom: 12px; }
+    .block h3 { font-family: 'Cinzel', serif; font-size: 14px; margin-bottom: 4px; }
+    .stock-line { font-size: 10px; color: var(--ivory); opacity: 0.75; margin-bottom: 8px; }
+    .note-err { font-size: 11px; color: #e74c3c; text-align: center; padding: 14px; }
 </style>
 </head>
 <body>
@@ -47,41 +60,78 @@
     <div class="title">СКЛАД</div>
 
     <div class="panel">
-        <div class="section-label">Приход сырья (вручную, пока не связано с Расходом автоматически)</div>
-        <div class="form-grid">
-            <input type="text" id="recv-name" placeholder="Название (напр. Ткань хлопок)">
-            <input type="number" id="recv-qty" placeholder="Кол-во" min="0" step="0.01">
-            <input type="text" id="recv-unit" placeholder="Ед. (м, шт, кг)" value="шт">
-            <input type="number" id="recv-cost" placeholder="Цена за ед., €" min="0" step="0.01">
-        </div>
-        <button class="btn-cfg" id="btn-receive">ПРИНЯТЬ НА СКЛАД</button>
-
-        <div class="section-label">Возврат готовой продукции</div>
-        <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
-            <input type="text" id="return-name" placeholder="Название изделия">
-            <input type="number" id="return-qty" placeholder="Кол-во" min="0" step="1">
-            <button class="btn-cfg" id="btn-return">ВЕРНУТЬ НА СКЛАД</button>
+        <div class="tabs">
+            <button class="tab active" data-tab="stock" type="button">Остатки</button>
+            <button class="tab" data-tab="blanks" type="button">Потребность в бланках</button>
         </div>
 
-        <div class="section-label">Текущие остатки — Сырьё</div>
-        <table>
-            <thead><tr><th>Название</th><th>Кол-во</th><th>Ед.</th><th>Ср. цена</th></tr></thead>
-            <tbody id="raw-rows"></tbody>
-        </table>
+        <div class="pane active" id="pane-stock">
+            <div class="section-label">Приход сырья вручную</div>
+            <div class="hint">Закупки, которые шли через «Заказы поставщику» (Поставщики), уже на складе — вручную их вводить не нужно, иначе получится двойной учёт.</div>
+            <div class="form-grid">
+                <input type="text" id="recv-name" placeholder="Название (напр. Ткань хлопок)">
+                <input type="number" id="recv-qty" placeholder="Кол-во" min="0" step="0.01">
+                <input type="text" id="recv-unit" placeholder="Ед. (м, шт, кг)" value="шт">
+                <input type="number" id="recv-cost" placeholder="Цена за ед., €" min="0" step="0.01">
+            </div>
+            <button class="btn-cfg" id="btn-receive">ПРИНЯТЬ НА СКЛАД</button>
 
-        <div class="section-label">Текущие остатки — Готовая продукция</div>
-        <table>
-            <thead><tr><th>Название</th><th>Кол-во</th><th>Ед.</th><th>Себест. ед.</th></tr></thead>
-            <tbody id="finished-rows"></tbody>
-        </table>
+            <div class="section-label">Возврат готовой продукции</div>
+            <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
+                <input type="text" id="return-name" placeholder="Название изделия">
+                <input type="number" id="return-qty" placeholder="Кол-во" min="0" step="1">
+                <button class="btn-cfg" id="btn-return">ВЕРНУТЬ НА СКЛАД</button>
+            </div>
+
+            <div class="section-label">Текущие остатки — Сырьё</div>
+            <table>
+                <thead><tr><th>Название</th><th>Кол-во</th><th>Ед.</th><th>Ср. цена</th></tr></thead>
+                <tbody id="raw-rows"></tbody>
+            </table>
+
+            <div class="section-label">Текущие остатки — Готовая продукция</div>
+            <table>
+                <thead><tr><th>Название</th><th>Кол-во</th><th>Ед.</th><th>Себест. ед.</th></tr></thead>
+                <tbody id="finished-rows"></tbody>
+            </table>
+        </div>
+
+        <div class="pane" id="pane-blanks">
+            <div class="hint">Сколько штук каких размеров и цветов заказывали клиенты Ателье за период. Ориентир для закупки бланков.</div>
+            <div class="filters">
+                <select id="period">
+                    <option value="all">За всё время</option>
+                    <option value="90">Последние 90 дней</option>
+                    <option value="30">Последние 30 дней</option>
+                    <option value="7">Последние 7 дней</option>
+                </select>
+            </div>
+            <div class="note-err" id="blanks-note" style="display:none;"></div>
+            <div id="blanks-blocks"></div>
+        </div>
     </div>
 </div>
 
 <script type="module">
+    import { requireAuth } from './core/auth.js';
     import { supabase } from './core/supabase-init.js';
-  import { requireAuth, signOut } from './core/auth.js';
-  const session = await requireAuth();
-if (!session) throw new Error('redirecting to login');
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // ---------- вкладки ----------
+    document.querySelectorAll('.tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
+            document.getElementById('pane-stock').classList.toggle('active', btn.dataset.tab === 'stock');
+            document.getElementById('pane-blanks').classList.toggle('active', btn.dataset.tab === 'blanks');
+        });
+    });
+
+    // ---------- остатки ----------
+    let finishedStock = {};
 
     async function upsertStock(item_name, item_type, business_line, deltaQty, newUnitCost, unit) {
         const { data: existing } = await supabase
@@ -148,27 +198,84 @@ if (!session) throw new Error('redirecting to login');
         const raw = (data || []).filter(r => r.item_type === 'raw_material');
         const finished = (data || []).filter(r => r.item_type === 'finished_good');
 
+        finishedStock = {};
+        finished.forEach(r => { finishedStock[r.item_name] = Number(r.quantity); });
+
         document.getElementById('raw-rows').innerHTML = raw.map(r => `
             <tr>
-                <td>${r.item_name}</td>
+                <td>${esc(r.item_name)}</td>
                 <td class="${Number(r.quantity) <= 0 ? 'low-stock' : ''}">${Number(r.quantity).toFixed(2)}</td>
-                <td>${r.unit}</td>
+                <td>${esc(r.unit)}</td>
                 <td class="amount">€${Number(r.avg_unit_cost).toFixed(2)}</td>
             </tr>`).join('') || '<tr><td colspan="4" style="color:#666;">Пусто</td></tr>';
 
         document.getElementById('finished-rows').innerHTML = finished.map(r => `
             <tr>
-                <td>${r.item_name}</td>
+                <td>${esc(r.item_name)}</td>
                 <td class="${Number(r.quantity) <= 0 ? 'low-stock' : ''}">${Number(r.quantity).toFixed(0)}</td>
-                <td>${r.unit}</td>
+                <td>${esc(r.unit)}</td>
                 <td class="amount">€${Number(r.avg_unit_cost).toFixed(2)}</td>
             </tr>`).join('') || '<tr><td colspan="4" style="color:#666;">Пусто</td></tr>';
+
+        renderBlanks();
     }
 
+    // ---------- потребность в бланках ----------
+    const GARMENTS = [['tshirt', 'ФУТБОЛКА'], ['hoodie', 'ХУДИ'], ['longsleeve', 'ЛОНГСЛИВ']];
+    const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+    let orders = [];
+
+    async function loadOrders() {
+        const { data, error } = await supabase.from('income_entries')
+            .select('atelier_order, order_date').eq('business_line', 'atelier')
+            .order('order_date', { ascending: false }).limit(2000);
+        const note = document.getElementById('blanks-note');
+        if (error) {
+            console.error(error);
+            note.style.display = 'block';
+            note.textContent = 'Не удалось загрузить заказы: ' + (error.message || '');
+            return;
+        }
+        note.style.display = 'none';
+        orders = data || [];
+        renderBlanks();
+    }
+
+    function renderBlanks() {
+        const period = document.getElementById('period').value;
+        const cutoff = period === 'all' ? 0 : Date.now() - Number(period) * 86400000;
+        const rows = orders.filter(r => r.atelier_order && new Date(r.order_date).getTime() >= cutoff);
+
+        document.getElementById('blanks-blocks').innerHTML = GARMENTS.map(([key, title]) => {
+            const matrix = {};
+            SIZES.forEach(s => { matrix[s] = { black: 0, white: 0 }; });
+            rows.filter(r => r.atelier_order.garment === key).forEach(r => {
+                const o = r.atelier_order, q = Number(o.quantity) || 1;
+                if (matrix[o.size] && matrix[o.size][o.color] !== undefined) matrix[o.size][o.color] += q;
+            });
+            let tb = 0, tw = 0;
+            const body = SIZES.map(s => {
+                tb += matrix[s].black; tw += matrix[s].white;
+                return `<tr><td>${s}</td><td class="num">${matrix[s].black}</td><td class="num">${matrix[s].white}</td><td class="num">${matrix[s].black + matrix[s].white}</td></tr>`;
+            }).join('');
+            const stock = finishedStock[key];
+            return `<div class="block">
+                <h3>${title}</h3>
+                <div class="stock-line">Готовой продукции на складе: ${stock != null ? stock : 'нет данных'}</div>
+                <table>
+                    <thead><tr><th>Размер</th><th class="num">Чёрный</th><th class="num">Белый</th><th class="num">Всего</th></tr></thead>
+                    <tbody>${body}<tr class="total-row"><td>ИТОГО</td><td class="num">${tb}</td><td class="num">${tw}</td><td class="num">${tb + tw}</td></tr></tbody>
+                </table>
+            </div>`;
+        }).join('');
+    }
+
+    document.getElementById('period').addEventListener('change', renderBlanks);
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
 
     loadStock();
+    loadOrders();
 </script>
 
 </body>
