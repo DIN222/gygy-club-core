@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<!-- prints-admin.html — v1.0.0 — 2026-10-14 — Принты клуба: просмотр и удаление (только сотрудники) -->
+<!--
+  prints-admin.html — v2.0.0 — 2026-10-15
+  Принты клуба (только сотрудники): просмотр, фон под принтом (его увидят клиенты
+  в Ателье), проверка на пустые, удаление.
+  Фон: light / dark / check (Grid = по умолчанию, в базе null).
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -16,18 +21,26 @@
     .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
     .title { font-family: 'Cinzel', serif; font-size: 22px; margin-bottom: 14px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
     .panel { width: 100%; max-width: 900px; }
-    .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
     .bar select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
     .btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 7px 12px; font-size: 11px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
     .btn:hover { border-color: var(--gold); }
     .btn.danger { color: #e74c3c; border-color: #e74c3c; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .progress { font-size: 11px; color: var(--ivory); }
+    .bulk { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--ivory); margin-bottom: 12px; }
+    .bulk span { margin-right: 4px; opacity: 0.8; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
     .pc { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 6px; }
     .pc.flagged { border-color: #e74c3c; }
     .thumb { width: 100%; aspect-ratio: 1; background: repeating-conic-gradient(#5a5a5a 0% 25%, #8a8a8a 0% 50%) 50% / 14px 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .thumb.bg-light { background: #ececec; }
+    .thumb.bg-dark { background: #151515; }
     .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .bgsel { display: flex; gap: 3px; margin-top: 5px; }
+    .bgb { flex: 1; background: #000; color: #9a9a8a; border: 1px solid #333; padding: 3px 0; font-size: 9px; cursor: pointer; font-family: inherit; }
+    .bgb:hover { color: var(--gold); border-color: var(--gold-dim); }
+    .bgb.on { background: var(--gold); color: #000; border-color: var(--gold); }
     .meta { font-size: 9px; color: #9a9a8a; margin: 5px 0; line-height: 1.4; }
     .flag { font-size: 10px; color: #e74c3c; margin-bottom: 4px; }
     .del { width: 100%; background: #000; color: #9a9a8a; border: 1px solid #333; padding: 4px; font-size: 10px; cursor: pointer; font-family: inherit; }
@@ -52,6 +65,12 @@
             <button class="btn danger" id="btn-del-flagged" disabled>Удалить помеченные</button>
             <span class="progress" id="progress"></span>
         </div>
+        <div class="bulk" id="bulk-bg">
+            <span>Фон всем в списке (клиенты увидят его в Ателье):</span>
+            <button class="bgb" type="button" data-bg="light">Light</button>
+            <button class="bgb" type="button" data-bg="dark">Dark</button>
+            <button class="bgb" type="button" data-bg="check">Grid</button>
+        </div>
         <div class="note" id="note" style="display:none;"></div>
         <div class="grid" id="grid"></div>
     </div>
@@ -65,21 +84,30 @@
 
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const safeHttps = (u) => /^https:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
+    const BG_OPTIONS = [['light', 'Light'], ['dark', 'Dark'], ['check', 'Grid']];
 
     let rows = [];
     const flags = new Map(); // id -> причина
 
-    function render() {
+    function visibleRows() {
         const f = document.getElementById('cat-filter').value;
-        const shown = rows.filter(r => {
+        return rows.filter(r => {
             const cat = r.category === 'embroidery' ? 'embroidery' : 'dtf';
             return f === 'all' || cat === f;
         });
+    }
+
+    function render() {
+        const shown = visibleRows();
         document.getElementById('grid').innerHTML = shown.map(r => {
             const flag = flags.get(r.id);
             const cat = r.category === 'embroidery' ? 'Вышивка' : 'Принт';
+            const cur = r.bg || 'check';
+            const bgClass = r.bg === 'light' ? ' bg-light' : (r.bg === 'dark' ? ' bg-dark' : '');
             return `<div class="pc${flag ? ' flagged' : ''}" data-id="${esc(r.id)}">
-                <div class="thumb"><img src="${esc(safeHttps(r.image_url))}" alt="" loading="lazy"></div>
+                <div class="thumb${bgClass}"><img src="${esc(safeHttps(r.image_url))}" alt="" loading="lazy"></div>
+                <div class="bgsel">${BG_OPTIONS.map(([v, l]) =>
+                    `<button type="button" class="bgb${cur === v ? ' on' : ''}" data-bg="${v}">${l}</button>`).join('')}</div>
                 <div class="meta">${cat} · ${esc(new Date(r.added_at).toLocaleDateString())}<br>${esc(r.from_user_name || '—')} · ♥ ${r.likes || 0}${r.public_likes_allowed ? ' · публичный' : ''}</div>
                 ${flag ? `<div class="flag">⚠ ${esc(flag)}</div>` : ''}
                 <button class="del" type="button">Удалить</button>
@@ -106,6 +134,29 @@
         render();
     }
 
+    // ---------- фон под принтом ----------
+    async function setBg(ids, bg) {
+        const value = bg === 'check' ? null : bg;
+        const { data, error } = await supabase.from('club_prints').update({ bg: value }).in('id', ids).select('id');
+        if (error || !data || data.length === 0) {
+            throw new Error(error ? error.message : 'нет прав — проверьте SQL (политика update и колонка bg)');
+        }
+        rows.forEach(r => { if (ids.includes(r.id)) r.bg = value; });
+    }
+
+    document.getElementById('bulk-bg').addEventListener('click', async (e) => {
+        const b = e.target.closest('.bgb');
+        if (!b) return;
+        const shown = visibleRows();
+        const label = BG_OPTIONS.find(o => o[0] === b.dataset.bg)[1];
+        if (!shown.length || !confirm(`Задать фон «${label}» для принтов в списке (${shown.length})? Клиенты увидят его в Ателье.`)) return;
+        try {
+            await setBg(shown.map(r => r.id), b.dataset.bg);
+            render();
+        } catch (err) { alert('Не удалось задать фон: ' + err.message); }
+    });
+
+    // ---------- проверка на пустые ----------
     function loadImage(src) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -160,6 +211,7 @@
         render();
     }
 
+    // ---------- удаление ----------
     async function deleteRow(r) {
         const { error: storageError } = await supabase.storage.from('club-prints').remove([r.storage_path]);
         if (storageError) console.warn('[PrintsAdmin] Файл не удалён из хранилища', storageError);
@@ -168,17 +220,29 @@
     }
 
     document.getElementById('grid').addEventListener('click', async (e) => {
-        const btn = e.target.closest('.del');
-        if (!btn) return;
-        const id = btn.closest('.pc').dataset.id;
-        const r = rows.find(x => String(x.id) === id);
-        if (!r || !confirm('Удалить принт насовсем?')) return;
-        try {
-            await deleteRow(r);
-            rows = rows.filter(x => x.id !== r.id);
-            flags.delete(r.id);
-            render();
-        } catch (err) { alert('Не удалось удалить: ' + err.message); }
+        const card = e.target.closest('.pc');
+        if (!card) return;
+        const r = rows.find(x => String(x.id) === card.dataset.id);
+        if (!r) return;
+
+        const bgBtn = e.target.closest('.bgb');
+        if (bgBtn) {
+            try {
+                await setBg([r.id], bgBtn.dataset.bg);
+                render();
+            } catch (err) { alert('Не удалось задать фон: ' + err.message); }
+            return;
+        }
+
+        if (e.target.closest('.del')) {
+            if (!confirm('Удалить принт насовсем?')) return;
+            try {
+                await deleteRow(r);
+                rows = rows.filter(x => x.id !== r.id);
+                flags.delete(r.id);
+                render();
+            } catch (err) { alert('Не удалось удалить: ' + err.message); }
+        }
     });
 
     document.getElementById('btn-del-flagged').addEventListener('click', async () => {
