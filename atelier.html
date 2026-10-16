@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.23.0 — 2026-10-16
-  (1) Сначала ткань, потом плотность; у футболки две плотности (160–180, 180–200).
-      Плотности из Бухгалтерии (storefront_config) можно задавать через запятую.
-  (2) Фон под миниатюрой принта задаёт сотрудник в Офисе (club_prints.bg);
-      клиент ничего не переключает.
-  (3) Запрос для ИИ без «vector-style» и «transparent background»; ссылка — Leonardo.AI.
-  Остальное — как в v4.22.0: непрерывная лента, получатель, терминал, снимки принта,
-  цена из Бухгалтерии, отзывы.
+  v4.22.0 — 2026-10-14
+  (1) Миниатюры принтов на шашечной подложке (виден любой рисунок);
+      битые картинки автоматически убираются из ленты.
+  (2) Название и плотность ткани берутся из Бухгалтерии (storefront_config);
+      если настроек нет — значения по умолчанию.
+  (3) В заказе: поле «мессенджер» (необязательное).
+  (4) Цена — по построчной себестоимости из Бухгалтерии (core/pricing.js v4).
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.23.0</title>
+<title>GY-GY Club — Atelier v4.22.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -277,10 +276,10 @@
             </div>
 
             <div class="field-row">
-                <select id="select-fabric-composition"></select>
+                <select id="select-fabric-density"></select>
             </div>
             <div class="field-row">
-                <select id="select-fabric-density"></select>
+                <select id="select-fabric-composition"></select>
             </div>
 
             <div class="field-row">
@@ -322,8 +321,8 @@
                 <div class="prompt-output" id="prompt-output" style="display:none;"></div>
                 <div class="prompt-ai-links" id="prompt-ai-links">
                     <button class="btn-cfg small" id="btn-copy-prompt">СКОПИРОВАТЬ</button>
-                    <a class="btn-cfg small" href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" style="text-align:center;">CHATGPT</a>
-                    <a class="btn-cfg small" href="https://leonardo.ai" target="_blank" rel="noopener noreferrer" style="text-align:center;">LEONARDO</a>
+                    <a class="btn-cfg small" href="https://chatgpt.com" target="_blank" style="text-align:center;">CHATGPT</a>
+                    <a class="btn-cfg small" href="https://ideogram.ai" target="_blank" style="text-align:center;">IDEOGRAM</a>
                 </div>
             </div>
         </div>
@@ -411,9 +410,6 @@
                 <option value="prepayment">Prepayment (pay now)</option>
                 <option value="cod">Cash on delivery (pay at the post office)</option>
             </select>
-        </div>
-        <div style="font-size:10px; line-height:1.45; text-align:left; margin-top:8px; padding:8px; border:1px solid #8a6f24; background:rgba(138,111,36,0.08);">
-            When you receive the parcel at the carrier's branch or from a courier and pay for it, you sign a delivery and acceptance certificate. By signing it, you confirm that you have checked the parcel against your order, agree with the appearance and completeness of the goods, and have no claims against the online store or the carrier.
         </div>
         <div id="confirm-error" style="color:#a02020; font-size:11px; text-align:left; margin-top:4px; min-height:14px;"></div>
         <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:10px;">ДА, ОФОРМИТЬ</button>
@@ -588,7 +584,7 @@
 
     const FABRIC_OPTIONS = {
         tshirt: {
-            density:     [{ value: '160-180', label: '160–180 g/m²' }, { value: '180-200', label: '180–200 g/m²' }],
+            density:     [{ value: '160-180', label: '160–180 g/m²' }],
             composition: [
                 { value: 'cotton100', label: '100% COTTON' },
                 { value: 'stretch',   label: 'STRETCH (95% cotton / 5% elastane)' }
@@ -610,8 +606,7 @@
     };
 
     // Название и плотность ткани можно менять из Бухгалтерии (таблица storefront_config).
-    // Плотностей может быть несколько — через запятую. Нет настроек или база
-    // недоступна — остаются значения по умолчанию выше.
+    // Нет настроек или база недоступна — остаются значения по умолчанию выше.
     try {
         const { data: cfgRows } = await supabase.from('storefront_config').select('key, value')
             .in('key', ['fabric.tshirt', 'fabric.hoodie', 'fabric.longsleeve']);
@@ -620,8 +615,8 @@
             const g = row.key.replace('fabric.', '');
             const cfg = row.value || {};
             if (!FABRIC_OPTIONS[g]) return;
-            const ds = String(cfg.density || '').split(',').map(x => clean(x)).filter(Boolean);
-            if (ds.length) FABRIC_OPTIONS[g].density = ds.map(v => ({ value: v, label: v.replace('-', '–') + ' g/m²' }));
+            const d = clean(cfg.density);
+            if (d) FABRIC_OPTIONS[g].density = [{ value: d, label: d.replace('-', '–') + ' g/m²' }];
             FABRIC_OPTIONS[g].composition.forEach(c => {
                 const l = cfg.labels && clean(cfg.labels[c.value]);
                 if (l) c.label = l;
@@ -835,7 +830,6 @@
 
     // Непрерывная лента: в режиме DTF — все клубные принты подряд, в режиме
     // вышивки — эскизы вышивки. Пустых ячеек нет; листается стрелками и пальцем.
-    // Фон под миниатюрой (item.bg) задаёт сотрудник в Офисе.
     function renderPrintStrip() {
         const data = clubBase.getAll();
         const strip = document.getElementById('print-strip');
@@ -848,8 +842,6 @@
             wrap.className = 'print-icon-wrap';
             const cell = document.createElement('div');
             cell.className = 'print-icon';
-            if (item.bg === 'light') cell.style.background = '#ececec';
-            else if (item.bg === 'dark') cell.style.background = '#151515';
             cell.innerHTML = `<img src="${item.image_url}" loading="lazy" alt="" onerror="this.closest('.print-icon-wrap').remove()">`;
             cell.addEventListener('click', () => {
                 state.currentPrint = { source: 'club', design: item.image_url, category: item.category, shared: true };
@@ -978,7 +970,7 @@
     });
     document.getElementById('btn-build-prompt').addEventListener('click', () => {
         const idea = document.getElementById('pb-idea').value.trim() || 'an abstract emblem';
-        const prompt = `A t-shirt print design of ${idea}, richly detailed illustration with depth and dimension, dramatic lighting and soft shading, painterly textures, vivid layered colors, dynamic composition, subject isolated on a plain solid white background, high resolution.`;
+        const prompt = `A t-shirt print design of ${idea}, professional print-ready vector-style artwork, centered composition, transparent background, high detail, print-safe color palette.`;
         const out = document.getElementById('prompt-output');
         out.textContent = prompt;
         out.style.display = 'block';
@@ -1184,4 +1176,130 @@
         });
         if (error) {
             console.error('[Atelier] Не удалось записать заказ в Приход', error);
-            status.textContent =
+            status.textContent = 'Order saved on this device but NOT delivered to Accounting: ' + (error.message || 'unknown error');
+            return;
+        }
+        status.textContent = paid ? 'Paid. Your order has been placed!' : 'Order placed. You will pay at the post office on receipt.';
+    }
+
+    document.getElementById('btn-confirm-final').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-confirm-final');
+        const errEl = document.getElementById('confirm-error');
+        errEl.textContent = '';
+        if (btn.dataset.busy) return;
+        btn.dataset.busy = '1';
+        try {
+            const lastName = document.getElementById('confirm-recipient-last').value.trim();
+            const firstName = document.getElementById('confirm-recipient-first').value.trim();
+            const phone = document.getElementById('confirm-recipient-phone').value.trim();
+            const messenger = document.getElementById('confirm-recipient-messenger').value.trim();
+            const postOffice = document.getElementById('confirm-recipient-post').value.trim();
+            const paymentMethod = document.getElementById('confirm-payment-method').value;
+            if (!lastName || !firstName || !phone || !postOffice) {
+                errEl.textContent = 'Please fill in last name, first name, phone and post office.';
+                return;
+            }
+            const status = document.getElementById('order-status');
+            const orderNumber = 'GY-' + Date.now().toString(36).toUpperCase();
+            const order = {
+                orderNumber,
+                type: 'blank',
+                garment: state.type, size: state.size, color: state.color,
+                fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
+                drawstring: (state.type === 'hoodie') ? state.drawstring : null,
+                zipper: (state.type === 'hoodie') ? state.zipper : null,
+                neckline: state.neckline, fit: state.fit, quantity: state.quantity,
+                recipientLastName: lastName, recipientFirstName: firstName,
+                recipientPhone: phone, recipientMessenger: messenger, recipientPostOffice: postOffice,
+                recipientName: `${lastName} ${firstName}`, recipientAddress: postOffice,
+                paymentMethod,
+                decoration: state.currentPrint ? {
+                    source: state.currentPrint.source,
+                    shared: !!state.currentPrint.shared,
+                    category: state.currentPrint.category || null,
+                    technique: state.technique,
+                    position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
+                    actualSizeOnPreview: actualPrintSizeLabel()
+                } : null,
+                unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
+                pricing: computeBreakdown(pricingParams, pricingInput())
+            };
+            const assets = {
+                designUrl: (state.currentPrint && /^https:\/\//i.test(state.currentPrint.design)) ? state.currentPrint.design : null,
+                designBlob: (state.currentPrint && state.currentPrint.blob) || null,
+                mockupBlob: await renderMockupBlob()
+            };
+
+            closeModal(document.getElementById('modal-confirm-order'));
+
+            if (paymentMethod === 'cod') {
+                recordOrder(order, false, assets);
+                return;
+            }
+            openPaymentTerminal({
+                amount: order.totalPrice,
+                orderNumber,
+                lineItems: [
+                    [`${state.type.toUpperCase()} ${state.size} ${state.color.toUpperCase()}`, `€${unitPrice().toFixed(2)}`],
+                    ['Qty', `${state.quantity}`]
+                ],
+                onCancel: () => { status.textContent = 'Payment cancelled, order not placed.'; },
+                onComplete: () => recordOrder(order, true, assets)
+            });
+        } catch (e) {
+            console.error('[Atelier] Не удалось оформить заказ', e);
+            errEl.textContent = 'Could not place the order: ' + (e.message || e);
+        } finally {
+            delete btn.dataset.busy;
+        }
+    });
+
+    document.getElementById('link-help').addEventListener('click', () => {
+        window.open(TELEGRAM_HELP_URL, '_blank');
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+
+    function handlePassportData(data) {
+        currentUser = {
+            id: (data && (data.id || data.passportId)) || 'guest',
+            name: (data && (data.name || data.nickname)) || 'Guest'
+        };
+    }
+    try {
+        const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
+        if (typeof onFn === 'function') {
+            onFn('PASSPORT_READY', handlePassportData);
+            onFn('PASSPORT_UPDATED', handlePassportData);
+        }
+    } catch (e) {
+        console.warn('[Atelier] Не удалось подключиться к eventBus для паспорта.', e);
+    }
+
+    clubBase.init(eventBus).then(() => renderPrintStrip()).catch(() => renderPrintStrip());
+    try {
+        const onFn = eventBus.on || eventBus.subscribe || (eventBus.default && eventBus.default.on);
+        if (typeof onFn === 'function') onFn('CLUBBASE_UPDATED', renderPrintStrip);
+    } catch (e) { /* eventBus недоступен */ }
+
+    mountReviewBox(document.getElementById('review-box'), {
+        location: 'atelier',
+        getContext: () => ({
+            garment: state.type,
+            technique: state.technique,
+            printCategory: (state.currentPrint && state.currentPrint.category) || null,
+            printUrl: (state.currentPrint && /^https:\/\//i.test(state.currentPrint.design)) ? state.currentPrint.design : null
+        })
+    });
+
+    populateFabricOptions(state.type);
+    renderNecklineFitFields();
+    renderGarmentPhoto();
+    renderPrintOverlay();
+    renderSpecPanel();
+    renderPrintStrip();
+</script>
+
+</body>
+</html>
