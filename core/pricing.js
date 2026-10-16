@@ -72,7 +72,7 @@ export const FABRICS_BY_GARMENT = {
 
 // Что клиент видит в Ателье по умолчанию (название ткани, плотность)
 export const STOREFRONT_DEFAULTS = {
-    tshirt: { density: '160-180', labels: { cotton100: '100% COTTON', stretch: 'STRETCH (95% cotton / 5% elastane)' } },
+       tshirt: { density: '160-180, 180-200', labels: { cotton100: '100% COTTON', stretch: 'STRETCH (95% cotton / 5% elastane)' } },
     hoodie: { density: '280-320', labels: { cotton80poly20: '80% COTTON / 20% POLYESTER', cotton100fleece: '100% COTTON FLEECE' } },
     longsleeve: { density: '220-240', labels: { cotton100fleece: '100% COTTON' } }
 };
