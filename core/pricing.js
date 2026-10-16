@@ -1,5 +1,5 @@
 // core/pricing.js
-// v4.0.0 — 2026-10-14
+// v4.1.0 — 2026-10-16
 // Построчная себестоимость. Параметры хранятся в Supabase (pricing_params),
 // у каждого изделия свои: ключ вида "hoodie|scale.a3".
 // Формула:
@@ -8,7 +8,7 @@
 //       + бирки + (шнурки/молния у худи) + упаковка + накладные (аренда, электричество,
 //       газ, вода, зарплата, налоги, прочее)
 //   наценка = процент от себестоимости; розничная цена = себестоимость + наценка.
-// Настройки витрины (название и плотность ткани) — таблица storefront_config.
+// Настройки витрины (название ткани, плотности через запятую) — таблица storefront_config.
 
 import { supabase } from './supabase-init.js';
 
@@ -70,9 +70,9 @@ export const FABRICS_BY_GARMENT = {
     longsleeve: ['cotton100fleece']
 };
 
-// Что клиент видит в Ателье по умолчанию (название ткани, плотность)
+// Что клиент видит в Ателье по умолчанию (плотности — через запятую)
 export const STOREFRONT_DEFAULTS = {
-       tshirt: { density: '160-180, 180-200', labels: { cotton100: '100% COTTON', stretch: 'STRETCH (95% cotton / 5% elastane)' } },
+    tshirt: { density: '160-180, 180-200', labels: { cotton100: '100% COTTON', stretch: 'STRETCH (95% cotton / 5% elastane)' } },
     hoodie: { density: '280-320', labels: { cotton80poly20: '80% COTTON / 20% POLYESTER', cotton100fleece: '100% COTTON FLEECE' } },
     longsleeve: { density: '220-240', labels: { cotton100fleece: '100% COTTON' } }
 };
