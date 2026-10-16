@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- souvenirs.html — v0.1.0 — 2026-10-16 — витрина сувениров (заготовка; учёт готовится в Бухгалтерии) -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Souvenirs</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 22px; letter-spacing: 3px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .note { max-width: 420px; text-align: center; font-size: 12px; color: var(--ivory); opacity: 0.8; line-height: 1.6; margin-bottom: 24px; }
+    .box { width: 100%; max-width: 360px; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-hall">&lt;&lt;</a></div>
+<div class="page-wrap">
+    <div class="title">SOUVENIRS</div>
+    <div class="note">The souvenir shelf is being prepared. Tell us what you would like to see here — leave a review or a wish below.</div>
+    <div class="box" id="review-box"></div>
+</div>
+<script type="module">
+    import { mountReviewBox } from './modules/reviewBox.js';
+
+    mountReviewBox(document.getElementById('review-box'), { location: 'souvenirs' });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-hall').addEventListener('click', () => window.location.href = 'hall.html');
+</script>
+</body>
+</html>
