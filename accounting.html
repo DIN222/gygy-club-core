@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <!--
-  accounting.html
-  v2.0.0 — 2026-10-01
-  Шесть разделов вместо прежних двух. Приход/Расход/Доход — рабочие.
-  Склад/Производство/Подрядчики — заглушки, следующий шаг отдельно.
-  Калькуляция затрат и Платёжный терминал остаются как были, отдельной
-  строкой — это инструменты, а не часть леджера Приход/Расход.
+  accounting.html — v3.0.0 — 2026-10-16
+  Леджер: Приход, Расход, Доход.
+  Операции в порядке движения информации: Поставщики → Подрядчики → Склад →
+  Производство (с возвратом готовой продукции на склад) → Принты клуба → Отзывы.
+  Параметры цены (после этого) определяются отдельно — пока живут внутри страниц изделий.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Accounting v2.0.0</title>
+<title>GY-GY Club — Accounting v3.0.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
     :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
@@ -52,30 +51,29 @@
 
     <div class="section-label">Леджер</div>
     <div class="grid">
-        <a class="block-btn" href="income.html">ПРИХОД<small>Из Ателье автоматически + ручной ввод</small></a>
-        <a class="block-btn" href="expense.html">РАСХОД<small>Закупки сырья, материалов, доставка</small></a>
-        <a class="block-btn" href="revenue.html">ДОХОД<small>Авторасчёт: Приход − Расход</small></a>
+        <a class="block-btn" href="income.html">ПРИХОД<small>Ателье, Лавка, Сувениры: заказы и журналы</small></a>
+        <a class="block-btn" href="expense.html">РАСХОД<small>Закупки по видам: Ателье, Лавка, Сувениры</small></a>
+        <a class="block-btn" href="revenue.html">ДОХОД<small>Приход минус себестоимость проданного</small></a>
     </div>
 
-         <div class="section-label">Операции</div>
+    <div class="section-label">Операции</div>
     <div class="grid">
-                      <a class="block-btn" href="warehouse.html">СКЛАД<small>Остатки, приход, возвраты, потребность в бланках</small></a>
-        <a class="block-btn" href="reviews.html">ОТЗЫВЫ<small>Отзывы клиентов по местам</small></a>
-              <a class="block-btn" href="prints-admin.html">ПРИНТЫ КЛУБА<small>Просмотр, удаление пустых и лишних</small></a>
-        <a class="block-btn" href="production.html">ПРОИЗВОДСТВО<small>Нормы, партии, брак, себестоимость</small></a>
-        
-                <a class="block-btn" href="suppliers.html">ПОСТАВЩИКИ<small>10 слотов: ткани, бланки, DTF-плёнка…</small></a>
+        <a class="block-btn" href="suppliers.html">ПОСТАВЩИКИ<small>10 слотов: карточки и заказы поставщикам</small></a>
         <span class="block-btn soon">ПОДРЯДЧИКИ<small>Структура уточняется</small></span>
+        <a class="block-btn" href="warehouse.html">СКЛАД<small>Остатки, приход, возвраты, потребность в бланках</small></a>
+        <a class="block-btn" href="production.html">ПРОИЗВОДСТВО<small>Нормы, партии, брак; готовая продукция — на склад</small></a>
+        <a class="block-btn" href="prints-admin.html">ПРИНТЫ КЛУБА<small>Просмотр, фон под принтом, удаление</small></a>
+        <a class="block-btn" href="reviews.html">ОТЗЫВЫ<small>Отзывы клиентов по местам</small></a>
     </div>
 
     <div class="section-label">Инструменты</div>
     <div class="grid">
-    <a class="block-btn" href="payment-terminal.html">ПЛАТЁЖНЫЙ ТЕРМИНАЛ<small>Демо-страница — сам терминал встроен в Ателье</small></a>
+        <a class="block-btn" href="payment-terminal.html">ПЛАТЁЖНЫЙ ТЕРМИНАЛ<small>Демо-страница — сам терминал встроен в Ателье</small></a>
     </div>
 </div>
 
 <script type="module">
-    import { requireAuth, signOut } from './core/auth.js';
+    import { requireAuth } from './core/auth.js';
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
 
