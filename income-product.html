@@ -191,7 +191,7 @@
             <div class="p-sec">Ткань на витрине</div>
             <div class="p-grid">
                 ${comps.map(c => `<label>${esc(COMPOSITION_LABELS[c])}<input type="text" data-sf-label="${esc(c)}" value="${esc(storefront.labels[c] || '')}"></label>`).join('')}
-                <label>Плотность, g/m²<input type="text" data-sf-density value="${esc(storefront.density)}"></label>
+                <label>Плотность, g/m² (через запятую)<input type="text" data-sf-density value="${esc(storefront.density)}"></label>
             </div>
 
             <div class="p-sec">Расчёт итога для</div>
