@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<!-- expense-ledger.html — v1.0.0 — 2026-10-16 — Расход одного вида (?line=atelier|store|souvenirs) -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Расход</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 16px; text-align: center; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 700px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .form-grid input, .form-grid select { padding: 8px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; min-width: 0; }
+    .form-grid .wide { grid-column: 1 / -1; }
+    .new-ref-row { display: flex; gap: 6px; margin-bottom: 14px; }
+    .new-ref-row input { flex: 1; min-width: 0; padding: 6px; border: 1px dashed var(--gold-dim); background: #0a0a0a; color: var(--ivory); font-family: inherit; font-size: 10px; }
+    .btn-cfg { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 8px 12px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-family: inherit; font-size: 11px; }
+    .btn-cfg:hover { border-color: var(--gold); }
+    .btn-cfg.small { padding: 5px 8px; font-size: 9px; }
+    .btn-cfg.primary { width: 100%; background: var(--gold); color: #000; border-color: var(--gold); font-weight: 900; }
+    .status { font-size: 11px; min-height: 14px; margin: 6px 0 0; color: #6fd48a; }
+    .status.error { color: #e74c3c; }
+    .journal-wrap { margin-top: 22px; }
+    .journal-heading { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-expense">&lt;&lt;</a></div>
+
+<div class="page-wrap">
+    <div class="title" id="title">РАСХОД</div>
+    <div class="panel">
+        <div class="new-ref-row">
+            <input type="text" id="new-supplier" placeholder="Новый поставщик...">
+            <button class="btn-cfg small" id="btn-add-supplier" type="button">+</button>
+            <input type="text" id="new-delivery" placeholder="Новая служба доставки...">
+            <button class="btn-cfg small" id="btn-add-delivery" type="button">+</button>
+        </div>
+
+        <div class="form-grid">
+            <input class="wide" type="text" id="item-name" placeholder="Что закупили">
+            <input type="number" id="qty" placeholder="Кол-во" min="0" step="0.1">
+            <input type="number" id="unit-price" placeholder="Цена за ед., €" min="0" step="0.01">
+            <select id="supplier"></select>
+            <select id="delivery-service"></select>
+            <input class="wide" type="number" id="delivery-cost" placeholder="Стоимость доставки, €" min="0" step="0.01">
+        </div>
+        <button class="btn-cfg primary" id="btn-add-expense" type="button">ДОБАВИТЬ РАСХОД</button>
+        <div class="status" id="status"></div>
+
+        <div class="journal-wrap">
+            <div class="journal-heading" id="journal-heading">Журнал</div>
+            <div id="journal"></div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+    import { renderExpenseJournal } from './modules/expenseJournal.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const LINES = { atelier: 'АТЕЛЬЕ', store: 'ЛАВКА ДРЕВНОСТЕЙ', souvenirs: 'СУВЕНИРЫ' };
+    const param = new URLSearchParams(location.search).get('line');
+    const line = LINES[param] ? param : 'atelier';
+    document.getElementById('title').textContent = `РАСХОД — ${LINES[line]}`;
+    document.getElementById('journal-heading').textContent = `Журнал: ${LINES[line]}`;
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const status = document.getElementById('status');
+    const journal = document.getElementById('journal');
+    const say = (text, isError) => { status.textContent = text; status.className = 'status' + (isError ? ' error' : ''); };
+
+    async function loadRefs() {
+        const { data: s } = await supabase.from('suppliers').select('*').order('name');
+        const { data: d } = await supabase.from('delivery_services').select('*').order('name');
+        document.getElementById('supplier').innerHTML = '<option value="">Поставщик —</option>' +
+            (s || []).map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+        document.getElementById('delivery-service').innerHTML = '<option value="">Служба доставки —</option>' +
+            (d || []).map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+    }
+
+    document.getElementById('btn-add-supplier').addEventListener('click', async () => {
+        const name = document.getElementById('new-supplier').value.trim();
+        if (!name) return;
+        const { error } = await supabase.from('suppliers').insert({ name });
+        if (error) { say('Не удалось добавить поставщика: ' + error.message, true); return; }
+        document.getElementById('new-supplier').value = '';
+        loadRefs();
+    });
+    document.getElementById('btn-add-delivery').addEventListener('click', async () => {
+        const name = document.getElementById('new-delivery').value.trim();
+        if (!name) return;
+        const { error } = await supabase.from('delivery_services').insert({ name });
+        if (error) { say('Не удалось добавить службу доставки: ' + error.message, true); return; }
+        document.getElementById('new-delivery').value = '';
+        loadRefs();
+    });
+
+    document.getElementById('btn-add-expense').addEventListener('click', async () => {
+        const item_name = document.getElementById('item-name').value.trim();
+        const quantity = parseFloat(document.getElementById('qty').value) || 0;
+        const unit_price = parseFloat(document.getElementById('unit-price').value) || 0;
+        const supplier_id = document.getElementById('supplier').value || null;
+        const delivery_service_id = document.getElementById('delivery-service').value || null;
+        const delivery_cost = parseFloat(document.getElementById('delivery-cost').value) || 0;
+        if (!item_name || quantity <= 0) { say('Укажите, что закупили, и количество.', true); return; }
+
+        const { error } = await supabase.from('expense_entries').insert({
+            business_line: line, item_name, quantity, unit_price,
+            total_price: quantity * unit_price,
+            supplier_id, delivery_service_id, delivery_cost
+        });
+        if (error) { console.error(error); say('Не удалось добавить: ' + error.message, true); return; }
+
+        ['item-name', 'qty', 'unit-price', 'delivery-cost'].forEach(id => { document.getElementById(id).value = ''; });
+        say('Добавлено.');
+        renderExpenseJournal(journal, { line });
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-expense').addEventListener('click', () => window.location.href = 'expense.html');
+
+    loadRefs();
+    renderExpenseJournal(journal, { line });
+</script>
+</body>
+</html>
