@@ -321,7 +321,7 @@
                 <div class="prompt-ai-links" id="prompt-ai-links">
                     <button class="btn-cfg small" id="btn-copy-prompt">СКОПИРОВАТЬ</button>
                     <a class="btn-cfg small" href="https://chatgpt.com" target="_blank" style="text-align:center;">CHATGPT</a>
-                    <a class="btn-cfg small" href="https://ideogram.ai" target="_blank" style="text-align:center;">IDEOGRAM</a>
+                    <a class="btn-cfg small" href="https://leonardo.ai" target="_blank" rel="noopener noreferrer" style="text-align:center;">LEONARDO</a>
                 </div>
             </div>
         </div>
@@ -976,7 +976,7 @@
     });
     document.getElementById('btn-build-prompt').addEventListener('click', () => {
         const idea = document.getElementById('pb-idea').value.trim() || 'an abstract emblem';
-        const prompt = `A t-shirt print design of ${idea}, professional print-ready vector-style artwork, centered composition, transparent background, high detail, print-safe color palette.`;
+               const prompt = `A t-shirt print design of ${idea}, richly detailed illustration with depth and dimension, dramatic lighting and soft shading, painterly textures, vivid layered colors, dynamic composition, subject isolated on a plain solid white background, high resolution.`;
         const out = document.getElementById('prompt-output');
         out.textContent = prompt;
         out.style.display = 'block';
