@@ -615,8 +615,8 @@
             const g = row.key.replace('fabric.', '');
             const cfg = row.value || {};
             if (!FABRIC_OPTIONS[g]) return;
-            const d = clean(cfg.density);
-            if (d) FABRIC_OPTIONS[g].density = [{ value: d, label: d.replace('-', '–') + ' g/m²' }];
+                    const ds = String(cfg.density || '').split(',').map(x => clean(x)).filter(Boolean);
+            if (ds.length) FABRIC_OPTIONS[g].density = ds.map(v => ({ value: v, label: v.replace('-', '–') + ' g/m²' }));
             FABRIC_OPTIONS[g].composition.forEach(c => {
                 const l = cfg.labels && clean(cfg.labels[c.value]);
                 if (l) c.label = l;
