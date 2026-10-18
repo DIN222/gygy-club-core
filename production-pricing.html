@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
   production-pricing.html
-  v1.0.0 — 2026-10-18
+  v1.1.0 — 2026-10-19
   Производство → Общие параметры цены изделия (?garment=tshirt|hoodie|longsleeve).
-  Названия слева, цены справа; птичка — вариант, взятый в расчёт образца.
-  Цены хранятся в pricing_params под ключами "gp|<изделие>|<параметр>".
-  Названия/плотности ткани, птички и фото — в storefront_config.
-  ПОКА НЕ подключено к ценам клиентов в Ателье.
+  Ткань = состав + цвет + плотность. Плотности относятся к составу (у каждого состава
+  свои, с ценами). Названия слева, цены справа; птичка — вариант, взятый в расчёт образца.
+  Цены: pricing_params "gp|<изделие>|<параметр>". Названия/плотности ткани, птички,
+  фото: storefront_config. ПОКА НЕ подключено к ценам клиентов в Ателье.
 -->
 <html lang="en">
 <head>
@@ -30,8 +30,10 @@
     .note { font-size: 10px; color: #9a9a8a; line-height: 1.5; margin-bottom: 8px; }
 
     .sec { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 6px; border-bottom: 1px solid #1d1d1d; padding-bottom: 3px; }
+    .sublabel { font-size: 9px; color: #8a8a7a; text-transform: uppercase; letter-spacing: 1px; margin: 2px 0 2px 16px; }
     .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 11px; color: var(--ivory); }
     .row.off { opacity: 0.42; }
+    .row.sub .nm { padding-left: 16px; }
     .row .nm { flex: 1; min-width: 0; text-align: left; }
     .row .nm input[type="text"] { width: 100%; padding: 6px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
     .row .ctl { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
@@ -65,7 +67,7 @@
     <div class="title" id="title">ОБЩИЕ ПАРАМЕТРЫ ЦЕНЫ</div>
     <div class="panel">
         <div class="tabs" id="tabs"></div>
-        <div class="note">Производство: себестоимость и наценка изделия. Птичка — какой вариант взят в расчёт образца. Эта структура пока не подключена к ценам клиентов в Ателье: там действуют прежние параметры на странице «Приход → Ателье → изделие». Названия и плотности ткани, наоборот, уже общие с Ателье.</div>
+        <div class="note">Производство: себестоимость и наценка изделия. Ткань описывается составом, цветом и плотностью; плотности относятся к составу, цена связана с плотностью. Птичка — какой вариант взят в расчёт образца. Страница пока не подключена к ценам клиентов в Ателье. Названия и плотности ткани, наоборот, уже общие с Ателье.</div>
         <div id="root"></div>
     </div>
 </div>
@@ -85,6 +87,7 @@
     document.getElementById('tabs').innerHTML = Object.entries(GARMENTS).map(([k, n]) =>
         `<a class="tab${k === garment ? ' active' : ''}" href="production-pricing.html?garment=${k}">${n}</a>`).join('');
 
+    const COLORS = [['black', 'Чёрный'], ['white', 'Белый']];
     const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
     const SCALES = [['a3', 'Нанесение A3'], ['a4', 'Нанесение A4'], ['logo-chest', 'Нанесение: лого на груди'],
                     ['logo-sleeve', 'Нанесение: лого на рукаве'], ['custom', 'Нанесение: фактический размер']];
@@ -100,6 +103,7 @@
 
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const clean = (s) => String(s ?? '').replace(/[<>&"|,]/g, '').trim();
+    const parseList = (s) => String(s || '').split(',').map(clean).filter(Boolean);
     const safeHttps = (u) => /^https:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
     const eur = (n) => `€${Number(n || 0).toFixed(2)}`;
     const root = document.getElementById('root');
@@ -109,25 +113,39 @@
     const pk = (name) => `gp|${garment}|${name}`;
     // свои цены → прежние цены изделия с тем же именем параметра → 0
     const val = (name) => Number(allPrices[pk(name)] ?? allPrices[`${garment}|${name}`] ?? 0);
+    // цена плотности: по составу → прежняя общая цена плотности → 0
+    const densPrice = (comp, d) => Number(allPrices[pk(`density.${comp}.${d}`)] ?? allPrices[pk(`density.${d}`)] ?? 0);
 
     const sf = await loadStorefrontConfig(garment);
+    let rawCfg = null;
+    try {
+        const { data } = await supabase.from('storefront_config').select('value').eq('key', 'fabric.' + garment).maybeSingle();
+        rawCfg = data && data.value;
+    } catch (e) { console.warn('[production-pricing] Настройки витрины недоступны.', e); }
+
     const comps = FABRICS_BY_GARMENT[garment];
     const labels = { ...sf.labels };
-    let densities = String(sf.density || '').split(',').map(clean).filter(Boolean);
-    if (!densities.length) densities = [''];
+    const sharedList = parseList(sf.density);
+    const densMap = {};
+    comps.forEach(c => {
+        const own = rawCfg && rawCfg.densities && rawCfg.densities[c] ? parseList(rawCfg.densities[c]) : [];
+        const list = own.length ? own : sharedList;
+        densMap[c] = list.length ? list : [''];
+    });
 
     let sel = {
-        composition: comps[0], density: densities[0], technique: 'dtf', size: 'M', scale: 'a3',
-        facing: 'ribana', tape: 'twill', emb: 'front', drawstring: false, zipper: false,
-        photoDtf: null, photoEmb: null
+        composition: comps[0], density: densMap[comps[0]][0], color: 'black',
+        technique: 'dtf', size: 'M', scale: 'a3', facing: 'ribana', tape: 'twill', emb: 'front',
+        drawstring: false, zipper: false, photoDtf: null, photoEmb: null
     };
     try {
         const { data } = await supabase.from('storefront_config').select('value').eq('key', 'gp-sel.' + garment).maybeSingle();
         if (data && data.value) sel = { ...sel, ...data.value };
     } catch (e) { console.warn('[production-pricing] Сохранённый выбор недоступен.', e); }
     if (!comps.includes(sel.composition)) sel.composition = comps[0];
-    if (!densities.includes(sel.density)) sel.density = densities[0];
+    if (!densMap[sel.composition].includes(sel.density)) sel.density = densMap[sel.composition][0];
     if (!SIZES.includes(sel.size)) sel.size = 'M';
+    if (!COLORS.some(c => c[0] === sel.color)) sel.color = 'black';
 
     // ---------- разметка ----------
     function row(nameHtml, ctlHtml, attrs = '') {
@@ -136,18 +154,20 @@
     const price = (name) => `<input type="number" step="0.01" data-price="${esc(name)}" value="${val(name)}">`;
     const tick = (group, value) => `<input type="checkbox" data-group="${group}" data-value="${esc(value)}">`;
 
-    function densityRowHtml(name, p) {
-        return `<div class="row" data-density-row data-prev="${esc(name)}">
+    function densityRowHtml(comp, name, p) {
+        return `<div class="row sub" data-density-row data-comp="${esc(comp)}" data-prev="${esc(name)}">
             <span class="nm"><input type="text" data-density-name value="${esc(name)}" placeholder="160-180"></span>
-            <span class="ctl"><input type="number" step="0.01" data-density-price value="${p}">${tick('density', name)}<button type="button" class="btn-x" data-del-density title="Удалить">✕</button></span>
+            <span class="ctl"><input type="number" step="0.01" data-density-price value="${p}"><input type="checkbox" data-group="density" data-comp="${esc(comp)}" data-value="${esc(name)}"><button type="button" class="btn-x" data-del-density title="Удалить">✕</button></span>
         </div>`;
     }
 
     function build() {
-        const compRows = comps.map(c => row(
-            `<input type="text" data-sf-label="${esc(c)}" value="${esc(labels[c] || '')}" placeholder="${esc(COMPOSITION_LABELS[c])}">`,
-            tick('composition', c))).join('');
-        const densRows = densities.map(d => densityRowHtml(d, val('density.' + d))).join('');
+        const fabricBlocks = comps.map(c => `
+            ${row(`<input type="text" data-sf-label="${esc(c)}" value="${esc(labels[c] || '')}" placeholder="${esc(COMPOSITION_LABELS[c])}">`, tick('composition', c))}
+            <div class="sublabel">Плотность, g/m²</div>
+            ${densMap[c].map(d => densityRowHtml(c, d, densPrice(c, d))).join('')}
+            <div class="row"><span class="nm"></span><span class="ctl"><button type="button" class="btn-mini" data-add-density="${esc(c)}">+ плотность</button></span></div>`).join('');
+        const colorRows = COLORS.map(([k, n]) => row(esc(n), tick('color', k))).join('');
         const sizeRows = SIZES.map(s => row(esc(s), price('size.' + s) + tick('size', s))).join('');
         const facingRows = FACING.map(([k, n]) => row(esc(n), price('facing.' + k) + tick('facing', k))).join('');
         const tapeRows = TAPES.map(([k, n]) => row(esc(n), price('tape.' + k) + tick('tape', k))).join('');
@@ -158,9 +178,8 @@
         const overRows = OVERHEAD.map(([k, n]) => row(esc(n), price('overhead.' + k))).join('');
 
         root.innerHTML = `
-            <div class="sec">Ткань</div>${compRows}
-            <div class="sec">Плотность, g/m²</div>${densRows}
-            <div class="row"><span class="nm"></span><span class="ctl"><button type="button" class="btn-mini" data-add-density>+ плотность</button></span></div>
+            <div class="sec">Ткань</div>${fabricBlocks}
+            <div class="sec">Цвет</div>${colorRows}
             <div class="sec">Техника нанесения</div>
             ${row('DTF-печать', tick('technique', 'dtf'))}
             <div class="photo-wrap" data-photo="dtf"></div>
@@ -215,7 +234,9 @@
     function syncTicks() {
         root.querySelectorAll('input[data-group]').forEach(t => {
             const g = t.dataset.group;
-            t.checked = BOOL.has(g) ? !!sel[g] : sel[g] === t.dataset.value;
+            if (g === 'density') t.checked = (sel.composition === t.dataset.comp && sel.density === t.dataset.value);
+            else if (BOOL.has(g)) t.checked = !!sel[g];
+            else t.checked = sel[g] === t.dataset.value;
         });
         root.querySelectorAll('.row').forEach(r => {
             const t = r.querySelector('input[data-group]');
@@ -233,6 +254,7 @@
     function densityRows() {
         return [...root.querySelectorAll('[data-density-row]')].map(r => ({
             row: r,
+            comp: r.dataset.comp,
             name: clean(r.querySelector('[data-density-name]').value),
             price: parseFloat(r.querySelector('[data-density-price]').value) || 0
         }));
@@ -240,7 +262,7 @@
 
     function recalc() {
         let cost = 0;
-        const d = densityRows().find(x => x.name && x.name === sel.density);
+        const d = densityRows().find(x => x.comp === sel.composition && x.name && x.name === sel.density);
         if (d) cost += d.price;
         cost += num('size.' + sel.size);
         cost += num('material.thread');
@@ -265,9 +287,21 @@
         const t = e.target.closest('input[data-group]');
         if (!t) return;
         const g = t.dataset.group, v = t.dataset.value;
-        if (BOOL.has(g)) sel[g] = t.checked;
-        else if (t.checked) sel[g] = v;
-        else if (NULLABLE.has(g)) sel[g] = null;
+        if (g === 'density') {
+            if (t.checked) { sel.composition = t.dataset.comp; sel.density = v; }
+        } else if (g === 'composition') {
+            if (t.checked) {
+                sel.composition = v;
+                const mine = densityRows().filter(x => x.comp === v && x.name);
+                if (!mine.some(x => x.name === sel.density)) sel.density = mine.length ? mine[0].name : '';
+            }
+        } else if (BOOL.has(g)) {
+            sel[g] = t.checked;
+        } else if (t.checked) {
+            sel[g] = v;
+        } else if (NULLABLE.has(g)) {
+            sel[g] = null;
+        }
         syncTicks();
         recalc();
     });
@@ -279,7 +313,7 @@
             const old = r.dataset.prev;
             const nv = clean(t.value);
             r.querySelector('input[data-group="density"]').dataset.value = nv;
-            if (sel.density === old) sel.density = nv;
+            if (sel.composition === r.dataset.comp && sel.density === old) sel.density = nv;
             r.dataset.prev = nv;
             syncTicks();
         }
@@ -287,20 +321,23 @@
     });
 
     root.addEventListener('click', async (e) => {
-        if (e.target.closest('[data-add-density]')) {
-            const rowsEl = root.querySelectorAll('[data-density-row]');
-            rowsEl[rowsEl.length - 1].insertAdjacentHTML('afterend', densityRowHtml('', 0));
+        const add = e.target.closest('[data-add-density]');
+        if (add) {
+            const comp = add.dataset.addDensity;
+            const mine = [...root.querySelectorAll('[data-density-row]')].filter(r => r.dataset.comp === comp);
+            mine[mine.length - 1].insertAdjacentHTML('afterend', densityRowHtml(comp, '', 0));
             syncTicks();
             return;
         }
         const del = e.target.closest('[data-del-density]');
         if (del) {
-            if (root.querySelectorAll('[data-density-row]').length <= 1) return;
             const r = del.closest('[data-density-row]');
-            const wasSelected = sel.density === r.dataset.prev;
+            const comp = r.dataset.comp;
+            if (densityRows().filter(x => x.comp === comp).length <= 1) return;
+            const wasSelected = sel.composition === comp && sel.density === r.dataset.prev;
             r.remove();
             if (wasSelected) {
-                const first = densityRows().find(x => x.name);
+                const first = densityRows().find(x => x.comp === comp && x.name);
                 sel.density = first ? first.name : '';
             }
             syncTicks();
@@ -324,7 +361,12 @@
         st.className = 'status';
         st.textContent = 'Сохраняю…';
         const dens = densityRows().filter(d => d.name);
-        if (!dens.length) { st.textContent = 'Укажите хотя бы одну плотность.'; st.classList.add('error'); return; }
+        const missing = comps.filter(c => !dens.some(d => d.comp === c));
+        if (missing.length) {
+            st.textContent = 'Укажите хотя бы одну плотность для каждого состава.';
+            st.classList.add('error');
+            return;
+        }
 
         const now = new Date().toISOString();
         const rows = [];
@@ -332,7 +374,10 @@
             const name = i.dataset.price;
             rows.push({ key: pk(name), value: parseFloat(i.value) || 0, label: `${name} [${garment}]`, param_group: 'gp', updated_at: now });
         });
-        dens.forEach(d => rows.push({ key: pk('density.' + d.name), value: d.price, label: `density.${d.name} [${garment}]`, param_group: 'gp', updated_at: now }));
+        dens.forEach(d => rows.push({
+            key: pk(`density.${d.comp}.${d.name}`), value: d.price,
+            label: `density.${d.comp}.${d.name} [${garment}]`, param_group: 'gp', updated_at: now
+        }));
         rows.push({ key: pk('margin.percent'), value: parseFloat(root.querySelector('[data-margin]').value) || 0, label: `margin.percent [${garment}]`, param_group: 'gp', updated_at: now });
 
         const e1 = (await supabase.from('pricing_params').upsert(rows)).error;
@@ -340,8 +385,12 @@
 
         const lbls = {};
         root.querySelectorAll('[data-sf-label]').forEach(i => { lbls[i.dataset.sfLabel] = clean(i.value); });
+        const perComp = {};
+        comps.forEach(c => { perComp[c] = dens.filter(d => d.comp === c).map(d => d.name).join(', '); });
+        const union = [...new Set(dens.map(d => d.name))].join(', ');  // для Ателье: пока общий список плотностей
+
         const e2 = (await supabase.from('storefront_config').upsert([
-            { key: 'fabric.' + garment, value: { density: dens.map(d => d.name).join(', '), labels: lbls }, updated_at: now },
+            { key: 'fabric.' + garment, value: { density: union, densities: perComp, labels: lbls }, updated_at: now },
             { key: 'gp-sel.' + garment, value: sel, updated_at: now }
         ])).error;
         if (e2) { console.error(e2); st.textContent = 'Цены сохранены, витрина и выбор — нет: ' + e2.message; st.classList.add('error'); return; }
