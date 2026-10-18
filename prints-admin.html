@@ -61,6 +61,26 @@
                 <option value="dtf">Принты</option>
                 <option value="embroidery">Вышивка</option>
             </select>
+                  <div class="addbox">
+            <div class="add-title">Добавить принты в базу клуба</div>
+            <input type="file" id="add-files" accept="image/*" multiple>
+            <div class="add-row">
+                <select id="add-category">
+                    <option value="dtf">Принт (DTF)</option>
+                    <option value="embroidery">Эскиз вышивки</option>
+                </select>
+                <select id="add-bg">
+                    <option value="check">Фон: Grid</option>
+                    <option value="light">Фон: Light</option>
+                    <option value="dark">Фон: Dark</option>
+                </select>
+            </div>
+            <label class="add-chk"><input type="checkbox" id="add-removebg" checked> убрать однотонный фон автоматически</label>
+            <label class="add-chk"><input type="checkbox" id="add-public"> разрешить лайки (может попасть в «Это круто»)</label>
+            <input type="text" id="add-author" placeholder="Автор (по умолчанию GY-GY Club)">
+            <button class="btn" id="btn-add-prints" type="button">Загрузить</button>
+            <div class="progress" id="add-status"></div>
+        </div>
             <button class="btn" id="btn-scan">Проверить на пустые</button>
             <button class="btn danger" id="btn-del-flagged" disabled>Удалить помеченные</button>
             <span class="progress" id="progress"></span>
