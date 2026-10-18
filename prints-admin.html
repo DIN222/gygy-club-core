@@ -78,6 +78,7 @@
 <script type="module">
     import { requireAuth } from './core/auth.js';
     import { supabase } from './core/supabase-init.js';
+   import { prepareImage } from './modules/imageTools.js';
 
     const session = await requireAuth();
     if (!session) throw new Error('redirecting to login');
