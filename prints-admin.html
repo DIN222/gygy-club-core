@@ -283,7 +283,70 @@
     document.getElementById('btn-scan').addEventListener('click', scan);
     document.getElementById('btn-back').addEventListener('click', () => history.back());
     document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+    // ---------- добавление принтов администрацией ----------
+    (function ensureAddStyles() {
+        if (document.getElementById('pa-add-styles')) return;
+        const s = document.createElement('style');
+        s.id = 'pa-add-styles';
+        s.textContent = `
+            .addbox { border: 1px solid #8a6f24; background: #0a0a0a; padding: 10px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
+            .add-title { font-size: 10px; color: #8a6f24; text-transform: uppercase; letter-spacing: 1px; }
+            .addbox input[type="file"] { color: #F0EAD6; font-family: inherit; font-size: 11px; }
+            .addbox input[type="text"], .addbox select { padding: 7px; border: 1px solid #8a6f24; background: #F0EAD6; color: #1a1408; font-family: inherit; font-size: 11px; }
+            .add-row { display: flex; gap: 8px; }
+            .add-row select { flex: 1; }
+            .add-chk { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #F0EAD6; }
+        `;
+        document.head.appendChild(s);
+    })();
 
+    document.getElementById('btn-add-prints').addEventListener('click', async () => {
+        const input = document.getElementById('add-files');
+        const status = document.getElementById('add-status');
+        const btn = document.getElementById('btn-add-prints');
+        const files = [...input.files];
+        if (!files.length) { status.textContent = 'Выберите файлы.'; return; }
+
+        const category = document.getElementById('add-category').value;
+        const bg = document.getElementById('add-bg').value;
+        const removeBg = document.getElementById('add-removebg').checked;
+        const publicLikes = document.getElementById('add-public').checked;
+        const author = document.getElementById('add-author').value.trim() || 'GY-GY Club';
+
+        btn.disabled = true;
+        let ok = 0;
+        const failed = [];
+        for (let i = 0; i < files.length; i++) {
+            status.textContent = `Загружаю ${i + 1} из ${files.length}…`;
+            try {
+                const blob = await prepareImage(files[i], { removeBg });
+                const path = `${category}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.png`;
+                const { error: upErr } = await supabase.storage.from('club-prints').upload(path, blob, { contentType: 'image/png' });
+                if (upErr) throw upErr;
+                const { data: urlData } = supabase.storage.from('club-prints').getPublicUrl(path);
+                const { error: insErr } = await supabase.from('club_prints').insert({
+                    category, image_url: urlData.publicUrl, storage_path: path,
+                    from_user_id: 'office', from_user_name: author,
+                    public_likes_allowed: publicLikes, bg: bg === 'check' ? null : bg
+                });
+                if (insErr) {
+                    await supabase.storage.from('club-prints').remove([path]);
+                    throw insErr;
+                }
+                ok++;
+            } catch (e) {
+                console.error('[PrintsAdmin] Не загрузилось:', files[i].name, e);
+                failed.push(`${files[i].name}: ${e.message || e}`);
+            }
+        }
+        btn.disabled = false;
+        input.value = '';
+        status.textContent = failed.length
+            ? `Загружено ${ok} из ${files.length}. Не загрузились: ${failed.join('; ')}`
+            : `Готово: загружено ${ok}.`;
+        await load();
+    });
+  
     load();
 </script>
 </body>
