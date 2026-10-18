@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <!--
   warehouse.html
-  v2.0.0 — 2026-10-15
-  Две вкладки: «Остатки» (приход сырья, возврат готовой продукции, текущие остатки)
-  и «Потребность в бланках» (сколько штук каких размеров и цветов заказывали клиенты).
+  v3.0.0 — 2026-10-19
+  Склад из двух частей:
+  1) Сырьё и материалы (сюда же — бланки): приход вручную / от поставщиков, остатки.
+  2) Готовая продукция — «Запас»: пока пусто, место зарезервировано.
+  Вкладка «Потребность в бланках» — спрос по заказам Ателье.
 -->
 <html lang="en">
 <head>
@@ -30,7 +32,7 @@
     .section-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px; }
     .hint { font-size: 10px; color: var(--ivory); opacity: 0.7; line-height: 1.5; margin-bottom: 8px; }
     .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-    .form-grid input, .form-grid select, .filters select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 10px; }
+    .form-grid input, .filters select { padding: 7px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 10px; }
     .filters { margin-bottom: 12px; }
     .filters select { font-size: 11px; }
     .btn-cfg { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 8px 12px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-family: inherit; font-size: 11px; }
@@ -42,9 +44,11 @@
     td.num, th.num { text-align: right; }
     tr.total-row td { font-weight: 900; color: var(--gold); border-top: 1px solid var(--gold-dim); }
     .low-stock { color: #e74c3c; }
+    .reserve { border: 1px dashed var(--gold-dim); background: #0a0a0a; padding: 22px 12px; text-align: center; }
+    .reserve-word { font-family: 'Cinzel', serif; font-size: 22px; letter-spacing: 6px; color: var(--gold); margin-bottom: 8px; }
+    .reserve-text { font-size: 10px; color: var(--ivory); opacity: 0.7; line-height: 1.6; max-width: 380px; margin: 0 auto; }
     .block { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 10px; margin-bottom: 12px; }
-    .block h3 { font-family: 'Cinzel', serif; font-size: 14px; margin-bottom: 4px; }
-    .stock-line { font-size: 10px; color: var(--ivory); opacity: 0.75; margin-bottom: 8px; }
+    .block h3 { font-family: 'Cinzel', serif; font-size: 14px; margin-bottom: 8px; }
     .note-err { font-size: 11px; color: #e74c3c; text-align: center; padding: 14px; }
 </style>
 </head>
@@ -66,34 +70,27 @@
         </div>
 
         <div class="pane active" id="pane-stock">
-            <div class="section-label">Приход сырья вручную</div>
-            <div class="hint">Закупки, которые шли через «Заказы поставщику» (Поставщики), уже на складе — вручную их вводить не нужно, иначе получится двойной учёт.</div>
+            <div class="section-label">Приход сырья, материалов и бланков вручную</div>
+            <div class="hint">Закупки через «Заказы поставщику» (Поставщики) уже на складе — вручную их вводить не нужно, иначе получится двойной учёт.</div>
             <div class="form-grid">
-                <input type="text" id="recv-name" placeholder="Название (напр. Ткань хлопок)">
+                <input type="text" id="recv-name" placeholder="Название (напр. Ткань хлопок, бланк футболка M чёрная)">
                 <input type="number" id="recv-qty" placeholder="Кол-во" min="0" step="0.01">
                 <input type="text" id="recv-unit" placeholder="Ед. (м, шт, кг)" value="шт">
                 <input type="number" id="recv-cost" placeholder="Цена за ед., €" min="0" step="0.01">
             </div>
             <button class="btn-cfg" id="btn-receive">ПРИНЯТЬ НА СКЛАД</button>
 
-            <div class="section-label">Возврат готовой продукции</div>
-            <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
-                <input type="text" id="return-name" placeholder="Название изделия">
-                <input type="number" id="return-qty" placeholder="Кол-во" min="0" step="1">
-                <button class="btn-cfg" id="btn-return">ВЕРНУТЬ НА СКЛАД</button>
-            </div>
-
-            <div class="section-label">Текущие остатки — Сырьё</div>
+            <div class="section-label">Сырьё и материалы (включая бланки)</div>
             <table>
                 <thead><tr><th>Название</th><th>Кол-во</th><th>Ед.</th><th>Ср. цена</th></tr></thead>
                 <tbody id="raw-rows"></tbody>
             </table>
 
-            <div class="section-label">Текущие остатки — Готовая продукция</div>
-            <table>
-                <thead><tr><th>Название</th><th>Кол-во</th><th>Ед.</th><th>Себест. ед.</th></tr></thead>
-                <tbody id="finished-rows"></tbody>
-            </table>
+            <div class="section-label">Готовая продукция</div>
+            <div class="reserve">
+                <div class="reserve-word">ЗАПАС</div>
+                <div class="reserve-text">Пока ничего не лежит. Станет полноценным складом, если по продажам будет видно, что какие-то изделия имеет смысл делать заранее.</div>
+            </div>
         </div>
 
         <div class="pane" id="pane-blanks">
@@ -130,9 +127,7 @@
         });
     });
 
-    // ---------- остатки ----------
-    let finishedStock = {};
-
+    // ---------- сырьё и материалы ----------
     async function upsertStock(item_name, item_type, business_line, deltaQty, newUnitCost, unit) {
         const { data: existing } = await supabase
             .from('warehouse_stock').select('*')
@@ -177,30 +172,11 @@
         loadStock();
     });
 
-    document.getElementById('btn-return').addEventListener('click', async () => {
-        const item_name = document.getElementById('return-name').value.trim();
-        const quantity = parseFloat(document.getElementById('return-qty').value) || 0;
-        if (!item_name || quantity <= 0) return;
-
-        await upsertStock(item_name, 'finished_good', 'atelier', quantity, undefined, 'шт');
-        await supabase.from('warehouse_movements').insert({
-            item_name, item_type: 'finished_good', business_line: 'atelier',
-            movement_type: 'return', quantity, unit: 'шт'
-        });
-        document.getElementById('return-name').value = '';
-        document.getElementById('return-qty').value = '';
-        loadStock();
-    });
-
     async function loadStock() {
-        const { data, error } = await supabase.from('warehouse_stock').select('*').order('item_name');
+        const { data, error } = await supabase.from('warehouse_stock').select('*')
+            .eq('item_type', 'raw_material').order('item_name');
         if (error) { console.error(error); return; }
-        const raw = (data || []).filter(r => r.item_type === 'raw_material');
-        const finished = (data || []).filter(r => r.item_type === 'finished_good');
-
-        finishedStock = {};
-        finished.forEach(r => { finishedStock[r.item_name] = Number(r.quantity); });
-
+        const raw = data || [];
         document.getElementById('raw-rows').innerHTML = raw.map(r => `
             <tr>
                 <td>${esc(r.item_name)}</td>
@@ -208,16 +184,6 @@
                 <td>${esc(r.unit)}</td>
                 <td class="amount">€${Number(r.avg_unit_cost).toFixed(2)}</td>
             </tr>`).join('') || '<tr><td colspan="4" style="color:#666;">Пусто</td></tr>';
-
-        document.getElementById('finished-rows').innerHTML = finished.map(r => `
-            <tr>
-                <td>${esc(r.item_name)}</td>
-                <td class="${Number(r.quantity) <= 0 ? 'low-stock' : ''}">${Number(r.quantity).toFixed(0)}</td>
-                <td>${esc(r.unit)}</td>
-                <td class="amount">€${Number(r.avg_unit_cost).toFixed(2)}</td>
-            </tr>`).join('') || '<tr><td colspan="4" style="color:#666;">Пусто</td></tr>';
-
-        renderBlanks();
     }
 
     // ---------- потребность в бланках ----------
@@ -258,10 +224,8 @@
                 tb += matrix[s].black; tw += matrix[s].white;
                 return `<tr><td>${s}</td><td class="num">${matrix[s].black}</td><td class="num">${matrix[s].white}</td><td class="num">${matrix[s].black + matrix[s].white}</td></tr>`;
             }).join('');
-            const stock = finishedStock[key];
             return `<div class="block">
                 <h3>${title}</h3>
-                <div class="stock-line">Готовой продукции на складе: ${stock != null ? stock : 'нет данных'}</div>
                 <table>
                     <thead><tr><th>Размер</th><th class="num">Чёрный</th><th class="num">Белый</th><th class="num">Всего</th></tr></thead>
                     <tbody>${body}<tr class="total-row"><td>ИТОГО</td><td class="num">${tb}</td><td class="num">${tw}</td><td class="num">${tb + tw}</td></tr></tbody>
