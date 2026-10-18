@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <!--
   production-pricing.html
-  v1.1.0 — 2026-10-19
+  v2.0.0 — 2026-10-19
   Производство → Общие параметры цены изделия (?garment=tshirt|hoodie|longsleeve).
-  Ткань = состав + цвет + плотность. Плотности относятся к составу (у каждого состава
-  свои, с ценами). Названия слева, цены справа; птичка — вариант, взятый в расчёт образца.
+  Таблица повторяет интерфейс покупателя из Ателье (порядок строк как в заказе).
+  Источник изделия: Бланки (куплены готовыми) или Пошив (шьём сами).
+  Ткань = состав + цвет + плотность; плотности относятся к составу, у каждой своя цена.
   Цены: pricing_params "gp|<изделие>|<параметр>". Названия/плотности ткани, птички,
   фото: storefront_config. ПОКА НЕ подключено к ценам клиентов в Ателье.
 -->
@@ -32,7 +33,7 @@
     .sec { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 6px; border-bottom: 1px solid #1d1d1d; padding-bottom: 3px; }
     .sublabel { font-size: 9px; color: #8a8a7a; text-transform: uppercase; letter-spacing: 1px; margin: 2px 0 2px 16px; }
     .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 11px; color: var(--ivory); }
-    .row.off { opacity: 0.42; }
+    .row.off { opacity: 0.4; }
     .row.sub .nm { padding-left: 16px; }
     .row .nm { flex: 1; min-width: 0; text-align: left; }
     .row .nm input[type="text"] { width: 100%; padding: 6px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
@@ -67,7 +68,7 @@
     <div class="title" id="title">ОБЩИЕ ПАРАМЕТРЫ ЦЕНЫ</div>
     <div class="panel">
         <div class="tabs" id="tabs"></div>
-        <div class="note">Производство: себестоимость и наценка изделия. Ткань описывается составом, цветом и плотностью; плотности относятся к составу, цена связана с плотностью. Птичка — какой вариант взят в расчёт образца. Страница пока не подключена к ценам клиентов в Ателье. Названия и плотности ткани, наоборот, уже общие с Ателье.</div>
+        <div class="note">Таблица повторяет заказ клиента в Ателье. Птичка — какой вариант взят в расчёт. Источник «Бланки»: считаются цена бланка, размер, нанесение, дополнения, пакет, накладные. Источник «Пошив»: ткань с плотностью, нитки, обтачка, ленты и работа пошива вместо бланка. Страница пока не подключена к ценам клиентов в Ателье; названия и плотности ткани уже общие с Ателье.</div>
         <div id="root"></div>
     </div>
 </div>
@@ -87,15 +88,15 @@
     document.getElementById('tabs').innerHTML = Object.entries(GARMENTS).map(([k, n]) =>
         `<a class="tab${k === garment ? ' active' : ''}" href="production-pricing.html?garment=${k}">${n}</a>`).join('');
 
-    const COLORS = [['black', 'Чёрный'], ['white', 'Белый']];
+    const COLORS = [['white', 'Белый'], ['black', 'Чёрный']];
     const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
-    const SCALES = [['a3', 'Нанесение A3'], ['a4', 'Нанесение A4'], ['logo-chest', 'Нанесение: лого на груди'],
-                    ['logo-sleeve', 'Нанесение: лого на рукаве'], ['custom', 'Нанесение: фактический размер']];
+    const SCALES = [['a3', 'Размер A3'], ['a4', 'Размер A4'], ['logo-chest', 'Лого 10×10'],
+                    ['logo-sleeve', 'Лого 7×7'], ['custom', 'Фактический размер']];
     const FACING = [['ribana', 'Рибана'], ['koshkorse', 'Кошкорсе']];
     const TAPES = [['twill', 'Киперная лента'], ['silicone', 'Силиконовая лента']];
     const EMB = [['front', 'Перед'], ['back', 'Спина']];
     const EXTRAS = [['label_permanent', 'Бирка постоянная'], ['label_removable', 'Бирка съёмная']];
-    const EXTRAS_HOODIE = [['drawstring', 'Шнурки'], ['zipper', 'Молния']];
+    const EXTRAS_HOODIE = [['drawstring', 'Шнурки для капюшона'], ['zipper', 'Застёжка молния']];
     const OVERHEAD = [['rent', 'Аренда'], ['electricity', 'Электричество'], ['gas', 'Газ'], ['water', 'Вода'],
                       ['salary', 'Зарплата'], ['taxes', 'Налоги'], ['other', 'Прочие накладные']];
     const BOOL = new Set(['drawstring', 'zipper']);
@@ -134,7 +135,7 @@
     });
 
     let sel = {
-        composition: comps[0], density: densMap[comps[0]][0], color: 'black',
+        source: 'sewing', composition: comps[0], density: densMap[comps[0]][0], color: 'black',
         technique: 'dtf', size: 'M', scale: 'a3', facing: 'ribana', tape: 'twill', emb: 'front',
         drawstring: false, zipper: false, photoDtf: null, photoEmb: null
     };
@@ -142,6 +143,7 @@
         const { data } = await supabase.from('storefront_config').select('value').eq('key', 'gp-sel.' + garment).maybeSingle();
         if (data && data.value) sel = { ...sel, ...data.value };
     } catch (e) { console.warn('[production-pricing] Сохранённый выбор недоступен.', e); }
+    if (sel.source !== 'blanks' && sel.source !== 'sewing') sel.source = 'sewing';
     if (!comps.includes(sel.composition)) sel.composition = comps[0];
     if (!densMap[sel.composition].includes(sel.density)) sel.density = densMap[sel.composition][0];
     if (!SIZES.includes(sel.size)) sel.size = 'M';
@@ -155,62 +157,85 @@
     const tick = (group, value) => `<input type="checkbox" data-group="${group}" data-value="${esc(value)}">`;
 
     function densityRowHtml(comp, name, p) {
-        return `<div class="row sub" data-density-row data-comp="${esc(comp)}" data-prev="${esc(name)}">
+        return `<div class="row sub" data-density-row data-src="sewing" data-comp="${esc(comp)}" data-prev="${esc(name)}">
             <span class="nm"><input type="text" data-density-name value="${esc(name)}" placeholder="160-180"></span>
             <span class="ctl"><input type="number" step="0.01" data-density-price value="${p}"><input type="checkbox" data-group="density" data-comp="${esc(comp)}" data-value="${esc(name)}"><button type="button" class="btn-x" data-del-density title="Удалить">✕</button></span>
         </div>`;
     }
 
     function build() {
+        const fixedRows = garment === 'hoodie'
+            ? row('Ворот с капюшоном', '') + row('Посадка: только OVERSIZE', '')
+            : row('Горловина круглая', '') + row('Посадка унисекс', '');
+        const sizeRows = SIZES.map(s => row(esc(s), price('size.' + s) + tick('size', s))).join('');
+        const colorRows = COLORS.map(([k, n]) => row(esc(n), tick('color', k))).join('');
         const fabricBlocks = comps.map(c => `
             ${row(`<input type="text" data-sf-label="${esc(c)}" value="${esc(labels[c] || '')}" placeholder="${esc(COMPOSITION_LABELS[c])}">`, tick('composition', c))}
             <div class="sublabel">Плотность, g/m²</div>
             ${densMap[c].map(d => densityRowHtml(c, d, densPrice(c, d))).join('')}
             <div class="row"><span class="nm"></span><span class="ctl"><button type="button" class="btn-mini" data-add-density="${esc(c)}">+ плотность</button></span></div>`).join('');
-        const colorRows = COLORS.map(([k, n]) => row(esc(n), tick('color', k))).join('');
-        const sizeRows = SIZES.map(s => row(esc(s), price('size.' + s) + tick('size', s))).join('');
-        const facingRows = FACING.map(([k, n]) => row(esc(n), price('facing.' + k) + tick('facing', k))).join('');
-        const tapeRows = TAPES.map(([k, n]) => row(esc(n), price('tape.' + k) + tick('tape', k))).join('');
+        const hoodieRows = garment === 'hoodie'
+            ? `<div class="sec">Шнурки и застёжка</div>` + EXTRAS_HOODIE.map(([k, n]) => row(esc(n), price('extra.' + k) + tick(k, k))).join('')
+            : '';
         const scaleRows = SCALES.map(([k, n]) => row(esc(n), price('scale.' + k) + tick('scale', k), 'data-needs="dtf"')).join('');
         const embRows = EMB.map(([k, n]) => row(esc(n), price('embroidery.' + k) + tick('emb', k), 'data-needs="embroidery"')).join('');
-        const extraRows = EXTRAS.map(([k, n]) => row(esc(n), price('extra.' + k))).join('') +
-            (garment === 'hoodie' ? EXTRAS_HOODIE.map(([k, n]) => row(esc(n), price('extra.' + k) + tick(k, k))).join('') : '');
+        const facingRows = FACING.map(([k, n]) => row(esc(n), price('facing.' + k) + tick('facing', k), 'data-src="sewing"')).join('');
+        const tapeRows = TAPES.map(([k, n]) => row(esc(n), price('tape.' + k) + tick('tape', k), 'data-src="sewing"')).join('');
+        const extraRows = EXTRAS.map(([k, n]) => row(esc(n), price('extra.' + k))).join('');
         const overRows = OVERHEAD.map(([k, n]) => row(esc(n), price('overhead.' + k))).join('');
 
         root.innerHTML = `
-            <div class="sec">Ткань</div>${fabricBlocks}
+            <div class="sec">Источник изделия</div>
+            ${row('Бланки (куплены готовыми)', tick('source', 'blanks'))}
+            ${row('Пошив (шьём сами)', tick('source', 'sewing'))}
+
+            <div class="sec">Размер</div>${sizeRows}
             <div class="sec">Цвет</div>${colorRows}
-            <div class="sec">Техника нанесения</div>
+            <div class="sec">Горловина и посадка</div>${fixedRows}
+            <div class="sec">Ткань</div>${fabricBlocks}
+            ${hoodieRows}
+
+            <div class="sec">Нанесение</div>
             ${row('DTF-печать', tick('technique', 'dtf'))}
+            <div class="sublabel">Размер</div>${scaleRows}
             <div class="photo-wrap" data-photo="dtf"></div>
             ${row('Вышивка', tick('technique', 'embroidery'))}
+            <div class="sublabel">Положение</div>${embRows}
             <div class="photo-wrap" data-photo="embroidery"></div>
-            <div class="sec">Размеры</div>${sizeRows}
-            <div class="sec">Нитки</div>${row('Нитки', price('material.thread'))}
-            <div class="sec">Материал обтачки</div>${facingRows}
-            <div class="sec">Усиление швов</div>${tapeRows}
-            <div class="sec">Работа</div>${row('Пошив', price('labor.sewing'))}
-            <div class="sec">Техника: DTF-печать</div>${scaleRows}
-            <div class="sec">Техника: вышивка</div>${embRows}
+
+            <div class="sec">Количество, шт.</div>
+            ${row('Количество', '<input type="number" min="1" step="1" data-qty value="1">')}
+
+            <div class="sec">Бланк</div>
+            ${row('Бланк (цена за штуку)', price('blank.price'), 'data-src="blanks"')}
+
+            <div class="sec">Пошив</div>
+            ${row('Нитки', price('material.thread'), 'data-src="sewing"')}
+            <div class="sublabel">Материал обтачки</div>${facingRows}
+            <div class="sublabel">Усиление швов</div>${tapeRows}
+            ${row('Работа: пошив', price('labor.sewing'), 'data-src="sewing"')}
+
             <div class="sec">Дополнения</div>${extraRows}
             <div class="sec">Упаковка</div>${row('Пакет', price('packaging'))}
             <div class="sec">Накладные</div>${overRows}
-            <div class="row tot"><span class="nm">ИТОГО себестоимость</span><span class="ctl" id="t-cost">€0.00</span></div>
+
+            <div class="row tot"><span class="nm">ИТОГО себестоимость (1 шт.)</span><span class="ctl" id="t-cost">€0.00</span></div>
             <div class="row"><span class="nm">Наценка, % от себестоимости</span><span class="ctl"><input type="number" step="0.1" data-margin value="${val('margin.percent')}"></span></div>
             <div class="row"><span class="nm">Наценка, €</span><span class="ctl" id="t-margin">€0.00</span></div>
-            <div class="row tot"><span class="nm">ИТОГО розничная цена</span><span class="ctl" id="t-retail">€0.00</span></div>
+            <div class="row tot"><span class="nm">ИТОГО розничная цена (1 шт.)</span><span class="ctl" id="t-retail">€0.00</span></div>
+            <div class="row tot"><span class="nm" id="t-total-label">ИТОГО за заказ</span><span class="ctl" id="t-total">€0.00</span></div>
             <div class="bar"><button class="btn-save" type="button" data-save>Сохранить</button><span class="status" id="status"></span></div>`;
         renderPhotos();
         syncTicks();
         recalc();
     }
 
-    // ---------- фото принта / вышивки (из базы клуба) ----------
+    // ---------- фото изделия с принтом / вышивкой (из базы клуба) ----------
     let prints = [];
     const bgStyle = (p) => p.bg === 'light' ? 'background:#ececec' : (p.bg === 'dark' ? 'background:#151515' : '');
 
     function renderPhotos() {
-        [['dtf', 'Фото принта', 'photoDtf'], ['embroidery', 'Фото вышивки', 'photoEmb']].forEach(([cat, label, key]) => {
+        [['dtf', 'Фото изделия с принтом', 'photoDtf'], ['embroidery', 'Фото изделия с вышивкой', 'photoEmb']].forEach(([cat, label, key]) => {
             const box = root.querySelector(`[data-photo="${cat}"]`);
             if (!box) return;
             const list = prints.filter(p => (p.category === 'embroidery') === (cat === 'embroidery'));
@@ -239,10 +264,11 @@
             else t.checked = sel[g] === t.dataset.value;
         });
         root.querySelectorAll('.row').forEach(r => {
+            let on = true;
             const t = r.querySelector('input[data-group]');
-            if (!t) return;
-            let on = t.checked;
+            if (t) on = t.checked;
             if (r.dataset.needs && sel.technique !== r.dataset.needs) on = false;
+            if (r.dataset.src && sel.source !== r.dataset.src) on = false;
             r.classList.toggle('off', !on);
         });
     }
@@ -262,24 +288,33 @@
 
     function recalc() {
         let cost = 0;
-        const d = densityRows().find(x => x.comp === sel.composition && x.name && x.name === sel.density);
-        if (d) cost += d.price;
+        if (sel.source === 'blanks') {
+            cost += num('blank.price');
+        } else {
+            const d = densityRows().find(x => x.comp === sel.composition && x.name && x.name === sel.density);
+            if (d) cost += d.price;
+            cost += num('material.thread');
+            if (sel.facing) cost += num('facing.' + sel.facing);
+            if (sel.tape) cost += num('tape.' + sel.tape);
+            cost += num('labor.sewing');
+        }
         cost += num('size.' + sel.size);
-        cost += num('material.thread');
-        if (sel.facing) cost += num('facing.' + sel.facing);
-        if (sel.tape) cost += num('tape.' + sel.tape);
-        cost += num('labor.sewing');
         if (sel.technique === 'dtf') cost += num('scale.' + sel.scale);
         if (sel.technique === 'embroidery') cost += num('embroidery.' + sel.emb);
         EXTRAS.forEach(([k]) => { cost += num('extra.' + k); });
         if (garment === 'hoodie') EXTRAS_HOODIE.forEach(([k]) => { if (sel[k]) cost += num('extra.' + k); });
         cost += num('packaging');
         OVERHEAD.forEach(([k]) => { cost += num('overhead.' + k); });
+
         const pct = parseFloat(root.querySelector('[data-margin]').value) || 0;
+        const qty = Math.max(1, parseInt(root.querySelector('[data-qty]').value) || 1);
         const margin = cost * pct / 100;
+        const retail = cost + margin;
         root.querySelector('#t-cost').textContent = eur(cost);
         root.querySelector('#t-margin').textContent = eur(margin);
-        root.querySelector('#t-retail').textContent = eur(cost + margin);
+        root.querySelector('#t-retail').textContent = eur(retail);
+        root.querySelector('#t-total-label').textContent = `ИТОГО за заказ (${qty} шт.)`;
+        root.querySelector('#t-total').textContent = eur(retail * qty);
     }
 
     // ---------- события ----------
@@ -317,7 +352,7 @@
             r.dataset.prev = nv;
             syncTicks();
         }
-        if (t.matches('[data-price], [data-density-price], [data-margin], [data-density-name]')) recalc();
+        if (t.matches('[data-price], [data-density-price], [data-margin], [data-density-name], [data-qty]')) recalc();
     });
 
     root.addEventListener('click', async (e) => {
