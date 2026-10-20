@@ -182,7 +182,13 @@
         const { data, error } = await supabase.from('warehouse_stock').select('*')
             .eq('item_type', 'raw_material').order('item_name');
         if (error) { console.error(error); return; }
-        const raw = data || [];
+               const all = data || [];
+        const blanks = all.filter(r => r.kind === 'blank');
+        const raw = all.filter(r => r.kind !== 'blank');
+        const GARMENT_RU = { tshirt: 'Футболка', hoodie: 'Худи', longsleeve: 'Лонгслив' };
+        const COLOR_RU = { black: 'Чёрный', white: 'Белый' };
+        const COMP_RU = { cotton100: '100% COTTON', stretch: 'STRETCH', cotton80poly20: '80% COTTON / 20% POLYESTER', cotton100fleece: '100% COTTON FLEECE' };
+
         document.getElementById('raw-rows').innerHTML = raw.map(r => `
             <tr>
                 <td>${esc(r.item_name)}</td>
@@ -190,8 +196,18 @@
                 <td>${esc(r.unit)}</td>
                 <td class="amount">€${Number(r.avg_unit_cost).toFixed(2)}</td>
             </tr>`).join('') || '<tr><td colspan="4" style="color:#666;">Пусто</td></tr>';
-    }
 
+        document.getElementById('blank-rows').innerHTML = blanks.map(r => `
+            <tr>
+                <td>${esc(GARMENT_RU[r.garment] || r.item_name)}</td>
+                <td>${esc(r.size)}</td>
+                <td>${esc(COLOR_RU[r.color] || r.color)}</td>
+                <td>${esc(COMP_RU[r.composition] || r.composition)}</td>
+                <td>${esc(r.density)}</td>
+                <td class="num ${Number(r.quantity) <= 0 ? 'low-stock' : ''}">${Number(r.quantity).toFixed(0)}</td>
+                <td class="amount">€${Number(r.avg_unit_cost).toFixed(2)}</td>
+            </tr>`).join('') || '<tr><td colspan="7" style="color:#666;">Пусто</td></tr>';
+    }
     // ---------- потребность в бланках ----------
     const GARMENTS = [['tshirt', 'ФУТБОЛКА'], ['hoodie', 'ХУДИ'], ['longsleeve', 'ЛОНГСЛИВ']];
     const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
