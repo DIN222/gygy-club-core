@@ -246,8 +246,18 @@
                 tb += matrix[s].black; tw += matrix[s].white;
                 return `<tr><td>${s}</td><td class="num">${matrix[s].black}</td><td class="num">${matrix[s].white}</td><td class="num">${matrix[s].black + matrix[s].white}</td></tr>`;
             }).join('');
+                      const waitMap = {};
+            rows.filter(r => r.atelier_order.garment === key && r.production_status === 'waiting').forEach(r => {
+                const o = r.atelier_order;
+                const k = `${o.size} ${o.color === 'black' ? 'чёрный' : 'белый'}`;
+                waitMap[k] = (waitMap[k] || 0) + (Number(o.quantity) || 1);
+            });
+            const waitingLine = Object.keys(waitMap).length
+                ? `<div style="font-size:10px; color:#e0a030; margin-bottom:6px;">Ожидают бланк: ${Object.entries(waitMap).map(([k, v]) => `${k} — ${v}`).join('; ')}</div>`
+                : '';
             return `<div class="block">
                 <h3>${title}</h3>
+                ${waitingLine}
                 <table>
                     <thead><tr><th>Размер</th><th class="num">Чёрный</th><th class="num">Белый</th><th class="num">Всего</th></tr></thead>
                     <tbody>${body}<tr class="total-row"><td>ИТОГО</td><td class="num">${tb}</td><td class="num">${tw}</td><td class="num">${tb + tw}</td></tr></tbody>
