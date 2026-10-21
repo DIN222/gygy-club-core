@@ -260,6 +260,7 @@
                 <tbody>${items.map(itemRowHtml).join('') || itemRowHtml()}</tbody>
             </table></div>
             <div class="items-hint">Бланк: в «Позиции» напишите «Футболка», «Худи» или «Лонгслив»; обязательны размер, цвет (чёрный/белый), состав и плотность. Ткань: название, состав, цвет, плотность, ширина рулона; единица — м. Материал: только название (нитки, лента и т.д.).</div>
+                        <div class="src-links"><a class="lnk" href="product-photos.html?order=${esc(o.id)}">Фото товара этого заказа (галерея) →</a></div>
             <button class="btn-mini btn-add-item" type="button">+ позиция</button>
             <div class="fields-note"><label>Заметка</label><textarea rows="2" data-of="note">${esc(o.note || '')}</textarea></div>
             <div class="ord-totals">Товары ${eur(goods)} + доставка ${eur(o.delivery_cost)} = ${eur(total)}</div>
