@@ -116,7 +116,9 @@
     const val = (name) => Number(allPrices[pk(name)] ?? allPrices[`${garment}|${name}`] ?? 0);
     // цена плотности: по составу → прежняя общая цена плотности → 0
     const densPrice = (comp, d) => Number(allPrices[pk(`density.${comp}.${d}`)] ?? allPrices[pk(`density.${d}`)] ?? 0);
-
+    // норма расхода ткани, м на 1 шт. (ширина рулона 180 см); по умолчанию — верхняя граница диапазона
+    const NORM_DEFAULTS = { tshirt: { S: 0.8, M: 0.95, L: 1.0, XL: 1.15, XXL: 1.2 } };
+    const normVal = (s) => Number(allPrices[pk('norm.fabric.' + s)] ?? (NORM_DEFAULTS[garment] || {})[s] ?? 0);
     const sf = await loadStorefrontConfig(garment);
     let rawCfg = null;
     try {
