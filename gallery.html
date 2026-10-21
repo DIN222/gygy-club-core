@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!-- gallery.html — v1.0.0 — 2026-10-21 — Галерея: принты и вышивка Ателье; фото товара по направлениям -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Галерея</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .grid { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; }
+    .group-label { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 14px; }
+    .block-btn { background: #0a0a0a; border: 1px solid var(--gold-dim); color: var(--gold); padding: 16px; text-align: center; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; text-decoration: none; display: block; }
+    .block-btn:hover { border-color: var(--gold); }
+    .block-btn small { display: block; margin-top: 4px; font-family: 'Share Tech Mono', monospace; font-size: 9px; opacity: 0.65; font-weight: 400; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+<div class="page-wrap">
+    <div class="title">ГАЛЕРЕЯ</div>
+    <div class="grid">
+        <div class="group-label">1. Принты и вышивка Ателье</div>
+        <a class="block-btn" href="prints-admin.html">ПРИНТЫ И ВЫШИВКА<small id="c-prints">…</small></a>
+
+        <div class="group-label">2. Фото товара</div>
+        <a class="block-btn" href="product-photos.html?line=atelier">АТЕЛЬЕ<small id="c-atelier">…</small></a>
+        <a class="block-btn" href="product-photos.html?line=store">ЛАВКА ДРЕВНОСТЕЙ<small id="c-store">…</small></a>
+        <a class="block-btn" href="product-photos.html?line=souvenirs">СУВЕНИРЫ<small id="c-souvenirs">…</small></a>
+    </div>
+</div>
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const set = (id, text) => { document.getElementById(id).textContent = text; };
+
+    const prints = await supabase.from('club_prints').select('id', { count: 'exact', head: true });
+    set('c-prints', prints.error ? 'принты клуба, база клуба' : `${prints.count} шт. · база клуба`);
+
+    const photos = await supabase.from('product_photos').select('line');
+    const counts = { atelier: 0, store: 0, souvenirs: 0 };
+    (photos.data || []).forEach(r => { if (counts[r.line] !== undefined) counts[r.line]++; });
+    ['atelier', 'store', 'souvenirs'].forEach(k => set('c-' + k, photos.error ? 'фото товара' : `${counts[k]} фото`));
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+</script>
+</body>
+</html>
