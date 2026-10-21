@@ -290,19 +290,20 @@
         }));
     }
 
-    function recalc() {
+       function recalc() {
         let cost = 0;
         if (sel.source === 'blanks') {
             cost += num('blank.price');
+            cost += num('size.' + sel.size);   // цена размера учитывается для бланков
         } else {
             const d = densityRows().find(x => x.comp === sel.composition && x.name && x.name === sel.density);
-            if (d) cost += d.price;
+            // ткань = норма расхода (м) на выбранный размер × цена метра выбранной плотности
+            if (d) cost += d.price * num('norm.fabric.' + sel.size);
             cost += num('material.thread');
             if (sel.facing) cost += num('facing.' + sel.facing);
             if (sel.tape) cost += num('tape.' + sel.tape);
             cost += num('labor.sewing');
         }
-        cost += num('size.' + sel.size);
         if (sel.technique === 'dtf') cost += num('scale.' + sel.scale);
         if (sel.technique === 'embroidery') cost += num('embroidery.' + sel.emb);
         EXTRAS.forEach(([k]) => { cost += num('extra.' + k); });
@@ -320,7 +321,6 @@
         root.querySelector('#t-total-label').textContent = `ИТОГО за заказ (${qty} шт.)`;
         root.querySelector('#t-total').textContent = eur(retail * qty);
     }
-
     // ---------- события ----------
     root.addEventListener('change', (e) => {
         const t = e.target.closest('input[data-group]');
