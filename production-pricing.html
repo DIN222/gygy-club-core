@@ -170,6 +170,7 @@
             ? row('Ворот с капюшоном', '') + row('Посадка: только OVERSIZE', '')
             : row('Горловина круглая', '') + row('Посадка унисекс', '');
         const sizeRows = SIZES.map(s => row(esc(s), price('size.' + s) + tick('size', s))).join('');
+              const normRows = SIZES.map(s => row(esc(s), `<input type="number" step="0.01" data-price="norm.fabric.${s}" value="${normVal(s)}">`, 'data-src="sewing"')).join('');
         const colorRows = COLORS.map(([k, n]) => row(esc(n), tick('color', k))).join('');
         const fabricBlocks = comps.map(c => `
             ${row(`<input type="text" data-sf-label="${esc(c)}" value="${esc(labels[c] || '')}" placeholder="${esc(COMPOSITION_LABELS[c])}">`, tick('composition', c))}
