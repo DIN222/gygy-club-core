@@ -174,7 +174,7 @@
         const colorRows = COLORS.map(([k, n]) => row(esc(n), tick('color', k))).join('');
         const fabricBlocks = comps.map(c => `
             ${row(`<input type="text" data-sf-label="${esc(c)}" value="${esc(labels[c] || '')}" placeholder="${esc(COMPOSITION_LABELS[c])}">`, tick('composition', c))}
-            <div class="sublabel">Плотность, g/m²</div>
+              <div class="sublabel">Плотность, g/m² · цена за метр, €</div>
             ${densMap[c].map(d => densityRowHtml(c, d, densPrice(c, d))).join('')}
             <div class="row"><span class="nm"></span><span class="ctl"><button type="button" class="btn-mini" data-add-density="${esc(c)}">+ плотность</button></span></div>`).join('');
         const hoodieRows = garment === 'hoodie'
