@@ -311,7 +311,10 @@
         const pay = s.paid ? '<span class="chip ok">оплачено</span>'
             : s.cod ? '<span class="chip warn">наложенный: ждёт</span>'
             : '<span class="chip warn">ждёт оплаты</span>';
-        return ship + pay;
+               const prod = r.production_status === 'waiting' ? '<span class="chip warn">ожидает бланк</span>'
+            : r.production_status === 'consumed' ? '<span class="chip ok">материал списан</span>'
+            : r.production_status === 'error' ? '<span class="chip warn">ошибка списания</span>' : '';
+        return prod + ship + pay;
     }
 
     function cardHtml(r) {
