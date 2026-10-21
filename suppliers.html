@@ -238,8 +238,9 @@
                 ${items.map(i => `<div class="ro-line">${esc(itemTitle(i))} — ${Number(i.quantity)} ${esc(i.unit)} × ${eur(i.unit_price)}</div>`).join('')}
                 <div class="ro-line">Доставка: ${eur(o.delivery_cost)}</div>
                 ${o.received_date ? `<div class="ro-line">Принят: ${esc(o.received_date)}</div>` : ''}
-                ${o.source ? `<div class="ro-line">Источник: ${esc(o.source)}</div>` : ''}
+                               ${o.source ? `<div class="ro-line">Источник: ${esc(o.source)}</div>` : ''}
                 ${sourceLinks(sup)}
+                <div class="src-links"><a class="lnk" href="product-photos.html?order=${esc(o.id)}">Фото товара этого заказа (галерея) →</a></div>
                 ${o.note ? `<div class="ro-line">Заметка: ${esc(o.note)}</div>` : ''}
                 <div class="ord-bar">${o.status === 'cancelled' ? '<button class="btn-mini btn-delete-order" type="button">Удалить</button>' : ''}<span class="ord-status"></span></div>
             </div></details>`;
