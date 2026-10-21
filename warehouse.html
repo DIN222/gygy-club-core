@@ -215,7 +215,7 @@
 
     async function loadOrders() {
         const { data, error } = await supabase.from('income_entries')
-            .select('atelier_order, order_date').eq('business_line', 'atelier')
+                    .select('atelier_order, order_date, production_status').eq('business_line', 'atelier')
             .order('order_date', { ascending: false }).limit(2000);
         const note = document.getElementById('blanks-note');
         if (error) {
