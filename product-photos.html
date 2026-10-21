@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<!--
+  product-photos.html — v1.0.0 — 2026-10-21
+  Галерея → фото товара (?line=atelier|store|souvenirs, ?order=<id заказа поставщику>).
+  Фото лежат в той же корзине, что принты клуба (папка products/), список — в таблице product_photos.
+  Видят и меняют только сотрудники.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Фото товара</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 19px; margin-bottom: 14px; text-align: center; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 900px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab { flex: 1; text-align: center; padding: 8px; border: 1px solid var(--gold-dim); color: var(--gold); text-decoration: none; font-size: 11px; font-family: 'Cinzel', serif; font-weight: 700; background: #0a0a0a; }
+    .tab.active { background: var(--gold); color: #000; border-color: var(--gold); }
+    .order-note { font-size: 11px; color: var(--ivory); border: 1px solid var(--gold-dim); background: #14110a; padding: 8px 10px; margin-bottom: 12px; line-height: 1.5; }
+    .lnk { color: #4da3ff; text-decoration: underline; }
+
+    .addbox { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 10px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .add-title { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; }
+    .addbox input[type="file"] { color: var(--ivory); font-family: inherit; font-size: 11px; }
+    .addbox input[type="text"], .addbox select { padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .add-row { display: flex; gap: 8px; }
+    .add-row select { flex: 1; min-width: 0; }
+    .btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 7px 12px; font-size: 11px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+    .btn:hover { border-color: var(--gold); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .progress { font-size: 11px; color: var(--ivory); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .card { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 6px; }
+    .thumb { width: 100%; aspect-ratio: 1; background: #151515; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .meta { font-size: 9px; color: #9a9a8a; margin: 5px 0 2px; line-height: 1.4; }
+    .chip { border: 1px solid var(--gold-dim); padding: 1px 5px; font-size: 9px; color: var(--gold); text-transform: uppercase; }
+    .cap { font-size: 11px; color: var(--ivory); margin: 3px 0; word-break: break-word; }
+    .sup { font-size: 10px; color: #9a9a8a; margin-bottom: 4px; }
+    .del { width: 100%; background: #000; color: #9a9a8a; border: 1px solid #333; padding: 4px; font-size: 10px; cursor: pointer; font-family: inherit; }
+    .del:hover { color: #e74c3c; border-color: #e74c3c; }
+    .note { font-size: 11px; color: #666; text-align: center; padding: 20px; }
+    .note.error { color: #e74c3c; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-gallery">&lt;&lt;</a></div>
+
+<div class="page-wrap">
+    <div class="title" id="title">ГАЛЕРЕЯ — ФОТО ТОВАРА</div>
+    <div class="panel">
+        <div class="tabs" id="tabs"></div>
+        <div class="order-note" id="order-note" style="display:none;"></div>
+
+        <div class="addbox">
+            <div class="add-title">Добавить фото товара</div>
+            <input type="file" id="add-files" accept="image/*" multiple>
+            <div class="add-row">
+                <select id="add-line">
+                    <option value="atelier">Ателье</option>
+                    <option value="store">Лавка древностей</option>
+                    <option value="souvenirs">Сувениры</option>
+                </select>
+                <select id="add-supplier"><option value="">Поставщик (необязательно)</option></select>
+            </div>
+            <input type="text" id="add-caption" placeholder="Подпись (например: ткань с принтом, ваза 1930-х)">
+            <button class="btn" id="btn-add" type="button">Загрузить</button>
+            <div class="progress" id="add-status"></div>
+        </div>
+
+        <div class="note" id="note" style="display:none;"></div>
+        <div class="grid" id="grid"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const LINE_NAMES = { atelier: 'Ателье', store: 'Лавка древностей', souvenirs: 'Сувениры' };
+    const params = new URLSearchParams(location.search);
+    const urlLine = params.get('line');
+    const line = LINE_NAMES[urlLine] ? urlLine : 'all';
+    const rawOrder = params.get('order');
+    const orderId = rawOrder && /^[0-9a-f-]{36}$/i.test(rawOrder) ? rawOrder : null;
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const safeHttps = (u) => /^https:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
+
+    document.getElementById('title').textContent =
+        'ГАЛЕРЕЯ — ФОТО ТОВАРА' + (line !== 'all' ? ' — ' + LINE_NAMES[line].toUpperCase() : '');
+
+    const tabLink = (l) => {
+        const p = [];
+        if (l) p.push('line=' + l);
+        if (orderId) p.push('order=' + orderId);
+        return 'product-photos.html' + (p.length ? '?' + p.join('&') : '');
+    };
+    document.getElementById('tabs').innerHTML = [['', 'Все'], ['atelier', 'Ателье'], ['store', 'Лавка'], ['souvenirs', 'Сувениры']]
+        .map(([k, n]) => `<a class="tab${(k || 'all') === line ? ' active' : ''}" href="${tabLink(k)}">${n}</a>`).join('');
+
+    const addLine = document.getElementById('add-line');
+    const addSupplier = document.getElementById('add-supplier');
+    addLine.value = line !== 'all' ? line : 'atelier';
+
+    // поставщики для выпадающего списка
+    {
+        const { data } = await supabase.from('suppliers').select('id, name').order('name');
+        (data || []).forEach(s => {
+            const o = document.createElement('option');
+            o.value = s.id;
+            o.textContent = s.name;
+            addSupplier.appendChild(o);
+        });
+    }
+
+    // заказ поставщику (если пришли по ссылке из заказа)
+    if (orderId) {
+        const { data } = await supabase.from('supplier_orders')
+            .select('id, reference, order_date, supplier_id').eq('id', orderId).maybeSingle();
+        const note = document.getElementById('order-note');
+        note.style.display = 'block';
+        if (data) {
+            if (data.supplier_id) addSupplier.value = data.supplier_id;
+            note.innerHTML = `Заказ поставщику ${esc(data.reference || '№' + String(data.id).slice(0, 6))} от ${esc(data.order_date)}. Новые фото привязываются к этому заказу. <a class="lnk" href="suppliers.html">К поставщикам</a> · <a class="lnk" href="${tabLink(line === 'all' ? '' : line).replace(/[?&]order=[^&]*/, '')}">показать все фото</a>`;
+        } else {
+            note.textContent = 'Заказ не найден; фото показываются без привязки к заказу.';
+        }
+    }
+
+    let rows = [];
+    const grid = document.getElementById('grid');
+
+    function render() {
+        grid.innerHTML = rows.map(r => {
+            const url = safeHttps(r.image_url);
+            const supName = r.suppliers && r.suppliers.name ? r.suppliers.name : '';
+            const ref = r.supplier_orders && r.supplier_orders.reference ? r.supplier_orders.reference : '';
+            return `<div class="card" data-id="${esc(r.id)}">
+                <a href="${esc(url)}" target="_blank" rel="noopener noreferrer"><div class="thumb"><img src="${esc(url)}" loading="lazy" alt=""></div></a>
+                <div class="meta"><span class="chip">${esc(LINE_NAMES[r.line] || r.line)}</span> ${esc(new Date(r.created_at).toLocaleDateString())}</div>
+                ${r.caption ? `<div class="cap">${esc(r.caption)}</div>` : ''}
+                ${(supName || ref) ? `<div class="sup">${esc([supName, ref].filter(Boolean).join(' · '))}</div>` : ''}
+                <button class="del" type="button">Удалить</button>
+            </div>`;
+        }).join('');
+        const note = document.getElementById('note');
+        note.className = 'note';
+        note.style.display = rows.length ? 'none' : 'block';
+        note.textContent = 'Фото пока нет.';
+    }
+
+    async function load() {
+        let q = supabase.from('product_photos').select('*, suppliers(name), supplier_orders(reference)')
+            .order('created_at', { ascending: false }).limit(300);
+        if (line !== 'all') q = q.eq('line', line);
+        if (orderId) q = q.eq('order_id', orderId);
+        const { data, error } = await q;
+        if (error) {
+            console.error(error);
+            const note = document.getElementById('note');
+            note.className = 'note error';
+            note.style.display = 'block';
+            note.textContent = 'Не удалось загрузить фото: ' + (error.message || '') + ' — проверьте, что SQL выполнен.';
+            return;
+        }
+        rows = data || [];
+        render();
+    }
+
+    // сжатие: длинная сторона до 1600 px, JPEG
+    function resizeToJpeg(file, maxDim = 1600) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('Не удалось прочитать файл'));
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onerror = () => reject(new Error('Файл не похож на изображение'));
+                img.onload = () => {
+                    let { width, height } = img;
+                    if (width > maxDim || height > maxDim) {
+                        const r = Math.min(maxDim / width, maxDim / height);
+                        width = Math.round(width * r);
+                        height = Math.round(height * r);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('Не удалось сохранить изображение')), 'image/jpeg', 0.86);
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    document.getElementById('btn-add').addEventListener('click', async () => {
+        const input = document.getElementById('add-files');
+        const status = document.getElementById('add-status');
+        const btn = document.getElementById('btn-add');
+        const files = [...input.files];
+        if (!files.length) { status.textContent = 'Выберите файлы.'; return; }
+
+        const lineValue = addLine.value;
+        const caption = document.getElementById('add-caption').value.trim() || null;
+        const supplierId = addSupplier.value || null;
+
+        btn.disabled = true;
+        let ok = 0;
+        const failed = [];
+        for (let i = 0; i < files.length; i++) {
+            status.textContent = `Загружаю ${i + 1} из ${files.length}…`;
+            try {
+                const blob = await resizeToJpeg(files[i]);
+                const path = `products/${lineValue}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
+                const { error: upErr } = await supabase.storage.from('club-prints').upload(path, blob, { contentType: 'image/jpeg' });
+                if (upErr) throw upErr;
+                const { data: urlData } = supabase.storage.from('club-prints').getPublicUrl(path);
+                const { error: insErr } = await supabase.from('product_photos').insert({
+                    line: lineValue, caption, supplier_id: supplierId, order_id: orderId,
+                    image_url: urlData.publicUrl, storage_path: path
+                });
+                if (insErr) {
+                    await supabase.storage.from('club-prints').remove([path]);
+                    throw insErr;
+                }
+                ok++;
+            } catch (e) {
+                console.error('[ProductPhotos] Не загрузилось:', files[i].name, e);
+                failed.push(`${files[i].name}: ${e.message || e}`);
+            }
+        }
+        btn.disabled = false;
+        input.value = '';
+        status.textContent = failed.length
+            ? `Загружено ${ok} из ${files.length}. Не загрузились: ${failed.join('; ')}`
+            : `Готово: загружено ${ok}.`;
+        await load();
+    });
+
+    grid.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.del');
+        if (!btn) return;
+        const id = btn.closest('.card').dataset.id;
+        const row = rows.find(r => String(r.id) === id);
+        if (!row || !confirm('Удалить фото насовсем?')) return;
+        const { data, error } = await supabase.from('product_photos').delete().eq('id', id).select('id');
+        if (error || !data || !data.length) { alert('Не удалось удалить: ' + (error ? error.message : 'нет прав')); return; }
+        const { error: stErr } = await supabase.storage.from('club-prints').remove([row.storage_path]);
+        if (stErr) console.warn('[ProductPhotos] Файл не удалён из хранилища', stErr);
+        rows = rows.filter(r => String(r.id) !== id);
+        render();
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => history.back());
+    document.getElementById('btn-gallery').addEventListener('click', () => window.location.href = 'gallery.html');
+
+    load();
+</script>
+</body>
+</html>
