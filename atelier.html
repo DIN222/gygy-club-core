@@ -1247,7 +1247,8 @@
             if (order.decoration) {
                 if (assets.designBlob) order.designUrl = await uploadOrderAsset(`orders/${order.orderNumber}-design.png`, assets.designBlob);
                 else if (assets.designUrl) order.designUrl = assets.designUrl;
-                if (assets.mockupBlob) order.mockupUrl = await uploadOrderAsset(`orders/${order.orderNumber}-mockup.png`, assets.mockupBlob);
+                               if (assets.mockupBlob) order.mockupUrl = await uploadOrderAsset(`orders/${order.orderNumber}-mockup.png`, assets.mockupBlob);
+                else if (assets.mockupUrl) order.mockupUrl = assets.mockupUrl;
             }
         } catch (e) {
             console.warn('[Atelier] Картинки заказа не загрузились', e);
