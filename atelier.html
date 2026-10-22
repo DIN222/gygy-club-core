@@ -1332,16 +1332,24 @@
                 recipientPhone: phone, recipientMessenger: messenger, recipientPostOffice: postOffice,
                 recipientName: `${lastName} ${firstName}`, recipientAddress: postOffice,
                 paymentMethod,
-                decoration: state.currentPrint ? {
+                              decoration: state.embProduct ? {
+                    source: 'club', shared: true, category: 'embroidery', technique: 'embroidery',
+                    position: state.embProduct.position, scalePreset: null, scaleCm: null,
+                    actualSizeOnPreview: '', productId: state.embProduct.id, productTitle: state.embProduct.title
+                } : (state.currentPrint ? {
                     source: state.currentPrint.source,
                     shared: !!state.currentPrint.shared,
                     category: state.currentPrint.category || null,
                     technique: state.technique,
                     position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
-                    actualSizeOnPreview: actualPrintSizeLabel()
-                } : null,
+                    actualSizeOnPreview: actualPrintSizeLabel(),
+                    printId: state.currentPrint.id || null
+                } : null),
                 unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
-                pricing: computeBreakdown(pricingParams, pricingInput())
+                pricing: state.embProduct
+                    ? { lines: [{ key: 'emb.product', label: 'Изделие с вышивкой (цена из галереи)', group: 'Изделие', amount: unitPrice() }],
+                        cost: unitPrice(), marginPercent: 0, margin: 0, retail: unitPrice() }
+                    : computeBreakdown(pricingParams, pricingInput())
             };
             const assets = {
                 designUrl: (state.currentPrint && /^https:\/\//i.test(state.currentPrint.design)) ? state.currentPrint.design : null,
