@@ -101,7 +101,8 @@ export async function getFeatured(threshold = 10) {
     const { data, error } = await supabase
         .from(TABLE)
         .select('*')
-        .eq('public_likes_allowed', true)
+               .eq('public_likes_allowed', true)
+        .eq('published', true)
         .gte('likes', threshold)
         .order('likes', { ascending: false });
     if (error) throw error;
