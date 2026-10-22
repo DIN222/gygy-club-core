@@ -107,7 +107,8 @@
     const safeHttps = (u) => /^https:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
     const BG_OPTIONS = [['light', 'Light'], ['dark', 'Dark'], ['check', 'Grid']];
 
-    let rows = [];
+        let rows = [];
+    let stats = {};
     const flags = new Map(); // id -> причина
 
     function visibleRows() {
@@ -151,7 +152,8 @@
             note.textContent = 'Не удалось загрузить принты: ' + (error.message || '');
             return;
         }
-        rows = data || [];
+               rows = data || [];
+        await loadStats();
         render();
     }
 
