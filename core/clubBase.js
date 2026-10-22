@@ -21,7 +21,8 @@ let eventBus = null;
 async function refreshCache() {
     const { data, error } = await supabase
         .from(TABLE)
-        .select('*')
+                .select('*')
+        .eq('published', true)
         .order('added_at', { ascending: false });
     if (error) {
         console.error('[clubBase] Ошибка чтения таблицы — проверьте RLS-политики.', error);
