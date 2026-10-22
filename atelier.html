@@ -1351,12 +1351,14 @@
                         cost: unitPrice(), marginPercent: 0, margin: 0, retail: unitPrice() }
                     : computeBreakdown(pricingParams, pricingInput())
             };
-            const assets = {
+                       const assets = state.embProduct ? {
+                designUrl: state.embProduct.image_url, designBlob: null,
+                mockupUrl: state.embProduct.image_url, mockupBlob: null
+            } : {
                 designUrl: (state.currentPrint && /^https:\/\//i.test(state.currentPrint.design)) ? state.currentPrint.design : null,
                 designBlob: (state.currentPrint && state.currentPrint.blob) || null,
                 mockupBlob: await renderMockupBlob()
             };
-
             closeModal(document.getElementById('modal-confirm-order'));
 
             if (paymentMethod === 'cod') {
