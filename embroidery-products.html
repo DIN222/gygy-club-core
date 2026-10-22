@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<!--
+  embroidery-products.html — v1.0.0 — 2026-10-22
+  Галерея → Изделия с вышивкой: готовое изделие для клиентской витрины.
+  Фото собирается из фото изделия и вышивки клуба (или загружается готовое),
+  параметры (изделие, цвет, состав, плотность, положение, размеры), цена.
+  Выставить на витрину / убрать; статистика (выбрано / заказано).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Изделия с вышивкой</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 40px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 19px; margin-bottom: 14px; text-align: center; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 900px; }
+    .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .hintline { font-size: 10px; color: #9a9a8a; }
+    .btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 7px 12px; font-size: 11px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+    .btn:hover { border-color: var(--gold); }
+    .btn.primary { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 900; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .progress { font-size: 11px; color: var(--ivory); }
+    .progress.error { color: #e74c3c; }
+    .progress.ok { color: #6fd48a; }
+
+    .builder { border: 1px solid var(--gold); background: #0a0a0a; padding: 12px; margin-bottom: 16px; }
+    .b-title { font-family: 'Cinzel', serif; font-size: 14px; margin-bottom: 10px; }
+    .b-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .b-col { display: flex; flex-direction: column; gap: 8px; }
+    .b-col label { display: block; font-size: 9px; color: #9a9a8a; text-transform: uppercase; }
+    .b-col input[type="text"], .b-col input[type="number"], .b-col select { width: 100%; margin-top: 2px; padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .b-col input[type="range"] { width: 100%; accent-color: var(--gold); }
+    .b-col input[type="file"] { color: var(--ivory); font-family: inherit; font-size: 11px; }
+    .sizes { display: flex; gap: 10px; flex-wrap: wrap; }
+    .szl { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ivory); text-transform: none; }
+    .b-sub { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; }
+    canvas { width: 100%; max-width: 420px; height: auto; border: 1px solid var(--gold-dim); background: #111; }
+    .or { font-size: 10px; color: #9a9a8a; }
+    .b-bar { margin-top: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    .strip { display: flex; gap: 5px; overflow-x: auto; }
+    .thumb { flex: 0 0 48px; width: 48px; height: 48px; padding: 0; border: 1px solid var(--gold-dim); background: repeating-conic-gradient(#5a5a5a 0% 25%, #8a8a8a 0% 50%) 50% / 10px 10px; cursor: pointer; }
+    .thumb.sel { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+    .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .muted { font-size: 10px; color: #777; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+    .card { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .thumb-lg { width: 100%; aspect-ratio: 1; background: #151515; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .thumb-lg img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .c-title { font-size: 12px; color: var(--ivory); font-weight: 700; word-break: break-word; }
+    .c-meta { font-size: 10px; color: #9a9a8a; line-height: 1.5; }
+    .c-price { font-size: 14px; color: var(--gold); font-weight: 900; }
+    .c-stat { font-size: 10px; color: var(--ivory); opacity: 0.8; }
+    .c-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+    .pubbtn { background: #000; color: #9a9a8a; border: 1px solid #444; padding: 5px 8px; font-size: 10px; cursor: pointer; font-family: inherit; }
+    .pubbtn.on { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 900; }
+    .mini { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 5px 8px; font-size: 10px; cursor: pointer; font-family: inherit; }
+    .mini.del { color: #9a9a8a; border-color: #333; }
+    .mini.del:hover { color: #e74c3c; border-color: #e74c3c; }
+    .note { font-size: 11px; color: #666; text-align: center; padding: 20px; }
+    .note.error { color: #e74c3c; }
+    @media (max-width: 640px) { .b-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-gallery">&lt;&lt;</a></div>
+<datalist id="dl-density"><option value="160-180"></option><option value="180-200"></option><option value="220-240"></option><option value="280-320"></option></datalist>
+
+<div class="page-wrap">
+    <div class="title">ГАЛЕРЕЯ — ИЗДЕЛИЯ С ВЫШИВКОЙ</div>
+    <div class="panel">
+        <div class="bar">
+            <button class="btn" id="btn-new" type="button">+ Новое изделие</button>
+            <span class="hintline">Выставленные изделия клиенты видят в Ателье в режиме «Вышивка».</span>
+        </div>
+
+        <div class="builder" id="builder" style="display:none;">
+            <div class="b-title" id="b-title">Новое изделие</div>
+            <div class="b-grid">
+                <div class="b-col">
+                    <label>Название<input type="text" id="f-title" placeholder="Например: Horse in a Coat, вышивка"></label>
+                    <label>Изделие
+                        <select id="f-garment">
+                            <option value="tshirt">Футболка</option>
+                            <option value="hoodie">Худи</option>
+                            <option value="longsleeve">Лонгслив</option>
+                        </select>
+                    </label>
+                    <label>Цвет
+                        <select id="f-color"><option value="black">Чёрный</option><option value="white">Белый</option></select>
+                    </label>
+                    <label>Состав<select id="f-comp"></select></label>
+                    <label>Плотность, g/m²<input type="text" id="f-density" list="dl-density" placeholder="160-180"></label>
+                    <label>Положение вышивки
+                        <select id="f-position"><option value="front">Перед</option><option value="back">Спина</option></select>
+                    </label>
+                    <div class="b-sub">Доступные размеры</div>
+                    <div class="sizes" id="f-sizes"></div>
+                    <label>Цена, € (готовое изделие с вышивкой)<input type="number" id="f-price" step="0.01" min="0"></label>
+                </div>
+                <div class="b-col">
+                    <div class="b-sub">Фото изделия</div>
+                    <canvas id="cv" width="420" height="480"></canvas>
+                    <div class="strip" id="design-strip"></div>
+                    <label>Размер вышивки<input type="range" id="f-scale" min="8" max="80" value="34"></label>
+                    <label>Влево — вправо<input type="range" id="f-x" min="10" max="90" value="50"></label>
+                    <label>Вверх — вниз<input type="range" id="f-y" min="10" max="90" value="40"></label>
+                    <div class="or">или загрузите готовое фото вместо сборки:</div>
+                    <input type="file" id="f-photo" accept="image/*">
+                </div>
+            </div>
+            <div class="b-bar">
+                <button class="btn primary" id="btn-save" type="button">Сохранить изделие</button>
+                <button class="btn" id="btn-cancel" type="button">Отмена</button>
+                <span class="progress" id="b-status"></span>
+            </div>
+        </div>
+
+        <div class="note" id="note" style="display:none;"></div>
+        <div class="grid" id="grid"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+    import { FABRICS_BY_GARMENT, COMPOSITION_LABELS } from './core/pricing.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const GARMENT_RU = { tshirt: 'Футболка', hoodie: 'Худи', longsleeve: 'Лонгслив' };
+    const COLOR_RU = { black: 'Чёрный', white: 'Белый' };
+    const POS_RU = { front: 'Перед', back: 'Спина' };
+    const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const safeHttps = (u) => /^https:\/\/\S+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
+    const eur = (n) => `€${Number(n || 0).toFixed(2)}`;
+    const normDensity = (s) => String(s || '').replace(/g\s*\/?\s*m\s*²?/ig, '').replace(/[–—\/]/g, '-').replace(/\s+/g, '').trim();
+
+    let products = [];
+    let designs = [];
+    let counts = {};
+    let editing = null;
+    let selDesign = null;
+    let designImg = null, uploadedImg = null, existingImg = null, uploadedFile = null;
+    let redrawToken = 0;
+    const imgCache = {};
+
+    function loadImg(src) {
+        if (imgCache[src]) return Promise.resolve(imgCache[src]);
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => { imgCache[src] = img; resolve(img); };
+            img.onerror = () => reject(new Error('image load failed'));
+            img.src = src;
+        });
+    }
+
+    // ---------- форма ----------
+    function fillComp(selected) {
+        const g = $('f-garment').value;
+        $('f-comp').innerHTML = (FABRICS_BY_GARMENT[g] || [])
+            .map(c => `<option value="${esc(c)}"${c === selected ? ' selected' : ''}>${esc(COMPOSITION_LABELS[c])}</option>`).join('');
+    }
+    function buildSizes(selected) {
+        $('f-sizes').innerHTML = SIZES.map(s =>
+            `<label class="szl"><input type="checkbox" value="${s}"${selected.includes(s) ? ' checked' : ''}> ${s}</label>`).join('');
+    }
+    function renderDesigns() {
+        $('design-strip').innerHTML = designs.map(d => {
+            const url = safeHttps(d.image_url);
+            const bg = d.bg === 'light' ? 'background:#ececec' : (d.bg === 'dark' ? 'background:#151515' : '');
+            return `<button type="button" class="thumb${selDesign && selDesign.id === d.id ? ' sel' : ''}" data-design="${esc(d.id)}" style="${bg}"><img src="${esc(url)}" alt="" loading="lazy"></button>`;
+        }).join('') || '<span class="muted">В базе клуба нет эскизов вышивки: добавьте их в «Принты и вышивка».</span>';
+    }
+
+    async function redraw() {
+        const token = ++redrawToken;
+        const cv = $('cv'), ctx = cv.getContext('2d');
+        const W = cv.width, H = cv.height;
+        ctx.fillStyle = $('f-color').value === 'black' ? '#8a8a8a' : '#161616';
+        ctx.fillRect(0, 0, W, H);
+        const drawContain = (img) => {
+            const k = Math.min(W / img.naturalWidth, H / img.naturalHeight);
+            const w = img.naturalWidth * k, h = img.naturalHeight * k;
+            ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+        };
+        if (uploadedImg) { drawContain(uploadedImg); return; }
+        if (!designImg && existingImg) { drawContain(existingImg); return; }
+        try {
+            const g = await loadImg(`${$('f-garment').value}-${$('f-color').value}-${$('f-position').value}.png`);
+            if (token !== redrawToken) return;
+            drawContain(g);
+        } catch (e) { /* нет фото такого изделия — рисуем на фоне */ }
+        if (designImg && token === redrawToken) {
+            const cx = W * $('f-x').value / 100, cy = H * $('f-y').value / 100;
+            const w = W * $('f-scale').value / 100;
+            const h = w * designImg.naturalHeight / designImg.naturalWidth;
+            ctx.drawImage(designImg, cx - w / 2, cy - h / 2, w, h);
+        }
+    }
+
+    function openBuilder(p) {
+        editing = p || null;
+        selDesign = null; designImg = null; uploadedImg = null; existingImg = null; uploadedFile = null;
+        $('f-photo').value = '';
+        $('b-status').textContent = '';
+        $('b-title').textContent = p ? 'Изменить изделие' : 'Новое изделие';
+        $('f-title').value = p ? p.title : '';
+        $('f-garment').value = p ? p.garment : 'tshirt';
+        $('f-color').value = p ? p.color : 'black';
+        fillComp(p ? p.composition : null);
+        $('f-density').value = p ? (p.density || '') : '';
+        $('f-position').value = p ? p.position : 'front';
+        buildSizes(p ? (p.sizes || []) : SIZES);
+        $('f-price').value = p ? p.price : '';
+        $('f-scale').value = 34; $('f-x').value = 50; $('f-y').value = 40;
+        if (p && p.design_id) {
+            const d = designs.find(x => x.id === p.design_id);
+            if (d) selDesign = { id: d.id, url: safeHttps(d.image_url) };
+        }
+        if (p && p.image_url) loadImg(safeHttps(p.image_url)).then(img => { existingImg = img; redraw(); }).catch(() => {});
+        renderDesigns();
+        redraw();
+        $('builder').style.display = 'block';
+        $('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function closeBuilder() { $('builder').style.display = 'none'; editing = null; }
+
+    ['f-garment', 'f-color', 'f-position'].forEach(id => $(id).addEventListener('change', () => {
+        if (id === 'f-garment') fillComp(null);
+        redraw();
+    }));
+    ['f-scale', 'f-x', 'f-y'].forEach(id => $(id).addEventListener('input', redraw));
+
+    $('design-strip').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-design]');
+        if (!b) return;
+        const d = designs.find(x => x.id === b.dataset.design);
+        if (!d) return;
+        selDesign = { id: d.id, url: safeHttps(d.image_url) };
+        uploadedImg = null; uploadedFile = null; $('f-photo').value = '';
+        renderDesigns();
+        try { designImg = await loadImg(selDesign.url); } catch (err) { designImg = null; }
+        redraw();
+    });
+
+    $('f-photo').addEventListener('change', (e) => {
+        const f = e.target.files[0];
+        if (!f) { uploadedFile = null; uploadedImg = null; redraw(); return; }
+        const img = new Image();
+        img.onload = () => { uploadedImg = img; uploadedFile = f; redraw(); };
+        img.onerror = () => { $('b-status').className = 'progress error'; $('b-status').textContent = 'Файл не похож на изображение.'; };
+        img.src = URL.createObjectURL(f);
+    });
+
+    function resizeToJpeg(file, maxDim = 1600) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('Не удалось прочитать файл'));
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onerror = () => reject(new Error('Файл не похож на изображение'));
+                img.onload = () => {
+                    let { width, height } = img;
+                    if (width > maxDim || height > maxDim) {
+                        const r = Math.min(maxDim / width, maxDim / height);
+                        width = Math.round(width * r); height = Math.round(height * r);
+                    }
+                    const c = document.createElement('canvas');
+                    c.width = width; c.height = height;
+                    const ctx = c.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    c.toBlob(b => b ? resolve(b) : reject(new Error('Не удалось сохранить изображение')), 'image/jpeg', 0.88);
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function save() {
+        const st = $('b-status');
+        const fail = (m) => { st.className = 'progress error'; st.textContent = m; };
+        st.className = 'progress';
+        st.textContent = 'Сохраняю…';
+
+        const title = $('f-title').value.trim();
+        const sizes = [...document.querySelectorAll('#f-sizes input:checked')].map(i => i.value);
+        const price = parseFloat($('f-price').value);
+        if (!title) return fail('Укажите название.');
+        if (!sizes.length) return fail('Отметьте хотя бы один размер.');
+        if (!(price >= 0)) return fail('Укажите цену.');
+
+        let blob = null;
+        try {
+            if (uploadedFile) {
+                blob = await resizeToJpeg(uploadedFile, 1600);
+            } else if (designImg) {
+                await redraw();
+                blob = await new Promise((res, rej) => {
+                    try { $('cv').toBlob(b => b ? res(b) : rej(new Error('canvas')), 'image/jpeg', 0.9); } catch (e) { rej(e); }
+                });
+            } else if (!(editing && editing.image_url)) {
+                return fail('Выберите вышивку для фото изделия или загрузите готовое фото.');
+            }
+        } catch (e) { return fail('Не удалось собрать фото: ' + (e.message || e)); }
+
+        let image_url = editing ? editing.image_url : null;
+        let storage_path = editing ? editing.storage_path : null;
+        let newPath = null;
+        const oldPath = (editing && blob) ? editing.storage_path : null;
+        if (blob) {
+            newPath = `embroidery-products/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
+            const { error: upErr } = await supabase.storage.from('club-prints').upload(newPath, blob, { contentType: 'image/jpeg' });
+            if (upErr) return fail('Не удалось загрузить фото: ' + upErr.message);
+            image_url = supabase.storage.from('club-prints').getPublicUrl(newPath).data.publicUrl;
+            storage_path = newPath;
+        }
+
+        const payload = {
+            title, garment: $('f-garment').value, color: $('f-color').value,
+            composition: $('f-comp').value || null, density: normDensity($('f-density').value) || null,
+            position: $('f-position').value, sizes, price,
+            design_id: selDesign ? selDesign.id : null, image_url, storage_path
+        };
+        const res = editing
+            ? await supabase.from('embroidery_products').update(payload).eq('id', editing.id).select()
+            : await supabase.from('embroidery_products').insert(payload).select();
+        if (res.error || !res.data || !res.data.length) {
+            if (newPath) await supabase.storage.from('club-prints').remove([newPath]);
+            return fail('Не удалось сохранить: ' + (res.error ? res.error.message : 'нет прав — проверьте SQL'));
+        }
+        if (oldPath) await supabase.storage.from('club-prints').remove([oldPath]);
+        closeBuilder();
+        await loadAll();
+    }
+
+    // ---------- список ----------
+    function render() {
+        $('grid').innerHTML = products.map(p => {
+            const url = safeHttps(p.image_url);
+            const c = counts[p.id] || { pick: 0, order: 0 };
+            return `<div class="card" data-id="${esc(p.id)}">
+                <div class="thumb-lg">${url ? `<img src="${esc(url)}" loading="lazy" alt="">` : '<span class="muted">нет фото</span>'}</div>
+                <div class="c-title">${esc(p.title)}</div>
+                <div class="c-meta">${esc(GARMENT_RU[p.garment] || p.garment)} · ${esc(COLOR_RU[p.color] || p.color)}<br>${esc(COMPOSITION_LABELS[p.composition] || p.composition || '—')} · ${esc(p.density || '—')} g/m²<br>${esc(POS_RU[p.position] || p.position)} · ${esc((p.sizes || []).join(' '))}</div>
+                <div class="c-price">${eur(p.price)}</div>
+                <div class="c-stat">выбрано ${c.pick} · заказано ${c.order}</div>
+                <div class="c-btns">
+                    <button class="pubbtn${p.published ? ' on' : ''}" data-pub type="button">${p.published ? 'На витрине' : 'Скрыто'}</button>
+                    <button class="mini" data-edit type="button">Изменить</button>
+                    <button class="mini del" data-del type="button">Удалить</button>
+                </div>
+            </div>`;
+        }).join('');
+        const note = $('note');
+        note.className = 'note';
+        note.style.display = products.length ? 'none' : 'block';
+        note.textContent = 'Изделий пока нет. Нажмите «Новое изделие».';
+    }
+
+    async function loadAll() {
+        const [pr, ds, ev] = await Promise.all([
+            supabase.from('embroidery_products').select('*').order('created_at', { ascending: false }),
+            supabase.from('club_prints').select('id, image_url, bg, category').eq('category', 'embroidery')
+                .order('added_at', { ascending: false }).limit(120),
+            supabase.from('gallery_events').select('target_id, event').eq('target_type', 'embroidery_product').limit(20000)
+        ]);
+        if (pr.error) {
+            console.error(pr.error);
+            const note = $('note');
+            note.className = 'note error';
+            note.style.display = 'block';
+            note.textContent = 'Не удалось загрузить изделия: ' + (pr.error.message || '') + ' — проверьте, что SQL выполнен.';
+            return;
+        }
+        products = pr.data || [];
+        designs = ds.data || [];
+        counts = {};
+        (ev.data || []).forEach(r => {
+            const c = counts[r.target_id] || (counts[r.target_id] = { pick: 0, order: 0 });
+            c[r.event]++;
+        });
+        renderDesigns();
+        render();
+    }
+
+    $('grid').addEventListener('click', async (e) => {
+        const card = e.target.closest('.card');
+        if (!card) return;
+        const p = products.find(x => String(x.id) === card.dataset.id);
+        if (!p) return;
+
+        if (e.target.closest('[data-edit]')) { openBuilder(p); return; }
+
+        if (e.target.closest('[data-pub]')) {
+            if (!p.published && !p.image_url) { alert('Сначала добавьте фото изделия.'); return; }
+            const { data, error } = await supabase.from('embroidery_products')
+                .update({ published: !p.published }).eq('id', p.id).select('id');
+            if (error || !data || !data.length) { alert('Не удалось изменить: ' + (error ? error.message : 'нет прав')); return; }
+            p.published = !p.published;
+            render();
+            return;
+        }
+
+        if (e.target.closest('[data-del]')) {
+            if (!confirm('Удалить изделие насовсем?')) return;
+            const { data, error } = await supabase.from('embroidery_products').delete().eq('id', p.id).select('id');
+            if (error || !data || !data.length) { alert('Не удалось удалить: ' + (error ? error.message : 'нет прав')); return; }
+            if (p.storage_path) await supabase.storage.from('club-prints').remove([p.storage_path]);
+            products = products.filter(x => x.id !== p.id);
+            render();
+        }
+    });
+
+    $('btn-new').addEventListener('click', () => openBuilder(null));
+    $('btn-cancel').addEventListener('click', closeBuilder);
+    $('btn-save').addEventListener('click', save);
+    $('btn-back').addEventListener('click', () => history.back());
+    $('btn-gallery').addEventListener('click', () => window.location.href = 'gallery.html');
+
+    loadAll();
+</script>
+</body>
+</html>
