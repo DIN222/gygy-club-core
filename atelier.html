@@ -650,8 +650,9 @@
 
     function renderGarmentPhoto() {
         const src = GARMENT_PHOTOS[state.type][state.color][state.position];
+               const emb = state.embProduct && /^https:\/\//i.test(state.embProduct.image_url || '') ? state.embProduct.image_url : null;
+        const src = emb || GARMENT_PHOTOS[state.type][state.color][state.position];
         document.getElementById('garment-photo').src = src;
-        document.getElementById('size-badge').textContent = state.size;
         const frame = document.getElementById('preview-frame');
         frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
         frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
