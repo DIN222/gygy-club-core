@@ -358,7 +358,27 @@
             : `Готово: загружено ${ok}.`;
         await load();
     });
-  
+      // ---------- статистика и стили «на витрине» ----------
+    (function ensurePubStyles() {
+        if (document.getElementById('pa-pub-styles')) return;
+        const s = document.createElement('style');
+        s.id = 'pa-pub-styles';
+        s.textContent = `
+            .pubrow { margin-top: 5px; }
+            .pubbtn { width: 100%; background: #000; color: #9a9a8a; border: 1px solid #444; padding: 4px; font-size: 10px; cursor: pointer; font-family: inherit; }
+            .pubbtn.on { background: #FFD700; color: #000; border-color: #FFD700; font-weight: 900; }
+        `;
+        document.head.appendChild(s);
+    })();
+
+    async function loadStats() {
+        stats = {};
+        const { data } = await supabase.from('gallery_events').select('target_id, event').eq('target_type', 'print').limit(20000);
+        (data || []).forEach(r => {
+            const c = stats[r.target_id] || (stats[r.target_id] = { pick: 0, order: 0 });
+            c[r.event]++;
+        });
+    }
     load();
 </script>
 </body>
