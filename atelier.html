@@ -1122,14 +1122,14 @@
         state.zipper = e.target.checked;
         updateOrderInfo();
     });
-    document.getElementById('select-technique').addEventListener('change', (e) => {
+        document.getElementById('select-technique').addEventListener('change', (e) => {
         state.technique = e.target.value;
-        const isEmb = state.technique === 'embroidery';
-        const cat = state.currentPrint && state.currentPrint.category;
-        // принт из другого режима не подходит: в вышивке — только эскизы вышивки, в DTF — не они
-        if (state.currentPrint && ((isEmb && cat !== EMBROIDERY_CAT) || (!isEmb && cat === EMBROIDERY_CAT))) {
-            state.currentPrint = null;
+        if (state.technique === 'embroidery') {
+            state.currentPrint = null;     // принт DTF в режиме вышивки не нужен
+        } else {
+            clearEmbProduct();             // вернуть обычный конфигуратор
         }
+        renderGarmentPhoto();
         renderPrintOverlay();
         updateShareRowVisibility();
         renderPrintStrip();
