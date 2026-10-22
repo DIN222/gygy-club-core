@@ -48,7 +48,9 @@
 
     const prints = await supabase.from('club_prints').select('id', { count: 'exact', head: true });
     set('c-prints', prints.error ? 'принты клуба, база клуба' : `${prints.count} шт. · база клуба`);
-
+    const emb = await supabase.from('embroidery_products').select('published');
+    set('c-emb', emb.error ? 'готовые изделия для витрины' : `${(emb.data || []).length} изделий · на витрине ${(emb.data || []).filter(r => r.published).length}`);
+    
     const photos = await supabase.from('product_photos').select('line');
     const counts = { atelier: 0, store: 0, souvenirs: 0 };
     (photos.data || []).forEach(r => { if (counts[r.line] !== undefined) counts[r.line]++; });
