@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.22.0 — 2026-10-14
-  (1) Миниатюры принтов на шашечной подложке (виден любой рисунок);
-      битые картинки автоматически убираются из ленты.
-  (2) Название и плотность ткани берутся из Бухгалтерии (storefront_config);
-      если настроек нет — значения по умолчанию.
-  (3) В заказе: поле «мессенджер» (необязательное).
-  (4) Цена — по построчной себестоимости из Бухгалтерии (core/pricing.js v4).
+  v4.24.0 — 2026-10-22
+  (1) Режим «Вышивка»: клиент выбирает готовое изделие с вышивкой, выставленное в
+      Галерее Офиса (фото, цена, параметры); поля изделия блокируются, размеры — по изделию.
+  (2) Принты клуба показываются только если выставлены в Офисе; фон под миниатюрой
+      принта (club_prints.bg) задаёт Офис.
+  (3) Статистика: события «выбрано» и «заказано» (gallery_events через track_gallery_event).
+  (4) «Поделиться с клубом» — только принты DTF; вышивку в базу кладёт Офис.
+  (5) Запрос для ИИ без «vector-style»; ссылка Leonardo; текст о получении посылки.
+  Остальное — как в v4.22.0: ткань → плотность, получатель, терминал, снимки принта,
+  цена из Бухгалтерии, отзывы.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.22.0</title>
+<title>GY-GY Club — Atelier v4.24.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -75,6 +78,7 @@
         background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    .field-row select:disabled { opacity: 0.7; }
     .fixed-note {
         flex: 1; padding: 8px; border: 1px solid var(--gold); border-radius: 2px;
         background: var(--ivory); color: #1a1408; font-size: 10px; font-weight: 700;
@@ -163,7 +167,7 @@
     .btn-cfg.small { padding: 7px 8px; font-size: 10px; flex: 1; text-align: center; }
     .btn-cfg.wide { text-align: center; }
 
-    /* Непрерывная лента принтов: прокручивается стрелками и пальцем */
+    /* Непрерывная лента: прокручивается стрелками и пальцем */
     .print-strip-row { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
     .print-strip {
         display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto;
@@ -197,6 +201,7 @@
     .prompt-ai-links.visible { display: flex; }
 
     .position-row select { flex: 1; padding: 7px; font-size: 11px; border: 1px solid var(--gold); background: var(--ivory); color: #1a1408; }
+    .position-row select:disabled { opacity: 0.7; }
 
     .order-info { font-size: 11px; margin-top: 6px; padding: 8px 2px; color: var(--ivory); }
     .price-line { font-family: 'Cinzel', serif; font-weight: 700; font-size: 20px; text-align: center; margin-top: 6px; color: var(--gold); }
@@ -275,7 +280,7 @@
                 </select>
             </div>
 
-                     <div class="field-row">
+            <div class="field-row">
                 <select id="select-fabric-composition"></select>
             </div>
             <div class="field-row">
@@ -284,10 +289,8 @@
 
             <div class="field-row">
                 <select id="select-technique">
-   
-                  <option value="dtf">DTF-ПЕЧАТЬ</option>
+                    <option value="dtf">DTF-ПЕЧАТЬ</option>
                     <option value="embroidery">ВЫШИВКА</option>
-                    
                 </select>
             </div>
 
@@ -306,7 +309,6 @@
             <div class="category-picker" id="category-picker">
                 <select id="share-category">
                     <option value="dtf">Print (DTF)</option>
-                    <option value="embroidery">Embroidery design</option>
                 </select>
                 <div class="checkbox-row">
                     <input type="checkbox" id="check-public-likes">
@@ -323,8 +325,8 @@
                 <div class="prompt-output" id="prompt-output" style="display:none;"></div>
                 <div class="prompt-ai-links" id="prompt-ai-links">
                     <button class="btn-cfg small" id="btn-copy-prompt">СКОПИРОВАТЬ</button>
-                    <a class="btn-cfg small" href="https://chatgpt.com" target="_blank" style="text-align:center;">CHATGPT</a>
-                    <a class="btn-cfg small" href="https://ideogram.ai" target="_blank" style="text-align:center;">IDEOGRAM</a>
+                    <a class="btn-cfg small" href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" style="text-align:center;">CHATGPT</a>
+                    <a class="btn-cfg small" href="https://leonardo.ai" target="_blank" rel="noopener noreferrer" style="text-align:center;">LEONARDO</a>
                 </div>
             </div>
         </div>
@@ -413,6 +415,9 @@
                 <option value="cod">Cash on delivery (pay at the post office)</option>
             </select>
         </div>
+        <div style="font-size:10px; line-height:1.45; text-align:left; margin-top:8px; padding:8px; border:1px solid #8a6f24; background:rgba(138,111,36,0.08);">
+            When you receive the parcel at the carrier's branch or from a courier and pay for it, you sign a delivery and acceptance certificate. By signing it, you confirm that you have checked the parcel against your order, agree with the appearance and completeness of the goods, and have no claims against the online store or the carrier.
+        </div>
         <div id="confirm-error" style="color:#a02020; font-size:11px; text-align:left; margin-top:4px; min-height:14px;"></div>
         <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:10px;">ДА, ОФОРМИТЬ</button>
         <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
@@ -476,7 +481,6 @@
     const OUTSTRETCH_FACTOR = 1.5;
     const DEFAULT_ANCHOR_Y_PCT = 42;
     const BG_REMOVE_THRESHOLD = 32;
-    const EMBROIDERY_CAT = 'embroidery';
 
     function pxPerCmApprox(type, size) {
         const basePxPerCm = GARMENT_PHOTO_BBOX_W[type] / (GARMENT_CHEST_CM[type].M * OUTSTRETCH_FACTOR);
@@ -585,7 +589,7 @@
     }
 
     const FABRIC_OPTIONS = {
-               tshirt: {
+        tshirt: {
             density:     [{ value: '160-180', label: '160–180 g/m²' }, { value: '180-200', label: '180–200 g/m²' }],
             composition: [
                 { value: 'cotton100', label: '100% COTTON' },
@@ -600,7 +604,7 @@
             ]
         },
         longsleeve: {
-            density:     [{ value: '220-240', label: '220–240 g/m² ' }], 
+            density:     [{ value: '220-240', label: '220–240 g/m² ' }],
             composition: [
                 { value: 'cotton100fleece', label: '100% COTTON ' }
             ]
@@ -608,7 +612,8 @@
     };
 
     // Название и плотность ткани можно менять из Бухгалтерии (таблица storefront_config).
-    // Нет настроек или база недоступна — остаются значения по умолчанию выше.
+    // Плотностей может быть несколько — через запятую. Нет настроек или база
+    // недоступна — остаются значения по умолчанию выше.
     try {
         const { data: cfgRows } = await supabase.from('storefront_config').select('key, value')
             .in('key', ['fabric.tshirt', 'fabric.hoodie', 'fabric.longsleeve']);
@@ -617,7 +622,7 @@
             const g = row.key.replace('fabric.', '');
             const cfg = row.value || {};
             if (!FABRIC_OPTIONS[g]) return;
-                              const ds = String(cfg.density || '').split(',').map(x => clean(x)).filter(Boolean);
+            const ds = String(cfg.density || '').split(',').map(x => clean(x)).filter(Boolean);
             if (ds.length) FABRIC_OPTIONS[g].density = ds.map(v => ({ value: v, label: v.replace('-', '–') + ' g/m²' }));
             FABRIC_OPTIONS[g].composition.forEach(c => {
                 const l = cfg.labels && clean(cfg.labels[c.value]);
@@ -644,24 +649,24 @@
         fabricDensity: '160-180', fabricComposition: 'cotton100',
         drawstring: false, zipper: false, technique: 'dtf',
         neckline: 'round', fit: 'unisex', quantity: 1,
-              currentPrint: null,
+        currentPrint: null,
         embProduct: null,
         printBox: null
     };
     let currentUser = { id: 'guest', name: 'Guest' };
 
     function renderGarmentPhoto() {
-        const src = GARMENT_PHOTOS[state.type][state.color][state.position];
-               const emb = state.embProduct && /^https:\/\//i.test(state.embProduct.image_url || '') ? state.embProduct.image_url : null;
+        const emb = state.embProduct && /^https:\/\//i.test(state.embProduct.image_url || '') ? state.embProduct.image_url : null;
         const src = emb || GARMENT_PHOTOS[state.type][state.color][state.position];
         document.getElementById('garment-photo').src = src;
+        document.getElementById('size-badge').textContent = state.size;
         const frame = document.getElementById('preview-frame');
         frame.classList.toggle('backdrop-for-dark-garment', state.color === 'black');
         frame.classList.toggle('backdrop-for-light-garment', state.color === 'white');
     }
 
     function updateTechniqueAvailability() {
-        // В режиме вышивки свои PNG загружать нельзя (нужна оцифровка)
+        // В режиме вышивки свои PNG загружать нельзя (вышивка — только из ассортимента клуба)
         document.getElementById('btn-upload-own').disabled = (state.technique === 'embroidery');
     }
 
@@ -800,7 +805,7 @@
             drawstring: state.drawstring, zipper: state.zipper
         };
     }
-        function unitPrice() {
+    function unitPrice() {
         if (state.embProduct) return Number(state.embProduct.price) || 0;
         return computeUnitPrice(pricingParams, pricingInput());
     }
@@ -817,7 +822,7 @@
         const hoodieExtras = (state.type === 'hoodie')
             ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА' : 'нет'}<br>Молния: ${state.zipper ? 'ДА' : 'нет'}` : '';
         const techLabel = state.technique === 'embroidery' ? 'ВЫШИВКА' : 'DTF-ПЕЧАТЬ';
-               const printLine = state.embProduct
+        const printLine = state.embProduct
             ? `ВЫШИВКА · ${state.embProduct.title}`
             : (state.currentPrint
                 ? `[image] · ${techLabel} · формат заказа: ${scaleCm(state.scale)} · фактически на превью: ${actualPrintSizeLabel()}`
@@ -837,8 +842,6 @@
         if (!isOwnUnshared) document.getElementById('category-picker').classList.remove('open');
     }
 
-    // Непрерывная лента: в режиме DTF — все клубные принты подряд, в режиме
-    // вышивки — эскизы вышивки. Пустых ячеек нет; листается стрелками и пальцем.
     // ---------- Изделия с вышивкой (из Галереи Офиса) и статистика ----------
     let embProducts = [];
     const LOCK_IDS = ['select-type', 'select-color', 'select-fabric-composition', 'select-fabric-density', 'select-position', 'select-scale'];
@@ -1091,7 +1094,7 @@
     });
     document.getElementById('btn-build-prompt').addEventListener('click', () => {
         const idea = document.getElementById('pb-idea').value.trim() || 'an abstract emblem';
-        const prompt = `A t-shirt print design of ${idea}, professional print-ready vector-style artwork, centered composition, transparent background, high detail, print-safe color palette.`;
+        const prompt = `A t-shirt print design of ${idea}, richly detailed illustration with depth and dimension, dramatic lighting and soft shading, painterly textures, vivid layered colors, dynamic composition, subject isolated on a plain solid white background, high resolution.`;
         const out = document.getElementById('prompt-output');
         out.textContent = prompt;
         out.style.display = 'block';
@@ -1124,7 +1127,7 @@
         state.zipper = e.target.checked;
         updateOrderInfo();
     });
-        document.getElementById('select-technique').addEventListener('change', (e) => {
+    document.getElementById('select-technique').addEventListener('change', (e) => {
         state.technique = e.target.value;
         if (state.technique === 'embroidery') {
             state.currentPrint = null;     // принт DTF в режиме вышивки не нужен
@@ -1249,7 +1252,7 @@
             if (order.decoration) {
                 if (assets.designBlob) order.designUrl = await uploadOrderAsset(`orders/${order.orderNumber}-design.png`, assets.designBlob);
                 else if (assets.designUrl) order.designUrl = assets.designUrl;
-                               if (assets.mockupBlob) order.mockupUrl = await uploadOrderAsset(`orders/${order.orderNumber}-mockup.png`, assets.mockupBlob);
+                if (assets.mockupBlob) order.mockupUrl = await uploadOrderAsset(`orders/${order.orderNumber}-mockup.png`, assets.mockupBlob);
                 else if (assets.mockupUrl) order.mockupUrl = assets.mockupUrl;
             }
         } catch (e) {
@@ -1301,7 +1304,7 @@
             status.textContent = 'Order saved on this device but NOT delivered to Accounting: ' + (error.message || 'unknown error');
             return;
         }
-               if (order.decoration) {
+        if (order.decoration) {
             if (order.decoration.productId) trackEvent('embroidery_product', order.decoration.productId, 'order');
             else if (order.decoration.printId) trackEvent('print', order.decoration.printId, 'order');
         }
@@ -1339,7 +1342,7 @@
                 recipientPhone: phone, recipientMessenger: messenger, recipientPostOffice: postOffice,
                 recipientName: `${lastName} ${firstName}`, recipientAddress: postOffice,
                 paymentMethod,
-                              decoration: state.embProduct ? {
+                decoration: state.embProduct ? {
                     source: 'club', shared: true, category: 'embroidery', technique: 'embroidery',
                     position: state.embProduct.position, scalePreset: null, scaleCm: null,
                     actualSizeOnPreview: '', productId: state.embProduct.id, productTitle: state.embProduct.title
@@ -1358,7 +1361,7 @@
                         cost: unitPrice(), marginPercent: 0, margin: 0, retail: unitPrice() }
                     : computeBreakdown(pricingParams, pricingInput())
             };
-                       const assets = state.embProduct ? {
+            const assets = state.embProduct ? {
                 designUrl: state.embProduct.image_url, designBlob: null,
                 mockupUrl: state.embProduct.image_url, mockupBlob: null
             } : {
@@ -1366,6 +1369,7 @@
                 designBlob: (state.currentPrint && state.currentPrint.blob) || null,
                 mockupBlob: await renderMockupBlob()
             };
+
             closeModal(document.getElementById('modal-confirm-order'));
 
             if (paymentMethod === 'cod') {
@@ -1433,10 +1437,9 @@
     renderNecklineFitFields();
     renderGarmentPhoto();
     renderPrintOverlay();
-        renderSpecPanel();
+    renderSpecPanel();
     await loadEmbProducts();
     renderPrintStrip();
-  
 </script>
 
 </body>
