@@ -130,7 +130,8 @@
                 <div class="thumb${bgClass}"><img src="${esc(safeHttps(r.image_url))}" alt="" loading="lazy"></div>
                 <div class="bgsel">${BG_OPTIONS.map(([v, l]) =>
                     `<button type="button" class="bgb${cur === v ? ' on' : ''}" data-bg="${v}">${l}</button>`).join('')}</div>
-                <div class="meta">${cat} · ${esc(new Date(r.added_at).toLocaleDateString())}<br>${esc(r.from_user_name || '—')} · ♥ ${r.likes || 0}${r.public_likes_allowed ? ' · публичный' : ''}</div>
+                              <div class="pubrow"><button type="button" class="pubbtn${r.published === false ? '' : ' on'}" data-pub>${r.published === false ? 'Скрыт' : 'На витрине'}</button></div>
+                <div class="meta">${cat} · ${esc(new Date(r.added_at).toLocaleDateString())}<br>${esc(r.from_user_name || '—')} · ♥ ${r.likes || 0}${r.public_likes_allowed ? ' · публичный' : ''}<br>выбрано ${(stats[r.id] || {}).pick || 0} · заказано ${(stats[r.id] || {}).order || 0}</div>
                 ${flag ? `<div class="flag">⚠ ${esc(flag)}</div>` : ''}
                 <button class="del" type="button">Удалить</button>
             </div>`;
