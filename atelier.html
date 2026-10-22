@@ -798,7 +798,10 @@
             drawstring: state.drawstring, zipper: state.zipper
         };
     }
-    function unitPrice() { return computeUnitPrice(pricingParams, pricingInput()); }
+        function unitPrice() {
+        if (state.embProduct) return Number(state.embProduct.price) || 0;
+        return computeUnitPrice(pricingParams, pricingInput());
+    }
     function calculatePrice() { return Math.round(unitPrice() * Math.max(1, state.quantity) * 100) / 100; }
     function actualPrintSizeLabel() {
         if (!state.currentPrint || !state.printBox) return '';
