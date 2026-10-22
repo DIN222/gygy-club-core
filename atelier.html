@@ -837,37 +837,149 @@
 
     // Непрерывная лента: в режиме DTF — все клубные принты подряд, в режиме
     // вышивки — эскизы вышивки. Пустых ячеек нет; листается стрелками и пальцем.
+    // ---------- Изделия с вышивкой (из Галереи Офиса) и статистика ----------
+    let embProducts = [];
+    const LOCK_IDS = ['select-type', 'select-color', 'select-fabric-composition', 'select-fabric-density', 'select-position', 'select-scale'];
+    const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+
+    async function loadEmbProducts() {
+        try {
+            const { data, error } = await supabase.from('embroidery_products').select('*')
+                .eq('published', true).order('created_at', { ascending: false });
+            if (error) throw error;
+            embProducts = data || [];
+        } catch (e) {
+            console.warn('[Atelier] Изделия с вышивкой недоступны.', e);
+            embProducts = [];
+        }
+    }
+
+    function trackEvent(type, id, event) {
+        if (!id) return;
+        try { supabase.rpc('track_gallery_event', { p_type: type, p_id: id, p_event: event }).then(() => {}, () => {}); }
+        catch (e) { /* статистика не критична */ }
+    }
+
+    function setSizeOptions(allowed) {
+        const sel = document.getElementById('select-size');
+        const list = ALL_SIZES.filter(s => allowed.includes(s));
+        const use = list.length ? list : ALL_SIZES;
+        sel.innerHTML = use.map(s => `<option value="${s}">${s}</option>`).join('');
+        if (!use.includes(state.size)) state.size = use[0];
+        sel.value = state.size;
+    }
+
+    function lockControls(locked) {
+        LOCK_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = locked; });
+    }
+
+    function selectEmbProduct(p) {
+        state.embProduct = p;
+        state.currentPrint = null;
+        state.technique = 'embroidery';
+        document.getElementById('select-technique').value = 'embroidery';
+
+        state.type = p.garment;
+        document.getElementById('select-type').value = state.type;
+        populateFabricOptions(state.type);
+        const comp = document.getElementById('select-fabric-composition');
+        const dens = document.getElementById('select-fabric-density');
+        if (p.composition && [...comp.options].some(o => o.value === p.composition)) comp.value = p.composition;
+        if (p.density && [...dens.options].some(o => o.value === p.density)) dens.value = p.density;
+        state.fabricComposition = comp.value;
+        state.fabricDensity = dens.value;
+
+        state.color = p.color;
+        document.getElementById('select-color').value = p.color;
+        state.position = p.position;
+        document.getElementById('select-position').value = p.position;
+        state.drawstring = false; state.zipper = false;
+        document.getElementById('row-drawstring').style.display = 'none';
+        document.getElementById('row-zipper').style.display = 'none';
+
+        renderNecklineFitFields();
+        setSizeOptions(Array.isArray(p.sizes) ? p.sizes : ALL_SIZES);
+        lockControls(true);
+        renderGarmentPhoto();
+        renderPrintOverlay();
+        renderSpecPanel();
+        updateShareRowVisibility();
+        renderPrintStrip();
+        trackEvent('embroidery_product', p.id, 'pick');
+    }
+
+    function clearEmbProduct() {
+        if (!state.embProduct) return;
+        state.embProduct = null;
+        lockControls(false);
+        setSizeOptions(ALL_SIZES);
+        document.getElementById('row-drawstring').style.display = (state.type === 'hoodie') ? 'flex' : 'none';
+        document.getElementById('row-zipper').style.display = (state.type === 'hoodie') ? 'flex' : 'none';
+    }
+
+    // Лента: в режиме DTF — выставленные принты клуба; в режиме вышивки — выставленные
+    // изделия с вышивкой (фото и цена). «На витрине» и фон под принтом (item.bg) задаёт Офис.
     function renderPrintStrip() {
         const data = clubBase.getAll();
         const strip = document.getElementById('print-strip');
         const isEmb = state.technique === 'embroidery';
-        const list = (isEmb ? data.embroidery : data.dtf) || [];
         const scrollLeft = strip.scrollLeft;
         strip.innerHTML = '';
-        list.forEach(item => {
-            const wrap = document.createElement('div');
-            wrap.className = 'print-icon-wrap';
-            const cell = document.createElement('div');
-            cell.className = 'print-icon';
-            cell.innerHTML = `<img src="${item.image_url}" loading="lazy" alt="" onerror="this.closest('.print-icon-wrap').remove()">`;
-            cell.addEventListener('click', () => {
-                state.currentPrint = { source: 'club', design: item.image_url, category: item.category, shared: true };
-                renderPrintOverlay(true);
-                updateShareRowVisibility();
+        let count = 0;
+
+        if (isEmb) {
+            embProducts.forEach(p => {
+                const url = /^https:\/\//i.test(p.image_url || '') ? p.image_url : '';
+                if (!url) return;
+                count++;
+                const wrap = document.createElement('div');
+                wrap.className = 'print-icon-wrap';
+                const cell = document.createElement('div');
+                cell.className = 'print-icon';
+                if (state.embProduct && state.embProduct.id === p.id) {
+                    cell.style.borderColor = '#FFD700';
+                    cell.style.boxShadow = '0 0 0 2px #FFD700';
+                }
+                cell.innerHTML = `<img src="${url}" loading="lazy" alt="" onerror="this.closest('.print-icon-wrap').remove()">`;
+                cell.addEventListener('click', () => selectEmbProduct(p));
+                const label = document.createElement('div');
+                label.className = 'print-author';
+                label.textContent = `€${Number(p.price).toFixed(0)}`;
+                wrap.appendChild(cell);
+                wrap.appendChild(label);
+                strip.appendChild(wrap);
             });
-            const author = document.createElement('div');
-            author.className = 'print-author';
-            author.textContent = item.public_likes_allowed ? (item.from_user_name || '') : '';
-            wrap.appendChild(cell);
-            wrap.appendChild(author);
-            strip.appendChild(wrap);
-        });
-        if (!list.length) {
-            strip.innerHTML = `<span class="strip-empty">${isEmb ? 'No embroidery designs yet' : 'No club prints yet'}</span>`;
+        } else {
+            (data.dtf || []).forEach(item => {
+                count++;
+                const wrap = document.createElement('div');
+                wrap.className = 'print-icon-wrap';
+                const cell = document.createElement('div');
+                cell.className = 'print-icon';
+                if (item.bg === 'light') cell.style.background = '#ececec';
+                else if (item.bg === 'dark') cell.style.background = '#151515';
+                cell.innerHTML = `<img src="${item.image_url}" loading="lazy" alt="" onerror="this.closest('.print-icon-wrap').remove()">`;
+                cell.addEventListener('click', () => {
+                    state.currentPrint = { source: 'club', id: item.id, design: item.image_url, category: item.category, shared: true };
+                    renderPrintOverlay(true);
+                    updateShareRowVisibility();
+                    trackEvent('print', item.id, 'pick');
+                });
+                const author = document.createElement('div');
+                author.className = 'print-author';
+                author.textContent = item.public_likes_allowed ? (item.from_user_name || '') : '';
+                wrap.appendChild(cell);
+                wrap.appendChild(author);
+                strip.appendChild(wrap);
+            });
+        }
+
+        if (!count) {
+            strip.innerHTML = `<span class="strip-empty">${isEmb ? 'No embroidered items on sale yet' : 'No club prints yet'}</span>`;
         }
         strip.scrollLeft = scrollLeft;
-        document.getElementById('print-prev').disabled = !list.length;
-        document.getElementById('print-next').disabled = !list.length;
+        document.getElementById('print-prev').disabled = !count;
+        document.getElementById('print-next').disabled = !count;
     }
     document.getElementById('print-next').addEventListener('click', () => {
         document.getElementById('print-strip').scrollBy({ left: 104, behavior: 'smooth' });
