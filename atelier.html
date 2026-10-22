@@ -1299,6 +1299,10 @@
             status.textContent = 'Order saved on this device but NOT delivered to Accounting: ' + (error.message || 'unknown error');
             return;
         }
+               if (order.decoration) {
+            if (order.decoration.productId) trackEvent('embroidery_product', order.decoration.productId, 'order');
+            else if (order.decoration.printId) trackEvent('print', order.decoration.printId, 'order');
+        }
         status.textContent = paid ? 'Paid. Your order has been placed!' : 'Order placed. You will pay at the post office on receipt.';
     }
 
