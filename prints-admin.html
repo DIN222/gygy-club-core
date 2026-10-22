@@ -249,6 +249,15 @@
         const r = rows.find(x => String(x.id) === card.dataset.id);
         if (!r) return;
 
+                if (e.target.closest('[data-pub]')) {
+            const next = r.published === false;   // скрыт → выставить, иначе скрыть
+            const { data, error } = await supabase.from('club_prints').update({ published: next }).eq('id', r.id).select('id');
+            if (error || !data || !data.length) { alert('Не удалось изменить: ' + (error ? error.message : 'нет прав — проверьте SQL')); return; }
+            r.published = next;
+            render();
+            return;
+        }
+
         const bgBtn = e.target.closest('.bgb');
         if (bgBtn) {
             try {
