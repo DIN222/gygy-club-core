@@ -815,9 +815,11 @@
         const hoodieExtras = (state.type === 'hoodie')
             ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА' : 'нет'}<br>Молния: ${state.zipper ? 'ДА' : 'нет'}` : '';
         const techLabel = state.technique === 'embroidery' ? 'ВЫШИВКА' : 'DTF-ПЕЧАТЬ';
-        const printLine = state.currentPrint
-            ? `[image] · ${techLabel} · формат заказа: ${scaleCm(state.scale)} · фактически на превью: ${actualPrintSizeLabel()}`
-            : '— none —';
+               const printLine = state.embProduct
+            ? `ВЫШИВКА · ${state.embProduct.title}`
+            : (state.currentPrint
+                ? `[image] · ${techLabel} · формат заказа: ${scaleCm(state.scale)} · фактически на превью: ${actualPrintSizeLabel()}`
+                : '— none —');
         document.getElementById('order-info').innerHTML =
             `${state.type.toUpperCase()} / ${state.size} / ${state.color.toUpperCase()}<br>` +
             `Fabric: ${state.fabricDensity} g/m², ${compLabel}${hoodieExtras}<br>` +
