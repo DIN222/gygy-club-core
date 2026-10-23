@@ -370,7 +370,9 @@
         const payload = {
             title, garment: $('f-garment').value, color: $('f-color').value,
             composition: $('f-comp').value || null, density: normDensity($('f-density').value) || null,
-            position: $('f-position').value, sizes, price,
+                        position: $('f-position').value, sizes, price,
+            drawstring: $('f-garment').value === 'hoodie' && $('f-drawstring').checked,
+            zipper: $('f-garment').value === 'hoodie' && $('f-zipper').checked,
             design_id: selDesign ? selDesign.id : null, image_url, storage_path
         };
         const res = editing
