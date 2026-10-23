@@ -50,7 +50,7 @@
     .builder label.szl { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ivory); text-transform: none; }
     .b-bar { margin-top: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-    .strip { display: flex; flex-wrap: wrap; gap: 5px; max-height: 190px; overflow-y: auto; }
+        .strip { display: grid; grid-template-rows: repeat(2, 52px); grid-auto-flow: column; grid-auto-columns: 52px; gap: 5px; overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; }
     .thumb { width: 52px; height: 52px; padding: 0; border: 1px solid var(--gold-dim); background: repeating-conic-gradient(#5a5a5a 0% 25%, #8a8a8a 0% 50%) 50% / 10px 10px; cursor: pointer; }
     .thumb.sel { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
     .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
