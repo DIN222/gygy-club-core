@@ -395,7 +395,7 @@
             return `<div class="card" data-id="${esc(p.id)}">
                 <div class="thumb-lg">${url ? `<img src="${esc(url)}" loading="lazy" alt="">` : '<span class="muted">нет фото</span>'}</div>
                 <div class="c-title">${esc(p.title)}</div>
-                <div class="c-meta">${esc(GARMENT_RU[p.garment] || p.garment)} · ${esc(COLOR_RU[p.color] || p.color)}<br>${esc(COMPOSITION_LABELS[p.composition] || p.composition || '—')} · ${esc(p.density || '—')} g/m²<br>${esc(POS_RU[p.position] || p.position)} · ${esc((p.sizes || []).join(' '))}</div>
+                 <div class="c-meta">${esc(GARMENT_RU[p.garment] || p.garment)} · ${esc(COLOR_RU[p.color] || p.color)}<br>${esc(COMPOSITION_LABELS[p.composition] || p.composition || '—')} · ${esc(p.density || '—')} g/m²<br>${esc(POS_RU[p.position] || p.position)} · ${esc((p.sizes || []).join(' '))}${p.garment === 'hoodie' ? `<br>Шнурки: ${p.drawstring ? 'да' : 'нет'} · Молния: ${p.zipper ? 'да' : 'нет'}` : ''}</div>
                 <div class="c-price">${eur(p.price)}</div>
                 <div class="c-stat">выбрано ${c.pick} · заказано ${c.order}</div>
                 <div class="c-btns">
