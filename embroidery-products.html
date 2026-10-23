@@ -275,7 +275,7 @@
     function closeBuilder() { $('builder').style.display = 'none'; editing = null; }
 
     ['f-garment', 'f-color', 'f-position'].forEach(id => $(id).addEventListener('change', () => {
-        if (id === 'f-garment') fillComp(null);
+               if (id === 'f-garment') { fillComp(null); syncHoodieOpts(); }
         redraw();
     }));
     ['f-scale', 'f-x', 'f-y'].forEach(id => $(id).addEventListener('input', redraw));
