@@ -898,9 +898,12 @@
         document.getElementById('select-color').value = p.color;
         state.position = p.position;
         document.getElementById('select-position').value = p.position;
-        state.drawstring = false; state.zipper = false;
+               // шнурки и молния — часть изделия: их задаёт Галерея Офиса, клиент не выбирает
+        state.drawstring = !!p.drawstring; state.zipper = !!p.zipper;
         document.getElementById('row-drawstring').style.display = 'none';
         document.getElementById('row-zipper').style.display = 'none';
+        document.getElementById('check-drawstring').checked = state.drawstring;
+        document.getElementById('check-zipper').checked = state.zipper;
 
         renderNecklineFitFields();
         setSizeOptions(Array.isArray(p.sizes) ? p.sizes : ALL_SIZES);
