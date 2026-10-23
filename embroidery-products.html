@@ -207,6 +207,9 @@
         $('f-sizes').innerHTML = SIZES.map(s =>
             `<label class="szl"><input type="checkbox" value="${s}"${selected.includes(s) ? ' checked' : ''}> ${s}</label>`).join('');
     }
+      function syncHoodieOpts() {
+        $('f-hoodie-opts').style.display = $('f-garment').value === 'hoodie' ? 'block' : 'none';
+    }
     function renderDesigns() {
         $('design-strip').innerHTML = designs.map(d => {
             const url = safeHttps(d.image_url);
