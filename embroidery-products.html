@@ -255,7 +255,10 @@
         $('f-color').value = p ? p.color : 'black';
         fillComp(p ? p.composition : null);
         $('f-density').value = p ? (p.density || '') : '';
-        $('f-position').value = p ? p.position : 'front';
+         $('f-position').value = p ? p.position : 'front';
+        $('f-drawstring').checked = !!(p && p.drawstring);
+        $('f-zipper').checked = !!(p && p.zipper);
+        syncHoodieOpts();
         buildSizes(p ? (p.sizes || []) : SIZES);
         $('f-price').value = p ? p.price : '';
         $('f-scale').value = 34; $('f-x').value = 50; $('f-y').value = 40;
