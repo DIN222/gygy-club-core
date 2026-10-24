@@ -63,7 +63,10 @@
 </div>
 
 <script type="module">
-    import { getPassport } from './modules/passport.js';
+        import { getPassport } from './modules/passport.js';
+    import { init as initLocalization, t, onLanguageChange } from './core/localization.js';
+
+    initLocalization(document.body);
 
     const LIKE_THRESHOLD = 10; // ⚠️ TODO: черновое значение, уточнить опытным путём
 
