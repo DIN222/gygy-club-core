@@ -22,6 +22,7 @@
 
 import { on, off, emit } from '../core/eventBus.js';
 import { get, set } from '../core/storage.js';
+import { applyTranslations } from '../core/localization.js';
 
 const CLUB_NICKNAMES = [
     'БигКоин', 'Нападающий', 'Шампань', 'Магнат', 'Счастливчик',
@@ -138,7 +139,7 @@ export function openModal() {
         modal.innerHTML = `
             <div class="gy-passport-card">
                 <div class="gy-passport-close">&times;</div>
-                <div class="gy-passport-title">GY-GY PASSPORT</div>
+                                <div class="gy-passport-title" data-translate="passport_title">GY-GY PASSPORT</div>
                 <div class="gy-passport-id"></div>
                 <div class="gy-passport-nick"></div>
                 <div class="gy-passport-avatar-box"><img class="gy-passport-avatar"></div>
@@ -146,7 +147,8 @@ export function openModal() {
                 <button class="gy-passport-edit" data-translate="btn_edit_passport">EDIT</button>
             </div>
         `;
-        document.body.appendChild(modal);
+               document.body.appendChild(modal);
+        applyTranslations(modal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
         modal.querySelector('.gy-passport-close').addEventListener('click', closeModal);
         modal.querySelector('.gy-passport-edit').addEventListener('click', () => {
