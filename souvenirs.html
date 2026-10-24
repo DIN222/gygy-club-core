@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- souvenirs.html — v0.1.0 — 2026-10-16 — витрина сувениров (заготовка; учёт готовится в Бухгалтерии) -->
+<!-- souvenirs.html — v0.2.0 — 2026-10-24 — витрина сувениров (заготовка), English / Français -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -21,15 +21,20 @@
 </head>
 <body>
 <div class="header-right">GY-GY</div>
-<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-hall">&lt;&lt;</a></div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
+    <a class="back-arrow" id="btn-hall" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
+</div>
 <div class="page-wrap">
-    <div class="title">SOUVENIRS</div>
-    <div class="note">The souvenir shelf is being prepared. Tell us what you would like to see here — leave a review or a wish below.</div>
+    <div class="title" data-translate="souvenirs_title">SOUVENIRS</div>
+    <div class="note" data-translate="souvenirs_note">The souvenir shelf is being prepared. Tell us what you would like to see here — leave a review or a wish below.</div>
     <div class="box" id="review-box"></div>
 </div>
 <script type="module">
+    import { init as initLocalization } from './core/localization.js';
     import { mountReviewBox } from './modules/reviewBox.js';
 
+    initLocalization(document.body);
     mountReviewBox(document.getElementById('review-box'), { location: 'souvenirs' });
 
     document.getElementById('btn-back').addEventListener('click', () => history.back());
