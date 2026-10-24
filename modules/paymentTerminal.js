@@ -123,8 +123,8 @@ export function openPaymentTerminal({ amount, orderNumber, lineItems = [], onCom
                 ${lineItems.map(([l, v]) => `<div class="pt-r-row"><span>${l}</span><span>${v}</span></div>`).join('')}
                                <div class="pt-r-row pt-r-total"><span>${t('pt_total', 'TOTAL')}</span><span>€${amount.toFixed(2)}</span></div>
             </div>
-            <button class="pt-btn" id="pt-save">💾 Save receipt</button>
-            <button class="pt-btn pt-primary" id="pt-done">DONE</button>`;
+            <button class="pt-btn" id="pt-save">💾 ${t('pt_save', 'Save receipt')}</button>
+                            <button class="pt-btn pt-primary" id="pt-done">${t('pt_done', 'DONE')}</button>`;
         extra.querySelector('#pt-save').addEventListener('click', () => {
             buildReceiptCanvas({ orderNumber, lineItems, total: `€${amount.toFixed(2)}`, date }).toBlob((blob) => {
                 const a = document.createElement('a');
