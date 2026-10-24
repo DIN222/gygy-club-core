@@ -121,7 +121,7 @@ export function openPaymentTerminal({ amount, orderNumber, lineItems = [], onCom
                 <div class="pt-r-row"><span>${t('pt_date', 'Date')}</span><span>${date}</span></div>
                 <div style="border-top:1px solid #8a6f24; margin:8px 0;"></div>
                 ${lineItems.map(([l, v]) => `<div class="pt-r-row"><span>${l}</span><span>${v}</span></div>`).join('')}
-                <div class="pt-r-row pt-r-total"><span>TOTAL</span><span>€${amount.toFixed(2)}</span></div>
+                               <div class="pt-r-row pt-r-total"><span>${t('pt_total', 'TOTAL')}</span><span>€${amount.toFixed(2)}</span></div>
             </div>
             <button class="pt-btn" id="pt-save">💾 Save receipt</button>
             <button class="pt-btn pt-primary" id="pt-done">DONE</button>`;
