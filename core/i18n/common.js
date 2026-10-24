@@ -1,0 +1,104 @@
+// core/i18n/common.js
+// v1.0.0 — 2026-10-24
+// Общий словарь: вход, Холл, паспорт, Сувениры, отзывы, платёжный терминал.
+// Только данные (без импортов): их подключает core/localization.js.
+
+export const COMMON_DICT = {
+    en: {
+        btn_who_are_you: 'WHO ARE YOU?',
+        welcome_charlie: "I'M CHARLIE",
+        welcome_quote: 'In every joke there is a share of whisky',
+        welcome_title: 'WELCOME',
+        door_alt: 'Enter GY-GY Club',
+        nav_back: 'Back',
+        nav_home: 'Home',
+
+        hall_title: 'HALL',
+        hall_quote: 'In every joke there is a share of whisky',
+        zone_ai_room: 'AI ROOM',
+        zone_bar: 'BAR',
+        zone_atelier: 'Atelier «Horse in a Coat»',
+        zone_store: 'THE OLD CURIOSITY SHOP',
+        zone_souvenirs: 'SOUVENIRS',
+        zone_hall_of_fame: '★ THIS IS GREAT!!!',
+
+        passport_title: 'GY-GY PASSPORT',
+        btn_edit_passport: 'EDIT',
+
+        souvenirs_title: 'SOUVENIRS',
+        souvenirs_note: 'The souvenir shelf is being prepared. Tell us what you would like to see here — leave a review or a wish below.',
+
+        rv_title: 'Reviews',
+        rv_rating: 'Rating (optional)',
+        rv_text_ph: 'Your review',
+        rv_name_ph: 'Name (optional)',
+        rv_send: 'Send',
+        rv_empty: 'No reviews yet — be the first.',
+        rv_guest: 'Guest',
+        rv_short: 'Please write a few words.',
+        rv_fail: 'Could not send your review. Please try again later.',
+        rv_thanks: 'Thank you for your review!',
+
+        pt_alt: 'Payment terminal',
+        pt_amount: 'AMOUNT',
+        pt_tap: 'TAP TO PAY',
+        pt_processing: 'PROCESSING',
+        pt_approved: 'APPROVED',
+        pt_order: 'Order',
+        pt_date: 'Date',
+        pt_total: 'TOTAL',
+        pt_save: 'Save receipt',
+        pt_done: 'DONE'
+    },
+
+    fr: {
+        btn_who_are_you: 'QUI ÊTES-VOUS ?',
+        welcome_charlie: 'JE SUIS CHARLIE',
+        welcome_quote: 'Dans chaque blague, il y a une part de whisky',
+        welcome_title: 'BIENVENUE',
+        door_alt: 'Entrer au GY-GY Club',
+        nav_back: 'Retour',
+        nav_home: 'Accueil',
+
+        hall_title: 'HALL',
+        hall_quote: 'Dans chaque blague, il y a une part de whisky',
+        zone_ai_room: 'SALLE IA',
+        zone_bar: 'BAR',
+        zone_atelier: 'Atelier « Horse in a Coat »',
+        zone_store: 'LE MAGASIN D’ANTIQUITÉS',
+        zone_souvenirs: 'SOUVENIRS',
+        zone_hall_of_fame: '★ C’EST GÉNIAL !!!',
+
+        passport_title: 'PASSEPORT GY-GY',
+        btn_edit_passport: 'MODIFIER',
+
+        souvenirs_title: 'SOUVENIRS',
+        souvenirs_note: 'Le rayon souvenirs est en préparation. Dites-nous ce que vous aimeriez y voir : laissez un avis ou un souhait ci-dessous.',
+
+        rv_title: 'Avis',
+        rv_rating: 'Note (facultatif)',
+        rv_text_ph: 'Votre avis',
+        rv_name_ph: 'Nom (facultatif)',
+        rv_send: 'Envoyer',
+        rv_empty: 'Pas encore d’avis — soyez le premier.',
+        rv_guest: 'Invité',
+        rv_short: 'Merci d’écrire quelques mots.',
+        rv_fail: 'Impossible d’envoyer votre avis. Veuillez réessayer plus tard.',
+        rv_thanks: 'Merci pour votre avis !',
+
+        pt_alt: 'Terminal de paiement',
+        pt_amount: 'MONTANT',
+        pt_tap: 'TOUCHEZ POUR PAYER',
+        pt_processing: 'TRAITEMENT',
+        pt_approved: 'APPROUVÉ',
+        pt_order: 'Commande',
+        pt_date: 'Date',
+        pt_total: 'TOTAL',
+        pt_save: 'Enregistrer le reçu',
+        pt_done: 'TERMINER'
+    },
+
+    ru: {
+        btn_who_are_you: 'А ВЫ КТО?'
+    }
+};
