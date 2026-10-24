@@ -158,12 +158,12 @@
         <img src="horse_bar.png" class="bar-bg-horse">
         
         <div class="bar-top-content">
-            <div class="quote-text">In every joke there is a share of whisky</div>
+                       <div class="quote-text" data-translate="welcome_quote">In every joke there is a share of whisky</div>
         </div>
         
         <div class="bar-bottom-panel">
-            <button class="btn-gy" onclick="event.stopPropagation(); goToTablesZone();">TABLES ZONE</button>
-            <button class="btn-gy" onclick="openSarcasmBook()">DE-STRESS STUDIO</button>
+                        <button class="btn-gy" data-translate="bar_tables" onclick="event.stopPropagation(); goToTablesZone();">TABLES ZONE</button>
+            <button class="btn-gy" data-translate="bar_destress" onclick="openSarcasmBook()">DE-STRESS STUDIO</button>
         </div>
     </div>
 
@@ -219,7 +219,7 @@
         function goBack() {
             document.body.classList.remove('page-loaded');
             setTimeout(() => {
-                window.location.href = 'index.html?go=hall';
+                              window.location.href = 'hall.html';
             }, 400);
         }
 
