@@ -917,8 +917,11 @@
     }
 
     function clearEmbProduct() {
-        if (!state.embProduct) return;
+               if (!state.embProduct) return;
         state.embProduct = null;
+        state.drawstring = false; state.zipper = false;
+        document.getElementById('check-drawstring').checked = false;
+        document.getElementById('check-zipper').checked = false;
         lockControls(false);
         setSizeOptions(ALL_SIZES);
         document.getElementById('row-drawstring').style.display = (state.type === 'hoodie') ? 'flex' : 'none';
