@@ -94,7 +94,7 @@
             card.className = 'card';
             card.innerHTML = `
                 <img src="${item.image_url}">
-                <div class="author">${item.from_user_name || 'Unknown'}</div>
+                                <div class="author">${item.from_user_name || t('hof_unknown', 'Unknown')}</div>
                 <div class="likes-row">
                     <span class="likes-count">👍 <span id="count-${item.id}">${item.likes}</span></span>
                     <button class="like-btn" id="like-${item.id}" ${(alreadyLiked || !passportId) ? 'disabled' : ''}>
