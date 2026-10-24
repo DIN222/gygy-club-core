@@ -41,25 +41,41 @@ export function mountReviewBox(container, { location = 'other', getContext = nul
     injectStyles();
     container.innerHTML = `
         <details class="rv">
-            <summary>Reviews</summary>
+            <summary data-rv="title">Reviews</summary>
             <div class="rv-body">
                 <select class="rv-rating">
-                    <option value="">Rating (optional)</option>
+                    <option value="" data-rv="rating">Rating (optional)</option>
                     <option value="5">★★★★★ 5</option>
                     <option value="4">★★★★ 4</option>
                     <option value="3">★★★ 3</option>
                     <option value="2">★★ 2</option>
                     <option value="1">★ 1</option>
                 </select>
-                <textarea class="rv-text" rows="3" maxlength="1000" placeholder="Your review"></textarea>
-                <input class="rv-name" type="text" maxlength="60" placeholder="Name (optional)">
-                <button class="rv-send" type="button">Send</button>
+                <textarea class="rv-text" rows="3" maxlength="1000" placeholder="Your review" data-rv-ph="text"></textarea>
+                <input class="rv-name" type="text" maxlength="60" placeholder="Name (optional)" data-rv-ph="name">
+                <button class="rv-send" type="button" data-rv="send">Send</button>
                 <div class="rv-status"></div>
                 <div class="rv-list"></div>
             </div>
         </details>`;
 
     const q = (sel) => container.querySelector(sel);
+
+    const LABELS = { title: ['rv_title', 'Reviews'], rating: ['rv_rating', 'Rating (optional)'], send: ['rv_send', 'Send'] };
+    const PLACEHOLDERS = { text: ['rv_text_ph', 'Your review'], name: ['rv_name_ph', 'Name (optional)'] };
+    function applyLabels() {
+        container.querySelectorAll('[data-rv]').forEach(el => {
+            const l = LABELS[el.dataset.rv];
+            if (l) el.textContent = t(l[0], l[1]);
+        });
+        container.querySelectorAll('[data-rv-ph]').forEach(el => {
+            const p = PLACEHOLDERS[el.dataset.rvPh];
+            if (p) el.placeholder = t(p[0], p[1]);
+        });
+    }
+    applyLabels();
+
+    let loaded = false;
 
     async function loadList() {
         const box = q('.rv-list');
@@ -69,20 +85,27 @@ export function mountReviewBox(container, { location = 'other', getContext = nul
             .order('created_at', { ascending: false })
             .limit(10);
         if (error) { box.innerHTML = ''; return; }
-        if (!data || !data.length) { box.innerHTML = '<div class="rv-empty">No reviews yet — be the first.</div>'; return; }
+        if (!data || !data.length) {
+            box.innerHTML = `<div class="rv-empty">${esc(t('rv_empty', 'No reviews yet — be the first.'))}</div>`;
+            return;
+        }
         box.innerHTML = data.map(r => `
             <div class="rv-item">
                 <div class="rv-meta">
                     ${r.rating ? `<span class="rv-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span> ` : ''}
-                    ${esc(r.author_name || 'Guest')} · ${esc(new Date(r.created_at).toLocaleDateString())}
+                    ${esc(r.author_name || t('rv_guest', 'Guest'))} · ${esc(new Date(r.created_at).toLocaleDateString(getCurrentLang()))}
                 </div>
                 <div class="rv-text">${esc(r.body)}</div>
             </div>`).join('');
     }
 
-    let loaded = false;
     q('details.rv').addEventListener('toggle', (e) => {
         if (e.target.open && !loaded) { loaded = true; loadList(); }
+    });
+
+    onLanguageChange(() => {
+        applyLabels();
+        if (loaded) loadList();
     });
 
     q('.rv-send').addEventListener('click', async () => {
@@ -90,7 +113,7 @@ export function mountReviewBox(container, { location = 'other', getContext = nul
         status.className = 'rv-status';
         const body = q('.rv-text').value.trim();
         if (body.length < 3) {
-            status.textContent = 'Please write a few words.';
+            status.textContent = t('rv_short', 'Please write a few words.');
             status.classList.add('rv-err');
             return;
         }
@@ -109,12 +132,12 @@ export function mountReviewBox(container, { location = 'other', getContext = nul
         btn.disabled = false;
         if (error) {
             console.error('[ReviewBox] Не удалось отправить отзыв', error);
-            status.textContent = 'Could not send your review. Please try again later.';
+            status.textContent = t('rv_fail', 'Could not send your review. Please try again later.');
             status.classList.add('rv-err');
             return;
         }
         q('.rv-text').value = '';
-        status.textContent = 'Thank you for your review!';
+        status.textContent = t('rv_thanks', 'Thank you for your review!');
         status.classList.add('rv-ok');
         loaded = true;
         loadList();
