@@ -156,7 +156,7 @@
     <div class="identity-row">
         <div class="id-box" id="box-own-nick">
             <span class="label" id="txt-own-nick" data-translate="nick_own">OR YOUR NICK</span>
-            <input type="text" id="input-own-nick" placeholder="Enter nick" style="display:none;">
+                       <input type="text" id="input-own-nick" placeholder="Enter nick" data-translate-placeholder="nick_enter" style="display:none;">
         </div>
         <div class="id-box" id="box-club-nick">
                        <button class="reroll-btn" id="btn-reroll-nick" title="Another one" data-translate-title="nick_reroll">⟳</button>
@@ -176,7 +176,7 @@
         </div>
     </div>
     <div class="identity-row">
-        <span class="service-info-label" style="width:100%; text-align:center; margin-bottom:2px;">Служебная инфо</span>
+                <span class="service-info-label" data-translate="service_info" style="width:100%; text-align:center; margin-bottom:2px;">Service info</span>
     </div>
     <div class="identity-row">
         <div class="id-box service-info readonly" id="id-label">#ID</div>
@@ -187,7 +187,7 @@
 <button id="btn-enter" class="btn-gy" data-translate="btn_enter">ENTER</button>
 
 <script type="module">
-    import { init as initLocalization } from './core/localization.js';
+       import { init as initLocalization, t, onLanguageChange } from './core/localization.js';
     import {
         init as initPassport, getPassport, saveProfile, generateAvatar
     } from './modules/passport.js';
@@ -200,13 +200,9 @@
     let currentAvatar = existing?.avatar || '';
     let currentAvatarSource = existing?.avatarSource || 'photo';
 
-    const CLUB_NICKNAMES_PREVIEW = [
-        'БигКоин', 'Нападающий', 'Шампань', 'Магнат', 'Счастливчик',
-        'Инсайдер', 'Фантом', 'Победитель', 'Капитан', 'Маэстро',
-        'Прайм', 'Штурман', 'Панчер', 'Триумф', 'Оракул'
-    ];
-    let previewClubNick = existing?.clubNickname
-        || CLUB_NICKNAMES_PREVIEW[Math.floor(Math.random() * CLUB_NICKNAMES_PREVIEW.length)];
+        const nickList = () => t('club_nicknames', 'БигКоин|Нападающий|Шампань|Магнат|Счастливчик|Инсайдер|Фантом|Победитель|Капитан|Маэстро|Прайм|Штурман|Панчер|Триумф|Оракул').split('|');
+    const pickNick = () => { const l = nickList(); return l[Math.floor(Math.random() * l.length)]; };
+    let previewClubNick = existing?.clubNickname || pickNick();
 
     const boxOwnNick = document.getElementById('box-own-nick');
     const boxClubNick = document.getElementById('box-club-nick');
@@ -279,10 +275,13 @@
         e.stopPropagation();
         let next = previewClubNick;
         while (next === previewClubNick) {
-            next = CLUB_NICKNAMES_PREVIEW[Math.floor(Math.random() * CLUB_NICKNAMES_PREVIEW.length)];
+                        next = pickNick();
         }
         previewClubNick = next;
-        clubNickLabel.textContent = previewClubNick;
+           clubNickLabel.textContent = previewClubNick;
+    onLanguageChange(() => {
+        if (!existing?.clubNickname) { previewClubNick = pickNick(); clubNickLabel.textContent = previewClubNick; }
+    });
     });
 
     document.getElementById('file-input').addEventListener('change', (e) => {
