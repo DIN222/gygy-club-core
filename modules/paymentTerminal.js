@@ -114,7 +114,7 @@ export function openPaymentTerminal({ amount, orderNumber, lineItems = [], onCom
         finished = true;
         const date = new Date().toLocaleString();
         screen.style.cursor = 'default';
-        screen.innerHTML = `<div class="pt-s-check">✓</div><div class="pt-s-label">APPROVED</div>`;
+               screen.innerHTML = `<div class="pt-s-check">✓</div><div class="pt-s-label">${t('pt_approved', 'APPROVED')}</div>`;
         extra.innerHTML = `
             <div class="pt-receipt">
                 <div class="pt-r-row"><span>Order</span><span>${orderNumber}</span></div>
