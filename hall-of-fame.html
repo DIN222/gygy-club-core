@@ -113,10 +113,10 @@
                 try {
                     const newLikes = await clubBase.likePrint(item.id, passportId);
                     document.getElementById(`count-${item.id}`).textContent = newLikes;
-                    btn.textContent = 'Оценено';
+                   btn.textContent = t('hof_liked', 'Liked');
                 } catch (e) {
                     if (e.message === 'ALREADY_LIKED') {
-                        btn.textContent = 'Оценено';
+                       btn.textContent = t('hof_liked', 'Liked');
                     } else {
                         console.error('[HallOfFame] Не удалось поставить лайк', e);
                         btn.disabled = false;
