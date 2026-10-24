@@ -107,7 +107,7 @@ export function openPaymentTerminal({ amount, orderNumber, lineItems = [], onCom
     }
     function showProcessing() {
         screen.classList.remove('pt-pulsing');
-        screen.innerHTML = `<div class="pt-s-spinner"></div><div class="pt-s-label">PROCESSING</div>`;
+               screen.innerHTML = `<div class="pt-s-spinner"></div><div class="pt-s-label">${t('pt_processing', 'PROCESSING')}</div>`;
         setTimeout(showSuccess, 1400);
     }
     function showSuccess() {
