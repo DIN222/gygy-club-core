@@ -250,14 +250,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             syncUserBadge();
 
-            const savedLangCode = safeStorageGet('gy_lang', 'EN').toLowerCase();
-            setTimeout(() => {
-                const selectEl = document.querySelector('.goog-te-combo');
-                if (selectEl) { 
-                    selectEl.value = savedLangCode === 'ua' ? 'uk' : savedLangCode; 
-                    selectEl.dispatchEvent(new Event('change', { bubbles: true })); 
-                }
-            }, 800);
+           
 
             const ambient = document.getElementById('snd-ambient');
             if (ambient) { ambient.volume = 0.55; ambient.play().catch(() => {
@@ -266,9 +259,6 @@
 
             switchLocalBlock('block-bar');
 
-            const script = document.createElement('script'); script.type = 'text/javascript';
-            script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-            document.head.appendChild(script);
             document.body.classList.add('page-loaded');
         });
     </script>
