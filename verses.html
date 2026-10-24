@@ -1,1 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GY-GY Club — AI ZONE 019 </title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,700;0,900;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        :root { 
+            --gold: #d4af37; 
+            --orange: #ff7700;
+            --orange-glow: rgba(255, 119, 0, 0.7);
+        }
+        
+        * { -webkit-tap-highlight-color: transparent !important; box-sizing: border-box; }
+        body, button, input, div, img, span { pointer-events: auto !important; }
+        img { -webkit-user-drag: none !important; }
 
+        html, body { width: 100%; height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; overflow: hidden; position: fixed; margin: 0; }
+        
+        /* ==========================================================================
+           СТАНДАРТНАЯ ШАПКА КЛУБА (ФИКС НАВИГАЦИИ)
+           ========================================================================== */
+        .ui-top-standard-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            z-index: 999999;
+            pointer-events: none;
+        }
+        .ui-top-standard-bar * { pointer-events: auto; }
+
+        .bar-left-nav { 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            user-select: none;
+        }
+        
+        .back-btn, .double-arrow-btn {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 26px; 
+            font-weight: 900; 
+            color: var(--gold); 
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .double-arrow-btn span:nth-child(2) {
+            margin-left: -4px; 
+        }
+
+        .bar-center-badge-container { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; }
+        .bar-center-badge { position: relative; width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; }
+        .bar-center-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; background-color: #fff; }
+        .bar-center-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 17px; height: 12px; border: 1px solid var(--gold); }
+
+        .bar-right-logo { font-size: 24px; letter-spacing: 5px; font-weight: bold; text-shadow: 0 0 5px #000; }
+
+        /* ПАСПОРТ */
+        .passport-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000000; display: none; align-items: center; justify-content: center; }
+        .passport-card { background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px; padding: 25px; width: 280px; color: #000; text-align: center; position: relative; }
+        .passport-card .box-final { margin: 15px auto; border-color: #000; }
+        .passport-close-btn { position: absolute; top: 10px; right: 14px; font-size: 28px; font-weight: bold; color: #000; cursor: pointer; line-height: 1; }
+        .box-final { width: 85px; height: 85px; border: 2px solid #000; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+
+        /* БЛОКИ ОКОН */
+        .block { 
+            position: fixed; 
+            inset: 0; 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            background: #000; 
+            z-index: 10; 
+            padding-top: 60px;
+        }
+
+        /* СЕРВЕРНАЯ */
+        #section-server {
+            background-image: url('banana_server_room.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .invisible-door-clicker {
+            position: absolute;
+            cursor: pointer;
+            z-index: 50;
+            width: 200px;         
+            height: 320px;        
+            top: 50%;             
+            left: 50%;            
+            transform: translate(-50%, -45%);
+        }
+
+        /* ==========================================================================
+           AI ROOM (+15% РАЗМЕР КАРТИНКИ)
+           ========================================================================== */
+        #section-ai-room {
+            background-image: url('OIG2_vintage_tv_room_v2 (1).png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            width: 100%;
+            max-width: 690px;   
+            max-height: 92vh;   
+            margin: auto;
+            bottom: 0;
+        }
+        
+        /* Пространственная матрица голограмм */
+        .holo-canvas {
+            position: absolute;
+            width: 100%;
+            height: 60%;
+            top: 45%;
+            left: 0;
+            z-index: 60;
+        }
+
+        .holo-click-label {
+            position: absolute;
+            font-size: 22px; 
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--orange);
+            text-shadow: 0 0 12px var(--orange-glow), 0 0 25px var(--orange-glow);
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        /* ==========================================================================
+           НАСТРОЙКА ВЕРТИКАЛИ НАДПИСЕЙ (МЕНЯЙ % У ПАРАМЕТРА TOP)
+           Меньше % — ВВЕРХ, Больше % — ВНИЗ
+           ========================================================================== */
+        
+        /* Левый экран (ET MESSAGE) */
+        .pos-left {
+            top: -35%;    /* Сделай 15% чтобы поднять, или 30% чтобы опустить */
+            left: 12%;   
+        }
+        
+        /* Центральный экран (LUNAR BASE) */
+        .pos-center {
+            top: -10%;    /* Изменяй это значение для центральной надписи */
+            left: 50%;   
+            transform: translateX(-50%);
+        }
+
+        /* Правый экран (HELLO UNIVERSE) */
+        .pos-right {
+            top: -35%;    /* Изменяй это значение для правой надписи */
+            right: 12%;  
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-top-standard-bar">
+        <div class="bar-left-nav notranslate">
+            <span class="back-btn" onclick="handleGlobalBack()">&lt;</span>
+            <span class="double-arrow-btn" onclick="handleGlobalBack()">
+                <span>&lt;</span><span>&lt;</span>
+            </span>
+        </div>
+        
+        <div class="bar-center-badge-container">
+            <div id="global-user-badge" class="bar-center-badge notranslate" onclick="openPassport()">
+                <img id="badge-avatar-img" class="badge-img" src="">
+                <img id="badge-flag-img" class="badge-flag" src="https://flagcdn.com/w20/gb.png">
+            </div>
+        </div>
+        
+        <div class="bar-right-logo notranslate">GY-GY</div>
+    </div>
+
+    <div id="modal-passport" class="passport-overlay" onclick="closePassport()">
+        <div class="passport-card" onclick="event.stopPropagation()">
+            <div class="passport-close-btn" onclick="closePassport()">&times;</div>
+            <div style="font-weight:900; font-size:16px; letter-spacing:1px;">GY-GY PASSPORT</div>
+            <div id="pass-id-val" style="font-weight:700; font-size:13px; margin-top:5px; color:#555;">#ID</div>
+            <div class="box-final" style="width:100px; height:100px; border-radius:50%; border:2px solid var(--gold);"><img id="pass-avatar-img" style="width:100%; height:100%; object-fit:cover; border-radius:50%; background-color:#fff;"></div>
+            <div class="box-final" id="pass-qr-box" style="width:110px; height:110px; padding:5px;"></div>
+        </div>
+    </div>
+
+    <audio id="ambient-audio" src="sbridge_ambient.mp3" loop autoplay></audio>
+
+    <div id="section-server" class="block" style="display: flex;">
+        <div class="invisible-door-clicker" onclick="unlockAndEnterRoom()"></div>
+    </div>
+
+    <div id="section-ai-room" class="block">
+        
+        <div class="holo-canvas">
+            <span id="lbl-et" class="holo-click-label pos-left" onclick="switchHoloTab('et')">ET MESSAGE</span>
+            <span id="lbl-lunar" class="holo-click-label pos-center" onclick="switchHoloTab('lunar')">LUNAR BASE</span>
+            <span id="lbl-hello" class="holo-click-label pos-right" onclick="switchHoloTab('hello')">HELLO UNIVERSE</span>
+        </div>
+
+    </div>
+
+<script type="text/javascript">
+    let isInAiRoom = false;
+    let currentID = "";
+
+    function safeStorageGet(key, fallback = "") { try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; } }
+
+    function forcePlayAudio() {
+        const audio = document.getElementById('ambient-audio');
+        if (audio) {
+            audio.volume = 0.4;
+            audio.play().catch(() => {
+                document.body.addEventListener('click', () => { audio.play(); }, { once: true });
+            });
+        }
+    }
+
+    function unlockAndEnterRoom() {
+        setTimeout(() => {
+            document.getElementById('section-server').style.display = 'none';
+            document.getElementById('section-ai-room').style.display = 'flex';
+            isInAiRoom = true;
+        }, 150);
+    }
+
+    function switchHoloTab(target) {
+        console.log("Switched to tab: " + target);
+    }
+
+    function handleGlobalBack() {
+        if (isInAiRoom) {
+            document.getElementById('section-ai-room').style.display = 'none';
+            document.getElementById('section-server').style.display = 'flex';
+            isInAiRoom = false;
+        } else {
+            window.location.href = 'index.html';
+        }
+    }
+
+    function initUserBadge() {
+        const savedAvatar = safeStorageGet('gy_user_img') || safeStorageGet('gygy_avatar');
+        currentID = safeStorageGet('gygy_id') || safeStorageGet('gy_user_id') || safeStorageGet('gy_trace');
+        const savedFlag = safeStorageGet('gygy_flag') || safeStorageGet('gy_user_flag') || 'gb';
+
+        const badgeFlagImg = document.getElementById('badge-flag-img');
+        if (badgeFlagImg) badgeFlagImg.src = `https://flagcdn.com/w20/${savedFlag.toLowerCase()}.png`;
+
+        if (savedAvatar) {
+            const badgeImg = document.getElementById('badge-avatar-img');
+            const passImg = document.getElementById('pass-avatar-img');
+            if (badgeImg) badgeImg.src = savedAvatar;
+            if (passImg) passImg.src = savedAvatar;
+        }
+
+        if (currentID) {
+            const passIdVal = document.getElementById('pass-id-val');
+            const passQrBox = document.getElementById('pass-qr-box');
+            if (passIdVal) passIdVal.innerText = currentID;
+            if (passQrBox && typeof QRCode !== 'undefined') { 
+                passQrBox.innerHTML = ""; 
+                new QRCode(passQrBox, { text: currentID, width: 100, height: 100 }); 
+            }
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initUserBadge();
+        const audio = document.getElementById('ambient-audio');
+        if (audio) {
+            audio.addEventListener('canplaythrough', forcePlayAudio, { once: true });
+        }
+    });
+</script>
+</body>
+</html>
