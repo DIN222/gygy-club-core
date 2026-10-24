@@ -98,7 +98,7 @@
                 <div class="likes-row">
                     <span class="likes-count">👍 <span id="count-${item.id}">${item.likes}</span></span>
                     <button class="like-btn" id="like-${item.id}" ${(alreadyLiked || !passportId) ? 'disabled' : ''}>
-                        ${alreadyLiked ? 'Оценено' : (passportId ? 'Нравится' : 'Нужен паспорт')}
+                     ${alreadyLiked ? t('hof_liked', 'Liked') : (passportId ? t('hof_like', 'Like') : t('hof_need_passport', 'Passport required'))}
                     </button>
                 </div>
             `;
