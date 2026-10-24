@@ -117,8 +117,8 @@ export function openPaymentTerminal({ amount, orderNumber, lineItems = [], onCom
                screen.innerHTML = `<div class="pt-s-check">✓</div><div class="pt-s-label">${t('pt_approved', 'APPROVED')}</div>`;
         extra.innerHTML = `
             <div class="pt-receipt">
-                <div class="pt-r-row"><span>Order</span><span>${orderNumber}</span></div>
-                <div class="pt-r-row"><span>Date</span><span>${date}</span></div>
+                                <div class="pt-r-row"><span>${t('pt_order', 'Order')}</span><span>${orderNumber}</span></div>
+                <div class="pt-r-row"><span>${t('pt_date', 'Date')}</span><span>${date}</span></div>
                 <div style="border-top:1px solid #8a6f24; margin:8px 0;"></div>
                 ${lineItems.map(([l, v]) => `<div class="pt-r-row"><span>${l}</span><span>${v}</span></div>`).join('')}
                 <div class="pt-r-row pt-r-total"><span>TOTAL</span><span>€${amount.toFixed(2)}</span></div>
