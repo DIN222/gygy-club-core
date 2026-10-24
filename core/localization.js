@@ -183,9 +183,22 @@ const MODULE_NAME = 'localization';
 
 let boundContainer = null;
 
+// Машинный перевод всего, чего нет в словаре (modules/liveTranslate.js + функция translate).
+// Выключить целиком: LIVE_TRANSLATE = false.
+export const LIVE_TRANSLATE = true;
+let liveStarted = false;
+function startLiveTranslate() {
+    if (liveStarted || !LIVE_TRANSLATE) return;
+    liveStarted = true;
+    import('../modules/liveTranslate.js')
+        .then(m => m.start())
+        .catch(e => console.warn('[localization] liveTranslate не загружен', e));
+}
+
 export function init(container = document) {
     boundContainer = container;
     applyTranslations(boundContainer);
+    startLiveTranslate();
     emit('MODULE_INIT', { module: MODULE_NAME, at: Date.now() });
 }
 
