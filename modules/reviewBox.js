@@ -5,6 +5,7 @@
 // Скрытые сотрудником (hidden=true) посетителям не показываются.
 
 import { supabase } from '../core/supabase-init.js';
+import { t, getCurrentLang, onLanguageChange } from '../core/localization.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
