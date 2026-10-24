@@ -49,10 +49,20 @@ export const ENABLED_LANGUAGES = ['en', 'fr'];
 
 const TRANSLATIONS = {};
 
+let valueSets = {};
+
 export function registerDictionary(dict) {
     Object.keys(dict || {}).forEach(lang => {
         TRANSLATIONS[lang] = Object.assign(TRANSLATIONS[lang] || {}, dict[lang]);
     });
+    valueSets = {};
+}
+
+// Это текст из нашего словаря на текущем языке? Машинный переводчик такие строки не трогает.
+export function isDictionaryText(text) {
+    const lang = getCurrentLang();
+    if (!valueSets[lang]) valueSets[lang] = new Set(Object.values(TRANSLATIONS[lang] || {}));
+    return valueSets[lang].has(text);
 }
 registerDictionary(COMMON_DICT);
 
