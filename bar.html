@@ -262,6 +262,10 @@
             document.body.classList.add('page-loaded');
         });
     </script>
+        <script type="module">
+        import { init as initLocalization } from './core/localization.js';
+        initLocalization(document.body);
+    </script>
 </body>
 </html>
 
