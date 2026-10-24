@@ -102,7 +102,7 @@ export function openPaymentTerminal({ amount, orderNumber, lineItems = [], onCom
     overlay.querySelector('#pt-x').addEventListener('click', () => { if (!finished) close(true); else close(false); });
 
     function showTap() {
-        screen.innerHTML = `<div class="pt-s-label">AMOUNT</div><div class="pt-s-amount">€${amount.toFixed(2)}</div><div class="pt-s-hint">TAP TO PAY</div>`;
+               screen.innerHTML = `<div class="pt-s-label">${t('pt_amount', 'AMOUNT')}</div><div class="pt-s-amount">€${amount.toFixed(2)}</div><div class="pt-s-hint">${t('pt_tap', 'TAP TO PAY')}</div>`;
         screen.addEventListener('click', showProcessing, { once: true });
     }
     function showProcessing() {
