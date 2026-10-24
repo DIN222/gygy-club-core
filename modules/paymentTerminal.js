@@ -4,7 +4,7 @@
 // (сумма / обработка / успех) выводятся прямо поверх экрана на фото.
 // По-прежнему ИМИТАЦИЯ: реального приёма карт нет, деньги не двигаются.
 // API не изменился: openPaymentTerminal({ amount, orderNumber, lineItems, onComplete, onCancel })
-
+import { t } from '../core/localization.js';
 let injected = false;
 
 function injectStylesOnce() {
@@ -82,7 +82,7 @@ export function openPaymentTerminal({ amount, orderNumber, lineItems = [], onCom
         <span class="pt-close" id="pt-x">&times;</span>
         <div class="pt-inner">
             <div class="pt-device">
-                <img src="payment-terminal.png" alt="Payment terminal">
+                                <img src="payment-terminal.png" alt="${t('pt_alt', 'Payment terminal')}">
                 <div class="pt-screen pt-pulsing" id="pt-screen"></div>
             </div>
             <div id="pt-extra" style="display:flex; flex-direction:column; align-items:center; gap:8px;"></div>
