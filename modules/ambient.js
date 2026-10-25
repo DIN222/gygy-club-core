@@ -1,12 +1,10 @@
 
 // modules/ambient.js
-// v1.0.0 — 2026-10-24
-// Барный фон (bar_ambient.mp3) звучит от экрана приветствия до барной стойки:
-// на каждой странице продолжается примерно с того места, где остановился на прошлой.
-// Состояние хранится в sessionStorage (одна вкладка = одна прогулка по клубу).
-//   startAmbient()  — включить (экран приветствия, после клика по двери)
-//   resumeAmbient() — продолжить (регистрация, Холл, бар)
-//   stopAmbient()   — выключить
+// v2.0.0 — совместимость: вся логика звука переехала в modules/soundscape.js,
+// а что и где играет, решает таблица core/soundScenario.js.
+export { startAmbient, stopAmbient } from './soundscape.js';
+
+export function resumeAmbient() { /* сценарий сам решает, играть ли фон на этой странице */ }
 
 const SRC = 'bar_ambient.mp3';
 const KEY = 'gygy_ambient';
