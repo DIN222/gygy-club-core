@@ -250,13 +250,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             syncUserBadge();
 
-           
-
-            const ambient = document.getElementById('snd-ambient');
-            if (ambient) { ambient.volume = 0.55; ambient.play().catch(() => {
-                document.body.addEventListener('click', () => { ambient.play().catch(()=>{}); }, { once: true });
-            }); }
-
             switchLocalBlock('block-bar');
 
             document.body.classList.add('page-loaded');
