@@ -1,22 +1,17 @@
 /**
  * core/localization.js
- * v1.2.0 — 2026-10-24
+ * v1.3.0 — 2026-10-25
  * Изменения:
- *  (1) Выбор языка ограничен списком ENABLED_LANGUAGES (сейчас English и Français).
- *      Остальные языки остаются в коде, но не предлагаются; сохранённый ранее
- *      неактивный язык трактуется как английский.
- *  (2) Словари регистрируются через registerDictionary(); общий словарь лежит
- *      в core/i18n/common.js, страницы могут добавлять свои.
- *  (3) applyTranslations понимает не только текст (data-translate), но и
- *      data-translate-html, data-translate-placeholder, data-translate-title,
- *      data-translate-alt; выставляет lang у <html>.
- *  (4) t(key, fallback, vars) — подстановка {имя}; onLanguageChange(cb) для
- *      страниц, которые собирают текст в JS и должны перерисоваться при смене языка.
- *  Правила v1.1.0 сохранены: нет перевода — показывается английский,
- *  затем исходный текст из HTML (не имя ключа).
- *
- * Локализация СТАТИЧНОГО интерфейса проекта (кнопки, заголовки, слоганы).
- * Динамический контент (чаты, жалобы, генеративные AI-комнаты) сюда не входит.
+ *  (1) Две области языка (scope): 'client' — витрина клуба (English / Français,
+ *      ключ langCode) и 'admin' — служебные страницы (Русский / Français / English,
+ *      ключ adminLang, по умолчанию русский). Область задаёт setScope();
+ *      служебные страницы включают её через core/adminLang.js.
+ *  (2) Звуковой сценарий (modules/soundscape.js) стартует вместе с init()
+ *      на клиентских страницах.
+ *  Сохранено из v1.2.0: словари через registerDictionary(), атрибуты
+ *  data-translate-*, подстановка {имя} в t(), onLanguageChange(),
+ *  машинный перевод modules/liveTranslate.js.
+ *  Нет перевода — показывается английский, затем исходный текст из HTML (не имя ключа).
  */
 
 import { emit, on } from './eventBus.js';
@@ -43,12 +38,20 @@ export const ALL_LANGUAGES = [
 
 export const FULL_LANGUAGES = [EN_LANGUAGE, ...ALL_LANGUAGES];
 
-// Языки, которые сейчас предлагаются в выборе. Чтобы вернуть остальные,
-// достаточно дописать их коды сюда.
-export const ENABLED_LANGUAGES = ['en', 'fr'];
+// Области языка. Чтобы вернуть другие языки, допишите их коды в enabled.
+const SCOPES = {
+    client: { key: 'langCode', def: 'en', enabled: ['en', 'fr'] },
+    admin:  { key: 'adminLang', def: 'ru', enabled: ['ru', 'fr', 'en'] }
+};
+let scope = 'client';
+
+export function setScope(name) { if (SCOPES[name]) scope = name; }
+export function getScope() { return scope; }
+
+// Для обратной совместимости: языки клиентской витрины
+export const ENABLED_LANGUAGES = SCOPES.client.enabled;
 
 const TRANSLATIONS = {};
-
 let valueSets = {};
 
 export function registerDictionary(dict) {
@@ -57,6 +60,7 @@ export function registerDictionary(dict) {
     });
     valueSets = {};
 }
+registerDictionary(COMMON_DICT);
 
 // Это текст из нашего словаря на текущем языке? Машинный переводчик такие строки не трогает.
 export function isDictionaryText(text) {
@@ -64,7 +68,6 @@ export function isDictionaryText(text) {
     if (!valueSets[lang]) valueSets[lang] = new Set(Object.values(TRANSLATIONS[lang] || {}));
     return valueSets[lang].has(text);
 }
-registerDictionary(COMMON_DICT);
 
 function flagUrl(countryCode) {
     return `https://flagcdn.com/w20/${countryCode}.png`;
@@ -76,18 +79,18 @@ function interpolate(str, vars) {
 }
 
 /**
- * Текущий выбранный язык (код). Если сохранён язык, которого нет в
- * ENABLED_LANGUAGES, возвращается английский.
+ * Текущий язык (код) для текущей области. Если сохранён язык, которого нет
+ * в списке области, возвращается язык области по умолчанию.
  */
 export function getCurrentLang() {
-    const stored = get('langCode', DEFAULT_LANG);
-    return ENABLED_LANGUAGES.includes(stored) ? stored : DEFAULT_LANG;
+    const sc = SCOPES[scope];
+    const stored = get(sc.key, sc.def);
+    return sc.enabled.includes(stored) ? stored : sc.def;
 }
 
 /**
- * Перевод фразы по ключу для текущего языка.
- * Нет перевода — английский; нет и его — fallback (исходный текст из HTML);
- * нет и его — сам ключ. В строке можно использовать {имя}, значения — в vars.
+ * Перевод фразы по ключу. Нет перевода — английский; нет и его — fallback
+ * (исходный текст из HTML); нет и его — сам ключ. {имя} подставляется из vars.
  */
 export function t(key, fallback, vars) {
     const lang = getCurrentLang();
@@ -102,13 +105,12 @@ const ATTRIBUTE_MAP = [
 ];
 
 /**
- * Применить перевод ко всем элементам внутри контейнера:
+ * Применить перевод внутри контейнера:
  *   data-translate="key"              — текст элемента
- *   data-translate-html="key"         — разметка внутри (только для своих, доверенных строк)
+ *   data-translate-html="key"         — разметка внутри (только для своих строк)
  *   data-translate-placeholder="key"  — placeholder
  *   data-translate-title="key"        — подсказка при наведении
  *   data-translate-alt="key"          — alt картинки
- * Исходное значение запоминается при первом проходе и служит запасным.
  */
 export function applyTranslations(container = document) {
     container.querySelectorAll('[data-translate]').forEach(el => {
@@ -132,17 +134,27 @@ export function applyTranslations(container = document) {
 }
 
 /**
- * Выбрать язык: сохраняет в Storage, обновляет DOM, эмитит 'language:changed'.
+ * Выбрать язык в текущей области. Витрина: сохраняет язык, название и флаг страны
+ * (паспорт подхватывает флаг). Служебные страницы: меняется только adminLang,
+ * флаг и паспорт не затрагиваются.
  */
 export function selectLanguage(langCode) {
-    const lang = FULL_LANGUAGES.find(l => l.code === langCode) || EN_LANGUAGE;
+    const sc = SCOPES[scope];
+    const lang = FULL_LANGUAGES.find(l => l.code === langCode && sc.enabled.includes(l.code))
+        || FULL_LANGUAGES.find(l => l.code === sc.def);
 
-    set('langCode', lang.code);
-    set('langName', lang.name);
-    set('flagCountry', lang.country);
+    set(sc.key, lang.code);
+    let country;
+    if (scope === 'client') {
+        set('langName', lang.name);
+        set('flagCountry', lang.country);
+        country = lang.country;
+    } else {
+        country = get('flagCountry', 'gb');
+    }
 
     applyTranslations();
-    emit('language:changed', { langCode: lang.code, name: lang.name, country: lang.country, flagUrl: flagUrl(lang.country) });
+    emit('language:changed', { langCode: lang.code, name: lang.name, country, flagUrl: flagUrl(country) });
 }
 
 /**
@@ -153,14 +165,15 @@ export function onLanguageChange(callback) {
 }
 
 /**
- * Выпадающий список языков: разрешённые языки МИНУС текущий.
+ * Выпадающий список языков: разрешённые в области МИНУС текущий.
  */
 export function renderLanguageList(container) {
     if (!container) return;
     container.innerHTML = '';
     const currentCode = getCurrentLang();
+    const enabled = SCOPES[scope].enabled;
     FULL_LANGUAGES
-        .filter(lang => ENABLED_LANGUAGES.includes(lang.code) && lang.code !== currentCode)
+        .filter(lang => enabled.includes(lang.code) && lang.code !== currentCode)
         .forEach(lang => {
             const item = document.createElement('div');
             item.className = 'club-lang-item';
@@ -195,10 +208,22 @@ function startLiveTranslate() {
         .catch(e => console.warn('[localization] liveTranslate не загружен', e));
 }
 
-export function init(container = document) {
+// Звуковой сценарий (modules/soundscape.js, таблица — core/soundScenario.js). Только витрина.
+let soundStarted = false;
+function startSoundscape() {
+    if (soundStarted) return;
+    soundStarted = true;
+    import('../modules/soundscape.js')
+        .then(m => m.apply())
+        .catch(e => console.warn('[localization] soundscape не загружен', e));
+}
+
+export function init(container = document, options = {}) {
+    if (options.scope) setScope(options.scope);
     boundContainer = container;
     applyTranslations(boundContainer);
     startLiveTranslate();
+    if (scope === 'client') startSoundscape();
     emit('MODULE_INIT', { module: MODULE_NAME, at: Date.now() });
 }
 
@@ -213,6 +238,7 @@ export function destroy() {
 
 export const Localization = {
     DEFAULT_LANG, ALL_LANGUAGES, ENABLED_LANGUAGES, t, getCurrentLang, applyTranslations,
-    selectLanguage, renderLanguageList, registerDictionary, onLanguageChange, init, update, destroy
+    selectLanguage, renderLanguageList, registerDictionary, onLanguageChange, setScope, getScope,
+    init, update, destroy
 };
 export default Localization;
