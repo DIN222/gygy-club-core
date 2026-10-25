@@ -22,7 +22,8 @@ const SKIP_SELECTOR = [
     'script', 'style', 'noscript', 'textarea', 'input', 'code', 'pre',
     '[translate="no"]', '.notranslate',
     '[data-translate]', '[data-translate-html]',
-    '.rv-list', '.gy-passport-id', '.gy-passport-nick', '#pass-id-val'
+        '.rv-list', '.gy-passport-id', '.gy-passport-nick', '#pass-id-val',
+    '[data-pii]', 'a[href^="tel:"]', 'a[href^="mailto:"]'
 ].join(',');
 
 const BRAND = new Set(['GY-GY', 'GY-GY CLUB']);
@@ -63,10 +64,14 @@ function cacheSet(lang, text, tr) {
 }
 
 // ---------- что переводить ----------
+const PII_LIKE = /@|https?:\/\/|\+?\d[\d\s().-]{6,}\d/;   // e-mail, ссылки, телефоны
+
 function needsTranslation(text, lang) {
     const t = text.trim();
     if (t.length < 2 || t.length > MAX_LEN) return false;
     if (!HAS_LETTER.test(t) || BRAND.has(t)) return false;
+    if (PII_LIKE.test(t)) return false;            // такое во внешний сервис не отправляем
+    if (lang === 'ru') return false;               // русский — исходный язык служебных страниц
     if (lang === 'en') return CYRILLIC.test(t);
     if (isDictionaryText(t)) return false;
     return true;
