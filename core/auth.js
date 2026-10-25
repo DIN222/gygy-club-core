@@ -4,7 +4,7 @@
 // строкой в <script type="module"> любой защищённой страницы; если
 // сессии нет, сразу уводит на login.html, не дожидаясь первого запроса
 // к данным (чтобы не мелькал пустой экран бухгалтерии).
-
+import './adminLang.js';
 import { supabase } from './supabase-init.js';
 
 export async function signIn(email, password) {
