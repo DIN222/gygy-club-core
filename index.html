@@ -247,7 +247,7 @@
     const sndAmbient = document.getElementById('snd-ambient');
 
     mainDoor.addEventListener('click', () => {
-        sndDoor.play().catch(() => {});
+               playSfx('door');
         mainDoor.classList.add('door-exploded');
 
         setTimeout(() => {
