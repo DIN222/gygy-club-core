@@ -162,8 +162,10 @@
     import { init as initLocalization } from './core/localization.js';
     import { init as initPassport } from './modules/passport.js';
     import { init as initNav, registerSound, goToPage } from './modules/navigation.js';
+      import { resumeAmbient } from './modules/ambient.js';
 
     initLocalization(document.body);
+      resumeAmbient({ volume: 0.5 });
     initPassport(document.getElementById('passport-badge-container'));
     initNav(document.body);
     registerSound('door', 'door_open.mp3');
