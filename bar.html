@@ -255,9 +255,12 @@
             document.body.classList.add('page-loaded');
         });
     </script>
-        <script type="module">
+             <script type="module">
         import { init as initLocalization } from './core/localization.js';
+        import { resumeAmbient } from './modules/ambient.js';
+
         initLocalization(document.body);
+        resumeAmbient({ volume: 0.55 });
     </script>
 </body>
 </html>
