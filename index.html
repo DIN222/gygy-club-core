@@ -209,7 +209,7 @@
     import { init as initLocalization, renderLanguageList, FULL_LANGUAGES, getCurrentLang } from './core/localization.js';
     import { on } from './core/eventBus.js';
     import { init as initPassport, hasPassport } from './modules/passport.js';
-
+    import { startAmbient } from './modules/ambient.js';
     initLocalization(document.body);
     renderLanguageList(document.getElementById('lang-list'));
 
@@ -251,8 +251,7 @@
         mainDoor.classList.add('door-exploded');
 
         setTimeout(() => {
-            sndAmbient.volume = 0.5;
-            sndAmbient.play().catch(() => {});
+                        startAmbient({ volume: 0.5 });
 
             document.getElementById('block-entrance').classList.remove('active');
             document.getElementById('block-welcome').classList.add('active');
