@@ -1,6 +1,7 @@
 // core/i18n/common.js
-// v1.0.0 — 2026-10-24
-// Общий словарь: вход, Холл, паспорт, Сувениры, отзывы, платёжный терминал.
+// v1.1.0 — 2026-10-24
+// Общий словарь: вход, Холл, паспорт, регистрация, «Это круто», бар, Сувениры,
+// отзывы, платёжный терминал.
 // Только данные (без импортов): их подключает core/localization.js.
 
 export const COMMON_DICT = {
@@ -24,6 +25,28 @@ export const COMMON_DICT = {
 
         passport_title: 'GY-GY PASSPORT',
         btn_edit_passport: 'EDIT',
+
+        identity_quote: 'There is never too much champagne',
+        nick_own: 'OR YOUR NICK',
+        nick_club: 'OR CLUB NICK',
+        txt_photo: 'OR PHOTO',
+        txt_avatar: 'OR AVATAR',
+        btn_enter: 'ENTER',
+        nick_enter: 'Enter nick',
+        nick_reroll: 'Another one',
+        service_info: 'Service info',
+        club_nicknames: 'BigCoin|Striker|Champagne|Tycoon|Lucky|Insider|Phantom|Winner|Captain|Maestro|Prime|Navigator|Puncher|Triumph|Oracle',
+
+        hof_title: '★ THIS IS GREAT',
+        hof_subtitle: 'Club prints that earned recognition. They stay here forever — not just for a day in the news.',
+        hof_empty: 'Nothing here yet — be the first whose print earns recognition.',
+        hof_like: 'Like',
+        hof_liked: 'Liked',
+        hof_need_passport: 'Passport required',
+        hof_unknown: 'Unknown',
+
+        bar_tables: 'TABLES ZONE',
+        bar_destress: 'DE-STRESS STUDIO',
 
         souvenirs_title: 'SOUVENIRS',
         souvenirs_note: 'The souvenir shelf is being prepared. Tell us what you would like to see here — leave a review or a wish below.',
@@ -49,25 +72,6 @@ export const COMMON_DICT = {
         pt_total: 'TOTAL',
         pt_save: 'Save receipt',
         pt_done: 'DONE'
-                identity_quote: 'There is never too much champagne',
-        nick_own: 'OR YOUR NICK',
-        nick_club: 'OR CLUB NICK',
-        txt_photo: 'OR PHOTO',
-        txt_avatar: 'OR AVATAR',
-        btn_enter: 'ENTER',
-        nick_enter: 'Enter nick',
-        nick_reroll: 'Another one',
-        service_info: 'Service info',
-        club_nicknames: 'BigCoin|Striker|Champagne|Tycoon|Lucky|Insider|Phantom|Winner|Captain|Maestro|Prime|Navigator|Puncher|Triumph|Oracle',
-        hof_title: '★ THIS IS GREAT',
-        hof_subtitle: 'Club prints that earned recognition. They stay here forever — not just for a day in the news.',
-        hof_empty: 'Nothing here yet — be the first whose print earns recognition.',
-        hof_like: 'Like',
-        hof_liked: 'Liked',
-        hof_need_passport: 'Passport required',
-        hof_unknown: 'Unknown',
-        bar_tables: 'TABLES ZONE',
-        bar_destress: 'DE-STRESS STUDIO',
     },
 
     fr: {
@@ -90,6 +94,28 @@ export const COMMON_DICT = {
 
         passport_title: 'PASSEPORT GY-GY',
         btn_edit_passport: 'MODIFIER',
+
+        identity_quote: 'Il n’y a jamais trop de champagne',
+        nick_own: 'OU VOTRE PSEUDO',
+        nick_club: 'OU PSEUDO DU CLUB',
+        txt_photo: 'OU PHOTO',
+        txt_avatar: 'OU AVATAR',
+        btn_enter: 'ENTRER',
+        nick_enter: 'Votre pseudo',
+        nick_reroll: 'Un autre',
+        service_info: 'Infos de service',
+        club_nicknames: 'BigCoin|Attaquant|Champagne|Magnat|Veinard|Initié|Fantôme|Vainqueur|Capitaine|Maestro|Prime|Navigateur|Cogneur|Triomphe|Oracle',
+
+        hof_title: '★ C’EST GÉNIAL',
+        hof_subtitle: 'Les imprimés du club qui ont gagné la reconnaissance. Ils restent ici pour toujours — pas seulement un jour dans l’actualité.',
+        hof_empty: 'Rien pour l’instant — soyez le premier dont l’imprimé sera reconnu.',
+        hof_like: 'J’aime',
+        hof_liked: 'Aimé',
+        hof_need_passport: 'Passeport requis',
+        hof_unknown: 'Inconnu',
+
+        bar_tables: 'ZONE DES TABLES',
+        bar_destress: 'STUDIO ANTI-STRESS',
 
         souvenirs_title: 'SOUVENIRS',
         souvenirs_note: 'Le rayon souvenirs est en préparation. Dites-nous ce que vous aimeriez y voir : laissez un avis ou un souhait ci-dessous.',
@@ -115,25 +141,6 @@ export const COMMON_DICT = {
         pt_total: 'TOTAL',
         pt_save: 'Enregistrer le reçu',
         pt_done: 'TERMINER'
-            identity_quote: 'Il n’y a jamais trop de champagne',
-        nick_own: 'OU VOTRE PSEUDO',
-        nick_club: 'OU PSEUDO DU CLUB',
-        txt_photo: 'OU PHOTO',
-        txt_avatar: 'OU AVATAR',
-        btn_enter: 'ENTRER',
-        nick_enter: 'Votre pseudo',
-        nick_reroll: 'Un autre',
-        service_info: 'Infos de service',
-        club_nicknames: 'BigCoin|Attaquant|Champagne|Magnat|Veinard|Initié|Fantôme|Vainqueur|Capitaine|Maestro|Prime|Navigateur|Cogneur|Triomphe|Oracle',
-        hof_title: '★ C’EST GÉNIAL',
-        hof_subtitle: 'Les imprimés du club qui ont gagné la reconnaissance. Ils restent ici pour toujours — pas seulement un jour dans l’actualité.',
-        hof_empty: 'Rien pour l’instant — soyez le premier dont l’imprimé sera reconnu.',
-        hof_like: 'J’aime',
-        hof_liked: 'Aimé',
-        hof_need_passport: 'Passeport requis',
-        hof_unknown: 'Inconnu',
-        bar_tables: 'ZONE DES TABLES',
-        bar_destress: 'STUDIO ANTI-STRESS',
     },
 
     ru: {
