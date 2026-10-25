@@ -66,7 +66,6 @@ function startTimer() {
     clearInterval(saveTimer);
     saveTimer = setInterval(persist, 1000);
 }
-
 export function startAmbient({ volume = 0.5 } = {}) {
     wantOn = true;
     ensureAudio(volume);
