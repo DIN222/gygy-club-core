@@ -188,11 +188,13 @@
 
 <script type="module">
        import { init as initLocalization, t, onLanguageChange } from './core/localization.js';
+      import { resumeAmbient } from './modules/ambient.js';
     import {
         init as initPassport, getPassport, saveProfile, generateAvatar
     } from './modules/passport.js';
 
     initLocalization(document.body);
+      resumeAmbient({ volume: 0.5 });
     initPassport(document.getElementById('passport-badge-container'));
 
     const existing = getPassport();
