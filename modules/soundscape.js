@@ -171,9 +171,15 @@ export function playSfx(name) {
 export function apply() {
     const s = scene();
     const st = readState();
-       } else if (s.ambient === 'off' && st && st.on) {
+
+    // Добавили недостающий if (например, проверка, что ambient равен 'on', либо проверьте своё исходное условие)
+    if (s.ambient === 'on') {
+        // ... ваш код для 'on' (если он там был)
+    } else if (s.ambient === 'off' && st && st.on) {
         // «пауза»: время вне барной зоны не считается
-        try { sessionStorage.setItem(STATE_KEY, JSON.stringify({ on: true, t: st.t, at: Date.now() })); } catch (e) { /* ок */ }
+        try { 
+            sessionStorage.setItem(STATE_KEY, JSON.stringify({ on: true, t: st.t, at: Date.now() })); 
+        } catch (e) { /* ок */ }
     } else if (s.ambient === 'manual' && st && st.on) {
         resetAmbient();   // пришли к дверям: звук выключен, новая прогулка начнётся с нуля
     }
