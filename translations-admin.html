@@ -1,1 +1,310 @@
+<!DOCTYPE html>
+<!--
+  translations-admin.html — v1.0.0 — 2026-10-25
+  Бухгалтерия → Переводы:
+  (1) «Прогреть перевод»: страницы клиента просматриваются в скрытых окнах, все тексты,
+      которых нет в словаре, переводятся заранее и попадают в общий кэш translations_cache;
+  (2) «Правка переводов»: любой перевод можно исправить — посетители увидят правку.
+-->
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Переводы</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 60px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 14px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 820px; display: flex; flex-direction: column; gap: 16px; }
+    .box { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 12px; }
+    .h { font-family: 'Cinzel', serif; font-size: 14px; margin-bottom: 8px; }
+    .hint { font-size: 10px; color: #9a9a8a; line-height: 1.6; margin-bottom: 10px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+    select, input[type="text"], textarea { padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    textarea { width: 100%; resize: vertical; }
+    .btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 8px 14px; font-size: 11px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+    .btn:hover:not(:disabled) { border-color: var(--gold); }
+    .btn.primary { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 900; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .status { font-size: 11px; color: var(--ivory); line-height: 1.6; white-space: pre-wrap; }
+    .status.ok { color: #6fd48a; }
+    .status.error { color: #e74c3c; }
+    .lbl { font-size: 10px; color: #9a9a8a; }
+    .rv { display: grid; grid-template-columns: 1fr 1fr 24px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid #1a1a1a; }
+    .rv .src { font-size: 11px; color: var(--ivory); word-break: break-word; }
+    .rv input[type="text"] { width: 100%; }
+    .rv .mark { color: #6fd48a; text-align: center; }
+    @media (max-width: 640px) { .rv { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
 
+<div class="page-wrap">
+    <div class="title">ПЕРЕВОДЫ</div>
+    <div class="panel">
+
+        <div class="box">
+            <div class="h">1. Прогреть перевод</div>
+            <div class="hint">
+                Страницы из списка открываются в скрытых окнах, собираются все тексты, которых нет в словаре
+                (включая то, что страница рисует из JS и базы), и недостающие переводятся заранее.
+                Один раз на язык; повторять нужно после больших правок текстов. Одна фраза переводится один раз.
+                Адреса, телефоны и ссылки не отправляются, ники авторов принтов пропускаются.
+            </div>
+            <div class="row">
+                <span class="lbl">Язык:</span>
+                <select id="warm-lang">
+                    <option value="fr">Français</option>
+                    <option value="en">English (только русские фразы)</option>
+                </select>
+            </div>
+            <textarea id="pages" rows="9"></textarea>
+            <div class="row">
+                <button class="btn" id="btn-scan" type="button">Просмотреть страницы</button>
+                <button class="btn primary" id="btn-translate" type="button" disabled>Перевести новое</button>
+            </div>
+            <div class="status" id="warm-status"></div>
+        </div>
+
+        <div class="box">
+            <div class="h">2. Правка переводов</div>
+            <div class="row">
+                <select id="rv-lang">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                </select>
+                <input type="text" id="rv-q" placeholder="Поиск по фразе или переводу">
+                <label class="lbl"><input type="checkbox" id="rv-new"> только непроверенные</label>
+                <button class="btn" id="btn-load" type="button">Показать</button>
+            </div>
+            <div class="status" id="rv-status"></div>
+            <div id="list"></div>
+        </div>
+
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+    import { COMMON_DICT } from './core/i18n/common.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // страницы клиента по умолчанию (добавьте свои строкой: tables.html, book.html …)
+    $('pages').value = [
+        'index.html', 'identity.html', 'hall.html', 'atelier.html', 'store.html',
+        'souvenirs.html', 'hall-of-fame.html', 'bar.html', 'verses.html'
+    ].join('\n');
+
+    // ---------- правила отбора (как в modules/liveTranslate.js) ----------
+    const SKIP_SELECTOR = [
+        'script', 'style', 'noscript', 'textarea', 'input', 'code', 'pre',
+        '[translate="no"]', '.notranslate', '[data-translate]', '[data-translate-html]',
+        '.rv-list', '.gy-passport-id', '.gy-passport-nick', '#pass-id-val',
+        '[data-pii]', 'a[href^="tel:"]', 'a[href^="mailto:"]', '.author', '.print-author'
+    ].join(',');
+    const BRAND = new Set(['GY-GY', 'GY-GY CLUB']);
+    const CYRILLIC = /[\u0400-\u04FF]/;
+    const HAS_LETTER = /\p{L}/u;
+    const PII_LIKE = /@|https?:\/\/|\+?\d[\d\s().-]{6,}\d/;
+    const MAX_LEN = 400;
+    const WAIT_MS = 3500;
+    const DICT_VALUES = {
+        fr: new Set(Object.values(COMMON_DICT.fr || {})),
+        en: new Set(Object.values(COMMON_DICT.en || {}))
+    };
+
+    function needs(text, lang) {
+        const t = text.trim();
+        if (t.length < 2 || t.length > MAX_LEN) return false;
+        if (!HAS_LETTER.test(t) || BRAND.has(t) || PII_LIKE.test(t)) return false;
+        if (lang === 'en') return CYRILLIC.test(t);
+        return !(DICT_VALUES[lang] && DICT_VALUES[lang].has(t));
+    }
+
+    async function sha1(s) {
+        const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(s));
+        return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function setStatus(el, text, cls) {
+        el.textContent = text;
+        el.className = 'status' + (cls ? ' ' + cls : '');
+    }
+
+    // ---------- просмотр страницы в скрытом окне ----------
+    function collect(doc) {
+        const out = new Set();
+        const walker = doc.createTreeWalker(doc.body, 4);   // 4 = SHOW_TEXT
+        let n;
+        while ((n = walker.nextNode())) {
+            const p = n.parentElement;
+            if (!p || p.closest(SKIP_SELECTOR)) continue;
+            out.add(n.nodeValue.trim());
+        }
+        doc.body.querySelectorAll('[placeholder],[title],[alt]').forEach(el => {
+            if (el.closest('script,style,.notranslate,[translate="no"]')) return;
+            ['placeholder', 'title', 'alt'].forEach(a => {
+                if (el.hasAttribute(a) && !el.hasAttribute('data-translate-' + a)) out.add((el.getAttribute(a) || '').trim());
+            });
+        });
+        return [...out];
+    }
+
+    function scanPage(url) {
+        return new Promise((resolve) => {
+            const frame = document.createElement('iframe');
+            frame.setAttribute('allow', "autoplay 'none'");
+            frame.style.cssText = 'position:fixed;left:-3000px;top:0;width:1200px;height:900px;border:0;visibility:hidden;';
+            let settled = false;
+            const finish = (texts, err) => {
+                if (settled) return;
+                settled = true;
+                frame.remove();
+                resolve({ texts: texts || [], err });
+            };
+            frame.addEventListener('load', () => {
+                setTimeout(() => {
+                    try {
+                        const doc = frame.contentDocument;
+                        if (!doc || !doc.body || /not found|404/i.test(doc.title || '')) return finish([], 'страница не найдена');
+                        finish(collect(doc));
+                    } catch (e) { finish([], String(e)); }
+                }, WAIT_MS);
+            });
+            frame.src = url + (url.includes('?') ? '&' : '?') + 'lt_scan=1';
+            document.body.appendChild(frame);
+            setTimeout(() => finish([], 'не загрузилась за 30 секунд'), 30000);
+        });
+    }
+
+    // ---------- 1. прогрев ----------
+    let pendingTexts = [];
+    let pendingLang = 'fr';
+
+    $('btn-scan').addEventListener('click', async () => {
+        const status = $('warm-status');
+        const lang = $('warm-lang').value;
+        const pages = $('pages').value.split('\n').map(s => s.trim()).filter(Boolean);
+        if (!pages.length) { setStatus(status, 'Список страниц пуст.', 'error'); return; }
+
+        $('btn-scan').disabled = true;
+        $('btn-translate').disabled = true;
+        pendingTexts = [];
+        const found = new Set();
+        const notes = [];
+        for (let i = 0; i < pages.length; i++) {
+            setStatus(status, `Просматриваю ${i + 1} из ${pages.length}: ${pages[i]} …`);
+            const { texts, err } = await scanPage(pages[i]);
+            if (err) notes.push(`${pages[i]}: ${err}`);
+            texts.forEach(t => { if (needs(t, lang)) found.add(t); });
+        }
+
+        const list = [...found];
+        const hashes = await Promise.all(list.map(sha1));
+        const have = new Set();
+        for (let i = 0; i < hashes.length; i += 80) {
+            const chunk = hashes.slice(i, i + 80);
+            const { data, error } = await supabase.from('translations_cache')
+                .select('src_hash').eq('target_lang', lang).in('src_hash', chunk);
+            if (error) {
+                setStatus(status, 'Не удалось прочитать кэш: ' + error.message + ' — проверьте, что таблица translations_cache создана.', 'error');
+                $('btn-scan').disabled = false;
+                return;
+            }
+            (data || []).forEach(r => have.add(r.src_hash));
+        }
+        pendingTexts = list.filter((t, i) => !have.has(hashes[i]));
+        pendingLang = lang;
+        const chars = pendingTexts.reduce((s, t) => s + t.length, 0);
+
+        let msg = `Найдено фраз для перевода: ${list.length}. Уже в кэше: ${list.length - pendingTexts.length}. ` +
+                  `Новых: ${pendingTexts.length} (${chars} знаков; бесплатный лимит DeepL — 500 000 в месяц).`;
+        if (notes.length) msg += '\nПропущено: ' + notes.join('; ');
+        setStatus(status, msg, pendingTexts.length ? '' : 'ok');
+        $('btn-scan').disabled = false;
+        $('btn-translate').disabled = pendingTexts.length === 0;
+    });
+
+    $('btn-translate').addEventListener('click', async () => {
+        const status = $('warm-status');
+        if (!pendingTexts.length) return;
+        const chars = pendingTexts.reduce((s, t) => s + t.length, 0);
+        if (!confirm(`Перевести ${pendingTexts.length} фраз (${chars} знаков) на ${pendingLang === 'fr' ? 'французский' : 'английский'}?`)) return;
+
+        $('btn-scan').disabled = true;
+        $('btn-translate').disabled = true;
+        let done = 0;
+        for (let i = 0; i < pendingTexts.length; i += 40) {
+            const chunk = pendingTexts.slice(i, i + 40);
+            setStatus(status, `Перевожу… ${done} из ${pendingTexts.length}`);
+            const { data, error } = await supabase.functions.invoke('translate', { body: { texts: chunk, target: pendingLang } });
+            if (error || !data || !Array.isArray(data.translations)) {
+                setStatus(status, `Остановлено на ${done} из ${pendingTexts.length}: ${error ? error.message : 'неверный ответ функции'}. Проверьте функцию translate и ключ DeepL.`, 'error');
+                $('btn-scan').disabled = false;
+                return;
+            }
+            done += chunk.length;
+        }
+        pendingTexts = [];
+        setStatus(status, `Готово: переведено ${done} фраз. Проверьте и поправьте их ниже («Правка переводов»).`, 'ok');
+        $('btn-scan').disabled = false;
+        $('rv-lang').value = pendingLang;
+        loadList();
+    });
+
+    // ---------- 2. правка переводов ----------
+    async function loadList() {
+        const status = $('rv-status');
+        const lang = $('rv-lang').value;
+        const q = $('rv-q').value.trim().toLowerCase();
+        setStatus(status, 'Загружаю…');
+        let query = supabase.from('translations_cache')
+            .select('src_hash, source_text, translated, reviewed')
+            .eq('target_lang', lang).order('created_at', { ascending: false }).limit(400);
+        if ($('rv-new').checked) query = query.eq('reviewed', false);
+        const { data, error } = await query;
+        if (error) { setStatus(status, 'Не удалось загрузить: ' + error.message, 'error'); return; }
+        const rows = (data || []).filter(r => !q || r.source_text.toLowerCase().includes(q) || r.translated.toLowerCase().includes(q));
+        setStatus(status, `Показано: ${rows.length} (не больше 400 последних).`);
+        $('list').innerHTML = rows.map(r => `
+            <div class="rv" data-h="${esc(r.src_hash)}">
+                <div class="src">${esc(r.source_text)}</div>
+                <input type="text" value="${esc(r.translated)}">
+                <span class="mark">${r.reviewed ? '✓' : ''}</span>
+            </div>`).join('');
+    }
+
+    $('list').addEventListener('change', async (e) => {
+        const input = e.target.closest('input[type="text"]');
+        if (!input) return;
+        const row = input.closest('.rv');
+        const lang = $('rv-lang').value;
+        const value = input.value.trim();
+        if (!value) return;
+        const { error } = await supabase.from('translations_cache')
+            .update({ translated: value, reviewed: true })
+            .eq('src_hash', row.dataset.h).eq('target_lang', lang);
+        row.querySelector('.mark').textContent = error ? '✗' : '✓';
+        if (error) setStatus($('rv-status'), 'Не удалось сохранить: ' + error.message, 'error');
+    });
+
+    $('btn-load').addEventListener('click', loadList);
+    $('btn-back').addEventListener('click', () => history.back());
+    $('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+</script>
+</body>
+</html>
