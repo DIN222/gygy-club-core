@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <!--
   atelier.html
-  v4.24.0 — 2026-10-22
-  (1) Режим «Вышивка»: клиент выбирает готовое изделие с вышивкой, выставленное в
-      Галерее Офиса (фото, цена, параметры); поля изделия блокируются, размеры — по изделию.
-  (2) Принты клуба показываются только если выставлены в Офисе; фон под миниатюрой
-      принта (club_prints.bg) задаёт Офис.
-  (3) Статистика: события «выбрано» и «заказано» (gallery_events через track_gallery_event).
-  (4) «Поделиться с клубом» — только принты DTF; вышивку в базу кладёт Офис.
-  (5) Запрос для ИИ без «vector-style»; ссылка Leonardo; текст о получении посылки.
-  Остальное — как в v4.22.0: ткань → плотность, получатель, терминал, снимки принта,
-  цена из Бухгалтерии, отзывы.
+  v4.25.0 — 2026-10-25
+  (1) Интерфейс клиента целиком English / Français: основа английская,
+      подписи через словарь core/i18n/atelier.js; тексты, собираемые в JS, через t().
+  (2) Мобильная страховка: ничего не шире экрана; окно заказа не шире 94% экрана.
+  (3) Запрещён встроенный автоперевод браузера (свой перевод важнее).
+  Остальное — как в v4.24.0: вышивка из Галереи, цена, статистика, заказ, отзывы.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GY-GY Club — Atelier v4.24.0</title>
+<meta name="google" content="notranslate">
+<title>GY-GY Club — Atelier v4.25.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Fascinate&family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="qrcode.min.js"></script>
 <style>
@@ -137,6 +134,7 @@
         position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
         font-size: 8px; color: var(--ivory); background: rgba(0,0,0,0.6);
         padding: 2px 6px; border-radius: 3px; pointer-events: none; z-index: 5;
+        max-width: 96%; text-align: center;
     }
 
     .size-lock-row { display: none; align-items: center; gap: 6px; margin-top: 8px; width: 100%; max-width: 380px; }
@@ -228,6 +226,20 @@
         width: 100%; padding: 7px; margin-bottom: 7px; font-size: 11px;
         border: 1px solid var(--gold-dim); font-family: inherit;
     }
+
+    /* мобильная страховка: ничего не шире экрана */
+    html, body { max-width: 100%; }
+    .config-body > *, .buttons-col, .frame-col { min-width: 0; }
+    .field-row select, .field-row input, .position-row select, .category-picker select { max-width: 100%; }
+    .fixed-note, .checkbox-row label, .order-info, .status-line, .care-notes { overflow-wrap: anywhere; }
+    .modal-card { max-width: 94vw; }
+    @media (max-width: 480px) {
+        .page-wrap { padding-left: 10px; padding-right: 10px; }
+        .atelier-title-badge { gap: 8px; }
+        .atelier-title-badge img { width: 60px; height: 60px; }
+        .atelier-title-badge .title-text { font-size: 20px; letter-spacing: 2px; }
+        .title-atelier { font-size: 14px; letter-spacing: 2px; }
+    }
 </style>
 </head>
 <body>
@@ -235,8 +247,8 @@
 <div id="atelier-bg"></div>
 <div class="header-right">GY-GY</div>
 <div class="ui-nav-arrows">
-    <a class="back-arrow" id="btn-back">&lt;</a>
-    <a class="back-arrow" id="btn-hall">&lt;&lt;</a>
+    <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
+    <a class="back-arrow" id="btn-hall" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
 </div>
 <div id="passport-badge-container"></div>
 
@@ -254,29 +266,30 @@
         <div class="buttons-col">
             <div class="field-row">
                 <select id="select-type">
-                    <option value="tshirt">T-SHIRT</option>
-                    <option value="hoodie">HOODIE</option>
-                    <option value="longsleeve">LONGSLEEVE</option>
+                    <option value="tshirt" data-translate="at_type_tshirt">T-SHIRT</option>
+                    <option value="hoodie" data-translate="at_type_hoodie">HOODIE</option>
+                    <option value="longsleeve" data-translate="at_type_longsleeve">LONGSLEEVE</option>
                 </select>
             </div>
             <div class="field-row">
-                <select id="select-size">
+                <select id="select-size" translate="no">
                     <option value="S">S</option><option value="M" selected>M</option>
                     <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
                 </select>
                 <select id="select-color">
-                    <option value="black">BLACK</option><option value="white">WHITE</option>
+                    <option value="black" data-translate="at_color_black">BLACK</option>
+                    <option value="white" data-translate="at_color_white">WHITE</option>
                 </select>
             </div>
 
             <div class="field-row" id="row-neckline">
                 <select id="select-neckline">
-                    <option value="round">ГОРЛОВИНА: КРУГЛАЯ</option>
+                    <option value="round" data-translate="at_neck_round">NECKLINE: ROUND</option>
                 </select>
             </div>
             <div class="field-row" id="row-fit">
                 <select id="select-fit">
-                    <option value="unisex">ПОСАДКА: УНИСЕКС</option>
+                    <option value="unisex" data-translate="at_fit_unisex">FIT: UNISEX</option>
                 </select>
             </div>
 
@@ -284,13 +297,13 @@
                 <select id="select-fabric-composition"></select>
             </div>
             <div class="field-row">
-                <select id="select-fabric-density"></select>
+                <select id="select-fabric-density" translate="no"></select>
             </div>
 
             <div class="field-row">
                 <select id="select-technique">
-                    <option value="dtf">DTF-ПЕЧАТЬ</option>
-                    <option value="embroidery">ВЫШИВКА</option>
+                    <option value="dtf" data-translate="at_tech_dtf">DTF PRINT</option>
+                    <option value="embroidery" data-translate="at_tech_emb">EMBROIDERY</option>
                 </select>
             </div>
 
@@ -300,33 +313,33 @@
                 <button class="print-arrow" id="print-next">›</button>
             </div>
 
-            <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;">ЗАГРУЗИТЬ ФАЙЛ PNG</button>
+            <button class="btn-cfg" id="btn-upload-own" style="margin-top:6px;" data-translate="at_upload">UPLOAD PNG FILE</button>
 
             <div class="share-row" id="share-row">
-                <button class="btn-cfg small" id="btn-share">ПОДЕЛИТЬСЯ С КЛУБОМ</button>
-                <button class="btn-cfg small" id="btn-delete-own">УДАЛИТЬ</button>
+                <button class="btn-cfg small" id="btn-share" data-translate="at_share">SHARE WITH THE CLUB</button>
+                <button class="btn-cfg small" id="btn-delete-own" data-translate="at_delete">DELETE</button>
             </div>
             <div class="category-picker" id="category-picker">
                 <select id="share-category">
-                    <option value="dtf">Print (DTF)</option>
+                    <option value="dtf" data-translate="at_share_cat_dtf">Print (DTF)</option>
                 </select>
                 <div class="checkbox-row">
                     <input type="checkbox" id="check-public-likes">
-                    <label for="check-public-likes">Разрешить публичное обсуждение и лайки (может попасть в "Это круто")</label>
+                    <label for="check-public-likes" data-translate="at_public_likes">Allow public discussion and likes (may appear in “This is great”)</label>
                 </div>
-                <button class="btn-cfg small" id="btn-share-confirm">OK</button>
+                <button class="btn-cfg small" id="btn-share-confirm" data-translate="at_ok">OK</button>
             </div>
 
-            <button class="btn-cfg" id="btn-open-prompt" style="margin-top:6px;">ОПИШИТЕ ВАШ ПРИНТ</button>
+            <button class="btn-cfg" id="btn-open-prompt" style="margin-top:6px;" data-translate="at_describe">DESCRIBE YOUR PRINT</button>
             <div class="prompt-builder" id="prompt-builder">
-                <span style="font-size:9px; font-weight:700; opacity:0.7;">PROMPT BUILDER (no API — copy to any AI image tool)</span>
-                <input type="text" id="pb-idea" placeholder="Describe your idea...">
-                <button class="btn-cfg" id="btn-build-prompt" style="width:100%; text-align:center;">BUILD PROMPT</button>
-                <div class="prompt-output" id="prompt-output" style="display:none;"></div>
+                <span style="font-size:9px; font-weight:700; opacity:0.7;" data-translate="at_pb_title">PROMPT BUILDER (no API — copy to any AI image tool)</span>
+                <input type="text" id="pb-idea" placeholder="Describe your idea..." data-translate-placeholder="at_pb_idea_ph">
+                <button class="btn-cfg" id="btn-build-prompt" style="width:100%; text-align:center;" data-translate="at_pb_build">BUILD PROMPT</button>
+                <div class="prompt-output" id="prompt-output" translate="no" style="display:none;"></div>
                 <div class="prompt-ai-links" id="prompt-ai-links">
-                    <button class="btn-cfg small" id="btn-copy-prompt">СКОПИРОВАТЬ</button>
-                    <a class="btn-cfg small" href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" style="text-align:center;">CHATGPT</a>
-                    <a class="btn-cfg small" href="https://leonardo.ai" target="_blank" rel="noopener noreferrer" style="text-align:center;">LEONARDO</a>
+                    <button class="btn-cfg small" id="btn-copy-prompt" data-translate="at_copy">COPY</button>
+                    <a class="btn-cfg small" href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" style="text-align:center;" translate="no">CHATGPT</a>
+                    <a class="btn-cfg small" href="https://leonardo.ai" target="_blank" rel="noopener noreferrer" style="text-align:center;" translate="no">LEONARDO</a>
                 </div>
             </div>
         </div>
@@ -334,55 +347,55 @@
         <div class="frame-col">
             <div class="preview-frame-outer">
                 <div class="preview-frame" id="preview-frame">
-                    <span class="size-badge" id="size-badge">M</span>
+                    <span class="size-badge" id="size-badge" translate="no">M</span>
                     <img class="garment-photo" id="garment-photo" src="" alt="">
                 </div>
             </div>
             <div class="size-lock-row" id="size-lock-row">
-                <label>W,см</label><input type="number" id="lock-width-cm" min="1" step="0.5">
-                <label>H,см</label><input type="number" id="lock-height-cm" min="1" step="0.5">
-                <button class="btn-cfg small" id="btn-lock-size">OK</button>
+                <label data-translate="at_lock_w">W, cm</label><input type="number" id="lock-width-cm" min="1" step="0.5">
+                <label data-translate="at_lock_h">H, cm</label><input type="number" id="lock-height-cm" min="1" step="0.5">
+                <button class="btn-cfg small" id="btn-lock-size" data-translate="at_ok">OK</button>
             </div>
             <div class="spec-panel" id="spec-panel"></div>
-            <div class="care-notes">
-                Хлопок имеет свойство давать усадку до 2–3% после первой стирки — учтено в лекалах.<br>
-                Стирать наизнанку при 40°C.
+            <div class="care-notes" data-translate-html="at_care">
+                Cotton may shrink by 2–3% after the first wash — this is already accounted for in our patterns.<br>
+                Wash inside out at 40°C.
             </div>
         </div>
 
         <div class="buttons-col">
             <div class="position-row">
                 <select id="select-position">
-                    <option value="front">FRONT</option>
-                    <option value="back">BACK</option>
+                    <option value="front" data-translate="at_pos_front">FRONT</option>
+                    <option value="back" data-translate="at_pos_back">BACK</option>
                 </select>
                 <select id="select-scale">
-                    <option value="a3">A3 (30x40cm)</option>
-                    <option value="a4">A4 (21x30cm)</option>
-                    <option value="logo-chest">LOGO CHEST (10x10cm)</option>
-                    <option value="logo-sleeve">LOGO SLEEVE (7x7cm)</option>
-                    <option value="custom">ФАКТИЧЕСКИЙ РАЗМЕР (W×H вручную)</option>
+                    <option value="a3" translate="no">A3 (30x40cm)</option>
+                    <option value="a4" translate="no">A4 (21x30cm)</option>
+                    <option value="logo-chest" data-translate="at_scale_logo_chest">LOGO CHEST (10x10cm)</option>
+                    <option value="logo-sleeve" data-translate="at_scale_logo_sleeve">LOGO SLEEVE (7x7cm)</option>
+                    <option value="custom" data-translate="at_scale_custom">ACTUAL SIZE (enter W×H)</option>
                 </select>
             </div>
             <div class="field-row">
-                <label class="fixed-note" style="flex:0 0 auto; padding:8px 10px;">КОЛ-ВО, ШТ.</label>
+                <label class="fixed-note" style="flex:0 0 auto; padding:8px 10px;" data-translate="at_qty_label">QUANTITY, PCS</label>
                 <input type="number" id="input-quantity" min="1" value="1" step="1">
             </div>
 
             <div class="checkbox-row" id="row-drawstring" style="display:none;">
                 <input type="checkbox" id="check-drawstring">
-                <label for="check-drawstring">Шнурки на капюшоне (визуал без изменений)</label>
+                <label for="check-drawstring" data-translate="at_drawstring">Hood drawstrings (visual unchanged)</label>
             </div>
             <div class="checkbox-row" id="row-zipper" style="display:none;">
                 <input type="checkbox" id="check-zipper">
-                <label for="check-zipper">Застёжка молния (визуал без изменений)</label>
+                <label for="check-zipper" data-translate="at_zipper">Zipper closure (visual unchanged)</label>
             </div>
 
-            <div class="order-info" id="order-info"></div>
+            <div class="order-info" id="order-info" translate="no"></div>
             <div class="price-line" id="order-price">—</div>
-            <div class="status-line" id="order-status"></div>
-            <button class="btn-cfg wide" id="link-help" style="margin-top:8px;">ПОГОВОРИТЬ С ДРУЗЬЯМИ (TELEGRAM)</button>
-            <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:6px;">CONFIRM ORDER</button>
+            <div class="status-line" id="order-status" translate="no"></div>
+            <button class="btn-cfg wide" id="link-help" style="margin-top:8px;" data-translate="at_talk">TALK TO FRIENDS (TELEGRAM)</button>
+            <button class="btn-cfg confirm" id="btn-confirm" style="margin-top:6px;" data-translate="at_confirm">CONFIRM ORDER</button>
             <div id="review-box" style="margin-top:10px;"></div>
         </div>
     </div>
@@ -390,42 +403,34 @@
     <input type="file" id="file-input" accept="image/*" style="display:none;">
 </div>
 
-<div class="modal-overlay" id="modal-placeholder">
-    <div class="modal-card">
-        <span class="modal-close" data-close>&times;</span>
-        <div class="modal-title" id="placeholder-title">COMING SOON</div>
-        <p style="font-size:12px;">This catalog is not ready yet.</p>
-        <button class="btn-cfg" data-close style="display:inline-block; text-align:center;">OK</button>
-    </div>
-</div>
-
 <div class="modal-overlay" id="modal-confirm-order">
     <div class="modal-card" style="width:340px;">
         <span class="modal-close" data-close>&times;</span>
-        <div class="modal-title">ПРОВЕРЬТЕ ЗАКАЗ</div>
-        <div id="confirm-order-summary" style="font-size:11px; text-align:left; line-height:1.6;"></div>
+        <div class="modal-title" data-translate="at_modal_title">CHECK YOUR ORDER</div>
+        <div id="confirm-order-summary" translate="no" style="font-size:11px; text-align:left; line-height:1.6;"></div>
         <div style="margin-top:12px; text-align:left;">
-            <input type="text" id="confirm-recipient-last" class="modal-input" placeholder="Last name">
-            <input type="text" id="confirm-recipient-first" class="modal-input" placeholder="First name">
-            <input type="tel" id="confirm-recipient-phone" class="modal-input" placeholder="Phone">
-            <input type="text" id="confirm-recipient-messenger" class="modal-input" placeholder="Messenger: Telegram / WhatsApp / Viber (optional)">
-            <input type="text" id="confirm-recipient-post" class="modal-input" placeholder="Post office (number / address)">
+            <input type="text" id="confirm-recipient-last" class="modal-input" placeholder="Last name" data-translate-placeholder="at_ph_last">
+            <input type="text" id="confirm-recipient-first" class="modal-input" placeholder="First name" data-translate-placeholder="at_ph_first">
+            <input type="tel" id="confirm-recipient-phone" class="modal-input" placeholder="Phone" data-translate-placeholder="at_ph_phone">
+            <input type="text" id="confirm-recipient-messenger" class="modal-input" placeholder="Messenger: Telegram / WhatsApp / Viber (optional)" data-translate-placeholder="at_ph_messenger">
+            <input type="text" id="confirm-recipient-post" class="modal-input" placeholder="Post office (number / address)" data-translate-placeholder="at_ph_post">
             <select id="confirm-payment-method" class="modal-input">
-                <option value="prepayment">Prepayment (pay now)</option>
-                <option value="cod">Cash on delivery (pay at the post office)</option>
+                <option value="prepayment" data-translate="at_pay_prepay">Prepayment (pay now)</option>
+                <option value="cod" data-translate="at_pay_cod">Cash on delivery (pay at the post office)</option>
             </select>
         </div>
-        <div style="font-size:10px; line-height:1.45; text-align:left; margin-top:8px; padding:8px; border:1px solid #8a6f24; background:rgba(138,111,36,0.08);">
+        <div style="font-size:10px; line-height:1.45; text-align:left; margin-top:8px; padding:8px; border:1px solid #8a6f24; background:rgba(138,111,36,0.08);" data-translate="at_terms">
             When you receive the parcel at the carrier's branch or from a courier and pay for it, you sign a delivery and acceptance certificate. By signing it, you confirm that you have checked the parcel against your order, agree with the appearance and completeness of the goods, and have no claims against the online store or the carrier.
         </div>
-        <div id="confirm-error" style="color:#a02020; font-size:11px; text-align:left; margin-top:4px; min-height:14px;"></div>
-        <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:10px;">ДА, ОФОРМИТЬ</button>
-        <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;">НАЗАД, ПОПРАВИТЬ</button>
+        <div id="confirm-error" translate="no" style="color:#a02020; font-size:11px; text-align:left; margin-top:4px; min-height:14px;"></div>
+        <button class="btn-cfg confirm" id="btn-confirm-final" style="width:100%; margin-top:10px;" data-translate="at_confirm_final">YES, PLACE THE ORDER</button>
+        <button class="btn-cfg" data-close style="width:100%; margin-top:6px; text-align:center;" data-translate="at_back">BACK, EDIT</button>
     </div>
 </div>
 
 <script type="module">
-    import { init as initLocalization } from './core/localization.js';
+    import { init as initLocalization, t, onLanguageChange, registerDictionary } from './core/localization.js';
+    import { ATELIER_DICT } from './core/i18n/atelier.js';
     import { init as initPassport } from './modules/passport.js';
     import { get, set } from './core/storage.js';
     import * as eventBus from './core/eventBus.js';
@@ -434,13 +439,16 @@
     import { mountReviewBox } from './modules/reviewBox.js';
     import { loadPricing, computeUnitPrice, computeBreakdown, DEFAULTS } from './core/pricing.js';
 
+    registerDictionary(ATELIER_DICT);
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
     let clubBase = {
         getAll: () => ({ dtf: [], embroidery: [] }),
         init: async () => {},
-        addPrint: async () => { throw new Error('Модуль базы клуба недоступен (core/clubBase.js не найден).'); }
+        addPrint: async () => { throw new Error('Club base module unavailable (core/clubBase.js not found).'); }
     };
     try {
         clubBase = await import('./core/clubBase.js');
@@ -564,7 +572,7 @@
             <div class="spec-diagram-row">
                 <img class="spec-diagram-img" src="size-diagram.png" alt="A/B">
                 <div class="spec-rows">
-                    <div class="spec-ab-line">A = ${aVal}cm &nbsp; B = ${bVal}cm</div>
+                    <div class="spec-ab-line" translate="no">A = ${aVal}cm &nbsp; B = ${bVal}cm</div>
                 </div>
             </div>`;
     }
@@ -572,22 +580,25 @@
         const necklineRow = document.getElementById('row-neckline');
         const fitRow = document.getElementById('row-fit');
         if (state.type === 'hoodie') {
-            necklineRow.innerHTML = `<div class="fixed-note">ВОРОТ: С КАПЮШОНОМ</div>`;
-            fitRow.innerHTML = `<div class="fixed-note">ПОСАДКА: ТОЛЬКО OVERSIZE</div>`;
+            necklineRow.innerHTML = `<div class="fixed-note">${esc(t('at_neck_hood', 'NECK: HOODED'))}</div>`;
+            fitRow.innerHTML = `<div class="fixed-note">${esc(t('at_fit_oversize', 'FIT: OVERSIZE ONLY'))}</div>`;
             state.neckline = 'hood'; state.fit = 'oversize';
         } else {
             necklineRow.innerHTML = `
                 <select id="select-neckline">
-                    <option value="round">ГОРЛОВИНА: КРУГЛАЯ</option>
+                    <option value="round">${esc(t('at_neck_round', 'NECKLINE: ROUND'))}</option>
                 </select>`;
             fitRow.innerHTML = `
                 <select id="select-fit">
-                    <option value="unisex">ПОСАДКА: УНИСЕКС</option>
+                    <option value="unisex">${esc(t('at_fit_unisex', 'FIT: UNISEX'))}</option>
                 </select>`;
             state.neckline = 'round'; state.fit = 'unisex';
         }
     }
 
+    // Названия тканей — английские, при показе берутся из словаря (at_fab_<изделие>_<код>).
+    // Если название задано вручную в Бухгалтерии (storefront_config), оно помечается custom
+    // и переводится автоматическим блоком.
     const FABRIC_OPTIONS = {
         tshirt: {
             density:     [{ value: '160-180', label: '160–180 g/m²' }, { value: '180-200', label: '180–200 g/m²' }],
@@ -599,14 +610,14 @@
         hoodie: {
             density:     [{ value: '280-320', label: '280–320 g/m²' }],
             composition: [
-                { value: 'cotton80poly20',  label: '80% COTTON / 20% POLYESTER ' },
+                { value: 'cotton80poly20',  label: '80% COTTON / 20% POLYESTER' },
                 { value: 'cotton100fleece', label: '100% COTTON FLEECE' }
             ]
         },
         longsleeve: {
-            density:     [{ value: '220-240', label: '220–240 g/m² ' }],
+            density:     [{ value: '220-240', label: '220–240 g/m²' }],
             composition: [
-                { value: 'cotton100fleece', label: '100% COTTON ' }
+                { value: 'cotton100fleece', label: '100% COTTON' }
             ]
         }
     };
@@ -626,21 +637,32 @@
             if (ds.length) FABRIC_OPTIONS[g].density = ds.map(v => ({ value: v, label: v.replace('-', '–') + ' g/m²' }));
             FABRIC_OPTIONS[g].composition.forEach(c => {
                 const l = cfg.labels && clean(cfg.labels[c.value]);
-                if (l) c.label = l;
+                if (l) { c.label = l; c.custom = true; }
             });
         });
     } catch (e) {
         console.warn('[Atelier] Настройки витрины недоступны — значения по умолчанию.', e);
     }
 
-    function populateFabricOptions(type) {
-        const densitySel = document.getElementById('select-fabric-density');
+    function fabricLabel(type, o) {
+        return o.custom ? o.label : t(`at_fab_${type}_${o.value}`, o.label);
+    }
+
+    function fillCompositionOptions(type, keepValue) {
         const compSel = document.getElementById('select-fabric-composition');
         const opts = FABRIC_OPTIONS[type];
+        compSel.innerHTML = opts.composition.map(o => `<option value="${o.value}">${esc(fabricLabel(type, o))}</option>`).join('');
+        const wanted = keepValue && opts.composition.some(o => o.value === keepValue) ? keepValue : opts.composition[0].value;
+        compSel.value = wanted;
+        state.fabricComposition = wanted;
+    }
+
+    function populateFabricOptions(type) {
+        const densitySel = document.getElementById('select-fabric-density');
+        const opts = FABRIC_OPTIONS[type];
         densitySel.innerHTML = opts.density.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
-        compSel.innerHTML = opts.composition.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
         state.fabricDensity = opts.density[0].value;
-        state.fabricComposition = opts.composition[0].value;
+        fillCompositionOptions(type, null);
     }
 
     let state = {
@@ -780,7 +802,8 @@
 
         const hint = document.createElement('div');
         hint.className = 'drag-hint';
-        hint.textContent = 'Двигайте / тяните за уголок / вращайте за верхнюю точку';
+        hint.setAttribute('translate', 'no');
+        hint.textContent = t('at_drag_hint', 'Move / drag the corner / rotate with the top dot');
         frame.appendChild(hint);
         setTimeout(() => hint.remove(), 3000);
 
@@ -815,23 +838,33 @@
         const ratio = pxPerCmApprox(state.type, state.size);
         const wCm = (state.printBox.width / ratio).toFixed(0);
         const hCm = (state.printBox.height / ratio).toFixed(0);
-        return `~${wCm}x${hCm}cm, поворот ${state.printBox.rotation || 0}°`;
+        return t('at_actual', '~{w}x{h}cm, rotation {r}°', { w: wCm, h: hCm, r: state.printBox.rotation || 0 });
     }
     function updateOrderInfo() {
-        const compLabel = (FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition) || {}).label || state.fabricComposition;
+        const garment = t('at_type_' + state.type, state.type.toUpperCase());
+        const color = t('at_color_' + state.color, state.color.toUpperCase());
+        const compObj = FABRIC_OPTIONS[state.type].composition.find(o => o.value === state.fabricComposition);
+        const compLabel = compObj ? fabricLabel(state.type, compObj) : state.fabricComposition;
+        const yes = t('at_yes', 'YES'), no = t('at_no', 'no');
         const hoodieExtras = (state.type === 'hoodie')
-            ? `<br>Шнурки на капюшоне: ${state.drawstring ? 'ДА' : 'нет'}<br>Молния: ${state.zipper ? 'ДА' : 'нет'}` : '';
-        const techLabel = state.technique === 'embroidery' ? 'ВЫШИВКА' : 'DTF-ПЕЧАТЬ';
-        const printLine = state.embProduct
-            ? `ВЫШИВКА · ${state.embProduct.title}`
-            : (state.currentPrint
-                ? `[image] · ${techLabel} · формат заказа: ${scaleCm(state.scale)} · фактически на превью: ${actualPrintSizeLabel()}`
-                : '— none —');
+            ? `<br>${esc(t('at_hood_drawstring', 'Hood drawstrings'))}: ${state.drawstring ? yes : no}` +
+              `<br>${esc(t('at_zipper_short', 'Zipper'))}: ${state.zipper ? yes : no}` : '';
+        const techLabel = state.technique === 'embroidery' ? t('at_tech_emb', 'EMBROIDERY') : t('at_tech_dtf', 'DTF PRINT');
+        let printLine;
+        if (state.embProduct) {
+            printLine = t('at_emb_line', 'EMBROIDERY · {title}', { title: esc(state.embProduct.title) });
+        } else if (state.currentPrint) {
+            printLine = t('at_print_line', '[image] · {tech} · order format: {scale} · on preview: {actual}',
+                { tech: techLabel, scale: scaleCm(state.scale), actual: actualPrintSizeLabel() });
+        } else {
+            printLine = t('at_none', '— none —');
+        }
+        const pos = t('at_pos_' + state.position, state.position.toUpperCase());
         document.getElementById('order-info').innerHTML =
-            `${state.type.toUpperCase()} / ${state.size} / ${state.color.toUpperCase()}<br>` +
-            `Fabric: ${state.fabricDensity} g/m², ${compLabel}${hoodieExtras}<br>` +
-            `Print: ${printLine} | ${state.position.toUpperCase()}<br>` +
-            `Кол-во: ${state.quantity} шт.`;
+            `${esc(garment)} / ${state.size} / ${esc(color)}<br>` +
+            `${esc(t('at_fabric_label', 'Fabric'))}: ${state.fabricDensity} g/m², ${esc(compLabel)}${hoodieExtras}<br>` +
+            `${esc(t('at_print_label', 'Print'))}: ${printLine} | ${esc(pos)}<br>` +
+            `${esc(t('at_qty_short', 'Qty'))}: ${state.quantity} ${esc(t('at_pcs', 'pcs'))}`;
         document.getElementById('order-price').textContent = `€${calculatePrice().toFixed(2)}`;
     }
 
@@ -898,7 +931,7 @@
         document.getElementById('select-color').value = p.color;
         state.position = p.position;
         document.getElementById('select-position').value = p.position;
-               // шнурки и молния — часть изделия: их задаёт Галерея Офиса, клиент не выбирает
+        // шнурки и молния — часть изделия: их задаёт Галерея Офиса, клиент не выбирает
         state.drawstring = !!p.drawstring; state.zipper = !!p.zipper;
         document.getElementById('row-drawstring').style.display = 'none';
         document.getElementById('row-zipper').style.display = 'none';
@@ -917,7 +950,7 @@
     }
 
     function clearEmbProduct() {
-               if (!state.embProduct) return;
+        if (!state.embProduct) return;
         state.embProduct = null;
         state.drawstring = false; state.zipper = false;
         document.getElementById('check-drawstring').checked = false;
@@ -986,7 +1019,8 @@
         }
 
         if (!count) {
-            strip.innerHTML = `<span class="strip-empty">${isEmb ? 'No embroidered items on sale yet' : 'No club prints yet'}</span>`;
+            const msg = isEmb ? t('at_strip_emb_empty', 'No embroidered items on sale yet') : t('at_strip_dtf_empty', 'No club prints yet');
+            strip.innerHTML = `<span class="strip-empty" translate="no">${esc(msg)}</span>`;
         }
         strip.scrollLeft = scrollLeft;
         document.getElementById('print-prev').disabled = !count;
@@ -1071,7 +1105,7 @@
         state.currentPrint = null;
         renderPrintOverlay();
         updateShareRowVisibility();
-        document.getElementById('order-status').textContent = 'Своё изображение удалено (в базу не отправлялось).';
+        document.getElementById('order-status').textContent = t('at_own_removed', 'Your image was removed (it was not sent to the base).');
     });
 
     document.getElementById('btn-share').addEventListener('click', () => {
@@ -1088,16 +1122,17 @@
             state.currentPrint.shared = true;
             state.currentPrint.category = category;
             updateShareRowVisibility();
-            document.getElementById('order-status').textContent = `Отправлено в базу клуба → ${category}`;
+            document.getElementById('order-status').textContent = t('at_shared_ok', 'Sent to the club base → {cat}', { cat: category });
         } catch (err) {
             console.error('[Atelier] Ошибка при отправке в базу клуба', err);
-            document.getElementById('order-status').textContent = 'База клуба недоступна — попробуйте позже.';
+            document.getElementById('order-status').textContent = t('at_shared_fail', 'Club base unavailable — please try later.');
         }
     });
 
     document.getElementById('btn-open-prompt').addEventListener('click', () => {
         document.getElementById('prompt-builder').classList.toggle('open');
     });
+    // Запрос для ИИ-генераторов остаётся английским: так они работают лучше
     document.getElementById('btn-build-prompt').addEventListener('click', () => {
         const idea = document.getElementById('pb-idea').value.trim() || 'an abstract emblem';
         const prompt = `A t-shirt print design of ${idea}, richly detailed illustration with depth and dimension, dramatic lighting and soft shading, painterly textures, vivid layered colors, dynamic composition, subject isolated on a plain solid white background, high resolution.`;
@@ -1110,8 +1145,8 @@
         const text = document.getElementById('prompt-output').textContent;
         navigator.clipboard.writeText(text).then(() => {
             const btn = document.getElementById('btn-copy-prompt');
-            btn.textContent = 'СКОПИРОВАНО';
-            setTimeout(() => { btn.textContent = 'СКОПИРОВАТЬ'; }, 1500);
+            btn.textContent = t('at_copied', 'COPIED');
+            setTimeout(() => { btn.textContent = t('at_copy', 'COPY'); }, 1500);
         });
     });
 
@@ -1190,9 +1225,13 @@
         el.addEventListener('click', () => closeModal(el.closest('.modal-overlay')));
     });
 
-    document.getElementById('btn-confirm').addEventListener('click', () => {
+    function updateConfirmSummary() {
         const summary = document.getElementById('order-info').innerHTML;
-        document.getElementById('confirm-order-summary').innerHTML = summary + `<br><br>Итого: <b>€${calculatePrice().toFixed(2)}</b>`;
+        document.getElementById('confirm-order-summary').innerHTML =
+            summary + `<br><br>${esc(t('at_total', 'Total:'))} <b>€${calculatePrice().toFixed(2)}</b>`;
+    }
+    document.getElementById('btn-confirm').addEventListener('click', () => {
+        updateConfirmSummary();
         openModal('modal-confirm-order');
     });
 
@@ -1307,14 +1346,16 @@
         });
         if (error) {
             console.error('[Atelier] Не удалось записать заказ в Приход', error);
-            status.textContent = 'Order saved on this device but NOT delivered to Accounting: ' + (error.message || 'unknown error');
+            status.textContent = t('at_not_delivered', 'Order saved on this device but NOT delivered to Accounting: {msg}', { msg: error.message || 'unknown error' });
             return;
         }
         if (order.decoration) {
             if (order.decoration.productId) trackEvent('embroidery_product', order.decoration.productId, 'order');
             else if (order.decoration.printId) trackEvent('print', order.decoration.printId, 'order');
         }
-        status.textContent = paid ? 'Paid. Your order has been placed!' : 'Order placed. You will pay at the post office on receipt.';
+        status.textContent = paid
+            ? t('at_paid_ok', 'Paid. Your order has been placed!')
+            : t('at_cod_ok', 'Order placed. You will pay at the post office on receipt.');
     }
 
     document.getElementById('btn-confirm-final').addEventListener('click', async () => {
@@ -1331,7 +1372,7 @@
             const postOffice = document.getElementById('confirm-recipient-post').value.trim();
             const paymentMethod = document.getElementById('confirm-payment-method').value;
             if (!lastName || !firstName || !phone || !postOffice) {
-                errEl.textContent = 'Please fill in last name, first name, phone and post office.';
+                errEl.textContent = t('at_fill_required', 'Please fill in last name, first name, phone and post office.');
                 return;
             }
             const status = document.getElementById('order-status');
@@ -1386,15 +1427,15 @@
                 amount: order.totalPrice,
                 orderNumber,
                 lineItems: [
-                    [`${state.type.toUpperCase()} ${state.size} ${state.color.toUpperCase()}`, `€${unitPrice().toFixed(2)}`],
-                    ['Qty', `${state.quantity}`]
+                    [`${t('at_type_' + state.type, state.type.toUpperCase())} ${state.size} ${t('at_color_' + state.color, state.color.toUpperCase())}`, `€${unitPrice().toFixed(2)}`],
+                    [t('at_qty_short', 'Qty'), `${state.quantity}`]
                 ],
-                onCancel: () => { status.textContent = 'Payment cancelled, order not placed.'; },
+                onCancel: () => { status.textContent = t('at_pay_cancelled', 'Payment cancelled, order not placed.'); },
                 onComplete: () => recordOrder(order, true, assets)
             });
         } catch (e) {
             console.error('[Atelier] Не удалось оформить заказ', e);
-            errEl.textContent = 'Could not place the order: ' + (e.message || e);
+            errEl.textContent = t('at_order_fail', 'Could not place the order: {msg}', { msg: e.message || e });
         } finally {
             delete btn.dataset.busy;
         }
@@ -1437,6 +1478,15 @@
             printCategory: (state.currentPrint && state.currentPrint.category) || null,
             printUrl: (state.currentPrint && /^https:\/\//i.test(state.currentPrint.design)) ? state.currentPrint.design : null
         })
+    });
+
+    // Смена языка: перерисовываем всё, что собрано в JS (выбранные значения сохраняются)
+    onLanguageChange(() => {
+        renderNecklineFitFields();
+        fillCompositionOptions(state.type, state.fabricComposition);
+        updateOrderInfo();
+        renderPrintStrip();
+        if (document.getElementById('modal-confirm-order').style.display === 'flex') updateConfirmSummary();
     });
 
     populateFabricOptions(state.type);
