@@ -23,7 +23,7 @@ const SKIP_SELECTOR = [
     '[translate="no"]', '.notranslate',
     '[data-translate]', '[data-translate-html]',
         '.rv-list', '.gy-passport-id', '.gy-passport-nick', '#pass-id-val',
-    '[data-pii]', 'a[href^="tel:"]', 'a[href^="mailto:"]'
+       '[data-pii]', 'a[href^="tel:"]', 'a[href^="mailto:"]', '.author', '.print-author'
 ].join(',');
 
 const BRAND = new Set(['GY-GY', 'GY-GY CLUB']);
