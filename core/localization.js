@@ -221,7 +221,17 @@ function startSoundscape() {
         .catch(e => console.warn('[localization] soundscape не загружен', e));
 }
 
+// Свой перевод сайта важнее встроенного в браузер: просим Chrome не предлагать перевод
+function ensureNoBrowserTranslate() {
+    if (!document.head || document.querySelector('meta[name="google"][content="notranslate"]')) return;
+    const m = document.createElement('meta');
+    m.name = 'google';
+    m.content = 'notranslate';
+    document.head.appendChild(m);
+}
+
 export function init(container = document, options = {}) {
+    ensureNoBrowserTranslate();
     if (options.scope) setScope(options.scope);
     boundContainer = container;
     applyTranslations(boundContainer);
