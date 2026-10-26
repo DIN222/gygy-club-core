@@ -214,7 +214,7 @@ function startLiveTranslate() {
 // Звуковой сценарий (modules/soundscape.js, таблица — core/soundScenario.js). Только витрина.
 let soundStarted = false;
 function startSoundscape() {
-    if (soundStarted) return;
+    if (soundStarted || SCANNING) return;
     soundStarted = true;
     import('../modules/soundscape.js')
         .then(m => m.apply())
