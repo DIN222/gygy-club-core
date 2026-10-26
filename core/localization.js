@@ -210,7 +210,7 @@ function startLiveTranslate() {
         .then(m => m.start())
         .catch(e => console.warn('[localization] liveTranslate не загружен', e));
 }
-
+ 
 // Звуковой сценарий (modules/soundscape.js, таблица — core/soundScenario.js). Только витрина.
 let soundStarted = false;
 function startSoundscape() {
