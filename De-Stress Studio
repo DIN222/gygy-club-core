@@ -1,1 +1,654 @@
 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De-Stress Studio — GY-GY Club</title>
+    <!-- File: destress_studio_interactive.html | Version: 1.0.1 | Created: 2026-10-26 | Change: отделён интерактивный слой от фотофона, добавлена адаптация для небольших экранов -->
+
+    <style>
+        :root {
+            --cyan: #65e9ed;
+            --cyan-soft: rgba(101, 233, 237, .18);
+            --amber: #f2b45f;
+            --panel: rgba(19, 25, 30, .84);
+            --line: rgba(255, 255, 255, .15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            min-height: 100%;
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #111719;
+            color: #f7f4ee;
+        }
+
+        body { min-height: 100vh; overflow-x: hidden; }
+        button, input { font: inherit; }
+        button, a { -webkit-tap-highlight-color: transparent; }
+
+        /* Временный фон. Позже добавим отдельный фотослой. */
+        .destress-container {
+            position: relative;
+            isolation: isolate;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background:
+                radial-gradient(ellipse at 50% 35%, rgba(83, 107, 101, .32), transparent 48%),
+                radial-gradient(ellipse at 12% 80%, rgba(129, 75, 39, .22), transparent 40%),
+                linear-gradient(135deg, #202a29 0%, #111719 52%, #211b18 100%);
+        }
+
+        .destress-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 35%,
+                rgba(0,0,0,.42) 100%
+            );
+        }
+
+        .ui-layer {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 22px;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            width: min(1200px, 100%);
+            margin: 0 auto;
+            padding: 11px 18px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(13, 17, 18, .66);
+            backdrop-filter: blur(14px);
+        }
+
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #f7f4ee;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: .09em;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .brand-logo span {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 7px;
+            background: var(--amber);
+            color: #21170d;
+            letter-spacing: .02em;
+        }
+
+        .lang-panel { display: flex; gap: 5px; }
+
+        .lang-btn, .btn-back {
+            border: 1px solid rgba(255,255,255,.18);
+            color: #e5e5df;
+            background: rgba(255,255,255,.05);
+            border-radius: 10px;
+            padding: 7px 10px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: .82rem;
+            transition: background .2s, border-color .2s;
+        }
+
+        .lang-btn:hover, .btn-back:hover {
+            background: rgba(255,255,255,.12);
+        }
+
+        .lang-btn.active {
+            color: #fff;
+            border-color: var(--amber);
+            background: rgba(242,180,95,.17);
+        }
+
+        .studio-content {
+            flex: 1;
+            display: grid;
+            place-items: center;
+            padding: 8px 0;
+        }
+
+        .ai-frame {
+            width: min(700px, 100%);
+            padding: clamp(18px, 3vw, 28px);
+            border: 1px solid rgba(101,233,237,.35);
+            border-radius: 22px;
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            box-shadow:
+                0 24px 70px rgba(0,0,0,.28),
+                0 0 35px rgba(101,233,237,.06);
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding-bottom: 16px;
+            margin-bottom: 17px;
+            border-bottom: 1px solid rgba(101,233,237,.2);
+        }
+
+        .ai-header-left {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            min-width: 0;
+        }
+
+        .ai-avatar {
+            width: 54px;
+            height: 54px;
+            flex: 0 0 54px;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            border-radius: 50%;
+            border: 1px solid rgba(101,233,237,.75);
+            background: linear-gradient(145deg, #384a47, #171f20);
+            box-shadow: 0 0 18px rgba(101,233,237,.13);
+        }
+
+        .ai-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-fallback { font-size: 29px; line-height: 1; }
+
+        .ai-title h1 {
+            color: var(--cyan);
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            line-height: 1.25;
+            letter-spacing: .045em;
+        }
+
+        .ai-title p {
+            color: #c6cfcc;
+            margin-top: 4px;
+            font-size: .8rem;
+        }
+
+        .btn-rotate {
+            flex-shrink: 0;
+            border: 1px solid rgba(101,233,237,.4);
+            color: var(--cyan);
+            background: var(--cyan-soft);
+            padding: 9px 12px;
+            border-radius: 11px;
+            cursor: pointer;
+            font-size: .82rem;
+            transition: background .2s, transform .2s;
+        }
+
+        .btn-rotate:hover { background: rgba(101,233,237,.28); }
+
+        .btn-rotate:active, .chip:active, .btn-action:active {
+            transform: translateY(1px);
+        }
+
+        .ai-dialogue {
+            margin-bottom: 19px;
+            color: #f4f2eb;
+            font-size: .96rem;
+            line-height: 1.55;
+        }
+
+        .section-label {
+            margin-bottom: 8px;
+            color: var(--cyan);
+            font-size: .74rem;
+            font-weight: 800;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .chip {
+            border: 1px solid rgba(101,233,237,.34);
+            border-radius: 11px;
+            padding: 8px 11px;
+            color: #f7f4ee;
+            background: rgba(101,233,237,.10);
+            cursor: pointer;
+            font-size: .84rem;
+            line-height: 1.3;
+            transition: background .2s, border-color .2s;
+        }
+
+        .chip:hover {
+            background: rgba(101,233,237,.22);
+            border-color: var(--cyan);
+        }
+
+        .chip-recipe {
+            border-color: rgba(242,180,95,.38);
+            background: rgba(242,180,95,.11);
+        }
+
+        .chip-recipe:hover {
+            border-color: var(--amber);
+            background: rgba(242,180,95,.22);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin: 2px 0 15px;
+        }
+
+        .express-input {
+            min-width: 0;
+            flex: 1;
+            border: 1px solid rgba(255,255,255,.22);
+            border-radius: 11px;
+            padding: 12px 13px;
+            color: #fff;
+            background: rgba(0,0,0,.24);
+            outline: none;
+            font-size: .9rem;
+        }
+
+        .express-input::placeholder { color: #b8c0bd; }
+
+        .express-input:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(101,233,237,.1);
+        }
+
+        .btn-contribute {
+            border: 1px solid rgba(196,142,221,.5);
+            border-radius: 11px;
+            padding: 0 14px;
+            color: #fff;
+            background: rgba(124,76,145,.8);
+            cursor: pointer;
+            font-size: .82rem;
+            font-weight: 700;
+        }
+
+        .btn-contribute:hover { background: rgba(145,88,168,.95); }
+
+        .actions-group { display: flex; gap: 9px; }
+
+        .btn-action {
+            flex: 1;
+            min-height: 43px;
+            border: 1px solid rgba(143,218,169,.25);
+            border-radius: 11px;
+            padding: 10px 12px;
+            color: #eaf8ed;
+            background: rgba(45,111,76,.72);
+            cursor: pointer;
+            font-size: .8rem;
+            font-weight: 800;
+            line-height: 1.35;
+            transition: background .2s;
+        }
+
+        .btn-action:hover { background: rgba(52,139,91,.9); }
+
+        .btn-atelier {
+            border-color: rgba(242,180,95,.3);
+            color: #fff2df;
+            background: rgba(137,86,35,.78);
+        }
+
+        .btn-atelier:hover { background: rgba(169,103,39,.95); }
+
+        .footer {
+            text-align: center;
+            color: rgba(235,235,225,.66);
+            font-size: .76rem;
+            padding: 0 0 2px;
+        }
+
+        .notice {
+            min-height: 1.2em;
+            margin-top: 10px;
+            color: #c9d7d2;
+            font-size: .8rem;
+        }
+
+        @media (max-width: 620px) {
+            .ui-layer { padding: 12px; gap: 14px; }
+
+            .navbar {
+                flex-wrap: wrap;
+                justify-content: space-between;
+                padding: 10px 12px;
+                border-radius: 15px;
+            }
+
+            .lang-panel {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn-back { margin-left: auto; }
+
+            .ai-header {
+                align-items: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .btn-rotate { margin-left: 67px; }
+            .ai-frame { border-radius: 18px; }
+
+            .input-group, .actions-group { flex-direction: column; }
+            .express-input { min-height: 44px; }
+            .btn-contribute { min-height: 42px; }
+            .btn-action { flex: auto; }
+        }
+
+        @media (max-height: 720px) and (min-width: 621px) {
+            .ui-layer {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                gap: 10px;
+            }
+
+            .ai-frame { padding: 18px 22px; }
+            .ai-dialogue { margin-bottom: 12px; }
+            .chips-container { margin-bottom: 12px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition: none !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="destress-container">
+        <!-- Позже добавим фото отдельным нижним слоем, не меняя интерфейс. -->
+        <div class="ui-layer">
+
+            <header class="navbar">
+                <a href="index.html" class="brand-logo">
+                    <span>GY-GY</span> CLUB
+                </a>
+
+                <div class="lang-panel" aria-label="Выбор языка">
+                    <button class="lang-btn active" type="button"
+                            data-lang="ru" aria-pressed="true">RU</button>
+                    <button class="lang-btn" type="button"
+                            data-lang="en" aria-pressed="false">EN</button>
+                    <button class="lang-btn" type="button"
+                            data-lang="fr" aria-pressed="false">FR</button>
+                </div>
+
+                <a href="bar_navigation.html" class="btn-back">← В Бар</a>
+            </header>
+
+            <main class="studio-content">
+                <section class="ai-frame" aria-labelledby="charlie-title">
+
+                    <div class="ai-header">
+                        <div class="ai-header-left">
+                            <div class="ai-avatar" aria-label="Аватар Чарли">
+                                <img
+                                    src="horse_welcome.png"
+                                    alt="Чарли"
+                                    onerror="this.remove(); this.parentElement.innerHTML='<span class=&quot;avatar-fallback&quot; aria-hidden=&quot;true&quot;>🐴</span>'"
+                                >
+                            </div>
+
+                            <div class="ai-title">
+                                <h1 id="charlie-title">Бармен-Целитель Чарли</h1>
+                                <p>De-Stress Studio · Кабинет разгрузки</p>
+                            </div>
+                        </div>
+
+                        <button class="btn-rotate" id="rotate-button" type="button">
+                            🎲 Другой замес
+                        </button>
+                    </div>
+
+                    <p class="ai-dialogue" id="dialogue-text">
+                        Приветствую в профилактории, друг! Устраивайся в кресле.
+                        На что жалуешься сегодня? Выбирай симптом или заряди мощный рецепт:
+                    </p>
+
+                    <div class="section-label">1. Источник стресса</div>
+                    <div class="chips-container" id="symptoms-box"
+                         aria-label="Варианты неприятностей"></div>
+
+                    <div class="section-label">2. Фирменный рецепт от Чарли</div>
+                    <div class="chips-container" id="recipes-box"
+                         aria-label="Рецепты Чарли"></div>
+
+                    <form class="input-group" id="idea-form">
+                        <input
+                            type="text"
+                            id="user-input"
+                            class="express-input"
+                            maxlength="180"
+                            placeholder="Или напиши свой шедевр здесь…"
+                            aria-label="Твоя идея"
+                        >
+                        <button class="btn-contribute" type="submit"
+                                title="Добавить идею в текущую ротацию">
+                            ＋ В базу
+                        </button>
+                    </form>
+
+                    <div class="actions-group">
+                        <button class="btn-action" id="publish-button" type="button">
+                            📢 В новости клуба
+                        </button>
+                        <button class="btn-action btn-atelier" id="atelier-button" type="button">
+                            👕 В Ателье — на футболку
+                        </button>
+                    </div>
+
+                    <p class="notice" id="notice" role="status" aria-live="polite"></p>
+                </section>
+            </main>
+
+            <footer class="footer">
+                GY-GY Club © 2026 · Юмор — лучшее лекарство от рутины
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        'use strict';
+
+        const complaintsDatabase = [
+            '💼 Поругался с начальником',
+            '🚗 Обрызгала машина',
+            '💩 Сел на жвачку',
+            '🍺 Опрокинул бокал с пивом',
+            '🏴‍☠️ Забыл, где заначка',
+            '💸 По пьяне дал в займы',
+            '💻 Завис комп перед сохранением',
+            '⏰ Проспал будильник на час'
+        ];
+
+        const recipesDatabase = [
+            'Зафонарь себе в контейнер!',
+            'Сахаруй твою поддон!',
+            'Маракуй тебе в подкладку!',
+            'Залуди свою табуретку!',
+            'Напильником по сепаратору!',
+            'Застакань свои тапочки!',
+            'Пропылесось туман в голове!',
+            'Забетонируй розетку смехом!'
+        ];
+
+        const input = document.getElementById('user-input');
+        const symptomsBox = document.getElementById('symptoms-box');
+        const recipesBox = document.getElementById('recipes-box');
+        const notice = document.getElementById('notice');
+
+        function getRandomItems(items, count) {
+            const shuffled = [...items];
+
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+
+            return shuffled.slice(0, count);
+        }
+
+        function addText(text) {
+            input.value = input.value
+                ? `${input.value} — ${text}`
+                : text;
+
+            input.focus();
+        }
+
+        function setRecipe(text) {
+            input.value = text;
+            input.focus();
+        }
+
+        function renderChips(container, items, isRecipe = false) {
+            container.replaceChildren();
+
+            items.forEach((text) => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = isRecipe ? 'chip chip-recipe' : 'chip';
+                chip.textContent = isRecipe ? `✨ ${text}` : text;
+
+                chip.addEventListener('click', () => {
+                    if (isRecipe) {
+                        setRecipe(text);
+                    } else {
+                        addText(text);
+                    }
+                });
+
+                container.appendChild(chip);
+            });
+        }
+
+        function rotateOptions() {
+            renderChips(
+                symptomsBox,
+                getRandomItems(complaintsDatabase, 3)
+            );
+
+            renderChips(
+                recipesBox,
+                getRandomItems(recipesDatabase, 3),
+                true
+            );
+
+            notice.textContent = '';
+        }
+
+        document
+            .getElementById('rotate-button')
+            .addEventListener('click', rotateOptions);
+
+        document
+            .getElementById('idea-form')
+            .addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const value = input.value.trim();
+
+                if (!value) {
+                    notice.textContent =
+                        'Сначала впиши свою идею — Чарли ждёт материал!';
+                    input.focus();
+                    return;
+                }
+
+                if (!recipesDatabase.includes(value)) {
+                    recipesDatabase.push(value);
+                }
+
+                rotateOptions();
+
+                notice.textContent =
+                    'Чарли добавил идею в текущую подборку. ' +
+                    'Пока она хранится только в этой вкладке.';
+
+                input.value = '';
+            });
+
+        document
+            .getElementById('publish-button')
+            .addEventListener('click', () => {
+                const value = input.value.trim();
+
+                notice.textContent = value
+                    ? 'Демо-режим: публикация в новости клуба ещё не подключена.'
+                    : 'Сначала выбери или напиши фразу, которую хочешь предложить клубу.';
+            });
+
+        document
+            .getElementById('atelier-button')
+            .addEventListener('click', () => {
+                const value = input.value.trim();
+
+                if (!value) {
+                    notice.textContent =
+                        'Сначала выбери рецепт или напиши свою фразу.';
+                    input.focus();
+                    return;
+                }
+
+                window.location.href =
+                    `atelier.html?phrase=${encodeURIComponent(value)}`;
+            });
+
+        document.querySelectorAll('.lang-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach((item) => {
+                    const active = item === button;
+                    item.classList.toggle('active', active);
+                    item.setAttribute('aria-pressed', String(active));
+                });
+
+                if (button.dataset.lang !== 'ru') {
+                    notice.textContent =
+                        'Переводы EN/FR пока не подключены; интерфейс остаётся на русском.';
+                } else {
+                    notice.textContent = '';
+                }
+            });
+        });
+
+        rotateOptions();
+    </script>
+</body>
+</html>
+
