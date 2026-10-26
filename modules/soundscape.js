@@ -148,6 +148,16 @@ export function stopAmbient() {
     clearInterval(saveTimer);
     persist(true);
 }
+// Вернулись к дверям: звук выключается полностью, состояние прогулки сбрасывается
+export function resetAmbient() {
+    wantOn = false;
+    if (audio) { audio.pause(); audio.currentTime = 0; }
+    clearInterval(saveTimer);
+    clearInterval(fadeTimer);
+    try { sessionStorage.removeItem(STATE_KEY); sessionStorage.removeItem(JUMP_KEY); } catch (e) { /* ок */ }
+    const btn = document.getElementById('gy-mute-btn');
+    if (btn) btn.remove();
+}
 
 export function playSfx(name) {
     if (isMuted()) return;
