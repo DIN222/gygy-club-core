@@ -209,7 +209,7 @@
     import { init as initLocalization, renderLanguageList, FULL_LANGUAGES, getCurrentLang } from './core/localization.js';
     import { on } from './core/eventBus.js';
     import { init as initPassport, hasPassport } from './modules/passport.js';
-        import { startAmbient, playSfx } from './modules/soundscape.js';
+           import { startAmbient, resetAmbient, playSfx } from './modules/soundscape.js';
     initLocalization(document.body);
     renderLanguageList(document.getElementById('lang-list'));
 
