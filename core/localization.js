@@ -199,9 +199,12 @@ let boundContainer = null;
 // Машинный перевод всего, чего нет в словаре (modules/liveTranslate.js + функция translate).
 // Выключить целиком: LIVE_TRANSLATE = false.
 export const LIVE_TRANSLATE = true;
+// Служебный просмотр страниц для «прогрева» перевода (translations-admin.html): без перевода и звука
+const SCANNING = /[?&]lt_scan=1/.test(location.search);
+
 let liveStarted = false;
 function startLiveTranslate() {
-    if (liveStarted || !LIVE_TRANSLATE) return;
+    if (liveStarted || !LIVE_TRANSLATE || SCANNING) return;
     liveStarted = true;
     import('../modules/liveTranslate.js')
         .then(m => m.start())
