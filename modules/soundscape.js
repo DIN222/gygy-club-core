@@ -171,11 +171,10 @@ export function playSfx(name) {
 export function apply() {
     const s = scene();
     const st = readState();
-    if (s.ambient === 'continue' && st && st.on) {
-        begin(s.volume, s.jumpTo ?? null);
-    } else if (s.ambient === 'off' && st && st.on) {
+       } else if (s.ambient === 'off' && st && st.on) {
         // «пауза»: время вне барной зоны не считается
         try { sessionStorage.setItem(STATE_KEY, JSON.stringify({ on: true, t: st.t, at: Date.now() })); } catch (e) { /* ок */ }
+    } else if (s.ambient === 'manual' && st && st.on) {
+        resetAmbient();   // пришли к дверям: звук выключен, новая прогулка начнётся с нуля
     }
-    // 'manual' — ждёт startAmbient()
 }
