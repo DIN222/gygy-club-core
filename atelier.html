@@ -874,7 +874,8 @@
             `${esc(t('at_fabric_label', 'Fabric'))}: ${state.fabricDensity} g/m², ${esc(compLabel)}${hoodieExtras}<br>` +
             `${esc(t('at_print_label', 'Print'))}: ${printLine} | ${esc(pos)}<br>` +
             `${esc(t('at_qty_short', 'Qty'))}: ${state.quantity} ${esc(t('at_pcs', 'pcs'))}`;
-        document.getElementById('order-price').textContent = `€${calculatePrice().toFixed(2)}`;
+                document.getElementById('order-price').textContent = `€${calculatePrice().toFixed(2)}`;
+        updatePhraseNote();
     }
 
     function updateShareRowVisibility() {
