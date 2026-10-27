@@ -1445,7 +1445,7 @@
             payment_date: paid ? today : null,
             payment_amount: paid ? order.totalPrice : null
         });
-        if (error) {
+                if (error) {
             console.error('[Atelier] Не удалось записать заказ в Приход', error);
             status.textContent = t('at_not_delivered', 'Order saved on this device but NOT delivered to Accounting: {msg}', { msg: error.message || 'unknown error' });
             return;
@@ -1453,12 +1453,12 @@
         if (order.decoration) {
             if (order.decoration.productId) trackEvent('embroidery_product', order.decoration.productId, 'order');
             else if (order.decoration.printId) trackEvent('print', order.decoration.printId, 'order');
+            if (order.decoration.phraseId) bumpPhrase(order.decoration.phraseId, 'order');
         }
         status.textContent = paid
             ? t('at_paid_ok', 'Paid. Your order has been placed!')
             : t('at_cod_ok', 'Order placed. You will pay at the post office on receipt.');
     }
-
     document.getElementById('btn-confirm-final').addEventListener('click', async () => {
         const btn = document.getElementById('btn-confirm-final');
         const errEl = document.getElementById('confirm-error');
@@ -1489,7 +1489,7 @@
                 recipientLastName: lastName, recipientFirstName: firstName,
                 recipientPhone: phone, recipientMessenger: messenger, recipientPostOffice: postOffice,
                 recipientName: `${lastName} ${firstName}`, recipientAddress: postOffice,
-                paymentMethod,
+                              paymentMethod,
                 decoration: state.embProduct ? {
                     source: 'club', shared: true, category: 'embroidery', technique: 'embroidery',
                     position: state.embProduct.position, scalePreset: null, scaleCm: null,
@@ -1501,7 +1501,9 @@
                     technique: state.technique,
                     position: state.position, scalePreset: state.scale, scaleCm: scaleCm(state.scale),
                     actualSizeOnPreview: actualPrintSizeLabel(),
-                    printId: state.currentPrint.id || null
+                    printId: state.currentPrint.id || null,
+                    phrase: state.currentPrint.phrase || null,
+                    phraseId: state.currentPrint.phraseId || null
                 } : null),
                 unitPrice: unitPrice(), totalPrice: calculatePrice(), createdAt: Date.now(),
                 pricing: state.embProduct
@@ -1581,7 +1583,7 @@
         })
     });
 
-    // Смена языка: перерисовываем всё, что собрано в JS (выбранные значения сохраняются)
+      // Смена языка: перерисовываем всё, что собрано в JS (выбранные значения сохраняются)
     onLanguageChange(() => {
         renderNecklineFitFields();
         fillCompositionOptions(state.type, state.fabricComposition);
@@ -1597,6 +1599,7 @@
     renderSpecPanel();
     await loadEmbProducts();
     renderPrintStrip();
+    await initIncomingPhrase();
 </script>
 
 </body>
