@@ -209,7 +209,8 @@
     import { init as initLocalization, renderLanguageList, FULL_LANGUAGES, getCurrentLang } from './core/localization.js';
     import { on } from './core/eventBus.js';
     import { init as initPassport, hasPassport } from './modules/passport.js';
-           import { startAmbient, resetAmbient, playSfx } from './modules/soundscape.js';
+    import { startAmbient, resetAmbient, playSfx } from './modules/soundscape.js';
+
     initLocalization(document.body);
     renderLanguageList(document.getElementById('lang-list'));
 
@@ -243,16 +244,14 @@
     });
 
     const mainDoor = document.getElementById('main-door');
-    const sndDoor = document.getElementById('snd-door');
-    const sndAmbient = document.getElementById('snd-ambient');
 
+    // Дверь: звук двери, затем фон бара и экран приветствия
     mainDoor.addEventListener('click', () => {
-               playSfx('door');
+        playSfx('door');
         mainDoor.classList.add('door-exploded');
 
         setTimeout(() => {
-                        startAmbient({ volume: 0.5 });
-
+            startAmbient({ volume: 0.5 });
             document.getElementById('block-entrance').classList.remove('active');
             document.getElementById('block-welcome').classList.add('active');
         }, 700);
@@ -262,17 +261,13 @@
         window.location.href = 'identity.html';
     });
 
-    document.getElementById('btn-back').addEventListener('click', () => {
+    // Обе стрелки на экране приветствия возвращают к дверям и выключают звук
+    function backToDoor() {
+        resetAmbient();
         document.getElementById('block-welcome').classList.remove('active');
         document.getElementById('block-entrance').classList.add('active');
         mainDoor.classList.remove('door-exploded');
-    });
-    document.getElementById('btn-home').addEventListener('click', () => {
-        document.getElementById('block-welcome').classList.remove('active');
-        document.getElementById('block-entrance').classList.add('active');
-        mainDoor.classList.remove('door-exploded');
-    });
+    }
+    document.getElementById('btn-back').addEventListener('click', backToDoor);
+    document.getElementById('btn-home').addEventListener('click', backToDoor);
 </script>
-
-</body>
-</html>
