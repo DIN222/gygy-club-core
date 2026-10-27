@@ -705,7 +705,8 @@
         const dims = SCALE_DIMENSIONS_CM[state.scale];
         const ratio = pxPerCmApprox(state.type, state.size);
         const w = Math.round(dims.w * ratio);
-        const h = Math.round(dims.h * ratio);
+                const aspect = state.currentPrint && state.currentPrint.aspect;
+        const h = aspect ? Math.round(w * aspect) : Math.round(dims.h * ratio);
         return {
             left: Math.round(frame.clientWidth / 2 - w / 2),
             top: Math.round(frame.clientHeight * (DEFAULT_ANCHOR_Y_PCT / 100) - h / 2),
