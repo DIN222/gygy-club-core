@@ -1291,9 +1291,10 @@
         renderGarmentPhoto();
         renderPrintOverlay(true);
     });
-    document.getElementById('select-color').addEventListener('change', (e) => {
+       document.getElementById('select-color').addEventListener('change', (e) => {
         state.color = e.target.value;
         renderGarmentPhoto();
+        if (state.currentPrint && state.currentPrint.source === 'phrase') { refreshPhrasePrint(); return; }
         renderPrintOverlay();
     });
     document.getElementById('select-scale').addEventListener('change', (e) => {
