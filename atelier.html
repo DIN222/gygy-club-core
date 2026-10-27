@@ -884,7 +884,97 @@
         row.classList.toggle('visible', !!isOwnUnshared);
         if (!isOwnUnshared) document.getElementById('category-picker').classList.remove('open');
     }
+    // ---------- Фраза из De-Stress Studio: печатаем текст на изделии (только DTF) ----------
+    const UUID_RE = /^[0-9a-f-]{36}$/i;
 
+    function wrapPhrase(ctx, text, maxW) {
+        const words = text.split(/\s+/);
+        const lines = [];
+        let cur = '';
+        words.forEach(w => {
+            const test = cur ? cur + ' ' + w : w;
+            if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; } else cur = test;
+        });
+        if (cur) lines.push(cur);
+        return lines;
+    }
+
+    // Текст на прозрачном фоне: светлый — для чёрного изделия, тёмный — для белого
+    async function renderPhraseBlob(text, garmentColor) {
+        try { await document.fonts.load('700 120px "Playfair Display"'); } catch (e) { /* запасной шрифт */ }
+        const FONT = '"Playfair Display", Georgia, serif';
+        const W = 1800, pad = 90;
+        const probe = document.createElement('canvas').getContext('2d');
+        let size = 240, lines;
+        for (;;) {
+            probe.font = `700 ${size}px ${FONT}`;
+            lines = wrapPhrase(probe, text, W - pad * 2);
+            if (lines.length <= 5 || size <= 70) break;
+            size -= 10;
+        }
+        const lineH = Math.round(size * 1.2);
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = lines.length * lineH + pad * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.font = `700 ${size}px ${FONT}`;
+        ctx.fillStyle = garmentColor === 'black' ? '#F0EAD6' : '#1a1408';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        lines.forEach((ln, i) => ctx.fillText(ln, W / 2, pad + lineH * i + lineH / 2));
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+        return blob ? { blob, aspect: canvas.height / canvas.width } : null;
+    }
+
+    function bumpPhrase(id, kind) {
+        if (!id || !UUID_RE.test(id)) return;
+        try { supabase.rpc('destress_bump', { p_id: id, p_kind: kind }).then(() => {}, () => {}); } catch (e) { /* не критично */ }
+    }
+
+    async function refreshPhrasePrint() {
+        const cp = state.currentPrint;
+        if (!cp || cp.source !== 'phrase') return;
+        const made = await renderPhraseBlob(cp.phrase, state.color);
+        if (!made) return;
+        cp.blob = made.blob;
+        cp.aspect = made.aspect;
+        cp.design = URL.createObjectURL(made.blob);
+        renderPrintOverlay(false);
+    }
+
+    function updatePhraseNote() {
+        const note = document.getElementById('phrase-note');
+        if (!note) return;
+        const cp = state.currentPrint;
+        const on = !!(cp && cp.source === 'phrase');
+        note.classList.toggle('visible', on);
+        if (on) document.getElementById('phrase-note-text').textContent = '“' + cp.phrase + '”';
+    }
+
+    document.getElementById('phrase-note-clear').addEventListener('click', () => {
+        state.currentPrint = null;
+        renderPrintOverlay();
+        updateShareRowVisibility();
+    });
+
+    async function initIncomingPhrase() {
+        const params = new URLSearchParams(location.search);
+        const phrase = (params.get('phrase') || '').trim().slice(0, 180);
+        if (!phrase) return;
+        state.technique = 'dtf';
+        document.getElementById('select-technique').value = 'dtf';
+        const made = await renderPhraseBlob(phrase, state.color);
+        if (!made) return;
+        const pid = params.get('pid');
+        state.currentPrint = {
+            source: 'phrase', design: URL.createObjectURL(made.blob), blob: made.blob,
+            aspect: made.aspect, shared: false, phrase, phraseId: (pid && UUID_RE.test(pid)) ? pid : null
+        };
+        renderPrintOverlay(true);
+        updateShareRowVisibility();
+        renderPrintStrip();
+        if (state.currentPrint.phraseId) bumpPhrase(state.currentPrint.phraseId, 'atelier');
+    }
     // ---------- Изделия с вышивкой (из Галереи Офиса) и статистика ----------
     let embProducts = [];
     const LOCK_IDS = ['select-type', 'select-color', 'select-fabric-composition', 'select-fabric-density', 'select-position', 'select-scale'];
