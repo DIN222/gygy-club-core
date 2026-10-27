@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <!--
-  embroidery-products.html — v1.1.0 — 2026-10-22
-  Галерея → Изделия с вышивкой: готовое изделие для клиентской витрины.
-  Фото изделия слева (закреплено), управление справа; данные изделия ниже.
-  Выставить на витрину / убрать; статистика (выбрано / заказано).
+  embroidery-products.html — v1.3.0 — 2026-10-26
+  Галерея → Изделия с вышивкой.
+  Фото изделия слева (закреплено), управление справа: изделие, цвет, положение,
+  двухрядная лента эскизов, размер, смещение, ПОВОРОТ эскиза; данные изделия ниже
+  (в том числе шнурки и молния у худи). Выставить на витрину / убрать; статистика.
 -->
 <html lang="en">
 <head>
@@ -44,13 +45,15 @@
     .builder input[type="file"] { color: var(--ivory); font-family: inherit; font-size: 11px; }
     .b-sub { font-size: 10px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; }
     .or { font-size: 10px; color: #9a9a8a; }
+    .rot-btns { display: flex; gap: 6px; }
     .b-data { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--gold-dim); }
     .b-data .wide { grid-column: 1 / -1; }
     .sizes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
     .builder label.szl { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ivory); text-transform: none; }
     .b-bar { margin-top: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-        .strip { display: grid; grid-template-rows: repeat(2, 52px); grid-auto-flow: column; grid-auto-columns: 52px; gap: 5px; overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; }
+    /* лента эскизов: два ряда, прокрутка вправо */
+    .strip { display: grid; grid-template-rows: repeat(2, 52px); grid-auto-flow: column; grid-auto-columns: 52px; gap: 5px; overflow-x: auto; overflow-y: hidden; padding-bottom: 6px; }
     .thumb { width: 52px; height: 52px; padding: 0; border: 1px solid var(--gold-dim); background: repeating-conic-gradient(#5a5a5a 0% 25%, #8a8a8a 0% 50%) 50% / 10px 10px; cursor: pointer; }
     .thumb.sel { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
     .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -123,6 +126,12 @@
                     <label>Размер вышивки<input type="range" id="f-scale" min="8" max="80" value="34"></label>
                     <label>Влево — вправо<input type="range" id="f-x" min="10" max="90" value="50"></label>
                     <label>Вверх — вниз<input type="range" id="f-y" min="10" max="90" value="40"></label>
+                    <label>Поворот: <span id="f-rot-val">0</span>°<input type="range" id="f-rot" min="-180" max="180" value="0"></label>
+                    <div class="rot-btns">
+                        <button type="button" class="mini" data-rot="-90">↺ −90°</button>
+                        <button type="button" class="mini" data-rot="0">0°</button>
+                        <button type="button" class="mini" data-rot="90">↻ +90°</button>
+                    </div>
                     <div class="or">или загрузите готовое фото вместо сборки:</div>
                     <input type="file" id="f-photo" accept="image/*">
                 </div>
@@ -136,7 +145,7 @@
                     <div class="b-sub">Доступные размеры</div>
                     <div class="sizes" id="f-sizes"></div>
                 </div>
-                              <div class="wide" id="f-hoodie-opts" style="display:none;">
+                <div class="wide" id="f-hoodie-opts" style="display:none;">
                     <div class="b-sub">Для худи</div>
                     <div class="sizes">
                         <label class="szl"><input type="checkbox" id="f-drawstring"> Шнурки на капюшоне</label>
@@ -207,7 +216,7 @@
         $('f-sizes').innerHTML = SIZES.map(s =>
             `<label class="szl"><input type="checkbox" value="${s}"${selected.includes(s) ? ' checked' : ''}> ${s}</label>`).join('');
     }
-      function syncHoodieOpts() {
+    function syncHoodieOpts() {
         $('f-hoodie-opts').style.display = $('f-garment').value === 'hoodie' ? 'block' : 'none';
     }
     function renderDesigns() {
@@ -222,6 +231,7 @@
         const token = ++redrawToken;
         const cv = $('cv'), ctx = cv.getContext('2d');
         const W = cv.width, H = cv.height;
+        $('f-rot-val').textContent = $('f-rot').value;
         ctx.fillStyle = $('f-color').value === 'black' ? '#8a8a8a' : '#161616';
         ctx.fillRect(0, 0, W, H);
         const drawContain = (img) => {
@@ -240,7 +250,12 @@
             const cx = W * $('f-x').value / 100, cy = H * $('f-y').value / 100;
             const w = W * $('f-scale').value / 100;
             const h = w * designImg.naturalHeight / designImg.naturalWidth;
-            ctx.drawImage(designImg, cx - w / 2, cy - h / 2, w, h);
+            const rot = Number($('f-rot').value) || 0;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(rot * Math.PI / 180);
+            ctx.drawImage(designImg, -w / 2, -h / 2, w, h);
+            ctx.restore();
         }
     }
 
@@ -255,13 +270,13 @@
         $('f-color').value = p ? p.color : 'black';
         fillComp(p ? p.composition : null);
         $('f-density').value = p ? (p.density || '') : '';
-         $('f-position').value = p ? p.position : 'front';
+        $('f-position').value = p ? p.position : 'front';
         $('f-drawstring').checked = !!(p && p.drawstring);
         $('f-zipper').checked = !!(p && p.zipper);
         syncHoodieOpts();
         buildSizes(p ? (p.sizes || []) : SIZES);
         $('f-price').value = p ? p.price : '';
-        $('f-scale').value = 34; $('f-x').value = 50; $('f-y').value = 40;
+        $('f-scale').value = 34; $('f-x').value = 50; $('f-y').value = 40; $('f-rot').value = 0;
         if (p && p.design_id) {
             const d = designs.find(x => x.id === p.design_id);
             if (d) selDesign = { id: d.id, url: safeHttps(d.image_url) };
@@ -275,10 +290,15 @@
     function closeBuilder() { $('builder').style.display = 'none'; editing = null; }
 
     ['f-garment', 'f-color', 'f-position'].forEach(id => $(id).addEventListener('change', () => {
-               if (id === 'f-garment') { fillComp(null); syncHoodieOpts(); }
+        if (id === 'f-garment') { fillComp(null); syncHoodieOpts(); }
         redraw();
     }));
-    ['f-scale', 'f-x', 'f-y'].forEach(id => $(id).addEventListener('input', redraw));
+    ['f-scale', 'f-x', 'f-y', 'f-rot'].forEach(id => $(id).addEventListener('input', redraw));
+    $('f-rot').addEventListener('dblclick', () => { $('f-rot').value = 0; redraw(); });
+    document.querySelectorAll('[data-rot]').forEach(b => b.addEventListener('click', () => {
+        $('f-rot').value = b.dataset.rot;
+        redraw();
+    }));
 
     $('design-strip').addEventListener('click', async (e) => {
         const b = e.target.closest('[data-design]');
@@ -367,12 +387,13 @@
             storage_path = newPath;
         }
 
+        const isHoodie = $('f-garment').value === 'hoodie';
         const payload = {
             title, garment: $('f-garment').value, color: $('f-color').value,
             composition: $('f-comp').value || null, density: normDensity($('f-density').value) || null,
-                        position: $('f-position').value, sizes, price,
-            drawstring: $('f-garment').value === 'hoodie' && $('f-drawstring').checked,
-            zipper: $('f-garment').value === 'hoodie' && $('f-zipper').checked,
+            position: $('f-position').value, sizes, price,
+            drawstring: isHoodie && $('f-drawstring').checked,
+            zipper: isHoodie && $('f-zipper').checked,
             design_id: selDesign ? selDesign.id : null, image_url, storage_path
         };
         const res = editing
@@ -392,10 +413,12 @@
         $('grid').innerHTML = products.map(p => {
             const url = safeHttps(p.image_url);
             const c = counts[p.id] || { pick: 0, order: 0 };
+            const hoodieLine = p.garment === 'hoodie'
+                ? `<br>Шнурки: ${p.drawstring ? 'да' : 'нет'} · Молния: ${p.zipper ? 'да' : 'нет'}` : '';
             return `<div class="card" data-id="${esc(p.id)}">
                 <div class="thumb-lg">${url ? `<img src="${esc(url)}" loading="lazy" alt="">` : '<span class="muted">нет фото</span>'}</div>
                 <div class="c-title">${esc(p.title)}</div>
-                 <div class="c-meta">${esc(GARMENT_RU[p.garment] || p.garment)} · ${esc(COLOR_RU[p.color] || p.color)}<br>${esc(COMPOSITION_LABELS[p.composition] || p.composition || '—')} · ${esc(p.density || '—')} g/m²<br>${esc(POS_RU[p.position] || p.position)} · ${esc((p.sizes || []).join(' '))}${p.garment === 'hoodie' ? `<br>Шнурки: ${p.drawstring ? 'да' : 'нет'} · Молния: ${p.zipper ? 'да' : 'нет'}` : ''}</div>
+                <div class="c-meta">${esc(GARMENT_RU[p.garment] || p.garment)} · ${esc(COLOR_RU[p.color] || p.color)}<br>${esc(COMPOSITION_LABELS[p.composition] || p.composition || '—')} · ${esc(p.density || '—')} g/m²<br>${esc(POS_RU[p.position] || p.position)} · ${esc((p.sizes || []).join(' '))}${hoodieLine}</div>
                 <div class="c-price">${eur(p.price)}</div>
                 <div class="c-stat">выбрано ${c.pick} · заказано ${c.order}</div>
                 <div class="c-btns">
