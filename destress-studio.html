@@ -659,7 +659,7 @@ a:focus-visible {
          alt="Чарли — хозяин De-Stress Studio">
     <div>
       <h2 class="charlie-name">Чарли</h2>
-      <div class="charlie-caption">Твой антистресс-бармен</div>
+      <div class="charlie-caption">Мастер-бармен</div>
     </div>
   </div>
 
@@ -672,17 +672,16 @@ a:focus-visible {
 <main>
 <section class="intro">
   <div>
-    <p class="eyebrow">GY-GY Club · зона перезагрузки</p>
+    <p class="eyebrow">GY-GY Club · зона перезагрузки и трансформации</p>
     <h1 class="page-title">De-Stress Studio</h1>
   </div>
 
   <div class="intro-copy">
     <p>
-      Расскажи, что случилось. Чарли выслушает, добавит
-      щепотку иронии и попробует превратить твою ситуацию в историю.
+      Рассказывай что стряслось, буквально  двумя словами
     </p>
     <p class="charlie-line">
-      «Не всё нужно решать сегодня. Иногда достаточно сменить угол зрения».
+      «Не всё нужно решать сегодня. Иногда достаточно отложить до завтра и все решиться само собой».
     </p>
   </div>
 </section>
@@ -693,7 +692,7 @@ a:focus-visible {
     <div>
       <h2 class="section-title" id="situationTitle">Что случилось?</h2>
       <p class="section-subtitle">
-        Выбери ситуацию — Чарли приготовит словесный антистресс.
+        Выбери ситуацию 
       </p>
     </div>
   </div>
@@ -738,13 +737,13 @@ a:focus-visible {
     <button class="choice-button" type="button"
             data-situation="6" aria-pressed="false">
       <span class="choice-symbol">💻</span>
-      <span class="choice-label">Завис комп перед сохранением</span>
+      <span class="choice-label"> Не помню, как туда попал</span>
     </button>
 
     <button class="choice-button" type="button"
             data-situation="7" aria-pressed="false">
       <span class="choice-symbol">⏰</span>
-      <span class="choice-label">Проспал будильник на час</span>
+      <span class="choice-label">Женился</span>
     </button>
   </div>
 
@@ -754,13 +753,13 @@ a:focus-visible {
            placeholder="Твоя ситуация в двух словах"
            aria-label="Что? Где? Когда?">
     <button class="gold-button" type="submit">
-      Рассказать Чарли →
+      Выпей немного воды и рассказывай →
     </button>
   </form>
 
   <p class="section-note" id="selectionNote" role="status"
      aria-live="polite">
-    Выбери ситуацию или напиши свою.
+    Выбери похожее или напиши свое.
   </p>
 </section>
 
@@ -839,11 +838,11 @@ a:focus-visible {
     <h2 class="atelier-title" id="atelierTitle">Забирай</h2>
     <p class="atelier-description">
       Хочешь перенеси  на футболку себе или другу.
-      Если выражение зашло — отнеси его в Ателье.
+      Если выражение зашло — передавай в Ателье.
     </p>
   </div>
   <button class="gold-button" id="goToAtelier" type="button">
-    Отнести в Ателье →
+    Передать в Ателье →
   </button>
 </section>
 </main>
@@ -865,8 +864,8 @@ const complaintsDatabase = [
   {text:"🍺 Опрокинул бокал с пивом", icon:"🍺"},
   {text:"🏴‍☠️ Забыл где заначка", icon:"🏴‍☠️"},
   {text:"💸 По пьяне дал в займы", icon:"💸"},
-  {text:"💻 Завис комп перед сохранением", icon:"💻"},
-  {text:"⏰ Проспал будильник на час", icon:"⏰"}
+  {text:"💻 Подарили попугая", icon:"💻"},
+  {text:"⏰ Женился", icon:"⏰"}
 ];
 
 const recipesDatabase = [
@@ -878,6 +877,7 @@ const recipesDatabase = [
   "Застакань свои тапочки!",
   "Распадись компот в баян!",
   "Завались забор в предмете!"
+  "Трамбуй педаль в резинку!"
 ];
 
 const state = {
