@@ -12,7 +12,8 @@ export const TRACKS = { bar: 'bar_ambient.mp3' };
 export const SFX = { door: 'door_open.mp3' };
 
 export const SOUND_SCENARIO = {
-    'index.html':        { ambient: 'manual' },
+       'index.html':        { ambient: 'manual' },
+    'entrance.html':     { ambient: 'manual' },
     'identity.html':     { ambient: 'continue', volume: 0.5 },
     'hall.html':         { ambient: 'continue', volume: 0.5 },
     'bar.html':          { ambient: 'continue', volume: 0.55 },
