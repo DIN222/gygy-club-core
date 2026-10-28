@@ -1,11 +1,12 @@
 // modules/soundscape.js
-// v1.0.0 — 2026-10-25
-// Звуковой блок: фон идёт сквозь страницы по сценарию (core/soundScenario.js),
-// кнопка 🔊/🔇, разовые звуки playSfx(). Состояние — в sessionStorage, «без звука» — в localStorage.
-//   apply()         — вызывается сам при загрузке клиентской страницы (из core/localization.js)
-//   startAmbient()  — включить фон (клик по двери на первой странице)
-//   stopAmbient()   — выключить фон
-//   playSfx('door') — разовый звук из SFX
+// v2.0.0 — 2026-10-27
+// Звуковой блок клуба.
+//  • «В оболочке» (страница открыта внутри index.html): звук играет в оболочке и не прерывается
+//    при переходах; сценарий применяет оболочка (applyForPage), страницы просят
+//    startAmbient / resetAmbient / playSfx.
+//  • «Сама по себе» (ссылка из Telegram и т.п.): фон продолжается с сохранённой позиции;
+//    браузер может потребовать касания.
+// Кнопка 🔊/🔇 появляется, когда фон включён. Таблица сценария — core/soundScenario.js.
 
 import { SOUND_SCENARIO, DEFAULT_SCENE, TRACKS, SFX } from '../core/soundScenario.js';
 
@@ -20,8 +21,14 @@ let saveTimer = null;
 let fadeTimer = null;
 let targetVolume = 0.5;
 
-const pageName = () => (location.pathname.split('/').pop() || 'index.html');
-const scene = () => SOUND_SCENARIO[pageName()] || DEFAULT_SCENE;
+function hostApi() {
+    try {
+        if (window.top !== window.self && window.top.GY_SOUND) return window.top.GY_SOUND;
+    } catch (e) { /* чужой источник */ }
+    return null;
+}
+const pageNameOf = (path) => (String(path || '').split('/').pop() || 'index.html').split('?')[0];
+const sceneFor = (name) => SOUND_SCENARIO[name] || DEFAULT_SCENE;
 
 function isMuted() { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { return false; } }
 function setMuted(v) { try { localStorage.setItem(MUTE_KEY, v ? '1' : '0'); } catch (e) { /* ок */ } }
@@ -29,12 +36,13 @@ function setMuted(v) { try { localStorage.setItem(MUTE_KEY, v ? '1' : '0'); } ca
 function readState() {
     try { return JSON.parse(sessionStorage.getItem(STATE_KEY) || 'null'); } catch (e) { return null; }
 }
+function writeState(on, t) {
+    try { sessionStorage.setItem(STATE_KEY, JSON.stringify({ on, t, at: Date.now() })); } catch (e) { /* ок */ }
+}
 function persist(force = false) {
     if (!audio) return;
     if (audio.paused && !force) return;   // не затираем позицию, если звук не играл
-    try {
-        sessionStorage.setItem(STATE_KEY, JSON.stringify({ on: wantOn, t: audio.currentTime, at: Date.now() }));
-    } catch (e) { /* ок */ }
+    writeState(wantOn, audio.currentTime);
 }
 
 function ensureAudio() {
@@ -73,6 +81,18 @@ function fadeIn() {
     }, 50);
 }
 
+function startSaveTimer() {
+    clearInterval(saveTimer);
+    saveTimer = setInterval(() => persist(), 1000);
+}
+
+// Запустить, если ждём звук, но браузер ещё не разрешил (вызывает оболочка по касанию)
+export function kick() {
+    if (!audio || !wantOn || isMuted() || !audio.paused) return;
+    fadeIn();
+    audio.play().catch(() => {});
+}
+
 function tryPlay() {
     if (isMuted()) return;
     fadeIn();
@@ -81,15 +101,20 @@ function tryPlay() {
         p.catch(() => {
             // автозапуск заблокирован — продолжим по первому касанию страницы
             let fired = false;
-            const kick = () => {
+            const again = () => {
                 if (fired) return;
                 fired = true;
-                ['click', 'touchstart', 'keydown'].forEach(ev => window.removeEventListener(ev, kick));
-                if (!isMuted()) { fadeIn(); audio.play().catch(() => {}); }
+                ['click', 'touchstart', 'keydown'].forEach(ev => window.removeEventListener(ev, again));
+                kick();
             };
-            ['click', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, kick));
+            ['click', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, again));
         });
     }
+}
+
+function removeMuteButton() {
+    const b = document.getElementById('gy-mute-btn');
+    if (b) b.remove();
 }
 
 function showMuteButton() {
@@ -115,7 +140,18 @@ function showMuteButton() {
 function begin(volume, jumpTo) {
     wantOn = true;
     targetVolume = volume ?? 0.5;
+    const fresh = !audio;
     ensureAudio();
+
+    // уже играет (оболочка): только громкость
+    if (!fresh && !audio.paused) {
+        clearInterval(fadeTimer);
+        audio.volume = isMuted() ? 0 : targetVolume;
+        showMuteButton();
+        startSaveTimer();
+        return;
+    }
+
     let forced = false;
     if (jumpTo != null) {
         let done = false;
@@ -128,38 +164,40 @@ function begin(volume, jumpTo) {
             else audio.addEventListener('loadedmetadata', apply, { once: true });
         }
     }
-    if (!forced) seekToSaved();
+    if (!forced && fresh) seekToSaved();
     tryPlay();
-    clearInterval(saveTimer);
-    saveTimer = setInterval(() => persist(), 1000);
+    startSaveTimer();
     showMuteButton();
 }
 
-export function startAmbient({ volume = 0.5 } = {}) {
+function realStart({ volume = 0.5 } = {}) {
     try { sessionStorage.removeItem(JUMP_KEY); } catch (e) { /* ок */ }
-    if (audio && !audio.paused) { showMuteButton(); return; }
+    if (audio && !audio.paused) { targetVolume = volume; showMuteButton(); return; }
     begin(volume, null);
     persist(true);
 }
 
-export function stopAmbient() {
+function realStop() {
     wantOn = false;
     if (audio) audio.pause();
     clearInterval(saveTimer);
     persist(true);
 }
-// Вернулись к дверям: звук выключается полностью, состояние прогулки сбрасывается
-export function resetAmbient() {
+
+// Вернулись к дверям: звук выключается полностью, прогулка начнётся заново
+function realReset() {
     wantOn = false;
-    if (audio) { audio.pause(); audio.currentTime = 0; }
     clearInterval(saveTimer);
     clearInterval(fadeTimer);
+    if (audio) {
+        audio.pause();
+        try { audio.currentTime = 0; } catch (e) { /* ок */ }
+    }
     try { sessionStorage.removeItem(STATE_KEY); sessionStorage.removeItem(JUMP_KEY); } catch (e) { /* ок */ }
-    const btn = document.getElementById('gy-mute-btn');
-    if (btn) btn.remove();
+    removeMuteButton();
 }
 
-export function playSfx(name) {
+function realSfx(name) {
     if (isMuted()) return;
     const file = SFX[name];
     if (!file) return;
@@ -168,19 +206,49 @@ export function playSfx(name) {
     a.play().catch(() => {});
 }
 
-export function apply() {
-    const s = scene();
+// Применить сценарий для страницы с этим именем (в оболочке — при каждой загрузке вложенного окна)
+function applyForPage(name) {
+    const s = sceneFor(name);
     const st = readState();
-
-    // Добавили недостающий if (например, проверка, что ambient равен 'on', либо проверьте своё исходное условие)
-    if (s.ambient === 'on') {
-        // ... ваш код для 'on' (если он там был)
-    } else if (s.ambient === 'off' && st && st.on) {
-        // «пауза»: время вне барной зоны не считается
-        try { 
-            sessionStorage.setItem(STATE_KEY, JSON.stringify({ on: true, t: st.t, at: Date.now() })); 
-        } catch (e) { /* ок */ }
-    } else if (s.ambient === 'manual' && st && st.on) {
-        resetAmbient();   // пришли к дверям: звук выключен, новая прогулка начнётся с нуля
+    const active = wantOn || !!(st && st.on);
+    if (s.ambient === 'continue') {
+        if (active) begin(s.volume, s.jumpTo ?? null);
+    } else if (s.ambient === 'off') {
+        if (audio && !audio.paused) { audio.pause(); persist(true); }
+        else if (st && st.on) writeState(true, st.t);      // пауза: время вне зоны не считается
+    } else if (s.ambient === 'manual') {
+        if (active) realReset();                            // пришли к дверям
     }
+}
+
+export function startAmbient(opts) {
+    const h = hostApi();
+    if (h) { h.start(opts); return; }
+    realStart(opts);
+}
+export function stopAmbient() {
+    const h = hostApi();
+    if (h) { h.stop(); return; }
+    realStop();
+}
+export function resetAmbient() {
+    const h = hostApi();
+    if (h) { h.reset(); return; }
+    realReset();
+}
+export function playSfx(name) {
+    const h = hostApi();
+    if (h) { h.sfx(name); return; }
+    realSfx(name);
+}
+
+// Страница сама по себе: сценарий применяет она; в оболочке это делает оболочка
+export function apply() {
+    if (hostApi()) return;
+    applyForPage(pageNameOf(location.pathname));
+}
+
+// Оболочка (index.html) регистрирует себя как носитель звука
+export function registerHost() {
+    window.GY_SOUND = { start: realStart, stop: realStop, reset: realReset, sfx: realSfx, applyForPage, kick };
 }
