@@ -5,12 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GY-GY CLUB v7.1 — LUNAR BASE CONTROL CENTER</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background-color: #05070a;
       color: #e0f0ff;
@@ -21,8 +16,6 @@
       align-items: center;
       overflow-x: hidden;
     }
-
-    /* Верхняя панель (Header) */
     header {
       width: 100%;
       max-width: 1200px;
@@ -35,13 +28,7 @@
       box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
       z-index: 100;
     }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
+    .header-left { display: flex; align-items: center; gap: 15px; }
     .logo-gygy {
       font-size: 1.8em;
       font-weight: bold;
@@ -50,7 +37,6 @@
       text-shadow: 0 0 10px #00ffcc;
       text-decoration: none;
     }
-
     .btn-back {
       background: transparent;
       border: 1px solid #00ffcc;
@@ -62,13 +48,7 @@
       border-radius: 4px;
       transition: all 0.2s;
     }
-
-    .btn-back:hover {
-      background: #00ffcc;
-      color: #000;
-      box-shadow: 0 0 10px #00ffcc;
-    }
-
+    .btn-back:hover { background: #00ffcc; color: #000; box-shadow: 0 0 10px #00ffcc; }
     .header-right select {
       background: #0a0f19;
       color: #00ffcc;
@@ -78,8 +58,6 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
-    /* Контейнер пульта */
     main {
       width: 100%;
       max-width: 1200px;
@@ -90,7 +68,6 @@
       flex-direction: column;
       align-items: center;
     }
-
     .console-container {
       position: relative;
       width: 100%;
@@ -99,14 +76,9 @@
       overflow: hidden;
       box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     }
-
-    .console-image {
-      width: 100%;
-      display: block;
-      height: auto;
-    }
-
-    /* Интерактивные неоновые кнопки на пульте */
+    .console-image { width: 100%; display: block; height: auto; }
+    
+    /* Неоновые кликовые зоны на картинке */
     .hotspot-btn {
       position: absolute;
       transform: translate(-50%, -50%);
@@ -118,48 +90,23 @@
       transition: all 0.15s ease-in-out;
       outline: none;
     }
+    .hotspot-btn:hover { background: rgba(0, 255, 204, 0.35); scale: 1.05; }
+    .hotspot-btn:active { scale: 0.95; }
 
-    .hotspot-btn:hover {
-      background: rgba(0, 255, 204, 0.35);
-      box-shadow: 0 0 25px #00ffcc, inset 0 0 15px #00ffcc;
-      scale: 1.05;
-    }
-
-    .hotspot-btn:active {
-      scale: 0.95;
-    }
-
-    /* Кнопка AUTO PLANT */
-    #btn-auto-plant {
-      top: 50.5%;
-      left: 23.2%;
-      width: 5.5%;
-      height: 9.8%;
-    }
-
-    /* Кнопка LAUNCH PAD */
+    #btn-auto-plant { top: 50.5%; left: 23.2%; width: 5.5%; height: 9.8%; }
     #btn-launch-pad {
-      top: 50.5%;
-      left: 29.8%;
-      width: 5.5%;
-      height: 9.8%;
+      top: 50.5%; left: 29.8%; width: 5.5%; height: 9.8%;
       border-color: #ff6600;
       box-shadow: 0 0 15px #ff6600, inset 0 0 10px #ff6600;
     }
-
-    #btn-launch-pad:hover {
-      background: rgba(255, 102, 0, 0.35);
-      box-shadow: 0 0 25px #ff6600, inset 0 0 15px #ff6600;
-    }
+    #btn-launch-pad:hover { background: rgba(255, 102, 0, 0.35); }
 
     /* Модальные окна */
     .cc-modal {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(3, 6, 10, 0.92);
       backdrop-filter: blur(4px);
       z-index: 999;
@@ -167,7 +114,6 @@
       align-items: center;
       padding: 15px;
     }
-
     .modal-content {
       background: #080d14;
       border: 2px solid #00ffcc;
@@ -181,7 +127,6 @@
       display: flex;
       flex-direction: column;
     }
-
     .modal-header {
       border-bottom: 1px solid #00ffcc;
       padding-bottom: 10px;
@@ -190,7 +135,6 @@
       justify-content: space-between;
       align-items: center;
     }
-
     .close-btn {
       background: transparent;
       border: 1px solid #ff4444;
@@ -200,13 +144,8 @@
       font-family: inherit;
       border-radius: 4px;
     }
-
-    .close-btn:hover {
-      background: #ff4444;
-      color: #000;
-    }
-
-    /* Элементы форума */
+    .close-btn:hover { background: #ff4444; color: #000; }
+    
     .proposal-input-block {
       background: rgba(0, 255, 204, 0.05);
       border: 1px dashed #00ffcc;
@@ -214,7 +153,6 @@
       margin-bottom: 15px;
       border-radius: 6px;
     }
-
     .proposal-input-block input {
       width: 70%;
       background: #000;
@@ -224,77 +162,23 @@
       font-family: inherit;
       border-radius: 4px;
     }
-
     .proposal-input-block button {
-      background: #00ffcc;
-      color: #000;
-      border: none;
-      font-weight: bold;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-family: inherit;
-      border-radius: 4px;
-      margin-left: 8px;
+      background: #00ffcc; color: #000; border: none; font-weight: bold;
+      padding: 8px 16px; cursor: pointer; font-family: inherit; border-radius: 4px; margin-left: 8px;
     }
-
     .proposals-list {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding-right: 5px;
+      flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;
     }
-
     .proposal-card {
-      background: #04090e;
-      border: 1px solid #00a887;
-      padding: 12px;
-      border-radius: 6px;
+      background: #04090e; border: 1px solid #00a887; padding: 12px; border-radius: 6px;
     }
-
-    .vote-btn-up {
-      background: #00ffcc;
-      color: #000;
-      border: none;
-      padding: 3px 10px;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 3px;
-    }
-
-    .vote-btn-down {
-      background: transparent;
-      color: #ff4444;
-      border: 1px solid #ff4444;
-      padding: 2px 8px;
-      cursor: pointer;
-      border-radius: 3px;
-      margin-left: 5px;
-    }
-
-    /* Стартовый комплекс стили */
-    .launch-card {
-      border-color: #ff6600 !important;
-      box-shadow: 0 0 35px rgba(255, 102, 0, 0.3) !important;
-      color: #ff9933 !important;
-    }
-
-    .tshirt-print {
-      border: 3px dashed #00ffcc;
-      padding: 35px;
-      background: #020406;
-      color: #fff;
-      margin: 20px 0;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
-    }
+    .vote-btn-up { background: #00ffcc; color: #000; border: none; padding: 3px 10px; cursor: pointer; font-weight: bold; border-radius: 3px; }
+    .vote-btn-down { background: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 2px 8px; cursor: pointer; border-radius: 3px; margin-left: 5px; }
   </style>
 </head>
 <body>
 
-  <!-- Шапка страницы -->
+  <!-- Шапка -->
   <header>
     <div class="header-left">
       <a href="#" class="logo-gygy">GY-GY</a>
@@ -318,40 +202,35 @@
     </div>
   </header>
 
-  <!-- Основной пульт управления -->
+  <!-- Консоль -->
   <main>
     <div class="console-container">
-      <img src="control_center_console.jpg" alt="GY-GY STABLE STAR Control Center Console" class="console-image">
-
-      <!-- Интерактивная кнопка AUTO PLANT -->
-      <button id="btn-auto-plant" class="hotspot-btn" title="AUTO PLANT / Завод-автомат" onclick="openModal('modal-auto-plant')"></button>
-
-      <!-- Интерактивная кнопка LAUNCH PAD -->
-      <button id="btn-launch-pad" class="hotspot-btn" title="LAUNCH PAD / Стартовый комплекс" onclick="openModal('modal-launch-pad')"></button>
+      <img src="control_center_console.jpg" alt="Control Center Console" class="console-image">
+      <button id="btn-auto-plant" class="hotspot-btn" title="AUTO PLANT" onclick="openModal('modal-auto-plant')"></button>
+      <button id="btn-launch-pad" class="hotspot-btn" title="LAUNCH PAD" onclick="openModal('modal-launch-pad')"></button>
     </div>
   </main>
 
-  <!-- МОДАЛЬНОЕ ОКНО 1: AUTO PLANT (Форум и голосование) -->
+  <!-- Модалка 1: Завод-автомат (Форум) -->
   <div id="modal-auto-plant" class="cc-modal">
     <div class="modal-content">
       <div class="modal-header">
         <div>
           <h2 style="margin:0; text-shadow: 0 0 8px #00ffcc; font-size: 1.3em;">⚙️ AUTO PLANT • FORUM & DECISION CENTER</h2>
-          <span style="font-size: 0.8em; color: #a0f0ed;">Модуль коллективного формирования спецификации Лунной базы</span>
+          <span style="font-size: 0.8em; color: #a0f0ed;">Коллективное формирование спецификации Лунной базы</span>
         </div>
         <button class="close-btn" onclick="closeModal('modal-auto-plant')">✕</button>
       </div>
 
       <div class="proposal-input-block">
-        <div style="font-weight: bold; margin-bottom: 8px; font-size: 0.85em;">➕ ВНЕСТИ НОВОЕ ПРЕДЛОЖЕНИЕ В ПРОТОКОЛ:</div>
+        <div style="font-weight: bold; margin-bottom: 8px; font-size: 0.85em;">➕ ВНЕСТИ НОВОЕ ПРЕДЛОЖЕНИЕ:</div>
         <div style="display: flex;">
-          <input type="text" id="new-proposal-input" placeholder="Например: Автономный генератор лунной кофе-гущи...">
+          <input type="text" id="new-proposal-input" placeholder="Например: Автономный генератор лунного кофе...">
           <button onclick="submitProposal()">ПОДАТЬ</button>
         </div>
       </div>
 
       <div id="proposals-list" class="proposals-list">
-        <!-- 10 Базовых элементов -->
         <div class="proposal-card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong>1. Ракета-носитель тяжелого класса</strong>
@@ -360,13 +239,9 @@
           <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Транспортный корабль высокой грузоподъемности.</p>
           <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
             <span>Рейтинг: <strong id="score-1" style="color:#00ffcc;">+54</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(1, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(1, -1)">▼ -1</button>
-            </div>
+            <div><button class="vote-btn-up" onclick="vote(1, 1)">▲ +1</button><button class="vote-btn-down" onclick="vote(1, -1)">▼ -1</button></div>
           </div>
         </div>
-
         <div class="proposal-card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong>2. Модуль управления Лунной базой с энергоблоком</strong>
@@ -375,178 +250,51 @@
           <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Центральный штаб с закрытым контуром питания.</p>
           <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
             <span>Рейтинг: <strong id="score-2" style="color:#00ffcc;">+48</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(2, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(2, -1)">▼ -1</button>
-            </div>
+            <div><button class="vote-btn-up" onclick="vote(2, 1)">▲ +1</button><button class="vote-btn-down" onclick="vote(2, -1)">▼ -1</button></div>
           </div>
         </div>
-
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>3. Солнечная электростанция</strong>
-            <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">ГОЛОСОВАНИЕ</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Панели с системой самоочистки от реголита.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-3" style="color:#00ffcc;">+31</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(3, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(3, -1)">▼ -1</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>4. Переговорный модуль с инопланетянами</strong>
-            <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">ГОЛОСОВАНИЕ</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Дипломатический бар с юмористическим синхронным переводчиком.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-4" style="color:#00ffcc;">+42</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(4, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(4, -1)">▼ -1</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>5. Робот по добыче полезных ископаемых (GY-GY-CUI)</strong>
-            <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">ГОЛОСОВАНИЕ</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Автономный дробитель пород с повышенным чувством юмора.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-5" style="color:#00ffcc;">+27</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(5, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(5, -1)">▼ -1</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>6. Мини-завод-автомат по переработке руды</strong>
-            <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">ГОЛОСОВАНИЕ</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Извлечение редких металлов из лунного грунта.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-6" style="color:#00ffcc;">+19</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(6, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(6, -1)">▼ -1</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>7. Мини-завод-автомат производства техники и устройств</strong>
-            <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">ГОЛОСОВАНИЕ</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">3D-печать запчастей и манипуляторов прямо на месте.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-7" style="color:#00ffcc;">+22</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(7, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(7, -1)">▼ -1</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>8. Защитный купол от микрометеоритов</strong>
-            <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">ГОЛОСОВАНИЕ</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Силовое поле для защиты основного корпуса базы.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-8" style="color:#00ffcc;">+15</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(8, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(8, -1)">▼ -1</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>9. Станция регенерации кислорода и воды</strong>
-            <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">ГОЛОСОВАНИЕ</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Замкнутая биосферная система обеспечения жизни.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-9" style="color:#00ffcc;">+28</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(9, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(9, -1)">▼ -1</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>10. Атмосферный барный модуль «Копыто и Чашка»</strong>
-            <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">ГОЛОСОВАНИЕ</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Зона отдыха экипажа с легкими напитками и хорошими шутками.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-10" style="color:#00ffcc;">+39</strong></span>
-            <div>
-              <button class="vote-btn-up" onclick="vote(10, 1)">▲ +1</button>
-              <button class="vote-btn-down" onclick="vote(10, -1)">▼ -1</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top: 15px; border-top: 1px solid #00ffcc; padding-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8em;">
-        <span>🟢 Доступ открыт для резидентов Клуба</span>
-        <button onclick="alert('Протокол готов к отправке в стартовый комплекс!')" style="background: transparent; border: 1px solid #00ffcc; color: #00ffcc; padding: 6px 12px; cursor: pointer; border-radius: 4px;">📋 Утвердить протокол</button>
+        <!-- (Остальные модули можно добавить по аналогии) -->
       </div>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО 2: LAUNCH PAD (Стартовый комплекс) -->
+  <!-- Модалка 2: Стартовый комплекс (Регламент + Пуск) -->
   <div id="modal-launch-pad" class="cc-modal">
-    <div class="modal-content launch-card">
+    <div class="modal-content" style="border-color: #ff6600; color: #ff9933;">
       <div class="modal-header" style="border-color: #ff6600;">
-        <h2 style="margin:0; text-shadow: 0 0 8px #ff6600; font-size: 1.3em;">🚀 LAUNCH PAD • СТАРТОВЫЙ КОМПЛЕКС</h2>
+        <h2 style="margin:0; text-shadow: 0 0 8px #ff6600; font-size: 1.3em;">🚀 LAUNCH PAD • РЕГЛАМЕНТ ПЕРЕД ПУСКОМ</h2>
         <button class="close-btn" onclick="closeModal('modal-launch-pad')">✕</button>
       </div>
 
-      <!-- Шаг 1: Чек-лист подготовки -->
       <div id="launch-step-prep">
-        <p style="margin-bottom: 15px;">Проверка систем предстартовой подготовки ракеты-носителя:</p>
-        <div style="background: #000; border: 1px solid #ff6600; padding: 15px; text-align: left; margin-bottom: 20px; font-size: 0.9em; border-radius: 6px;">
-          <p>✔ Проверка баков высокого давления: <span style="color:#00ffcc;">[ OK ]</span></p>
-          <p>✔ Загрузка спецификации Завода-Автомата: <span style="color:#00ffcc;">[ СФОРМИРОВАНО ]</span></p>
-          <p>✔ Полетное задание GY-GY STABLE STAR: <span style="color:#00ffcc;">[ ВВЕДЕНО ]</span></p>
-          <p>✔ Авторизация операторов ЦУ: <span style="color:#00ffcc;">[ ПОДТВЕРЖДЕНО ]</span></p>
+        <div style="background: #000; border: 1px solid #ff6600; padding: 15px; margin-bottom: 20px; font-size: 0.9em; border-radius: 6px;">
+          <p style="color: #ff9933; font-weight: bold; margin-bottom: 10px;">📋 ВЫПОЛНИТЕ РЕГЛАМЕНТНЫЕ РАБОТЫ:</p>
+          <label style="display: block; margin: 8px 0; cursor: pointer;"><input type="checkbox" class="launch-check" onchange="checkLaunchReady()"> 1. Проверка давления в топливных баках</label>
+          <label style="display: block; margin: 8px 0; cursor: pointer;"><input type="checkbox" class="launch-check" onchange="checkLaunchReady()"> 2. Синхронизация модулей Завода-Автомата</label>
+          <label style="display: block; margin: 8px 0; cursor: pointer;"><input type="checkbox" class="launch-check" onchange="checkLaunchReady()"> 3. Проверка траектории полета GY-GY STABLE STAR</label>
+          <label style="display: block; margin: 8px 0; cursor: pointer;"><input type="checkbox" class="launch-check" onchange="checkLaunchReady()"> 4. Подтверждение готовности экипажа ЦУ</label>
         </div>
-        <button onclick="startLaunchSequence()" style="background: #ff6600; border: none; color: #000; font-weight: bold; font-size: 1.2em; padding: 12px 30px; cursor: pointer; box-shadow: 0 0 15px #ff6600; border-radius: 6px; font-family: inherit;">
-          ПУСК / LAUNCH
+
+        <button id="btn-start-launch" onclick="playLaunchAnimation()" disabled style="background: #555; border: none; color: #888; font-weight: bold; font-size: 1.2em; padding: 12px 30px; cursor: not-allowed; border-radius: 6px; width: 100%;">
+          ВЫПОЛНИТЕ РЕГЛАМЕНТ ДЛЯ АКТИВАЦИИ ПУСКА
         </button>
       </div>
 
-      <!-- Шаг 2: Обратный отсчет (3 сек) -->
+      <!-- Ролик / Таймер -->
       <div id="launch-step-timer" style="display: none; text-align: center; padding: 30px 0;">
         <div id="timer-display" style="font-size: 5em; font-weight: bold; color: #ff6600; text-shadow: 0 0 20px #ff6600;">3</div>
-        <p style="letter-spacing: 3px; color: #fff; margin-top: 10px;">ЗАПУСК ДВИГАТЕЛЕЙ...</p>
+        <p style="letter-spacing: 3px; color: #fff; margin-top: 10px;">ЗАПУСК ДВИГАТЕЛЕЙ И РОКОТ...</p>
       </div>
 
-      <!-- Шаг 3: Финальный принт-постер -->
+      <!-- Финальный принт -->
       <div id="launch-step-print" style="display: none; text-align: center;">
-        <div class="tshirt-print">
+        <div style="border: 3px dashed #00ffcc; padding: 35px; background: #020406; color: #fff; margin: 20px 0; border-radius: 10px;">
           <h1 style="font-size: 2.2em; letter-spacing: 3px; color: #00ffcc; text-transform: uppercase; margin: 0; text-shadow: 0 0 10px #00ffcc;">
             SEE YOU AT THE LUNAR BASE!
           </h1>
           <p style="color: #aaa; margin-top: 12px; font-size: 0.9em;">GY-GY STABLE STAR MISSION • 2026</p>
         </div>
-        <button onclick="resetLaunchProcess()" style="background: transparent; border: 1px solid #00ffcc; color: #00ffcc; padding: 8px 20px; cursor: pointer; border-radius: 4px; font-family: inherit;">
+        <button onclick="closeModal('modal-launch-pad'); resetLaunchProcess();" style="background: transparent; border: 1px solid #00ffcc; color: #00ffcc; padding: 8px 20px; cursor: pointer; border-radius: 4px;">
           ВЕРНУТЬСЯ В ЦЕНТР УПРАВЛЕНИЯ
         </button>
       </div>
@@ -555,36 +303,28 @@
   </div>
 
   <script>
-    let currentProposalsCount = 10;
+    let currentProposalsCount = 2;
 
-    function openModal(modalId) {
-      document.getElementById(modalId).style.display = 'flex';
-    }
-
-    function closeModal(modalId) {
-      document.getElementById(modalId).style.display = 'none';
-      if (modalId === 'modal-launch-pad') {
-        resetLaunchProcess();
-      }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { 
+      document.getElementById(id).style.display = 'none'; 
+      if(id === 'modal-launch-pad') resetLaunchProcess();
     }
 
     function vote(id, delta) {
-      const scoreElem = document.getElementById(`score-${id}`);
-      if (scoreElem) {
-        let currentScore = parseInt(scoreElem.innerText.replace('+', ''));
-        currentScore += delta;
-        scoreElem.innerText = (currentScore >= 0 ? '+' : '') + currentScore;
+      const el = document.getElementById(`score-${id}`);
+      if(el) {
+        let val = parseInt(el.innerText.replace('+', '')) + delta;
+        el.innerText = (val >= 0 ? '+' : '') + val;
       }
     }
 
     function submitProposal() {
       const input = document.getElementById('new-proposal-input');
       const text = input.value.trim();
-      if (!text) return;
-
+      if(!text) return;
       currentProposalsCount++;
       const list = document.getElementById('proposals-list');
-
       const card = document.createElement('div');
       card.className = 'proposal-card';
       card.innerHTML = `
@@ -592,45 +332,85 @@
           <strong>${currentProposalsCount}. ${text}</strong>
           <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">НОВОЕ</span>
         </div>
-        <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Предложено оператором ЦУ GY-GY STABLE STAR.</p>
+        <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Предложено оператором ЦУ.</p>
         <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
           <span>Рейтинг: <strong id="score-${currentProposalsCount}" style="color:#00ffcc;">+1</strong></span>
-          <div>
-            <button class="vote-btn-up" onclick="vote(${currentProposalsCount}, 1)">▲ +1</button>
-            <button class="vote-btn-down" onclick="vote(${currentProposalsCount}, -1)">▼ -1</button>
-          </div>
+          <div><button class="vote-btn-up" onclick="vote(${currentProposalsCount}, 1)">▲ +1</button><button class="vote-btn-down" onclick="vote(${currentProposalsCount}, -1)">▼ -1</button></div>
         </div>
       `;
-      
       list.appendChild(card);
       input.value = '';
-      list.scrollTop = list.scrollHeight;
     }
 
-    function startLaunchSequence() {
+    function checkLaunchReady() {
+      const checks = document.querySelectorAll('.launch-check');
+      const allChecked = Array.from(checks).every(c => c.checked);
+      const btn = document.getElementById('btn-start-launch');
+      if (allChecked) {
+        btn.disabled = false;
+        btn.style.background = '#ff6600';
+        btn.style.color = '#000';
+        btn.style.cursor = 'pointer';
+        btn.style.boxShadow = '0 0 20px #ff6600';
+        btn.innerText = '🚀 ПУСК / LAUNCH';
+      } else {
+        btn.disabled = true;
+        btn.style.background = '#555';
+        btn.style.color = '#888';
+        btn.style.cursor = 'not-allowed';
+        btn.style.boxShadow = 'none';
+        btn.innerText = 'ВЫПОЛНИТЕ РЕГЛАМЕНТ ДЛЯ АКТИВАЦИИ ПУСКА';
+      }
+    }
+
+    function playLaunchAnimation() {
       document.getElementById('launch-step-prep').style.display = 'none';
       document.getElementById('launch-step-timer').style.display = 'block';
 
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bufferSize = audioCtx.sampleRate * 3;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(80, audioCtx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 3);
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.9, audioCtx.currentTime + 2.5);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 3);
+        noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+        noise.start();
+      } catch(e) {}
+
       let count = 3;
       const timerElem = document.getElementById('timer-display');
-
       const interval = setInterval(() => {
         count--;
         if (count > 0) {
           timerElem.innerText = count;
         } else {
           clearInterval(interval);
-          document.getElementById('launch-step-timer').style.display = 'none';
-          document.getElementById('launch-step-print').style.display = 'block';
+          timerElem.innerHTML = "<span style='color:#00ffcc;'>LIFTOFF! 🚀</span>";
+          setTimeout(() => {
+            document.getElementById('launch-step-timer').style.display = 'none';
+            document.getElementById('launch-step-print').style.display = 'block';
+          }, 1000);
         }
       }, 1000);
     }
 
     function resetLaunchProcess() {
+      document.querySelectorAll('.launch-check').forEach(c => c.checked = false);
       document.getElementById('launch-step-prep').style.display = 'block';
       document.getElementById('launch-step-timer').style.display = 'none';
       document.getElementById('launch-step-print').style.display = 'none';
       document.getElementById('timer-display').innerText = '3';
+      checkLaunchReady();
     }
   </script>
 </body>
