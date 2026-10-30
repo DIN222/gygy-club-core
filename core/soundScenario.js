@@ -28,7 +28,10 @@ export const SOUND_SCENARIO = {
     'store.html':            { ambient: 'off' },
     'souvenirs.html':        { ambient: 'off' },
     'hall-of-fame.html':     { ambient: 'off' },
-    'verses.html':           { ambient: 'off', ambientFadeSec: 3,
+    'verses.html':           { ambient: 'off' },   
+    'space-construction.html': { ambient: 'off', ambientFadeSec: 3 },
+    'lunar-base.html':         { ambient: 'off', ambientFadeSec: 3 },
+    'space-admin.html':        { ambient: 'off' }, ambientFadeSec: 3,
                                track: { file: 'sbridge_ambient.mp3', volume: 0.4, fadeInSec: 2, fadeOutSec: 4 } }
 };
 
