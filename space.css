@@ -1,1 +1,102 @@
+/* space.css — v1.0.0 — 2026-10-30
+   Общий стиль космических страниц: space-construction.html, lunar-base.html */
+:root { --o: #ff7700; --og: rgba(255,119,0,.55); --gold: #d4af37; --ivory: #F0EAD6; --panel: rgba(8,9,16,.88); --line: rgba(212,175,55,.35); }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; min-height: 100%; background: #000; color: var(--ivory); font-family: 'Share Tech Mono', monospace; }
+body { overflow-x: hidden; }
+button, input { font: inherit; }
+button { cursor: pointer; }
 
+.sp-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.72)), var(--bg) center / cover no-repeat, radial-gradient(ellipse at 50% 30%, #1d1630 0%, #05060f 70%); }
+.sp-top { position: fixed; top: 0; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: linear-gradient(rgba(0,0,0,.9), transparent); z-index: 900; pointer-events: none; }
+.sp-top > * { pointer-events: auto; }
+.sp-nav { display: flex; gap: 18px; font-size: 26px; font-weight: 900; color: var(--gold); user-select: none; }
+.sp-nav span { cursor: pointer; transition: opacity .2s, transform .2s; }
+.sp-nav span:hover { opacity: .8; transform: scale(1.1); }
+.sp-logo { font-size: 24px; letter-spacing: 5px; font-weight: bold; color: var(--gold); }
+
+.sp-page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 72px 16px 30px; }
+.sp-title { margin: 0 0 4px; font-size: clamp(20px, 3vw, 30px); letter-spacing: 3px; color: var(--o); text-shadow: 0 0 12px var(--og); text-transform: uppercase; }
+.sp-lead { margin: 0 0 14px; font-size: 13px; opacity: .75; }
+.sp-welcome { margin: 0 0 14px; font-size: 13px; }
+.sp-welcome b { color: var(--gold); }
+
+.sp-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.sp-left { align-self: stretch; min-width: 0; }
+.sp-right { min-width: 0; }
+.sp-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+.sp-h { margin: 0 0 4px; font-size: 16px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; }
+.sp-sub { margin: 0 0 10px; font-size: 12px; opacity: .7; }
+
+.sp-stagebox { position: sticky; top: 64px; z-index: 20; }
+.sp-stagewrap { position: relative; }
+.sp-stagewrap canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: #05060f; }
+.sp-stagewrap canvas.sq { max-width: 420px; margin: 0 auto; background: transparent; }
+.sp-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; pointer-events: none; font-size: clamp(44px, 10vw, 96px); font-weight: 900; color: var(--o); text-shadow: 0 0 24px var(--og); opacity: 0; transition: opacity .35s; }
+.sp-overlay.show { opacity: 1; }
+.sp-overlay.final { font-size: clamp(22px, 4.6vw, 44px); letter-spacing: 3px; }
+.sp-bar { height: 6px; background: rgba(255,255,255,.12); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.sp-bar > i { display: block; height: 100%; width: 0; background: var(--o); transition: width .3s; }
+.sp-progress { font-size: 11px; opacity: .8; }
+
+.sp-btn { background: #000; color: var(--gold); border: 1px solid var(--gold); border-radius: 6px; padding: 9px 12px; font-weight: 700; text-transform: uppercase; font-size: 11px; }
+.sp-btn:hover { filter: brightness(1.2); }
+.sp-btn.primary { background: var(--o); border-color: var(--o); color: #120a00; }
+.sp-btn:disabled { opacity: .35; cursor: not-allowed; }
+.sp-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.sp-opt { background: rgba(255,255,255,.04); color: var(--ivory); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; font-size: 12px; }
+.sp-opt.sel { border-color: var(--o); color: var(--o); box-shadow: 0 0 10px var(--og); }
+.sp-input { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: rgba(0,0,0,.6); color: var(--ivory); margin-top: 6px; }
+
+.sp-step { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; background: rgba(255,255,255,.02); }
+.sp-step summary { cursor: pointer; padding: 10px 12px; font-weight: 700; list-style: none; }
+.sp-step summary::-webkit-details-marker { display: none; }
+.sp-step.done summary::after { content: " ✓"; color: var(--o); }
+.sp-step .body { padding: 0 12px 12px; }
+.sp-steps.locked { pointer-events: none; opacity: .5; }
+.sp-after { margin-top: 10px; }
+
+.sp-bay { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; align-items: center; }
+.sp-bay canvas { width: 150px; height: 150px; }
+.sp-baybox.pulse { animation: sp-pulse 1.2s 2; }
+@keyframes sp-pulse { 50% { box-shadow: 0 0 22px var(--o); } }
+.sp-status { min-height: 16px; font-size: 12px; color: var(--o); margin: 8px 0 0; overflow-wrap: anywhere; }
+
+.sp-posts { max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.sp-post { padding: 7px 9px; border-left: 2px solid var(--o); background: rgba(255,255,255,.04); font-size: 12px; overflow-wrap: anywhere; }
+.sp-post b { color: var(--gold); margin-right: 4px; }
+.sp-post.pick { cursor: pointer; }
+.sp-post.pick:hover { background: rgba(255,119,0,.12); }
+.sp-empty { font-size: 12px; opacity: .6; }
+.sp-form { display: flex; gap: 8px; margin-top: 10px; }
+.sp-form input { flex: 1; min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: rgba(0,0,0,.6); color: var(--ivory); }
+.sp-lock { text-align: center; padding: 40px 10px; }
+
+/* паспорт (общий модуль modules/passport.js) */
+.gy-user-badge { position: fixed; top: 9px; left: 50%; transform: translateX(-50%); width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--gold); background: #111; z-index: 1000000; cursor: pointer; display: none; }
+.gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fff; }
+.gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 17px; height: 12px; object-fit: cover; border: 1px solid var(--gold); }
+.gy-passport-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 2000000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s ease; }
+.gy-passport-card { background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px; padding: 25px; width: 280px; max-width: 94vw; color: #000; text-align: center; position: relative; }
+.gy-passport-close { position: absolute; top: 10px; right: 14px; font-size: 28px; cursor: pointer; }
+.gy-passport-title { font-weight: 900; font-size: 16px; }
+.gy-passport-id { font-weight: 700; font-size: 13px; margin-top: 5px; color: #555; }
+.gy-passport-nick { font-weight: 700; font-size: 14px; margin-top: 4px; }
+.gy-passport-avatar-box, .gy-passport-qr-box { width: 90px; height: 90px; border: 2px solid var(--gold); background: #fff; margin: 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
+.gy-passport-edit { margin-top: 14px; padding: 8px 20px; background: #000; border: 2px solid var(--gold); color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700; font-size: 11px; }
+
+@media (max-width: 900px) {
+  .sp-grid { grid-template-columns: minmax(0, 1fr); }
+  .sp-left, .sp-right { display: contents; }      /* сцена остаётся закреплённой над шагами */
+  .sp-stagebox { order: 1; top: 56px; }
+  .sp-steps { order: 2; }
+  .sp-baybox { order: 3; }
+  .sp-wallbox { order: 4; }
+  .sp-stagewrap canvas { max-height: 34vh; object-fit: contain; }
+}
+@media (max-width: 520px) {
+  .sp-bay { grid-template-columns: 110px minmax(0, 1fr); }
+  .sp-bay canvas { width: 110px; height: 110px; }
+}
