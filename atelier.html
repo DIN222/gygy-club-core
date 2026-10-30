@@ -957,23 +957,39 @@
         updateShareRowVisibility();
     });
 
-    async function initIncomingPhrase() {
+       async function initIncomingPhrase() {
         const params = new URLSearchParams(location.search);
         const phrase = (params.get('phrase') || '').trim().slice(0, 180);
         if (!phrase) return;
+        const pid = params.get('pid');
+        const phraseId = (pid && UUID_RE.test(pid)) ? pid : null;
         state.technique = 'dtf';
         document.getElementById('select-technique').value = 'dtf';
+
+        // Путь «сделать с ИИ»: фраза уходит в запрос для генератора картинок
+        if (params.get('ai') === '1') {
+            const builder = document.getElementById('prompt-builder');
+            builder.classList.add('open');
+            document.getElementById('pb-idea').value = `the exact text “${phrase}” as bold decorative lettering, with a fitting illustration`;
+            document.getElementById('btn-build-prompt').click();
+            document.getElementById('order-status').textContent = t('at_ai_hint',
+                'AI tools often misspell words. Copy the prompt, create the picture, check the text on it, then upload it with “UPLOAD PNG FILE”.');
+            if (phraseId) bumpPhrase(phraseId, 'atelier');
+            builder.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // Путь «текст сразу на изделие»
         const made = await renderPhraseBlob(phrase, state.color);
         if (!made) return;
-        const pid = params.get('pid');
         state.currentPrint = {
             source: 'phrase', design: URL.createObjectURL(made.blob), blob: made.blob,
-            aspect: made.aspect, shared: false, phrase, phraseId: (pid && UUID_RE.test(pid)) ? pid : null
+            aspect: made.aspect, shared: false, phrase, phraseId
         };
         renderPrintOverlay(true);
         updateShareRowVisibility();
         renderPrintStrip();
-        if (state.currentPrint.phraseId) bumpPhrase(state.currentPrint.phraseId, 'atelier');
+        if (phraseId) bumpPhrase(phraseId, 'atelier');
     }
     // ---------- Изделия с вышивкой (из Галереи Офиса) и статистика ----------
     let embProducts = [];
