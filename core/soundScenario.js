@@ -31,7 +31,7 @@ export const SOUND_SCENARIO = {
     'verses.html':           { ambient: 'off' },   
     'space-construction.html': { ambient: 'off', ambientFadeSec: 3 },
     'lunar-base.html':         { ambient: 'off', ambientFadeSec: 3 },
-    'space-admin.html':        { ambient: 'off' }, ambientFadeSec: 3,
+    'space-admin.html':        { ambient: 'off', ambientFadeSec: 3 },
                                track: { file: 'sbridge_ambient.mp3', volume: 0.4, fadeInSec: 2, fadeOutSec: 4 } }
 };
 
