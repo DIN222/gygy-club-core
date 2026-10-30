@@ -1,294 +1,128 @@
 <!DOCTYPE html>
+<!--
+  verses.html — AI ZONE — v2.0.0 — 2026-10-28
+  Коридор-серверная → комната с голограммами. Звук коридора — по сценарию (core/soundScenario.js):
+  при входе в комнату плавно затихает. Фон комнаты — фотография на весь экран под основной картинкой.
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GY-GY Club — AI ZONE 019 </title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,700;0,900;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
+    <meta name="google" content="notranslate">
+    <title>GY-GY Club — AI ZONE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="qrcode.min.js"></script>
     <style>
-        :root { 
-            --gold: #d4af37; 
-            --orange: #ff7700;
-            --orange-glow: rgba(255, 119, 0, 0.7);
-        }
-        
+        :root { --gold: #d4af37; --orange: #ff7700; --orange-glow: rgba(255,119,0,.7); }
         * { -webkit-tap-highlight-color: transparent !important; box-sizing: border-box; }
-        body, button, input, div, img, span { pointer-events: auto !important; }
         img { -webkit-user-drag: none !important; }
-
         html, body { width: 100%; height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; overflow: hidden; position: fixed; margin: 0; }
-        
-        /* ==========================================================================
-           СТАНДАРТНАЯ ШАПКА КЛУБА (ФИКС НАВИГАЦИИ)
-           ========================================================================== */
-        .ui-top-standard-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-            z-index: 999999;
-            pointer-events: none;
-        }
-        .ui-top-standard-bar * { pointer-events: auto; }
 
-        .bar-left-nav { 
-            display: flex; 
-            align-items: center; 
-            gap: 20px; 
-            user-select: none;
-        }
-        
-        .back-btn, .double-arrow-btn {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 26px; 
-            font-weight: 900; 
-            color: var(--gold); 
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .double-arrow-btn span:nth-child(2) {
-            margin-left: -4px; 
-        }
-
-        .bar-center-badge-container { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; }
-        .bar-center-badge { position: relative; width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--gold); background: #111; cursor: pointer; }
-        .bar-center-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; background-color: #fff; }
-        .bar-center-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 17px; height: 12px; border: 1px solid var(--gold); }
-
+        .ui-top-bar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: linear-gradient(to bottom, rgba(0,0,0,.9) 0%, rgba(0,0,0,0) 100%); z-index: 999999; pointer-events: none; }
+        .ui-top-bar > * { pointer-events: auto; }
+        .nav-area { display: flex; align-items: center; gap: 18px; font-size: 26px; font-weight: 900; user-select: none; }
+        .back-arrow { color: var(--gold); cursor: pointer; transition: opacity .2s, transform .2s; }
+        .back-arrow:hover { opacity: .8; transform: scale(1.1); }
         .bar-right-logo { font-size: 24px; letter-spacing: 5px; font-weight: bold; text-shadow: 0 0 5px #000; }
 
-        /* ПАСПОРТ */
-        .passport-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000000; display: none; align-items: center; justify-content: center; }
-        .passport-card { background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px; padding: 25px; width: 280px; color: #000; text-align: center; position: relative; }
-        .passport-card .box-final { margin: 15px auto; border-color: #000; }
-        .passport-close-btn { position: absolute; top: 10px; right: 14px; font-size: 28px; font-weight: bold; color: #000; cursor: pointer; line-height: 1; }
-        .box-final { width: 85px; height: 85px; border: 2px solid #000; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        /* паспорт (общий модуль modules/passport.js) */
+        .gy-user-badge { position: fixed; top: 9px; left: 50%; transform: translateX(-50%); width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--gold); background: #111; z-index: 1000000; cursor: pointer; display: none; }
+        .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fff; }
+        .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 17px; height: 12px; object-fit: cover; border: 1px solid var(--gold); }
+        .gy-passport-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 2000000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s ease; }
+        .gy-passport-card { background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px; padding: 25px; width: 280px; max-width: 94vw; color: #000; text-align: center; position: relative; }
+        .gy-passport-close { position: absolute; top: 10px; right: 14px; font-size: 28px; cursor: pointer; }
+        .gy-passport-title { font-weight: 900; font-size: 16px; }
+        .gy-passport-id { font-weight: 700; font-size: 13px; margin-top: 5px; color: #555; }
+        .gy-passport-nick { font-weight: 700; font-size: 14px; margin-top: 4px; }
+        .gy-passport-avatar-box, .gy-passport-qr-box { width: 90px; height: 90px; border: 2px solid var(--gold); background: #fff; margin: 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
+        .gy-passport-edit { margin-top: 14px; padding: 8px 20px; background: #000; border: 2px solid var(--gold); color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700; font-size: 11px; }
 
-        /* БЛОКИ ОКОН */
-        .block { 
-            position: fixed; 
-            inset: 0; 
-            display: none; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            background: #000; 
-            z-index: 10; 
-            padding-top: 60px;
-        }
+        .block { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 10; padding-top: 60px; }
 
-        /* СЕРВЕРНАЯ */
-        #section-server {
-            background-image: url('banana_server_room.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-        .invisible-door-clicker {
-            position: absolute;
-            cursor: pointer;
-            z-index: 50;
-            width: 200px;         
-            height: 320px;        
-            top: 50%;             
-            left: 50%;            
-            transform: translate(-50%, -45%);
-        }
+        /* коридор-серверная */
+        #section-server { background: #000 url('banana_server_room.jpg') center/cover no-repeat; }
+        .invisible-door-clicker { position: absolute; cursor: pointer; z-index: 50; width: 200px; height: 320px; top: 50%; left: 50%; transform: translate(-50%, -45%); }
 
-        /* ==========================================================================
-           AI ROOM (+15% РАЗМЕР КАРТИНКИ)
-           ========================================================================== */
+        /* комната: фотография на весь экран (размытая, затемнённая) под основной картинкой */
+        #room-bg { position: fixed; inset: 0; z-index: 5; display: none; background: url('OIG2_vintage_tv_room_v2(1).png') center/cover no-repeat; filter: blur(14px) brightness(.45); transform: scale(1.1); }
         #section-ai-room {
-            background-image: url('OIG2_vintage_tv_room_v2(1).png');
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-            width: 100%;
-            max-width: 690px;   
-            max-height: 92vh;   
-            margin: auto;
-            bottom: 0;
+            background: transparent url('OIG2_vintage_tv_room_v2(1).png') center/contain no-repeat;
+            width: 100%; max-width: 690px; max-height: 92vh; margin: auto; bottom: 0;
         }
-        
-        /* Пространственная матрица голограмм */
-        .holo-canvas {
-            position: absolute;
-            width: 100%;
-            height: 60%;
-            top: 45%;
-            left: 0;
-            z-index: 60;
-        }
-
-        .holo-click-label {
-            position: absolute;
-            font-size: 22px; 
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: var(--orange);
-            text-shadow: 0 0 12px var(--orange-glow), 0 0 25px var(--orange-glow);
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-            user-select: none;
-        }
-
-        /* ==========================================================================
-           НАСТРОЙКА ВЕРТИКАЛИ НАДПИСЕЙ (МЕНЯЙ % У ПАРАМЕТРА TOP)
-           Меньше % — ВВЕРХ, Больше % — ВНИЗ
-           ========================================================================== */
-        
-        /* Левый экран (CONTROL  CENTER) */
-        .pos-left {
-            top: -35%;    /* Сделай 15% чтобы поднять, или 30% чтобы опустить */
-            left: 12%;   
-        }
-        
-        /* Центральный экран (LUNAR BASE) */
-        .pos-center {
-            top: -10%;    /* Изменяй это значение для центральной надписи */
-            left: 50%;   
-            transform: translateX(-50%);
-        }
-
-        /* Правый экран (HELLO UNIVERSE) */
-        .pos-right {
-            top: -35%;    /* Изменяй это значение для правой надписи */
-            right: 12%;  
-        }
+        .holo-canvas { position: absolute; width: 100%; height: 60%; top: 45%; left: 0; z-index: 60; }
+        .holo-click-label { position: absolute; font-size: 22px; font-weight: 900; letter-spacing: 2px; color: var(--orange); text-shadow: 0 0 12px var(--orange-glow), 0 0 25px var(--orange-glow); cursor: pointer; text-transform: uppercase; transition: all .3s ease; user-select: none; }
+        /* вертикаль надписей: меньше % — выше, больше % — ниже */
+        .pos-left   { top: -35%; left: 12%; }
+        .pos-center { top: -10%; left: 50%; transform: translateX(-50%); }
+        .pos-right  { top: -35%; right: 12%; }
     </style>
 </head>
 <body>
 
-    <div class="ui-top-standard-bar">
-        <div class="bar-left-nav notranslate">
-            <span class="back-btn" onclick="handleGlobalBack()">&lt;</span>
-            <span class="double-arrow-btn" onclick="handleGlobalBack()">
-                <span>&lt;</span><span>&lt;</span>
-            </span>
-        </div>
-        
-        <div class="bar-center-badge-container">
-            <div id="global-user-badge" class="bar-center-badge notranslate" onclick="openPassport()">
-                <img id="badge-avatar-img" class="badge-img" src="">
-                <img id="badge-flag-img" class="badge-flag" src="https://flagcdn.com/w20/gb.png">
-            </div>
-        </div>
-        
-        <div class="bar-right-logo notranslate">GY-GY</div>
+<div class="ui-top-bar">
+    <div class="nav-area" translate="no">
+        <span class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</span>
+        <span class="back-arrow" id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</span>
     </div>
+    <div class="bar-right-logo" translate="no">GY-GY</div>
+</div>
+<div id="passport-badge-container"></div>
 
-    <div id="modal-passport" class="passport-overlay" onclick="closePassport()">
-        <div class="passport-card" onclick="event.stopPropagation()">
-            <div class="passport-close-btn" onclick="closePassport()">&times;</div>
-            <div style="font-weight:900; font-size:16px; letter-spacing:1px;">GY-GY PASSPORT</div>
-            <div id="pass-id-val" style="font-weight:700; font-size:13px; margin-top:5px; color:#555;">#ID</div>
-            <div class="box-final" style="width:100px; height:100px; border-radius:50%; border:2px solid var(--gold);"><img id="pass-avatar-img" style="width:100%; height:100%; object-fit:cover; border-radius:50%; background-color:#fff;"></div>
-            <div class="box-final" id="pass-qr-box" style="width:110px; height:110px; padding:5px;"></div>
-        </div>
+<div id="room-bg" aria-hidden="true"></div>
+
+<div id="section-server" class="block" style="display:flex;">
+    <div class="invisible-door-clicker" id="door"></div>
+</div>
+
+<div id="section-ai-room" class="block">
+    <div class="holo-canvas" translate="no">
+        <span id="lbl-et" class="holo-click-label pos-left">ET MESSAGE</span>
+        <span id="lbl-lunar" class="holo-click-label pos-center">LUNAR BASE</span>
+        <span id="lbl-hello" class="holo-click-label pos-right">HELLO UNIVERSE</span>
     </div>
+</div>
 
-    <audio id="ambient-audio" src="sbridge_ambient.mp3" loop autoplay></audio>
-
-    <div id="section-server" class="block" style="display: flex;">
-        <div class="invisible-door-clicker" onclick="unlockAndEnterRoom()"></div>
-    </div>
-
-    <div id="section-ai-room" class="block">
-        
-        <div class="holo-canvas">
-            <span id="lbl-et" class="holo-click-label pos-left" onclick="switchHoloTab('et')">CONTROL CENTER</span>
-            <span id="lbl-lunar" class="holo-click-label pos-center" onclick="switchHoloTab('lunar')">LUNAR BASE</span>
-            <span id="lbl-hello" class="holo-click-label pos-right" onclick="switchHoloTab('hello')">HELLO UNIVERSE</span>
-        </div>
-
-    </div>
-
-<script type="text/javascript">
-    let isInAiRoom = false;
-    let currentID = "";
-
-    function safeStorageGet(key, fallback = "") { try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; } }
-
-    function forcePlayAudio() {
-        const audio = document.getElementById('ambient-audio');
-        if (audio) {
-            audio.volume = 0.4;
-            audio.play().catch(() => {
-                document.body.addEventListener('click', () => { audio.play(); }, { once: true });
-            });
-        }
-    }
-
-    function unlockAndEnterRoom() {
-        setTimeout(() => {
-            document.getElementById('section-server').style.display = 'none';
-            document.getElementById('section-ai-room').style.display = 'flex';
-            isInAiRoom = true;
-        }, 150);
-    }
-
-    function switchHoloTab(target) {
-        console.log("Switched to tab: " + target);
-    }
-
-    function handleGlobalBack() {
-        if (isInAiRoom) {
-            document.getElementById('section-ai-room').style.display = 'none';
-            document.getElementById('section-server').style.display = 'flex';
-            isInAiRoom = false;
-        } else {
-                       window.location.href = 'hall.html';
-        }
-    }
-
-    function initUserBadge() {
-        const savedAvatar = safeStorageGet('gy_user_img') || safeStorageGet('gygy_avatar');
-        currentID = safeStorageGet('gygy_id') || safeStorageGet('gy_user_id') || safeStorageGet('gy_trace');
-        const savedFlag = safeStorageGet('gygy_flag') || safeStorageGet('gy_user_flag') || 'gb';
-
-        const badgeFlagImg = document.getElementById('badge-flag-img');
-        if (badgeFlagImg) badgeFlagImg.src = `https://flagcdn.com/w20/${savedFlag.toLowerCase()}.png`;
-
-        if (savedAvatar) {
-            const badgeImg = document.getElementById('badge-avatar-img');
-            const passImg = document.getElementById('pass-avatar-img');
-            if (badgeImg) badgeImg.src = savedAvatar;
-            if (passImg) passImg.src = savedAvatar;
-        }
-
-        if (currentID) {
-            const passIdVal = document.getElementById('pass-id-val');
-            const passQrBox = document.getElementById('pass-qr-box');
-            if (passIdVal) passIdVal.innerText = currentID;
-            if (passQrBox && typeof QRCode !== 'undefined') { 
-                passQrBox.innerHTML = ""; 
-                new QRCode(passQrBox, { text: currentID, width: 100, height: 100 }); 
-            }
-        }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        initUserBadge();
-        const audio = document.getElementById('ambient-audio');
-        if (audio) {
-            audio.addEventListener('canplaythrough', forcePlayAudio, { once: true });
-        }
-    });
-</script>
-    <script type="module">
+<script type="module">
     import { init as initLocalization } from './core/localization.js';
+    import { init as initPassport } from './modules/passport.js';
+    import { fadeOutTrack, resumeTrack } from './modules/soundscape.js';
+
     initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
+
+    const $ = id => document.getElementById(id);
+    const server = $('section-server');
+    const room = $('section-ai-room');
+    const roomBg = $('room-bg');
+    let inRoom = false;
+
+    function enterRoom() {
+        server.style.display = 'none';
+        room.style.display = 'flex';
+        roomBg.style.display = 'block';
+        inRoom = true;
+        fadeOutTrack(6);          // звук коридора постепенно затихает за 6 секунд
+    }
+    function backToServer() {
+        room.style.display = 'none';
+        roomBg.style.display = 'none';
+        server.style.display = 'flex';
+        inRoom = false;
+        resumeTrack();            // в коридоре звук возвращается
+    }
+
+    $('door').addEventListener('click', () => setTimeout(enterRoom, 150));
+    ['lbl-et', 'lbl-lunar', 'lbl-hello'].forEach(id => {
+        $(id).addEventListener('click', () => console.log('Switched to tab: ' + id));
+    });
+
+    $('btn-back').addEventListener('click', () => {
+        if (inRoom) backToServer();
+        else window.location.href = 'hall.html';
+    });
+    $('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
 </script>
 </body>
 </html>
