@@ -89,10 +89,12 @@
 </div>
 
 <script type="module">
-    import { init as initLocalization } from './core/localization.js';
+        import { init as initLocalization, t, registerDictionary } from './core/localization.js';
+    import { SPACE_DICT } from './core/i18n/space.js';
     import { init as initPassport } from './modules/passport.js';
     import { fadeOutTrack, resumeTrack } from './modules/soundscape.js';
 
+    registerDictionary(SPACE_DICT);
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
