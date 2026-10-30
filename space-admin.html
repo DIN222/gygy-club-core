@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<!-- space-admin.html — v1.0.0 — 2026-10-30 — Бухгалтерия → Космос: проверка сообщений Стены экипажа и Лунной стены -->
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Космос: сообщения</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 60px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 14px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .panel { width: 100%; max-width: 900px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+    select { padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 7px 12px; font-size: 11px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+    .btn:hover { border-color: var(--gold); }
+    .btn.del:hover { color: #e74c3c; border-color: #e74c3c; }
+    .status { font-size: 11px; color: var(--ivory); min-height: 15px; margin: 6px 0; }
+    .status.error { color: #e74c3c; }
+    .item { border: 1px solid #222; padding: 8px; margin-bottom: 8px; }
+    .item.pending { border-color: #e0a030; }
+    .meta { font-size: 10px; color: #9a9a8a; margin-bottom: 4px; }
+    .text { color: var(--ivory); font-size: 13px; overflow-wrap: anywhere; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+
+<div class="page-wrap">
+    <div class="title">КОСМОС: СООБЩЕНИЯ СТЕН</div>
+    <div class="panel">
+        <div class="row">
+            <select id="f-status">
+                <option value="pending">Ждут проверки</option>
+                <option value="approved">На стене</option>
+                <option value="hidden">Скрытые</option>
+                <option value="">Все</option>
+            </select>
+            <select id="f-area">
+                <option value="">Обе стены</option>
+                <option value="center">Центр космического строительства</option>
+                <option value="moon">Лунная база</option>
+            </select>
+            <button class="btn" id="btn-load" type="button">Показать</button>
+        </div>
+        <div class="status" id="list-status"></div>
+        <div id="list"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const AREA = { center: 'Центр', moon: 'Луна' };
+
+    async function load() {
+        $('list-status').className = 'status';
+        $('list-status').textContent = 'Загружаю…';
+        let q = supabase.from('space_posts').select('*').order('created_at', { ascending: false }).limit(300);
+        if ($('f-status').value) q = q.eq('status', $('f-status').value);
+        if ($('f-area').value) q = q.eq('area', $('f-area').value);
+        const { data, error } = await q;
+        if (error) {
+            $('list-status').className = 'status error';
+            $('list-status').textContent = 'Не удалось загрузить: ' + error.message + ' — проверьте, что SQL выполнен.';
+            return;
+        }
+        $('list-status').textContent = `Показано: ${(data || []).length}`;
+        $('list').innerHTML = (data || []).map(r => `
+            <div class="item ${esc(r.status)}" data-id="${esc(r.id)}">
+                <div class="meta">${esc(AREA[r.area] || r.area)} · ${esc(r.nickname)} · ${esc(String(r.created_at).slice(0, 16).replace('T', ' '))} · ${esc(r.status)}</div>
+                <div class="text">${esc(r.text)}</div>
+                <div class="row">
+                    <button class="btn" data-set="approved" type="button">На стену</button>
+                    <button class="btn" data-set="hidden" type="button">Скрыть</button>
+                    <button class="btn del" data-del type="button">Удалить</button>
+                </div>
+            </div>`).join('');
+    }
+
+    $('list').addEventListener('click', async (e) => {
+        const item = e.target.closest('.item');
+        if (!item) return;
+        const id = item.dataset.id;
+        const setBtn = e.target.closest('[data-set]');
+        if (setBtn) {
+            const { error } = await supabase.from('space_posts').update({ status: setBtn.dataset.set }).eq('id', id);
+            if (error) { alert('Ошибка: ' + error.message); return; }
+            item.remove();
+        }
+        if (e.target.closest('[data-del]')) {
+            if (!confirm('Удалить сообщение насовсем?')) return;
+            const { error } = await supabase.from('space_posts').delete().eq('id', id);
+            if (error) { alert('Ошибка: ' + error.message); return; }
+            item.remove();
+        }
+    });
+
+    $('btn-load').addEventListener('click', load);
+    $('f-status').addEventListener('change', load);
+    $('f-area').addEventListener('change', load);
+    $('btn-back').addEventListener('click', () => history.back());
+    $('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+    load();
+</script>
+</body>
+</html>
