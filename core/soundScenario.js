@@ -32,7 +32,7 @@ export const SOUND_SCENARIO = {
     'space-construction.html': { ambient: 'off', ambientFadeSec: 3 },
     'lunar-base.html':         { ambient: 'off', ambientFadeSec: 3 },
     'space-admin.html':        { ambient: 'off', ambientFadeSec: 3 },
-                               track: { file: 'sbridge_ambient.mp3', volume: 0.4, fadeInSec: 2, fadeOutSec: 4 } }
+                               track: { file: 'sbridge_ambient.mp3', volume: 0.4, fadeInSec: 2, fadeOutSec: 4 } 
 };
 
 // Страница, которой нет в таблице: клубного фона нет
