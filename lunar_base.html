@@ -1,417 +1,165 @@
 <!DOCTYPE html>
+<!--
+  lunar-base.html — Лунная база — v1.0.0 — 2026-10-30
+  Продолжение форума (Лунная стена) и Print lab: сообщение со стены или свой текст → открытка
+  или нашивка посадки → Ателье / PNG / Telegram. Открывается после пуска в Центре.
+-->
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GY-GY CLUB v7.1 — LUNAR BASE CONTROL CENTER</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: #05070a;
-      color: #e0f0ff;
-      font-family: 'Courier New', Courier, monospace;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow-x: hidden;
-    }
-    header {
-      width: 100%;
-      max-width: 1200px;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(10, 15, 25, 0.9);
-      border-bottom: 2px solid #00ffcc;
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
-      z-index: 100;
-    }
-    .header-left { display: flex; align-items: center; gap: 15px; }
-    .logo-gygy {
-      font-size: 1.8em;
-      font-weight: bold;
-      color: #00ffcc;
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px #00ffcc;
-      text-decoration: none;
-    }
-    .btn-back {
-      background: transparent;
-      border: 1px solid #00ffcc;
-      color: #00ffcc;
-      padding: 6px 14px;
-      font-family: inherit;
-      font-size: 0.9em;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.2s;
-    }
-    .btn-back:hover { background: #00ffcc; color: #000; box-shadow: 0 0 10px #00ffcc; }
-    .header-right select {
-      background: #0a0f19;
-      color: #00ffcc;
-      border: 1px solid #00ffcc;
-      padding: 6px 10px;
-      font-family: inherit;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    main {
-      width: 100%;
-      max-width: 1200px;
-      margin: 20px auto;
-      padding: 0 10px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .console-container {
-      position: relative;
-      width: 100%;
-      border: 2px solid #1a2a3a;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-    }
-    .console-image { width: 100%; display: block; height: auto; }
-    
-    /* Неоновые кликовые зоны на картинке */
-    .hotspot-btn {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 255, 204, 0.1);
-      border: 2px solid #00ffcc;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 0 15px #00ffcc, inset 0 0 10px #00ffcc;
-      transition: all 0.15s ease-in-out;
-      outline: none;
-    }
-    .hotspot-btn:hover { background: rgba(0, 255, 204, 0.35); scale: 1.05; }
-    .hotspot-btn:active { scale: 0.95; }
-
-    #btn-auto-plant { top: 50.5%; left: 23.2%; width: 5.5%; height: 9.8%; }
-    #btn-launch-pad {
-      top: 50.5%; left: 29.8%; width: 5.5%; height: 9.8%;
-      border-color: #ff6600;
-      box-shadow: 0 0 15px #ff6600, inset 0 0 10px #ff6600;
-    }
-    #btn-launch-pad:hover { background: rgba(255, 102, 0, 0.35); }
-
-    /* Модальные окна */
-    .cc-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(3, 6, 10, 0.92);
-      backdrop-filter: blur(4px);
-      z-index: 999;
-      justify-content: center;
-      align-items: center;
-      padding: 15px;
-    }
-    .modal-content {
-      background: #080d14;
-      border: 2px solid #00ffcc;
-      box-shadow: 0 0 35px rgba(0, 255, 204, 0.3);
-      padding: 25px;
-      max-width: 850px;
-      width: 100%;
-      color: #00ffcc;
-      border-radius: 8px;
-      max-height: 85vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .modal-header {
-      border-bottom: 1px solid #00ffcc;
-      padding-bottom: 10px;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .close-btn {
-      background: transparent;
-      border: 1px solid #ff4444;
-      color: #ff4444;
-      padding: 4px 12px;
-      cursor: pointer;
-      font-family: inherit;
-      border-radius: 4px;
-    }
-    .close-btn:hover { background: #ff4444; color: #000; }
-    
-    .proposal-input-block {
-      background: rgba(0, 255, 204, 0.05);
-      border: 1px dashed #00ffcc;
-      padding: 12px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-    }
-    .proposal-input-block input {
-      width: 70%;
-      background: #000;
-      border: 1px solid #00ffcc;
-      color: #fff;
-      padding: 8px;
-      font-family: inherit;
-      border-radius: 4px;
-    }
-    .proposal-input-block button {
-      background: #00ffcc; color: #000; border: none; font-weight: bold;
-      padding: 8px 16px; cursor: pointer; font-family: inherit; border-radius: 4px; margin-left: 8px;
-    }
-    .proposals-list {
-      flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;
-    }
-    .proposal-card {
-      background: #04090e; border: 1px solid #00a887; padding: 12px; border-radius: 6px;
-    }
-    .vote-btn-up { background: #00ffcc; color: #000; border: none; padding: 3px 10px; cursor: pointer; font-weight: bold; border-radius: 3px; }
-    .vote-btn-down { background: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 2px 8px; cursor: pointer; border-radius: 3px; margin-left: 5px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<title>GY-GY Club — Lunar Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<link rel="stylesheet" href="space.css">
 </head>
 <body>
+<div class="sp-bg" style="--bg: url('lunar_base_bg.jpg');"></div>
 
-  <!-- Шапка -->
-  <header>
-    <div class="header-left">
-      <a href="#" class="logo-gygy">GY-GY</a>
-      <button class="btn-back" onclick="history.back()">◄ BACK / НАЗАД</button>
+<div class="sp-top">
+    <div class="sp-nav" translate="no">
+        <span id="btn-back" title="Back" data-translate-title="nav_back">&lt;</span>
+        <span id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</span>
     </div>
-    <div class="header-right">
-      <select id="lang-select">
-        <option value="en" selected>🌐 English</option>
-        <option value="uk">UA Українська</option>
-        <option value="fr">FR Français</option>
-        <option value="de">DE Deutsch</option>
-        <option value="es">ES Español</option>
-        <option value="it">IT Italiano</option>
-        <option value="pl">PL Polski</option>
-        <option value="cz">CZ Čeština</option>
-        <option value="ro">RO Română</option>
-        <option value="hu">HU Magyar</option>
-        <option value="bg">BG Български</option>
-        <option value="ru">RU Русский</option>
-      </select>
+    <div class="sp-logo" translate="no">GY-GY</div>
+</div>
+<div id="passport-badge-container"></div>
+
+<main class="sp-page">
+    <h1 class="sp-title" data-translate="sp_moon_title">Lunar Base</h1>
+
+    <div class="sp-panel sp-lock" id="locked" hidden>
+        <h2 class="sp-h" data-translate="sp_locked_title">The Lunar Base is closed</h2>
+        <p class="sp-sub" data-translate="sp_locked_msg">Launch the rocket first: the Lunar Base opens after liftoff.</p>
+        <button class="sp-btn primary" id="to-center" type="button" data-translate="sp_locked_btn">To the Space Construction Center →</button>
     </div>
-  </header>
 
-  <!-- Консоль -->
-  <main>
-    <div class="console-container">
-      <img src="control_center_console.jpg" alt="Control Center Console" class="console-image">
-      <button id="btn-auto-plant" class="hotspot-btn" title="AUTO PLANT" onclick="openModal('modal-auto-plant')"></button>
-      <button id="btn-launch-pad" class="hotspot-btn" title="LAUNCH PAD" onclick="openModal('modal-launch-pad')"></button>
+    <div id="base" hidden>
+        <p class="sp-welcome">
+            <span data-translate="sp_moon_welcome">Welcome to the Lunar Base.</span>
+            <span data-translate="sp_mission_label">Mission</span>: <b translate="no" id="mission-val">—</b> ·
+            <span data-translate="sp_crew_label">Crew</span>: <b translate="no" id="crew-val">—</b>
+        </p>
+
+        <div class="sp-grid">
+            <div class="sp-left">
+                <div class="sp-panel sp-stagebox">
+                    <div class="sp-stagewrap"><canvas class="sq" id="preview" width="480" height="480"></canvas></div>
+                    <p class="sp-status" id="status" role="status" translate="no"></p>
+                </div>
+                <div class="sp-panel sp-steps">
+                    <h2 class="sp-h" data-translate="sp_lab_title">Print lab</h2>
+                    <p class="sp-sub" data-translate="sp_lab_sub">Turn a message into a postcard or a landing patch.</p>
+                    <div class="sp-row">
+                        <button class="sp-opt sel" type="button" data-type="card" data-translate="sp_lab_card">Postcard</button>
+                        <button class="sp-opt" type="button" data-type="patch" data-translate="sp_lab_patch">Landing patch</button>
+                    </div>
+                    <input class="sp-input" id="lab-text" type="text" maxlength="70" placeholder="Text for the print (up to 70 characters)" data-translate-placeholder="sp_lab_text_ph">
+                    <div class="sp-row">
+                        <button class="sp-btn primary" id="lab-atelier" type="button" data-translate="sp_to_atelier">Send to the Atelier →</button>
+                        <button class="sp-btn" id="lab-png" type="button" data-translate="sp_png">Save PNG ⬇</button>
+                        <button class="sp-btn" id="lab-tg" type="button" data-translate="sp_telegram">Telegram ✈</button>
+                    </div>
+                </div>
+            </div>
+            <div class="sp-right">
+                <div class="sp-panel sp-wallbox" id="wall"></div>
+            </div>
+        </div>
     </div>
-  </main>
+</main>
 
-  <!-- Модалка 1: Завод-автомат (Форум) -->
-  <div id="modal-auto-plant" class="cc-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div>
-          <h2 style="margin:0; text-shadow: 0 0 8px #00ffcc; font-size: 1.3em;">⚙️ AUTO PLANT • FORUM & DECISION CENTER</h2>
-          <span style="font-size: 0.8em; color: #a0f0ed;">Коллективное формирование спецификации Лунной базы</span>
-        </div>
-        <button class="close-btn" onclick="closeModal('modal-auto-plant')">✕</button>
-      </div>
+<script type="module">
+    import { init as initLocalization, t, onLanguageChange, registerDictionary } from './core/localization.js';
+    import { SPACE_DICT } from './core/i18n/space.js';
+    import { init as initPassport } from './modules/passport.js';
+    import { renderEmblem, canvasBlob } from './modules/spaceArt.js';
+    import { mountForum, getCrewName } from './modules/spaceForum.js';
+    import { sendImageToAtelier, downloadBlob, shareImage } from './modules/toAtelier.js';
 
-      <div class="proposal-input-block">
-        <div style="font-weight: bold; margin-bottom: 8px; font-size: 0.85em;">➕ ВНЕСТИ НОВОЕ ПРЕДЛОЖЕНИЕ:</div>
-        <div style="display: flex;">
-          <input type="text" id="new-proposal-input" placeholder="Например: Автономный генератор лунного кофе...">
-          <button onclick="submitProposal()">ПОДАТЬ</button>
-        </div>
-      </div>
+    registerDictionary(SPACE_DICT);
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
 
-      <div id="proposals-list" class="proposals-list">
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>1. Ракета-носитель тяжелого класса</strong>
-            <span style="font-size: 0.75em; color: #ffcc00; border: 1px solid #ffcc00; padding: 2px 6px;">УТВЕРЖДЕНО</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Транспортный корабль высокой грузоподъемности.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-1" style="color:#00ffcc;">+54</strong></span>
-            <div><button class="vote-btn-up" onclick="vote(1, 1)">▲ +1</button><button class="vote-btn-down" onclick="vote(1, -1)">▼ -1</button></div>
-          </div>
-        </div>
-        <div class="proposal-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>2. Модуль управления Лунной базой с энергоблоком</strong>
-            <span style="font-size: 0.75em; color: #ffcc00; border: 1px solid #ffcc00; padding: 2px 6px;">УТВЕРЖДЕНО</span>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Центральный штаб с закрытым контуром питания.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-            <span>Рейтинг: <strong id="score-2" style="color:#00ffcc;">+48</strong></span>
-            <div><button class="vote-btn-up" onclick="vote(2, 1)">▲ +1</button><button class="vote-btn-down" onclick="vote(2, -1)">▼ -1</button></div>
-          </div>
-        </div>
-        <!-- (Остальные модули можно добавить по аналогии) -->
-      </div>
-    </div>
-  </div>
+    const $ = id => document.getElementById(id);
+    $('btn-back').addEventListener('click', () => { window.location.href = 'verses.html'; });
+    $('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
+    $('to-center').addEventListener('click', () => { window.location.href = 'space-construction.html'; });
 
-  <!-- Модалка 2: Стартовый комплекс (Регламент + Пуск) -->
-  <div id="modal-launch-pad" class="cc-modal">
-    <div class="modal-content" style="border-color: #ff6600; color: #ff9933;">
-      <div class="modal-header" style="border-color: #ff6600;">
-        <h2 style="margin:0; text-shadow: 0 0 8px #ff6600; font-size: 1.3em;">🚀 LAUNCH PAD • РЕГЛАМЕНТ ПЕРЕД ПУСКОМ</h2>
-        <button class="close-btn" onclick="closeModal('modal-launch-pad')">✕</button>
-      </div>
+    let launched = false, rec = {};
+    try {
+        launched = localStorage.getItem('gygy_space_launched') === '1';
+        rec = JSON.parse(localStorage.getItem('gygy_space_mission') || '{}') || {};
+    } catch (e) { /* ок */ }
 
-      <div id="launch-step-prep">
-        <div style="background: #000; border: 1px solid #ff6600; padding: 15px; margin-bottom: 20px; font-size: 0.9em; border-radius: 6px;">
-          <p style="color: #ff9933; font-weight: bold; margin-bottom: 10px;">📋 ВЫПОЛНИТЕ РЕГЛАМЕНТНЫЕ РАБОТЫ:</p>
-          <label style="display: block; margin: 8px 0; cursor: pointer;"><input type="checkbox" class="launch-check" onchange="checkLaunchReady()"> 1. Проверка давления в топливных баках</label>
-          <label style="display: block; margin: 8px 0; cursor: pointer;"><input type="checkbox" class="launch-check" onchange="checkLaunchReady()"> 2. Синхронизация модулей Завода-Автомата</label>
-          <label style="display: block; margin: 8px 0; cursor: pointer;"><input type="checkbox" class="launch-check" onchange="checkLaunchReady()"> 3. Проверка траектории полета GY-GY STABLE STAR</label>
-          <label style="display: block; margin: 8px 0; cursor: pointer;"><input type="checkbox" class="launch-check" onchange="checkLaunchReady()"> 4. Подтверждение готовности экипажа ЦУ</label>
-        </div>
+    if (!launched) {
+        $('locked').hidden = false;
+    } else {
+        $('base').hidden = false;
+        $('mission-val').textContent = rec.mission || '—';
+        $('crew-val').textContent = rec.crew || getCrewName();
 
-        <button id="btn-start-launch" onclick="playLaunchAnimation()" disabled style="background: #555; border: none; color: #888; font-weight: bold; font-size: 1.2em; padding: 12px 30px; cursor: not-allowed; border-radius: 6px; width: 100%;">
-          ВЫПОЛНИТЕ РЕГЛАМЕНТ ДЛЯ АКТИВАЦИИ ПУСКА
-        </button>
-      </div>
+        const L = { type: 'card', text: String(rec.motto || '').slice(0, 70) };
+        $('lab-text').value = L.text;
+        const say = (m) => { $('status').textContent = m || ''; };
 
-      <!-- Ролик / Таймер -->
-      <div id="launch-step-timer" style="display: none; text-align: center; padding: 30px 0;">
-        <div id="timer-display" style="font-size: 5em; font-weight: bold; color: #ff6600; text-shadow: 0 0 20px #ff6600;">3</div>
-        <p style="letter-spacing: 3px; color: #fff; margin-top: 10px;">ЗАПУСК ДВИГАТЕЛЕЙ И РОКОТ...</p>
-      </div>
-
-      <!-- Финальный принт -->
-      <div id="launch-step-print" style="display: none; text-align: center;">
-        <div style="border: 3px dashed #00ffcc; padding: 35px; background: #020406; color: #fff; margin: 20px 0; border-radius: 10px;">
-          <h1 style="font-size: 2.2em; letter-spacing: 3px; color: #00ffcc; text-transform: uppercase; margin: 0; text-shadow: 0 0 10px #00ffcc;">
-            SEE YOU AT THE LUNAR BASE!
-          </h1>
-          <p style="color: #aaa; margin-top: 12px; font-size: 0.9em;">GY-GY STABLE STAR MISSION • 2026</p>
-        </div>
-        <button onclick="closeModal('modal-launch-pad'); resetLaunchProcess();" style="background: transparent; border: 1px solid #00ffcc; color: #00ffcc; padding: 8px 20px; cursor: pointer; border-radius: 4px;">
-          ВЕРНУТЬСЯ В ЦЕНТР УПРАВЛЕНИЯ
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    let currentProposalsCount = 2;
-
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { 
-      document.getElementById(id).style.display = 'none'; 
-      if(id === 'modal-launch-pad') resetLaunchProcess();
-    }
-
-    function vote(id, delta) {
-      const el = document.getElementById(`score-${id}`);
-      if(el) {
-        let val = parseInt(el.innerText.replace('+', '')) + delta;
-        el.innerText = (val >= 0 ? '+' : '') + val;
-      }
-    }
-
-    function submitProposal() {
-      const input = document.getElementById('new-proposal-input');
-      const text = input.value.trim();
-      if(!text) return;
-      currentProposalsCount++;
-      const list = document.getElementById('proposals-list');
-      const card = document.createElement('div');
-      card.className = 'proposal-card';
-      card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <strong>${currentProposalsCount}. ${text}</strong>
-          <span style="font-size: 0.75em; color: #00ffcc; border: 1px solid #00ffcc; padding: 2px 6px;">НОВОЕ</span>
-        </div>
-        <p style="margin: 6px 0; font-size: 0.85em; color: #a0f0ed;">Предложено оператором ЦУ.</p>
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size: 0.8em;">
-          <span>Рейтинг: <strong id="score-${currentProposalsCount}" style="color:#00ffcc;">+1</strong></span>
-          <div><button class="vote-btn-up" onclick="vote(${currentProposalsCount}, 1)">▲ +1</button><button class="vote-btn-down" onclick="vote(${currentProposalsCount}, -1)">▼ -1</button></div>
-        </div>
-      `;
-      list.appendChild(card);
-      input.value = '';
-    }
-
-    function checkLaunchReady() {
-      const checks = document.querySelectorAll('.launch-check');
-      const allChecked = Array.from(checks).every(c => c.checked);
-      const btn = document.getElementById('btn-start-launch');
-      if (allChecked) {
-        btn.disabled = false;
-        btn.style.background = '#ff6600';
-        btn.style.color = '#000';
-        btn.style.cursor = 'pointer';
-        btn.style.boxShadow = '0 0 20px #ff6600';
-        btn.innerText = '🚀 ПУСК / LAUNCH';
-      } else {
-        btn.disabled = true;
-        btn.style.background = '#555';
-        btn.style.color = '#888';
-        btn.style.cursor = 'not-allowed';
-        btn.style.boxShadow = 'none';
-        btn.innerText = 'ВЫПОЛНИТЕ РЕГЛАМЕНТ ДЛЯ АКТИВАЦИИ ПУСКА';
-      }
-    }
-
-    function playLaunchAnimation() {
-      document.getElementById('launch-step-prep').style.display = 'none';
-      document.getElementById('launch-step-timer').style.display = 'block';
-
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const bufferSize = audioCtx.sampleRate * 3;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(80, audioCtx.currentTime);
-        filter.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 3);
-        const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.9, audioCtx.currentTime + 2.5);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 3);
-        noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-        noise.start();
-      } catch(e) {}
-
-      let count = 3;
-      const timerElem = document.getElementById('timer-display');
-      const interval = setInterval(() => {
-        count--;
-        if (count > 0) {
-          timerElem.innerText = count;
-        } else {
-          clearInterval(interval);
-          timerElem.innerHTML = "<span style='color:#00ffcc;'>LIFTOFF! 🚀</span>";
-          setTimeout(() => {
-            document.getElementById('launch-step-timer').style.display = 'none';
-            document.getElementById('launch-step-print').style.display = 'block';
-          }, 1000);
+        function opts(size) {
+            const date = new Date().toISOString().slice(0, 10);
+            return {
+                scene: 'moon', cfg: { capsule: rec.capsule, hull: rec.hull, engines: rec.engines },
+                top: L.type === 'card' ? t('sp_greetings', 'GREETINGS FROM THE MOON') : (rec.mission || t('sp_landed', 'LANDING')),
+                bottom: (rec.crew || getCrewName()) + ' · ' + date,
+                note: L.text, size
+            };
         }
-      }, 1000);
-    }
+        let timer = null;
+        async function updatePreview() {
+            const c = await renderEmblem(opts(480));
+            const p = $('preview');
+            p.width = 480; p.height = 480;
+            p.getContext('2d').drawImage(c, 0, 0);
+        }
+        const schedule = () => { clearTimeout(timer); timer = setTimeout(updatePreview, 150); };
+        const blob = async () => canvasBlob(await renderEmblem(opts(1200)));
 
-    function resetLaunchProcess() {
-      document.querySelectorAll('.launch-check').forEach(c => c.checked = false);
-      document.getElementById('launch-step-prep').style.display = 'block';
-      document.getElementById('launch-step-timer').style.display = 'none';
-      document.getElementById('launch-step-print').style.display = 'none';
-      document.getElementById('timer-display').innerText = '3';
-      checkLaunchReady();
+        document.querySelectorAll('[data-type]').forEach(b => b.addEventListener('click', () => {
+            L.type = b.dataset.type;
+            document.querySelectorAll('[data-type]').forEach(x => x.classList.toggle('sel', x === b));
+            schedule();
+        }));
+        $('lab-text').addEventListener('input', (e) => { L.text = e.target.value; schedule(); });
+
+        $('lab-atelier').addEventListener('click', async () => {
+            try {
+                say(t('sp_sending', 'Sending to the Atelier…'));
+                await sendImageToAtelier(await blob(), 'lunar-base');
+            } catch (e) {
+                say(t('sp_too_large', 'The image is too large to send. Save the PNG and upload it in the Atelier.'));
+            }
+        });
+        $('lab-png').addEventListener('click', async () => {
+            downloadBlob(await blob(), 'gygy-moon-print.png');
+            say(t('sp_saved', 'Saved to your computer.'));
+        });
+        $('lab-tg').addEventListener('click', async () => {
+            const r = await shareImage(await blob(), (L.text || t('sp_greetings', 'GREETINGS FROM THE MOON')) + ' · GY-GY Club', 'gygy-moon-print.png');
+            say(r === 'shared' ? t('sp_shared', 'Shared.') : (r === 'telegram' ? t('sp_opening_tg', 'Opening Telegram…') : ''));
+        });
+
+        // нажатие на сообщение на Лунной стене превращает его в принт
+        mountForum($('wall'), {
+            area: 'moon',
+            onPick: (p) => {
+                L.text = String(p.text).slice(0, 70);
+                $('lab-text').value = L.text;
+                schedule();
+                $('preview').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+        onLanguageChange(schedule);
+        updatePreview();
     }
-  </script>
+</script>
 </body>
 </html>
