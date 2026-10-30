@@ -120,10 +120,21 @@
     }
 
     $('door').addEventListener('click', () => setTimeout(enterRoom, 150));
-    ['lbl-et', 'lbl-lunar', 'lbl-hello'].forEach(id => {
-        $(id).addEventListener('click', () => console.log('Switched to tab: ' + id));
-    });
+       const launched = () => { try { return localStorage.getItem('gygy_space_launched') === '1'; } catch (e) { return false; } };
+    const toast = $('toast');
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+    $('lbl-lunar').classList.toggle('locked', !launched());
 
+    $('lbl-et').addEventListener('click', () => { window.location.href = 'space-construction.html'; });
+    $('lbl-lunar').addEventListener('click', () => {
+        if (launched()) window.location.href = 'lunar-base.html';
+        else showToast(t('sp_locked_msg', 'Launch the rocket first: the Lunar Base opens after liftoff.'));
+    });
+    $('lbl-hello').addEventListener('click', () => console.log('Switched to tab: lbl-hello'));
     $('btn-back').addEventListener('click', () => {
         if (inRoom) backToServer();
         else window.location.href = 'hall.html';
