@@ -1,849 +1,246 @@
 <!DOCTYPE html>
-<!-- GY-GY Club | De-Stress Studio -->
-<html lang="ru">
+<!--
+  destress-studio.html — De-Stress Studio — v3.0.0 — 2026-10-28
+  «Сцена и шаги»: фраза и действия с ней всегда на виду (на телефоне сцена закреплена сверху),
+  выбор ситуации рядом. Подключено к проекту: стрелки, общий паспорт, звук по сценарию,
+  перевод через блок перевода, база фраз Supabase (destress_phrases) с проверкой,
+  сохранение PNG/TXT, Telegram, передача в Ателье (текстом на изделие или запросом для ИИ).
+-->
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#100e0b">
+<meta name="google" content="notranslate">
 <title>De-Stress Studio — GY-GY Club</title>
-
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root {
-  --black: #100e0b;
-  --panel: rgba(23,20,16,.94);
-  --gold: #d8b36a;
-  --light: #f0d69d;
-  --dark: #76582d;
-  --text: #f0e8d8;
-  --muted: #b0a38d;
-  --line: rgba(216,179,106,.27);
-  --radius: 13px;
-}
-
+:root { --black:#100e0b; --panel:rgba(23,20,16,.94); --gold:#d8b36a; --light:#f0d69d; --dark:#76582d; --text:#f0e8d8; --muted:#b0a38d; --line:rgba(216,179,106,.27); --radius:13px; }
 * { box-sizing: border-box; }
-
-html {
-  min-height: 100%;
-  background: var(--black);
-}
-
-body {
-  min-height: 100vh;
-  margin: 0;
-  color: var(--text);
-  background: var(--black);
-  font: 15px/1.5 Inter, "Segoe UI", Arial, sans-serif;
-}
-
+html { min-height: 100%; background: var(--black); }
+body { min-height: 100vh; margin: 0; color: var(--text); background: var(--black); font: 15px/1.5 Inter, "Segoe UI", Arial, sans-serif; overflow-x: hidden; }
 button, input { font: inherit; }
 button { cursor: pointer; }
+button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--light); outline-offset: 3px; }
 
-button:focus-visible,
-input:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--light);
-  outline-offset: 3px;
-}
-
-/* Фотофон: осветлён примерно на 10% за счёт уменьшения затемнения */
 .background-photo {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-color: var(--black);
- background-image:
-  linear-gradient(
-    90deg,
-    rgba(10,9,7,.666),
-    rgba(10,9,7,.513) 50%,
-    rgba(10,9,7,.648)
-  ),
-  linear-gradient(
-    0deg,
-    rgba(10,9,7,.684),
-    rgba(10,9,7,.135) 55%,
-    rgba(10,9,7,.468)
-  ),
-  url("destress_bg.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; background-color: var(--black);
+  background-image:
+    linear-gradient(90deg, rgba(10,9,7,.666), rgba(10,9,7,.513) 50%, rgba(10,9,7,.648)),
+    linear-gradient(0deg, rgba(10,9,7,.684), rgba(10,9,7,.135) 55%, rgba(10,9,7,.468)),
+    url("destress_bg.jpg");
+  background-size: cover; background-position: center; background-repeat: no-repeat;
 }
+.page { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(1240px, calc(100% - 32px)); min-height: 100vh; margin: 0 auto; padding: 10px 0 14px; }
 
-.page {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  width: min(1280px, calc(100% - 40px));
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 18px 0 24px;
-}
+.topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 6px 4px 12px; border-bottom: 1px solid var(--line); }
+.nav-area { display: flex; align-items: center; gap: 18px; font: 900 26px/1 'Share Tech Mono', monospace; }
+.back-arrow { color: var(--gold); cursor: pointer; user-select: none; transition: opacity .2s, transform .2s; }
+.back-arrow:hover { opacity: .8; transform: scale(1.1); }
+.charlie-brand { display: flex; align-items: center; justify-content: center; gap: 11px; min-width: 0; }
+.charlie-avatar { width: 50px; height: 50px; flex: 0 0 auto; object-fit: cover; border: 2px solid var(--dark); border-radius: 50%; background: #211a10; }
+.charlie-name { margin: 0; color: var(--light); font: 400 21px/1.2 Georgia, serif; }
+.charlie-caption { margin-top: 4px; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.club-brand { justify-self: end; color: var(--light); text-align: right; text-decoration: none; }
+.club-logo { font: 700 clamp(26px,3vw,38px)/1 Georgia, serif; letter-spacing: .045em; }
+.club-subtitle { margin-top: 4px; color: var(--gold); font-size: 10px; letter-spacing: .34em; }
 
-.topbar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 22px;
-  min-height: 76px;
-  padding: 8px 4px 17px;
-  border-bottom: 1px solid var(--line);
-}
-
-.nav-area {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 9px;
-}
-
-.nav-button,
-.language-switch {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(15,13,10,.85);
-}
-
-.nav-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 39px;
-  padding: 8px 12px;
-  color: var(--light);
-  text-decoration: none;
-  font-size: 12px;
-}
-
-.nav-button:hover {
-  background: #302617;
-  border-color: var(--gold);
-}
-
-.language-switch {
-  display: flex;
-  gap: 2px;
-  padding: 3px;
-}
-
-.language-button {
-  padding: 6px 7px;
-  border: 0;
-  border-radius: 5px;
-  color: var(--muted);
-  background: transparent;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.language-button.active {
-  color: #18120a;
-  background: var(--gold);
-}
-
-.charlie-brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 11px;
-  min-width: 0;
-}
-
-.charlie-avatar {
-  width: 54px;
-  height: 54px;
-  flex: 0 0 auto;
-  object-fit: cover;
-  border: 2px solid var(--dark);
-  border-radius: 50%;
-  background: #211a10;
-}
-
-.charlie-name {
-  margin: 0;
-  color: var(--light);
-  font: 400 22px/1.2 Georgia, serif;
-}
-
-.charlie-caption {
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.club-brand {
-  justify-self: end;
-  color: var(--light);
-  text-align: right;
-  text-decoration: none;
-}
-
-.club-logo {
-  font: 700 clamp(28px,3vw,40px)/1 Georgia, serif;
-  letter-spacing: .045em;
-}
-
-.club-subtitle {
-  margin-top: 5px;
-  color: var(--gold);
-  font-size: 10px;
-  letter-spacing: .34em;
-}
-
-.intro {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 27px 2px 22px;
-}
-
-.eyebrow {
-  margin: 0 0 7px;
-  color: var(--gold);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .19em;
-  text-transform: uppercase;
-}
-
-.page-title {
-  margin: 0;
-  color: var(--light);
-  font: 400 clamp(30px,3.3vw,43px)/1.12 Georgia, serif;
-  letter-spacing: -.025em;
-}
-
-.intro-copy {
-  max-width: 600px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.8;
-}
-
+.intro { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 14px 2px 12px; }
+.eyebrow { margin: 0 0 6px; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .19em; text-transform: uppercase; }
+.page-title { margin: 0; color: var(--light); font: 400 clamp(28px,3vw,38px)/1.12 Georgia, serif; letter-spacing: -.025em; }
+.intro-copy { max-width: 560px; color: var(--muted); font-size: 13px; line-height: 1.7; }
 .intro-copy p { margin: 0; }
+.charlie-line { margin-top: 5px !important; color: var(--light); font-family: Georgia, serif; font-style: italic; }
 
-.charlie-line {
-  margin-top: 7px !important;
-  color: var(--light);
-  font-family: Georgia, serif;
-  font-style: italic;
-}
+.layout { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 16px; align-items: start; }
+.panel { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 12px 32px rgba(0,0,0,.18); }
+.stage { position: sticky; top: 10px; background: linear-gradient(145deg, rgba(45,34,21,.97), rgba(22,19,15,.98) 58%); }
+.panel-title { margin: 0 0 3px; color: var(--light); font: 400 22px/1.2 Georgia, serif; }
+.panel-sub { margin: 0 0 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
 
-.panel {
-  min-width: 0;
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--panel);
-  box-shadow: 0 12px 32px rgba(0,0,0,.18);
-}
+.stage-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 10px; }
+.recipe-mode { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: rgba(0,0,0,.25); }
+.mode-button { padding: 7px 11px; border: 0; border-radius: 6px; color: var(--muted); background: transparent; font-size: 12px; }
+.mode-button.active { color: #18120a; background: var(--gold); font-weight: 700; }
+.mix-count { color: var(--muted); font-size: 11px; }
+.sit-chip { margin: 0 0 10px; min-height: 18px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.sit-chip b { color: var(--light); font-weight: 600; }
 
-.situations-panel { margin-bottom: 17px; }
+.recipe-card { min-height: 130px; padding: 18px; border: 1px solid rgba(216,179,106,.28); border-radius: 11px; background: rgba(9,8,6,.58); }
+.recipe-label { margin: 0 0 10px; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.recipe-title { margin: 0; color: var(--light); font: 400 clamp(22px,2.6vw,32px)/1.25 Georgia, serif; overflow-wrap: anywhere; }
+.recipe-description { margin: 10px 0 0; color: var(--text); font-size: 13px; line-height: 1.7; }
 
-.section-heading {
-  display: flex;
-  align-items: start;
-  gap: 12px;
-  margin-bottom: 19px;
-}
+.actions-main { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; }
+.text-button { padding: 6px 0; border: 0; color: var(--light); background: transparent; font-size: 12px; }
+.text-button:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
 
-.step-number {
-  display: flex;
-  flex: 0 0 34px;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--dark);
-  border-radius: 9px;
-  color: var(--light);
-  background: rgba(216,179,106,.08);
-  font: 17px Georgia, serif;
-}
+.more { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.more summary { cursor: pointer; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; list-style: none; }
+.more summary::-webkit-details-marker { display: none; }
+.more summary::after { content: " ▾"; }
+.more[open] summary::after { content: " ▴"; }
+.share-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
-.section-title {
-  margin: 2px 0 5px;
-  color: var(--light);
-  font: 400 25px/1.2 Georgia, serif;
-}
+.gold-button, .outline-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; text-decoration: none; transition: background .16s, border-color .16s, transform .16s; }
+.gold-button { border: 1px solid var(--gold); color: #1a1308; background: var(--gold); }
+.gold-button:hover { background: var(--light); transform: translateY(-1px); }
+.outline-button { border: 1px solid var(--line); color: var(--light); background: rgba(0,0,0,.18); }
+.outline-button:hover { border-color: var(--gold); background: rgba(216,179,106,.08); }
 
-.section-subtitle {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-/* Выбор ситуации на всю ширину панели */
-.choice-grid {
-  display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
-  gap: 10px;
-}
-
-.choice-button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 62px;
-  padding: 12px;
-  border: 1px solid rgba(216,179,106,.2);
-  border-radius: 9px;
-  color: var(--text);
-  background: rgba(255,255,255,.025);
-  text-align: left;
-  transition: background .16s, border-color .16s, transform .16s;
-}
-
-.choice-button:hover {
-  border-color: var(--dark);
-  background: rgba(216,179,106,.075);
-  transform: translateY(-1px);
-}
-
-.choice-button.selected {
-  border-color: var(--gold);
-  background: rgba(216,179,106,.14);
-  box-shadow: inset 0 0 0 1px rgba(216,179,106,.12);
-}
-
-.choice-symbol {
-  flex: 0 0 auto;
-  font-size: 21px;
-}
-
-.choice-label {
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.custom-form {
-  display: grid;
-  grid-template-columns: minmax(0,1fr) auto;
-  gap: 9px;
-  margin-top: 13px;
-}
-
-.text-input {
-  width: 100%;
-  min-width: 0;
-  min-height: 45px;
-  padding: 11px 13px;
-  border: 1px solid rgba(216,179,106,.32);
-  border-radius: 8px;
-  color: var(--text);
-  background: rgba(8,7,5,.78);
-}
-
+.custom-form { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; margin-top: 10px; }
+.text-input { width: 100%; min-width: 0; min-height: 42px; padding: 9px 12px; border: 1px solid rgba(216,179,106,.32); border-radius: 8px; color: var(--text); background: rgba(8,7,5,.78); }
 .text-input::placeholder { color: #8f8370; }
 
-.gold-button,
-.outline-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 43px;
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  text-decoration: none;
-  transition: background .16s, border-color .16s, transform .16s;
+.status-message { min-height: 17px; margin: 8px 0 0; color: var(--light); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+
+.choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.choice-button { display: flex; align-items: center; gap: 9px; min-height: 54px; padding: 9px 11px; border: 1px solid rgba(216,179,106,.2); border-radius: 9px; color: var(--text); background: rgba(255,255,255,.025); text-align: left; transition: background .16s, border-color .16s, transform .16s; }
+.choice-button:hover { border-color: var(--dark); background: rgba(216,179,106,.075); transform: translateY(-1px); }
+.choice-button.selected { border-color: var(--gold); background: rgba(216,179,106,.14); box-shadow: inset 0 0 0 1px rgba(216,179,106,.12); }
+.choice-symbol { flex: 0 0 auto; font-size: 20px; }
+.choice-label { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+
+.footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: auto; padding: 16px 4px 0; color: #8c806b; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.footer strong { color: var(--dark); font-weight: 600; }
+
+/* паспорт (общий модуль modules/passport.js) */
+.gy-user-badge { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--gold); background: #111; z-index: 1000000; cursor: pointer; display: none; }
+.gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fff; }
+.gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 16px; height: 11px; object-fit: cover; border: 1px solid var(--gold); }
+.gy-passport-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 2000000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s ease; }
+.gy-passport-card { background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px; padding: 25px; width: 280px; max-width: 94vw; color: #000; text-align: center; position: relative; font-family: 'Share Tech Mono', monospace; }
+.gy-passport-close { position: absolute; top: 10px; right: 14px; font-size: 28px; cursor: pointer; }
+.gy-passport-title { font-weight: 900; font-size: 16px; }
+.gy-passport-id { font-weight: 700; font-size: 13px; margin-top: 5px; color: #555; }
+.gy-passport-nick { font-weight: 700; font-size: 14px; margin-top: 4px; }
+.gy-passport-avatar-box, .gy-passport-qr-box { width: 90px; height: 90px; border: 2px solid var(--gold); background: #fff; margin: 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
+.gy-passport-edit { margin-top: 14px; padding: 8px 20px; background: #000; border: 2px solid var(--gold); color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700; font-size: 11px; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0,1fr); }
+  .stage { top: 0; z-index: 20; }
+  .intro { display: block; }
+  .intro-copy { margin-top: 8px; }
+  .intro-copy .charlie-line { display: none; }
+  .recipe-card { min-height: 0; padding: 14px; }
+  .recipe-description { display: none; }
 }
-
-.gold-button {
-  border: 1px solid var(--gold);
-  color: #1a1308;
-  background: var(--gold);
-  white-space: nowrap;
-}
-
-.gold-button:hover {
-  background: var(--light);
-  transform: translateY(-1px);
-}
-
-.outline-button {
-  border: 1px solid var(--line);
-  color: var(--light);
-  background: rgba(0,0,0,.18);
-}
-
-.outline-button:hover {
-  border-color: var(--gold);
-  background: rgba(216,179,106,.08);
-}
-
-.section-note {
-  min-height: 19px;
-  margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.recipe-panel {
-  background: linear-gradient(
-    145deg,
-    rgba(45,34,21,.96),
-    rgba(22,19,15,.98) 58%
-  );
-}
-
-.recipe-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-.recipe-mode {
-  display: inline-flex;
-  gap: 5px;
-  padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: rgba(0,0,0,.25);
-}
-
-.mode-button {
-  padding: 8px 12px;
-  border: 0;
-  border-radius: 6px;
-  color: var(--muted);
-  background: transparent;
-  font-size: 12px;
-}
-
-.mode-button.active {
-  color: #18120a;
-  background: var(--gold);
-  font-weight: 700;
-}
-
-.recipe-card {
-  min-height: 150px;
-  padding: 22px;
-  border: 1px solid rgba(216,179,106,.28);
-  border-radius: 11px;
-  background: rgba(9,8,6,.58);
-}
-
-.recipe-label {
-  margin: 0 0 12px;
-  color: var(--gold);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-}
-
-.recipe-title {
-  margin: 0;
-  color: var(--light);
-  font: 400 clamp(25px,3vw,34px)/1.25 Georgia, serif;
-  overflow-wrap: anywhere;
-}
-
-.recipe-description {
-  margin: 12px 0 0;
-  color: var(--text);
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.recipe-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.text-button {
-  padding: 7px 0;
-  border: 0;
-  color: var(--light);
-  background: transparent;
-  font-size: 12px;
-}
-
-.text-button:hover {
-  color: white;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-.mix-count {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.atelier-callout {
-  display: grid;
-  grid-template-columns: minmax(0,1fr) auto;
-  align-items: center;
-  gap: 20px;
-  margin-top: 17px;
-  padding: 22px 24px;
-  border: 1px solid var(--dark);
-  border-radius: var(--radius);
-  background: linear-gradient(
-    105deg,
-    rgba(45,34,21,.97),
-    rgba(20,17,13,.98) 62%
-  );
-}
-
-.atelier-title {
-  margin: 0 0 6px;
-  color: var(--light);
-  font: 400 23px/1.3 Georgia, serif;
-}
-
-.atelier-description {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.status-message {
-  min-height: 18px;
-  margin: 10px 0 0;
-  color: var(--light);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: auto;
-  padding: 24px 4px 0;
-  color: #8c806b;
-  font-size: 10px;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.footer strong {
-  color: var(--dark);
-  font-weight: 600;
-}
-
-@media(max-width:950px) {
-  .page { width: min(100% - 30px,800px); }
-  .choice-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-}
-
-@media(max-width:700px) {
-  .page {
-    width: calc(100% - 22px);
-    padding-top: 10px;
-  }
-
-  .topbar {
-    grid-template-columns: minmax(0,1fr) auto;
-    gap: 12px;
-    padding-bottom: 13px;
-  }
-
-  .charlie-brand {
-    grid-column: 1;
-    grid-row: 1;
-    justify-content: flex-start;
-  }
-
-  .charlie-avatar { width: 45px; height: 45px; }
-  .charlie-name { font-size: 19px; }
-  .charlie-caption { font-size: 8px; }
-
-  .club-brand {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .club-logo { font-size: 29px; }
-
-  .nav-area {
-    grid-column: 1/-1;
-    grid-row: 2;
-  }
-
-  .intro {
-    display: block;
-    padding: 23px 2px 18px;
-  }
-
-  .intro-copy { margin-top: 12px; }
-  .panel { padding: 18px; }
-  .choice-grid { grid-template-columns: minmax(0,1fr); gap: 8px; }
-  .choice-button { min-height: 54px; }
-
+@media (max-width: 700px) {
+  .page { width: calc(100% - 20px); }
+  .topbar { grid-template-columns: auto minmax(0,1fr) auto; gap: 8px; }
+  .charlie-caption { display: none; }
+  .charlie-avatar { width: 40px; height: 40px; }
+  .charlie-name { font-size: 18px; }
+  .panel { padding: 14px; }
   .custom-form { grid-template-columns: minmax(0,1fr); }
-  .custom-form .gold-button { width: 100%; }
-
-  .recipe-toolbar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .recipe-controls { align-items: flex-start; }
-
-  .atelier-callout {
-    grid-template-columns: minmax(0,1fr);
-    padding: 19px;
-  }
-
-  .atelier-callout .gold-button { width: 100%; }
-
-  .footer {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 7px;
-  }
+  .share-row .outline-button, .share-row .gold-button { flex: 1 1 calc(50% - 8px); }
+  .footer { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
-
-@media(max-width:390px) {
-  .recipe-mode { width: 100%; }
-  .mode-button { flex: 1; }
-}
-
-@media(prefers-reduced-motion:reduce) {
-  *, *::before, *::after {
-    scroll-behavior: auto !important;
-    transition-duration: .01ms !important;
-  }
-}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 </style>
 </head>
 
 <body>
 <div class="background-photo" aria-hidden="true"></div>
+<div id="passport-badge-container"></div>
 
 <div class="page">
 
 <header class="topbar">
-  <nav class="nav-area" aria-label="Основная навигация">
-    <a class="nav-button" href="bar_navigation.html">
-      <span aria-hidden="true">←</span>
-      <span>В клуб</span>
-    </a>
-
-    <div class="language-switch" aria-label="Язык интерфейса">
-      <button class="language-button active" type="button"
-              data-language="ru" aria-pressed="true">RU</button>
-      <button class="language-button" type="button"
-              data-language="en" aria-pressed="false">EN</button>
-      <button class="language-button" type="button"
-              data-language="fr" aria-pressed="false">FR</button>
-    </div>
+  <nav class="nav-area" translate="no">
+    <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
+    <a class="back-arrow" id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
   </nav>
-
   <div class="charlie-brand">
-    <img class="charlie-avatar"
-         src="horse_welcome.png"
-         alt="Чарли — хозяин De-Stress Studio">
+    <img class="charlie-avatar" src="horse_welcome.png" alt="">
     <div>
       <h2 class="charlie-name">Чарли</h2>
       <div class="charlie-caption">Мастер-бармен</div>
     </div>
   </div>
-
-  <a class="club-brand" href="bar_navigation.html">
+  <a class="club-brand" href="hall.html" translate="no">
     <div class="club-logo">GY-GY</div>
     <div class="club-subtitle">CLUB</div>
   </a>
 </header>
 
 <main>
-<section class="intro">
-  <div>
-    <p class="eyebrow">GY-GY Club · зона перезагрузки и трансформации</p>
-    <h1 class="page-title">De-Stress Studio</h1>
-  </div>
-
-  <div class="intro-copy">
-    <p>
-      Рассказывай что стряслось, буквально  двумя словами
-    </p>
-    <p class="charlie-line">
-      «Не всё нужно решать сегодня. Иногда достаточно отложить до завтра и все решиться само собой».
-    </p>
-  </div>
-</section>
-
-<section class="panel situations-panel" aria-labelledby="situationTitle">
-  <div class="section-heading">
-    <div class="step-number" aria-hidden="true">01</div>
+  <section class="intro">
     <div>
-      <h2 class="section-title" id="situationTitle">Что случилось?</h2>
-      <p class="section-subtitle">
-        Выбери ситуацию 
-      </p>
+      <p class="eyebrow">GY-GY Club · зона перезагрузки и трансформации</p>
+      <h1 class="page-title" translate="no">De-Stress Studio</h1>
     </div>
-  </div>
-
-  <div class="choice-grid">
-    <button class="choice-button" type="button"
-            data-situation="0" aria-pressed="false">
-      <span class="choice-symbol">💼</span>
-      <span class="choice-label">Поругался с начальником</span>
-    </button>
-
-    <button class="choice-button" type="button"
-            data-situation="1" aria-pressed="false">
-      <span class="choice-symbol">🚗</span>
-      <span class="choice-label">Обрызгала машина</span>
-    </button>
-
-    <button class="choice-button" type="button"
-            data-situation="2" aria-pressed="false">
-      <span class="choice-symbol">💩</span>
-      <span class="choice-label">Сел на жвачку</span>
-    </button>
-
-    <button class="choice-button" type="button"
-            data-situation="3" aria-pressed="false">
-      <span class="choice-symbol">🍺</span>
-      <span class="choice-label">Опрокинул бокал с пивом</span>
-    </button>
-
-    <button class="choice-button" type="button"
-            data-situation="4" aria-pressed="false">
-      <span class="choice-symbol">🏴‍☠️</span>
-      <span class="choice-label">Забыл, где заначка</span>
-    </button>
-
-    <button class="choice-button" type="button"
-            data-situation="5" aria-pressed="false">
-      <span class="choice-symbol">💸</span>
-      <span class="choice-label">По пьяне дал в займы</span>
-    </button>
-
-    <button class="choice-button" type="button"
-            data-situation="6" aria-pressed="false">
-      <span class="choice-symbol">💻</span>
-      <span class="choice-label"> Не помню, как сюда попал</span>
-    </button>
-
-    <button class="choice-button" type="button"
-            data-situation="7" aria-pressed="false">
-      <span class="choice-symbol">⏰</span>
-      <span class="choice-label">Женился</span>
-    </button>
-  </div>
-
-  <form class="custom-form" id="customSituationForm">
-    <input class="text-input" id="customSituationInput"
-           type="text" maxlength="180"
-           placeholder="Твоя ситуация в двух словах"
-           aria-label="Что? Где? Когда?">
-    <button class="gold-button" type="submit">
-      Выпей немного воды и рассказывай →
-    </button>
-  </form>
-
-  <p class="section-note" id="selectionNote" role="status"
-     aria-live="polite">
-  </p>
-</section>
-
-<section class="panel recipe-panel" aria-labelledby="recipeSectionTitle">
-  <div class="section-heading">
-    <div class="step-number" aria-hidden="true">02</div>
-    <div>
-      <h2 class="section-title" id="recipeSectionTitle">Случаи от Чарли</h2>
-      <p class="section-subtitle">
-        Абсурдный замес. Не лечит, но может рассмешить.
-      </p>
+    <div class="intro-copy">
+      <p>Рассказывай что стряслось, буквально двумя словами</p>
+      <p class="charlie-line">«Не всё нужно решать сегодня. Иногда достаточно отложить до завтра и всё решится само собой».</p>
     </div>
+  </section>
+
+  <div class="layout">
+
+    <!-- СЦЕНА: фраза и всё, что с ней можно сделать — всегда на виду -->
+    <section class="panel stage" aria-labelledby="stageTitle">
+      <h2 class="panel-title" id="stageTitle">Случаи от Чарли</h2>
+
+      <div class="stage-top">
+        <div class="recipe-mode" role="group">
+          <button class="mode-button active" id="charlieMode" type="button" aria-pressed="true">Выбор Чарли</button>
+          <button class="mode-button" id="myMode" type="button" aria-pressed="false">Твой вариант</button>
+        </div>
+        <span class="mix-count" id="mixCount"></span>
+      </div>
+
+      <p class="sit-chip" id="sitChip"></p>
+
+      <div class="recipe-card" aria-live="polite" aria-atomic="true">
+        <p class="recipe-label" id="recipeLabel"></p>
+        <h3 class="recipe-title" id="recipeTitle"></h3>
+        <p class="recipe-description" id="recipeDescription"></p>
+      </div>
+
+      <form class="custom-form" id="customRecipeForm" hidden>
+        <input class="text-input" id="customRecipeInput" type="text" maxlength="180" placeholder="Придумай своё ..." aria-label="Твой вариант">
+        <button class="gold-button" type="submit">Показать мой вариант</button>
+      </form>
+
+      <div class="actions-main">
+        <button class="text-button" type="button" id="anotherRecipe">↻ Другой замес</button>
+        <button class="text-button" type="button" id="doubleMix">⚡ Чарли, добей!</button>
+        <button class="text-button" type="button" id="copyRecipe">Копировать выражение ↗</button>
+      </div>
+
+      <details class="more" id="more">
+        <summary>Забирай: на футболку, в чат, на компьютер</summary>
+        <div class="share-row">
+          <button class="gold-button" type="button" id="goToAtelier">На футболку (текст) →</button>
+          <button class="gold-button" type="button" id="goToAi">Сделать с ИИ →</button>
+          <button class="outline-button" type="button" id="pngDark">PNG на тёмное ⬇</button>
+          <button class="outline-button" type="button" id="pngLight">PNG на светлое ⬇</button>
+          <button class="outline-button" type="button" id="saveTxt">TXT ⬇</button>
+          <button class="outline-button" type="button" id="shareTelegram">Telegram ✈</button>
+          <button class="outline-button" type="button" id="publishRecipe">Опубликовать в новостях клуба ↗</button>
+        </div>
+      </details>
+
+      <p class="status-message" id="statusMessage" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- ШАГ: что случилось -->
+    <section class="panel" aria-labelledby="situationTitle">
+      <h2 class="panel-title" id="situationTitle">Что случилось?</h2>
+      <p class="panel-sub">Выбери ситуацию</p>
+
+      <div class="choice-grid" id="choiceGrid"></div>
+
+      <form class="custom-form" id="customSituationForm">
+        <input class="text-input" id="customSituationInput" type="text" maxlength="180" placeholder="Твоя ситуация в двух словах" aria-label="Что? Где? Когда?">
+        <button class="gold-button" type="submit">Выпей немного воды и рассказывай →</button>
+      </form>
+    </section>
+
   </div>
-
-  <div class="recipe-toolbar">
-    <div class="recipe-mode" role="group"
-         aria-label="Выбор варианта">
-      <button class="mode-button active" id="charlieMode"
-              type="button" aria-pressed="true">
-        Выбор Чарли
-      </button>
-      <button class="mode-button" id="myMode"
-              type="button" aria-pressed="false">
-        Твой вариант
-      </button>
-    </div>
-    <span class="mix-count" id="mixCount">Замес № 1</span>
-  </div>
-
-  <div class="recipe-card" aria-live="polite" aria-atomic="true">
-    <p class="recipe-label" id="recipeLabel">
-      Рецепт дня · выбор Чарли
-    </p>
-    <h3 class="recipe-title" id="recipeTitle">
-      Зафонарь себе в контейнер!
-    </h3>
-    <p class="recipe-description" id="recipeDescription">
-      Уровень абсурда: как у всех. Применять с улыбкой
-    </p>
-  </div>
-
-  <div class="recipe-controls">
-    <button class="text-button" type="button" id="anotherRecipe">
-      ↻ Другой замес
-    </button>
-    <button class="text-button" type="button" id="doubleMix">
-      ⚡ Чарли, добей!
-    </button>
-    <button class="text-button" type="button" id="copyRecipe">
-      Копировать выражение ↗
-    </button>
-    <button class="text-button" type="button" id="publishRecipe">
-      «Опубликовать в новостях клуба» ↗
-    </button>
-  </div>
-
-  <form class="custom-form" id="customRecipeForm" hidden>
-    <input class="text-input" id="customRecipeInput"
-           type="text" maxlength="180"
-           placeholder="Придумай своё ..."
-           aria-label="Твой вариант ">
-    <button class="gold-button" type="submit">
-      Показать мой вариант
-    </button>
-  </form>
-
-  <p class="section-note" id="statusMessage"
-     role="status" aria-live="polite"></p>
-  <p class="section-note" id="publishStatus"
-     role="status" aria-live="polite"></p>
-</section>
-
-<section class="atelier-callout" aria-labelledby="atelierTitle">
-  <div>
-    <p class="eyebrow">Понравилось ?</p>
-    <h2 class="atelier-title" id="atelierTitle">Забирай</h2>
-    <p class="atelier-description">
-      Хочешь перенеси  на футболку себе или другу.
-      Если выражение зашло — передавай в Ателье.
-    </p>
-  </div>
-  <button class="gold-button" id="goToAtelier" type="button">
-    Передать в Ателье →
-  </button>
-</section>
 </main>
 
 <footer class="footer">
@@ -853,299 +250,388 @@ a:focus-visible {
 
 </div>
 
-<script>
-"use strict";
+<script type="module">
+import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
+import { init as initPassport } from './modules/passport.js';
+import { supabase } from './core/supabase-init.js';
 
-const complaintsDatabase = [
-  {text:"💼 Поругался с начальником", icon:"💼"},
-  {text:"🚗 Обрызгала машина", icon:"🚗"},
-  {text:"💩 Сел на жвачку", icon:"💩"},
-  {text:"🍺 Опрокинул бокал с пивом", icon:"🍺"},
-  {text:"🏴‍☠️ Забыл где заначка", icon:"🏴‍☠️"},
-  {text:"💸 По пьяне дал в займы", icon:"💸"},
-  {text:"💻 Подарили попугая", icon:"💻"},
-  {text:"⏰ Женился", icon:"⏰"}
-];
-
-const recipesDatabase = [
-  "Зафонарь себе в контейнер!",
-  "Сахаруй твою поддон!",
-  "Маракуй тебе в подкладку!",
-  "Залуди свою табуретку!",
-  "Напильником по сепаратору!",
-  "Застакань свои тапочки!",
-  "Распадись компот в баян!",
-  "Завались забор в предмете!"
-  "Трамбуй педаль в резинку!"
-];
-
-const state = {
-  selectedComplaint: null,
-  customComplaint: "",
-  currentRecipe: "",
-  customRecipe: "",
-  mode: "charlie",
-  mixNumber: 0,
-  history: []
-};
+initLocalization(document.body);
+initPassport(document.getElementById('passport-badge-container'));
 
 const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-const recipeTitle = $("recipeTitle");
-const recipeDescription = $("recipeDescription");
-const recipeLabel = $("recipeLabel");
-const selectionNote = $("selectionNote");
-const statusMessage = $("statusMessage");
-const customRecipeForm = $("customRecipeForm");
-const customRecipeInput = $("customRecipeInput");
+// Ситуации: единый список (кнопки и текст берутся отсюда)
+const SITUATIONS = [
+    ['💼', 'Поругался с начальником'],
+    ['🚗', 'Обрызгала машина'],
+    ['💩', 'Сел на жвачку'],
+    ['🍺', 'Опрокинул бокал с пивом'],
+    ['🏴‍☠️', 'Забыл, где заначка'],
+    ['💸', 'По пьяне дал в займы'],
+    ['💻', 'Не помню, как сюда попал'],
+    ['⏰', 'Женился']
+];
 
-function randomItem(items, avoid = "") {
-  const options = items.filter(item => item !== avoid);
-  const pool = options.length ? options : items;
-  return pool[Math.floor(Math.random() * pool.length)];
+// Встроенный запас: если база фраз недоступна, страница всё равно работает
+const FALLBACK_POOL = [
+    ['Зафонарь себе в контейнер!', 'Lantern yourself into the container!', 'Lampadaire-toi dans le conteneur !'],
+    ['Сахаруй твою поддон!', 'Sugar your pallet!', 'Sucre ta palette !'],
+    ['Маракуй тебе в подкладку!', 'Passion-fruit into your lining!', 'Maracuja-toi dans la doublure !'],
+    ['Залуди свою табуретку!', 'Solder your stool!', 'Soude ton tabouret !'],
+    ['Напильником по сепаратору!', 'File the separator!', 'Un coup de lime sur le séparateur !'],
+    ['Застакань свои тапочки!', 'Glassify your slippers!', 'Vitrifie tes pantoufles !'],
+    ['Распадись компот в баян!', 'Fall apart, compote, into the accordion!', 'Désagrège-toi, compote, dans l’accordéon !'],
+    ['Завались забор в предмете!', 'Collapse, fence, into the object!', 'Écroule-toi, clôture, dans l’objet !'],
+    ['Трамбуй педаль в резинку!', 'Tamp the pedal into the rubber band!', 'Tasse la pédale dans l’élastique !']
+].map(([text, en, fr]) => ({ id: null, source: 'club', text, translations: { en, fr } }));
+
+let pool = FALLBACK_POOL.slice();
+
+const state = { situationIndex: null, customSituation: '', mode: 'charlie', phrase: null, customRecipe: '', mixNumber: 0 };
+
+// ---------- текст фразы ----------
+function displayOf(p) {
+    if (!p) return '';
+    if (p.items) return p.items.map(displayOf).join(' ');
+    return (p.translations && p.translations[getCurrentLang()]) || p.text;
+}
+const currentText = () => displayOf(state.phrase);
+
+function randomPhrase(avoid) {
+    const options = pool.filter(p => p !== avoid && !(avoid && avoid.id && p.id === avoid.id));
+    const list = options.length ? options : pool;
+    return list[Math.floor(Math.random() * list.length)];
 }
 
-function currentComplaintText() {
-  if (state.customComplaint) return state.customComplaint;
-  if (state.selectedComplaint === null) return "";
-  return complaintsDatabase[state.selectedComplaint]?.text || "";
+// ---------- отрисовка ----------
+function renderChip() {
+    const el = $('sitChip');
+    if (state.situationIndex !== null) {
+        const [icon, label] = SITUATIONS[state.situationIndex];
+        el.innerHTML = 'Ситуация: <b>' + icon + ' ' + esc(label) + '</b>';
+    } else if (state.customSituation) {
+        el.innerHTML = 'Ситуация: <b translate="no">✍️ ' + esc(state.customSituation) + '</b>';
+    } else {
+        el.textContent = 'Выбери ситуацию справа или напиши свою.';
+    }
 }
 
-function setRecipe(text, double = false) {
-  state.currentRecipe = text;
-  state.mixNumber++;
-
-  state.history.push({
-    situation: currentComplaintText(),
-    recipe: text
-  });
-
-  recipeLabel.textContent = double
-    ? "Двойной замес · выбор Чарли"
-    : state.mode === "my"
-      ? "Твой вариант"
-      : "Рецепт дня · выбор Чарли";
-
-  recipeTitle.textContent = text;
-
-  recipeDescription.textContent = double
-    ? "Два выражения в одном замесе. Не ищи смысл — наслаждайся результатом."
-    : state.mode === "my"
-      ? "Авторский замес принят. Если понравилось — забирай фразу с собой."
-      : "Уровень абсурда: клубный. Применять с улыбкой и без попыток понять инструкцию.";
-
-  $("mixCount").textContent = "Замес № " + state.mixNumber;
-  statusMessage.textContent = "";
-  $("publishStatus").textContent = "";
+function render() {
+    const p = state.phrase;
+    const my = state.mode === 'my';
+    $('recipeLabel').textContent = my ? 'Твой вариант'
+        : (p && p.items ? 'Двойной замес · выбор Чарли' : 'Рецепт дня · выбор Чарли');
+    const title = $('recipeTitle');
+    title.textContent = p ? displayOf(p) : (my ? 'Твой ход, мастер абсурда!' : '');
+    // слова, введённые посетителем, во внешний сервис перевода не отправляем
+    if (p && p.source === 'session') title.setAttribute('translate', 'no'); else title.removeAttribute('translate');
+    $('recipeDescription').textContent = my
+        ? (state.customRecipe ? 'Это твоё авторское выражение. Если понравилось — забирай фразу с собой.'
+                              : 'Придумай собственную фразу. Чем неожиданнее сочетание, тем лучше.')
+        : (p && p.items ? 'Два выражения в одном замесе. Не ищи смысл — наслаждайся результатом.'
+                        : 'Уровень абсурда: как у всех. Применять с улыбкой');
+    $('mixCount').textContent = state.mixNumber ? 'Замес № ' + state.mixNumber : '';
 }
 
-function chooseCharlieRecipe() {
-  state.mode = "charlie";
-  state.customRecipe = "";
+const say = msg => { $('statusMessage').textContent = msg || ''; };
 
-  $("charlieMode").classList.add("active");
-  $("charlieMode").setAttribute("aria-pressed", "true");
-  $("myMode").classList.remove("active");
-  $("myMode").setAttribute("aria-pressed", "false");
-
-  customRecipeForm.hidden = true;
-  setRecipe(randomItem(recipesDatabase, state.currentRecipe));
+function setModeButtons() {
+    const my = state.mode === 'my';
+    $('charlieMode').classList.toggle('active', !my);
+    $('charlieMode').setAttribute('aria-pressed', String(!my));
+    $('myMode').classList.toggle('active', my);
+    $('myMode').setAttribute('aria-pressed', String(my));
+    $('customRecipeForm').hidden = !my;
 }
 
-function showMyMode() {
-  state.mode = "my";
-
-  $("myMode").classList.add("active");
-  $("myMode").setAttribute("aria-pressed", "true");
-  $("charlieMode").classList.remove("active");
-  $("charlieMode").setAttribute("aria-pressed", "false");
-
-  customRecipeForm.hidden = false;
-  recipeLabel.textContent = "Твой вариант";
-  recipeTitle.textContent = state.customRecipe || "Твой ход, мастер абсурда!";
-
-  recipeDescription.textContent = state.customRecipe
-    ? "Это твоё авторское выражение. Если понравилось — отправляй его в Ателье."
-    : "Придумай собственную фразу. Чем неожиданнее сочетание, тем лучше.";
-
-  statusMessage.textContent = "";
+function chooseCharlie() {
+    state.mode = 'charlie';
+    setModeButtons();
+    state.phrase = randomPhrase(state.phrase);
+    state.mixNumber++;
+    say('');
+    render();
 }
 
-function selectComplaint(index) {
-  state.selectedComplaint = index;
-  state.customComplaint = "";
-
-  document.querySelectorAll("[data-situation]").forEach(button => {
-    const selected = Number(button.dataset.situation) === index;
-    button.classList.toggle("selected", selected);
-    button.setAttribute("aria-pressed", String(selected));
-  });
-
-  selectionNote.textContent =
-    "Ситуация выбрана: " + complaintsDatabase[index].text +
-    ". Теперь получи свой словесный замес.";
-
-  if (state.mode === "charlie") chooseCharlieRecipe();
+// статистика (только для фраз из базы)
+function bump(kind) {
+    const id = state.phrase && state.phrase.id;
+    if (!id) return;
+    try { supabase.rpc('destress_bump', { p_id: id, p_kind: kind }).then(() => {}, () => {}); } catch (e) { /* не критично */ }
 }
 
-document.querySelectorAll("[data-situation]").forEach(button => {
-  button.addEventListener("click", () => {
-    selectComplaint(Number(button.dataset.situation));
-  });
-});
+// ---------- ситуации ----------
+$('choiceGrid').innerHTML = SITUATIONS.map(([icon, label], i) =>
+    `<button class="choice-button" type="button" data-situation="${i}" aria-pressed="false"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
 
-$("customSituationForm").addEventListener("submit", event => {
-  event.preventDefault();
-
-  const value = $("customSituationInput").value.trim();
-
-  if (!value) {
-    selectionNote.textContent =
-      "Напиши, что случилось, и Чарли возьмётся за дело.";
-    return;
-  }
-
-  state.customComplaint = "✍️ " + value;
-  state.selectedComplaint = null;
-
-  document.querySelectorAll("[data-situation]").forEach(button => {
-    button.classList.remove("selected");
-    button.setAttribute("aria-pressed", "false");
-  });
-
-  selectionNote.textContent =
-    "Твоя ситуация: " + value + ". Принято к клубному рассмотрению.";
-
-  $("customSituationInput").value = "";
-
-  if (state.mode === "charlie") chooseCharlieRecipe();
-});
-
-$("charlieMode").addEventListener("click", chooseCharlieRecipe);
-$("myMode").addEventListener("click", showMyMode);
-
-$("anotherRecipe").addEventListener("click", () => {
-  if (state.mode === "my") {
-    statusMessage.textContent =
-      "Сначала введи свой вариант или переключись на «Выбор Чарли».";
-    return;
-  }
-
-  chooseCharlieRecipe();
-  statusMessage.textContent =
-    "Чарли перемешал колоду и выдал новый замес.";
-});
-
-$("doubleMix").addEventListener("click", () => {
-  const first = randomItem(recipesDatabase);
-  const second = randomItem(recipesDatabase, first);
-
-  state.mode = "charlie";
-
-  $("charlieMode").classList.add("active");
-  $("charlieMode").setAttribute("aria-pressed", "true");
-  $("myMode").classList.remove("active");
-  $("myMode").setAttribute("aria-pressed", "false");
-
-  customRecipeForm.hidden = true;
-  setRecipe(first + " " + second, true);
-});
-
-customRecipeForm.addEventListener("submit", event => {
-  event.preventDefault();
-
-  const value = customRecipeInput.value.trim();
-
-  if (!value) {
-    statusMessage.textContent = "Пустой стакан. Напиши своё выражение.";
-    return;
-  }
-
-  state.customRecipe = value;
-  state.mode = "my";
-
-  setRecipe(value);
-  recipeLabel.textContent = "Твой вариант";
-  customRecipeInput.value = "";
-});
-
-$("copyRecipe").addEventListener("click", async () => {
-  if (!state.currentRecipe) {
-    statusMessage.textContent = "Сначала выбери выражение.";
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(state.currentRecipe);
-    statusMessage.textContent = "Выражение скопировано.";
-  } catch {
-    statusMessage.textContent =
-      "Копирование недоступно в этом браузере. Выдели фразу и скопируй вручную.";
-  }
-});
-
-/*
- * Кнопка «Опубликовать».
- * В текущей версии запись сохраняется в браузере.
- * Для общей публикации на сайте нужно подключить серверную базу данных.
- */
-$("publishRecipe").addEventListener("click", () => {
-  if (!state.currentRecipe) {
-    $("publishStatus").textContent = "Сначала выбери выражение.";
-    return;
-  }
-
-  const entry = {
-    text: state.currentRecipe,
-    situation: currentComplaintText(),
-    publishedAt: new Date().toISOString()
-  };
-
-  try {
-    const key = "gygy-destress-published";
-    const existing = JSON.parse(localStorage.getItem(key) || "[]");
-
-    existing.unshift(entry);
-    localStorage.setItem(key, JSON.stringify(existing.slice(0, 50)));
-
-    $("publishStatus").textContent =
-      "Сохранено в публикациях этого браузера. " +
-      "Для общей ленты сайта нужно подключить серверное хранилище.";
-  } catch (error) {
-    $("publishStatus").textContent =
-      "Не удалось сохранить публикацию в этом браузере. Попробуй скопировать выражение.";
-  }
-});
-
-$("goToAtelier").addEventListener("click", () => {
-  const params = new URLSearchParams();
-
-  if (state.currentRecipe) {
-    params.set("phrase", state.currentRecipe);
-  }
-
-  const complaint = currentComplaintText();
-  if (complaint) params.set("situation", complaint);
-
-  window.location.href = "atelier.html?" + params.toString();
-});
-
-document.querySelectorAll("[data-language]").forEach(button => {
-  button.addEventListener("click", () => {
-    document.querySelectorAll("[data-language]").forEach(item => {
-      const active = item === button;
-      item.classList.toggle("active", active);
-      item.setAttribute("aria-pressed", String(active));
+$('choiceGrid').addEventListener('click', e => {
+    const b = e.target.closest('[data-situation]');
+    if (!b) return;
+    const index = Number(b.dataset.situation);
+    state.situationIndex = index;
+    state.customSituation = '';
+    document.querySelectorAll('[data-situation]').forEach(x => {
+        const sel = Number(x.dataset.situation) === index;
+        x.classList.toggle('selected', sel);
+        x.setAttribute('aria-pressed', String(sel));
     });
-
-    statusMessage.textContent =
-      button.dataset.language === "ru"
-        ? "Выбран русский язык."
-        : "Перевод EN/FR пока не подключён.";
-  });
+    renderChip();
+    if (state.mode === 'charlie') chooseCharlie();
 });
 
-setRecipe(randomItem(recipesDatabase));
+$('customSituationForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const value = $('customSituationInput').value.trim();
+    if (!value) { say('Напиши, что случилось, и Чарли возьмётся за дело.'); return; }
+    state.customSituation = value;
+    state.situationIndex = null;
+    document.querySelectorAll('[data-situation]').forEach(x => { x.classList.remove('selected'); x.setAttribute('aria-pressed', 'false'); });
+    $('customSituationInput').value = '';
+    renderChip();
+    if (state.mode === 'charlie') chooseCharlie();
+});
+
+// ---------- рецепт ----------
+$('charlieMode').addEventListener('click', chooseCharlie);
+
+$('myMode').addEventListener('click', () => {
+    state.mode = 'my';
+    setModeButtons();
+    state.phrase = state.customRecipe ? { id: null, text: state.customRecipe, translations: {}, source: 'session' } : null;
+    say('');
+    render();
+});
+
+$('anotherRecipe').addEventListener('click', () => {
+    if (state.mode === 'my') { say('Сначала введи свой вариант или переключись на «Выбор Чарли».'); return; }
+    chooseCharlie();
+    say('Чарли перемешал колоду и выдал новый замес.');
+});
+
+$('doubleMix').addEventListener('click', () => {
+    const a = randomPhrase(null);
+    const b = randomPhrase(a);
+    state.mode = 'charlie';
+    setModeButtons();
+    state.phrase = { id: null, items: [a, b], source: 'club' };
+    state.mixNumber++;
+    say('');
+    render();
+});
+
+$('customRecipeForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const value = $('customRecipeInput').value.trim();
+    if (!value) { say('Пустой стакан. Напиши своё выражение.'); return; }
+    state.customRecipe = value;
+    state.mode = 'my';
+    state.phrase = { id: null, text: value, translations: {}, source: 'session' };
+    state.mixNumber++;
+    $('customRecipeInput').value = '';
+    say('');
+    render();
+});
+
+$('copyRecipe').addEventListener('click', async () => {
+    const text = currentText();
+    if (!text) { say('Сначала выбери выражение.'); return; }
+    try {
+        await navigator.clipboard.writeText(text);
+        say('Выражение скопировано.');
+        bump('copy');
+    } catch (err) {
+        say('Копирование недоступно в этом браузере. Выдели фразу и скопируй вручную.');
+    }
+});
+
+// «Опубликовать»: своя фраза уходит на проверку; в общий набор попадает после одобрения
+$('publishRecipe').addEventListener('click', async () => {
+    const p = state.phrase;
+    if (!p) { say('Сначала выбери выражение.'); return; }
+    if (p.source !== 'session') { say('Эта фраза уже в базе клуба.'); return; }
+    const key = 'gygy-destress-last-submit';
+    const last = Number(localStorage.getItem(key) || 0);
+    if (Date.now() - last < 20000) { say('Подожди немного перед следующей фразой.'); return; }
+    const { error } = await supabase.from('destress_phrases').insert({
+        text: p.text.trim(), lang: getCurrentLang(), source: 'user', status: 'pending', translations: {},
+        situation: state.situationIndex !== null ? 'sit_' + state.situationIndex : null
+    });
+    if (error) {
+        say(error.code === '23505' ? 'Такая фраза уже есть в базе.' : 'Не удалось отправить фразу. Попробуй позже.');
+        return;
+    }
+    try { localStorage.setItem(key, String(Date.now())); } catch (err) { /* ок */ }
+    say('Отправлено на проверку. После одобрения фраза попадёт в общую базу клуба.');
+});
+
+// ---------- картинки и файлы ----------
+const FONT = '"Playfair Display", Georgia, serif';
+async function ensureFont() { try { await document.fonts.load('700 120px "Playfair Display"'); } catch (e) { /* запасной шрифт */ } }
+function wrapLines(ctx, text, maxW) {
+    const words = text.split(/\s+/);
+    const lines = [];
+    let cur = '';
+    words.forEach(w => {
+        const test = cur ? cur + ' ' + w : w;
+        if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; } else cur = test;
+    });
+    if (cur) lines.push(cur);
+    return lines;
+}
+
+// Принт: прозрачный фон; светлый текст — на тёмное изделие, тёмный — на светлое
+async function phrasePng(text, forDark) {
+    await ensureFont();
+    const W = 1800, pad = 90;
+    const probe = document.createElement('canvas').getContext('2d');
+    let size = 240, lines;
+    for (;;) {
+        probe.font = `700 ${size}px ${FONT}`;
+        lines = wrapLines(probe, text, W - pad * 2);
+        if (lines.length <= 5 || size <= 70) break;
+        size -= 10;
+    }
+    const lineH = Math.round(size * 1.2);
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = lines.length * lineH + pad * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.font = `700 ${size}px ${FONT}`;
+    ctx.fillStyle = forDark ? '#F0EAD6' : '#1a1408';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    lines.forEach((ln, i) => ctx.fillText(ln, W / 2, pad + lineH * i + lineH / 2));
+    return new Promise(res => canvas.toBlob(res, 'image/png'));
+}
+
+// Открытка для чата: тёмный фон, золотой текст, подпись клуба
+async function phraseCard(text) {
+    await ensureFont();
+    const W = 1200, H = 630, pad = 80;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#100e0b';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#76582d';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(24, 24, W - 48, H - 48);
+    let size = 120, lines;
+    for (;;) {
+        ctx.font = `700 ${size}px ${FONT}`;
+        lines = wrapLines(ctx, text, W - pad * 2);
+        if (lines.length * size * 1.2 <= H - 220 || size <= 40) break;
+        size -= 6;
+    }
+    ctx.fillStyle = '#f0d69d';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const lineH = Math.round(size * 1.2);
+    const top = (H - 90 - lines.length * lineH) / 2 + lineH / 2;
+    lines.forEach((ln, i) => ctx.fillText(ln, W / 2, top + lineH * i));
+    ctx.font = `700 34px ${FONT}`;
+    ctx.fillStyle = '#d8b36a';
+    ctx.fillText('GY-GY CLUB', W / 2, H - 70);
+    return new Promise(res => canvas.toBlob(res, 'image/png'));
+}
+
+function downloadBlob(blob, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+async function savePng(forDark) {
+    const text = currentText();
+    if (!text) { say('Сначала выбери выражение.'); return; }
+    const blob = await phrasePng(text, forDark);
+    if (!blob) return;
+    downloadBlob(blob, forDark ? 'gygy-phrase-for-dark.png' : 'gygy-phrase-for-light.png');
+    say('Сохранено на компьютер.');
+    bump('download');
+}
+$('pngDark').addEventListener('click', () => savePng(true));
+$('pngLight').addEventListener('click', () => savePng(false));
+
+$('saveTxt').addEventListener('click', () => {
+    const text = currentText();
+    if (!text) { say('Сначала выбери выражение.'); return; }
+    downloadBlob(new Blob([text + '\n— GY-GY Club\n'], { type: 'text/plain;charset=utf-8' }), 'gygy-phrase.txt');
+    say('Сохранено на компьютер.');
+    bump('download');
+});
+
+// ---------- Ателье и Telegram ----------
+function atelierLink(ai) {
+    const u = new URL('atelier.html', location.href);
+    u.searchParams.set('phrase', currentText());
+    if (ai) u.searchParams.set('ai', '1');
+    if (state.phrase && state.phrase.id) u.searchParams.set('pid', state.phrase.id);
+    u.searchParams.set('from', 'studio');
+    return u.href;
+}
+
+$('goToAtelier').addEventListener('click', () => {
+    if (!currentText()) { say('Сначала выбери выражение.'); return; }
+    window.location.href = atelierLink(false);
+});
+$('goToAi').addEventListener('click', () => {
+    if (!currentText()) { say('Сначала выбери выражение.'); return; }
+    window.location.href = atelierLink(true);
+});
+
+$('shareTelegram').addEventListener('click', async () => {
+    const text = currentText();
+    if (!text) { say('Сначала выбери выражение.'); return; }
+    const link = atelierLink(false);
+    const message = text + '\n— GY-GY Club';
+    try {
+        if (navigator.canShare && navigator.share) {
+            const card = await phraseCard(text);
+            const file = new File([card], 'gygy-phrase.png', { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], text: message + '\n' + link });
+                bump('share');
+                say('Отправлено.');
+                return;
+            }
+        }
+    } catch (err) {
+        if (err && err.name === 'AbortError') return;
+    }
+    window.open('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(message), '_blank', 'noopener');
+    bump('share');
+    say('Открываю Telegram…');
+});
+
+// ---------- навигация и язык ----------
+$('btn-back').addEventListener('click', () => { window.location.href = 'bar.html'; });
+$('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
+onLanguageChange(() => { renderChip(); render(); });
+
+// на компьютере блок «Забирай» открыт, на телефоне свёрнут, чтобы сцена не занимала экран
+if (window.matchMedia('(min-width: 901px)').matches) $('more').open = true;
+
+// ---------- база фраз ----------
+async function loadPool() {
+    try {
+        const { data, error } = await supabase.from('destress_phrases')
+            .select('id, text, translations').eq('status', 'approved').limit(500);
+        if (error) throw error;
+        if (data && data.length) pool = data.map(r => ({ id: r.id, text: r.text, translations: r.translations || {}, source: 'club' }));
+    } catch (e) {
+        console.warn('[Studio] База фраз недоступна — используются встроенные фразы.', e);
+    }
+}
+
+await loadPool();
+renderChip();
+chooseCharlie();
 </script>
 </body>
 </html>
