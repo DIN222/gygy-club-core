@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<!--
+  space-construction.html — Центр космического строительства — v1.0.0 — 2026-10-30
+  Сцена (ракета, шкала, пуск) всегда на виду; шаги сборки рядом. Конец: пуск и надпись
+  «See you on the Moon». Print bay: текущая ракета как нашивка → Ателье / PNG / Telegram.
+  Стена экипажа — начало форума. После пуска открывается Лунная база.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<title>GY-GY Club — Space Construction Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="qrcode.min.js"></script>
+<link rel="stylesheet" href="space.css">
+</head>
+<body>
+<div class="sp-bg" style="--bg: url('space_center_bg.jpg');"></div>
+
+<div class="sp-top">
+    <div class="sp-nav" translate="no">
+        <span id="btn-back" title="Back" data-translate-title="nav_back">&lt;</span>
+        <span id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</span>
+    </div>
+    <div class="sp-logo" translate="no">GY-GY</div>
+</div>
+<div id="passport-badge-container"></div>
+
+<main class="sp-page">
+    <h1 class="sp-title" data-translate="sp_center_title">Space Construction Center</h1>
+    <p class="sp-lead" data-translate="sp_center_sub">Assemble the rocket step by step, name the mission and launch.</p>
+
+    <div class="sp-grid">
+        <div class="sp-left">
+            <div class="sp-panel sp-stagebox">
+                <div class="sp-stagewrap">
+                    <canvas id="stage" width="720" height="460"></canvas>
+                    <div class="sp-overlay" id="overlay" translate="no"></div>
+                </div>
+                <div class="sp-bar"><i id="barfill"></i></div>
+                <div class="sp-row" style="justify-content:space-between; align-items:center;">
+                    <span class="sp-progress" id="progress" translate="no"></span>
+                    <button class="sp-btn primary" id="launch" type="button" disabled data-translate="sp_launch">LAUNCH</button>
+                </div>
+                <div class="sp-after" id="after" hidden>
+                    <div class="sp-row">
+                        <button class="sp-btn" id="after-patch" type="button" data-translate="sp_after_patch">Print the mission patch</button>
+                        <button class="sp-btn primary" id="after-moon" type="button" data-translate="sp_after_moon">To the Lunar Base →</button>
+                        <button class="sp-btn" id="again" type="button" data-translate="sp_again">Build another rocket</button>
+                    </div>
+                </div>
+                <p class="sp-status" id="status" role="status" translate="no"></p>
+            </div>
+
+            <div class="sp-panel sp-baybox" id="bay-box">
+                <h2 class="sp-h" data-translate="sp_bay_title">Print bay</h2>
+                <p class="sp-sub" data-translate="sp_bay_sub">Your rocket as it stands now, as a patch for a garment.</p>
+                <div class="sp-bay">
+                    <canvas id="bay" width="480" height="480"></canvas>
+                    <div class="sp-row" style="margin:0;">
+                        <button class="sp-btn primary" id="bay-atelier" type="button" data-translate="sp_to_atelier">Send to the Atelier →</button>
+                        <button class="sp-btn" id="bay-png" type="button" data-translate="sp_png">Save PNG ⬇</button>
+                        <button class="sp-btn" id="bay-tg" type="button" data-translate="sp_telegram">Telegram ✈</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sp-right">
+            <div class="sp-panel sp-steps" id="steps">
+                <details class="sp-step" data-step="mission" open>
+                    <summary data-translate="sp_step_mission">1 · Mission</summary>
+                    <div class="body">
+                        <input class="sp-input" id="mission" type="text" maxlength="28" placeholder="Mission name (up to 28 characters)" data-translate-placeholder="sp_mission_ph">
+                        <input class="sp-input" id="crew" type="text" maxlength="30" placeholder="Crew name" data-translate-placeholder="sp_crew_ph">
+                    </div>
+                </details>
+                <details class="sp-step" data-step="capsule">
+                    <summary data-translate="sp_step_capsule">2 · Capsule</summary>
+                    <div class="body"><div class="sp-row">
+                        <button class="sp-opt" type="button" data-k="capsule" data-v="classic" data-translate="sp_capsule_classic">Classic</button>
+                        <button class="sp-opt" type="button" data-k="capsule" data-v="dome" data-translate="sp_capsule_dome">Dome</button>
+                        <button class="sp-opt" type="button" data-k="capsule" data-v="probe" data-translate="sp_capsule_probe">Probe</button>
+                    </div></div>
+                </details>
+                <details class="sp-step" data-step="hull">
+                    <summary data-translate="sp_step_hull">3 · Hull</summary>
+                    <div class="body"><div class="sp-row">
+                        <button class="sp-opt" type="button" data-k="hull" data-v="ivory" data-translate="sp_hull_ivory">Ivory</button>
+                        <button class="sp-opt" type="button" data-k="hull" data-v="gold" data-translate="sp_hull_gold">Gold</button>
+                        <button class="sp-opt" type="button" data-k="hull" data-v="black" data-translate="sp_hull_black">Black</button>
+                    </div></div>
+                </details>
+                <details class="sp-step" data-step="engines">
+                    <summary data-translate="sp_step_engines">4 · Engines</summary>
+                    <div class="body"><div class="sp-row">
+                        <span data-translate="sp_engines_label" style="align-self:center;">Engines:</span>
+                        <button class="sp-opt" type="button" data-k="engines" data-v="1" translate="no">1</button>
+                        <button class="sp-opt" type="button" data-k="engines" data-v="2" translate="no">2</button>
+                        <button class="sp-opt" type="button" data-k="engines" data-v="3" translate="no">3</button>
+                    </div></div>
+                </details>
+                <details class="sp-step" data-step="motto">
+                    <summary data-translate="sp_step_motto">5 · Motto (optional)</summary>
+                    <div class="body">
+                        <input class="sp-input" id="motto" type="text" maxlength="40" placeholder="Motto (up to 40 characters)" data-translate-placeholder="sp_motto_ph">
+                        <div class="sp-row"><button class="sp-btn" id="motto-charlie" type="button" data-translate="sp_motto_charlie">Take a phrase from Charlie</button></div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="sp-panel sp-wallbox" id="wall"></div>
+        </div>
+    </div>
+</main>
+
+<script type="module">
+    import { init as initLocalization, t, getCurrentLang, onLanguageChange, registerDictionary } from './core/localization.js';
+    import { SPACE_DICT } from './core/i18n/space.js';
+    import { init as initPassport } from './modules/passport.js';
+    import { supabase } from './core/supabase-init.js';
+    import { drawStage, runLaunch, renderEmblem, canvasBlob, ensureFonts } from './modules/spaceArt.js';
+    import { mountForum, getCrewName, setCrewName } from './modules/spaceForum.js';
+    import { sendImageToAtelier, downloadBlob, shareImage } from './modules/toAtelier.js';
+
+    registerDictionary(SPACE_DICT);
+    initLocalization(document.body);
+    initPassport(document.getElementById('passport-badge-container'));
+
+    const $ = id => document.getElementById(id);
+    const S = { mission: '', capsule: null, hull: null, engines: null, motto: '' };
+    let stopLaunch = null, launching = false, finished = false, bayTimer = null;
+
+    const cfg = () => ({ capsule: S.capsule, hull: S.hull, engines: S.engines });
+    const crew = () => ($('crew').value.trim() || getCrewName()).slice(0, 30);
+    const say = (m) => { $('status').textContent = m || ''; };
+    const completed = () => [S.mission.trim().length >= 2, !!S.capsule, !!S.hull, !!S.engines].filter(Boolean).length;
+
+    // ---------- шаги ----------
+    const steps = [...document.querySelectorAll('details.sp-step')];
+    steps.forEach(d => d.addEventListener('toggle', () => {
+        if (d.open) steps.forEach(o => { if (o !== d) o.open = false; });
+    }));
+    const openStep = (name) => { const d = document.querySelector(`details[data-step="${name}"]`); if (d) d.open = true; };
+    const markDone = (name, ok) => { const d = document.querySelector(`details[data-step="${name}"]`); if (d) d.classList.toggle('done', ok); };
+
+    function refresh() {
+        const n = completed();
+        $('progress').textContent = t('sp_progress', 'Ready: {n} of 4', { n });
+        $('barfill').style.width = (n * 25) + '%';
+        $('launch').disabled = n < 4 || launching;
+        markDone('mission', S.mission.trim().length >= 2);
+        markDone('capsule', !!S.capsule); markDone('hull', !!S.hull);
+        markDone('engines', !!S.engines); markDone('motto', S.motto.trim().length > 0);
+        if (!launching && !finished) drawStage($('stage'), cfg());
+        clearTimeout(bayTimer);
+        bayTimer = setTimeout(updateBay, 150);
+    }
+
+    $('mission').addEventListener('input', (e) => { S.mission = e.target.value; refresh(); });
+    $('motto').addEventListener('input', (e) => { S.motto = e.target.value; refresh(); });
+    $('crew').value = (getCrewName() === 'Guest') ? '' : getCrewName();
+    $('crew').addEventListener('change', (e) => { setCrewName(e.target.value); refresh(); });
+
+    const NEXT = { capsule: 'hull', hull: 'engines', engines: 'motto' };
+    document.querySelectorAll('.sp-opt').forEach(b => b.addEventListener('click', () => {
+        const k = b.dataset.k;
+        S[k] = (k === 'engines') ? Number(b.dataset.v) : b.dataset.v;
+        document.querySelectorAll(`.sp-opt[data-k="${k}"]`).forEach(x => x.classList.toggle('sel', x === b));
+        refresh();
+        if (NEXT[k]) openStep(NEXT[k]);
+    }));
+
+    // девиз из фраз De-Stress Studio (только короткие одобренные)
+    $('motto-charlie').addEventListener('click', async () => {
+        let list = [];
+        try {
+            const { data } = await supabase.from('destress_phrases').select('text, translations').eq('status', 'approved').limit(200);
+            list = (data || []).map(r => (r.translations && r.translations[getCurrentLang()]) || r.text).filter(x => x && x.length <= 40);
+        } catch (e) { /* запасной вариант ниже */ }
+        const pick = list.length ? list[Math.floor(Math.random() * list.length)] : 'Per aspera ad astra';
+        $('motto').value = pick;
+        S.motto = pick;
+        refresh();
+    });
+
+    // ---------- Print bay ----------
+    function emblemOpts(size) {
+        return {
+            scene: 'rocket', cfg: cfg(),
+            top: S.mission.trim() || t('sp_mission_default', 'NEW MISSION'),
+            bottom: crew() + ' · GY-GY SPACE PROGRAM',
+            note: S.motto.trim(), size
+        };
+    }
+    async function updateBay() {
+        const c = await renderEmblem(emblemOpts(480));
+        const b = $('bay');
+        b.width = 480; b.height = 480;
+        b.getContext('2d').drawImage(c, 0, 0);
+    }
+    const patchBlob = async () => canvasBlob(await renderEmblem(emblemOpts(1200)));
+
+    $('bay-atelier').addEventListener('click', async () => {
+        try {
+            say(t('sp_sending', 'Sending to the Atelier…'));
+            await sendImageToAtelier(await patchBlob(), 'space-center');
+        } catch (e) {
+            say(t('sp_too_large', 'The image is too large to send. Save the PNG and upload it in the Atelier.'));
+        }
+    });
+    $('bay-png').addEventListener('click', async () => {
+        downloadBlob(await patchBlob(), 'gygy-mission-patch.png');
+        say(t('sp_saved', 'Saved to your computer.'));
+    });
+    $('bay-tg').addEventListener('click', async () => {
+        const r = await shareImage(await patchBlob(), (S.mission.trim() + ' · GY-GY Club').trim(), 'gygy-mission-patch.png');
+        say(r === 'shared' ? t('sp_shared', 'Shared.') : (r === 'telegram' ? t('sp_opening_tg', 'Opening Telegram…') : ''));
+    });
+
+    // ---------- пуск ----------
+    $('launch').addEventListener('click', async () => {
+        if (launching || completed() < 4) return;
+        await ensureFonts();
+        launching = true; finished = false;
+        $('launch').disabled = true;
+        $('steps').classList.add('locked');
+        $('after').hidden = true;
+        say('');
+        const ov = $('overlay');
+        ov.className = 'sp-overlay show';
+        stopLaunch = runLaunch($('stage'), cfg(), {
+            onCount: (n) => { ov.textContent = String(n); },
+            onLiftoff: () => { ov.textContent = t('sp_liftoff', 'LIFTOFF'); setTimeout(() => ov.classList.remove('show'), 1500); },
+            onDone: finish
+        });
+    });
+
+    function finish() {
+        launching = false; finished = true;
+        const ov = $('overlay');
+        ov.className = 'sp-overlay show final';
+        ov.textContent = t('sp_final', 'See you on the Moon');
+        try {
+            localStorage.setItem('gygy_space_launched', '1');
+            localStorage.setItem('gygy_space_mission', JSON.stringify({ ...cfg(), mission: S.mission.trim(), motto: S.motto.trim(), crew: crew(), at: Date.now() }));
+        } catch (e) { /* ок */ }
+        $('after').hidden = false;
+    }
+
+    $('after-patch').addEventListener('click', () => {
+        const box = $('bay-box');
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        box.classList.remove('pulse'); void box.offsetWidth; box.classList.add('pulse');
+    });
+    $('after-moon').addEventListener('click', () => { window.location.href = 'lunar-base.html'; });
+    $('again').addEventListener('click', () => {
+        if (stopLaunch) stopLaunch();
+        launching = false; finished = false;
+        $('overlay').className = 'sp-overlay';
+        $('after').hidden = true;
+        $('steps').classList.remove('locked');
+        refresh();
+    });
+
+    // ---------- навигация и язык ----------
+    $('btn-back').addEventListener('click', () => { window.location.href = 'verses.html'; });
+    $('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
+    onLanguageChange(refresh);
+
+    mountForum($('wall'), { area: 'center' });
+    refresh();
+</script>
+</body>
+</html>
