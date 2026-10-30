@@ -76,8 +76,8 @@ export const ATELIER_DICT = {
         at_pay_cancelled: 'Payment cancelled, order not placed.',
         at_not_delivered: 'Order saved on this device but NOT delivered to Accounting: {msg}',
         at_paid_ok: 'Paid. Your order has been placed!',
-        at_cod_ok: 'Order placed. You will pay at the post office on receipt.',
-
+               at_cod_ok: 'Order placed. You will pay at the post office on receipt.',
+        at_ai_hint: 'AI tools often misspell words. Copy the prompt, create the picture, check the text on it, then upload it with “UPLOAD PNG FILE”.',
         at_fab_tshirt_cotton100: '100% COTTON',
         at_fab_tshirt_stretch: 'STRETCH (95% cotton / 5% elastane)',
         at_fab_hoodie_cotton80poly20: '80% COTTON / 20% POLYESTER',
@@ -158,8 +158,8 @@ export const ATELIER_DICT = {
         at_pay_cancelled: 'Paiement annulé, commande non passée.',
         at_not_delivered: 'Commande enregistrée sur cet appareil mais NON transmise à la comptabilité : {msg}',
         at_paid_ok: 'Payé. Votre commande a été passée !',
-        at_cod_ok: 'Commande passée. Vous paierez au bureau de poste à la réception.',
-
+              at_cod_ok: 'Commande passée. Vous paierez au bureau de poste à la réception.',
+        at_ai_hint: 'Les outils d’IA font souvent des fautes d’orthographe. Copie le prompt, crée l’image, vérifie le texte, puis téléverse-la avec « TÉLÉVERSER UN FICHIER PNG ».',
         at_fab_tshirt_cotton100: '100 % COTON',
         at_fab_tshirt_stretch: 'STRETCH (95 % coton / 5 % élasthanne)',
         at_fab_hoodie_cotton80poly20: '80 % COTON / 20 % POLYESTER',
