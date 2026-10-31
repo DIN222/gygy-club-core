@@ -169,7 +169,7 @@
       resumeAmbient({ volume: 0.5 });
     initPassport(document.getElementById('passport-badge-container'));
     initNav(document.body);
-  
+      applyHallVisibility({ 'btn-store': 'pk2', 'btn-souvenirs': 'pk3' });
 
     document.getElementById('btn-ai-room').addEventListener('click', () => goToPage('verses.html'));
     document.getElementById('btn-bar').addEventListener('click', () => goToPage('bar.html', { sound: 'door' }));
