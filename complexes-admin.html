@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!-- complexes-admin.html — v1.0.0 — 2026-10-31 — Бухгалтерия → Пусковые комплексы: открыть, закрыть, дата запуска -->
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Пусковые комплексы</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+    :root { --gold: #FFD700; --gold-dim: #8a6f24; --ivory: #F0EAD6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; background: #000; color: var(--gold); font-family: 'Share Tech Mono', monospace; }
+    .header-right { position: absolute; top: 18px; right: 25px; font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif; pointer-events: none; }
+    .ui-nav-arrows { position: absolute; top: 18px; left: 20px; display: flex; gap: 15px; font-size: 24px; font-weight: 900; }
+    .back-arrow { color: var(--gold); cursor: pointer; }
+    .page-wrap { min-height: 100vh; padding: 70px 16px 60px; display: flex; flex-direction: column; align-items: center; }
+    .title { font-family: 'Cinzel', serif; font-size: 20px; margin-bottom: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .help { max-width: 760px; font-size: 11px; color: #9a9a8a; line-height: 1.6; margin-bottom: 16px; text-align: center; }
+    .panel { width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 10px; }
+    .item { border: 1px solid var(--gold-dim); background: #0a0a0a; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .item.s-open { border-color: #3c9d5a; }
+    .item.s-preview { border-color: #e0a030; }
+    .name { font-size: 14px; color: var(--ivory); }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .lbl { font-size: 10px; color: #9a9a8a; }
+    select, input[type="datetime-local"] { padding: 7px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 11px; }
+    .btn { background: #000; color: var(--gold); border: 1px solid var(--gold-dim); padding: 7px 12px; font-size: 11px; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+    .btn:hover { border-color: var(--gold); }
+    .badge { font-size: 10px; padding: 2px 8px; border: 1px solid currentColor; }
+    .b-open { color: #6fd48a; } .b-preview { color: #e0a030; } .b-closed { color: #e74c3c; }
+    .status { font-size: 11px; color: var(--ivory); min-height: 15px; }
+    .status.error { color: #e74c3c; } .status.ok { color: #6fd48a; }
+</style>
+</head>
+<body>
+<div class="header-right">GY-GY</div>
+<div class="ui-nav-arrows"><a class="back-arrow" id="btn-back">&lt;</a><a class="back-arrow" id="btn-accounting">&lt;&lt;</a></div>
+
+<div class="page-wrap">
+    <div class="title">ПУСКОВЫЕ КОМПЛЕКСЫ</div>
+    <div class="help">
+        Закрыт — никто не входит, кнопка в Холле скрыта. Проверка — входите только вы (вошедший сотрудник).
+        Открыт — для всех. Если указана дата, комплекс откроется сам, когда она наступит.
+        Пока комплекс закрыт, посетители не могут записывать его заказы в «Приход».
+    </div>
+    <div class="panel" id="list"></div>
+    <div class="status" id="status"></div>
+</div>
+
+<script type="module">
+    import { requireAuth } from './core/auth.js';
+    import { supabase } from './core/supabase-init.js';
+    import { effectiveStatus } from './core/complexes.js';
+
+    const session = await requireAuth();
+    if (!session) throw new Error('redirecting to login');
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const LABEL = { closed: 'закрыт', preview: 'проверка', open: 'открыт' };
+
+    function toLocalInput(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        const p = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+    const setStatus = (text, cls) => { $('status').textContent = text; $('status').className = 'status' + (cls ? ' ' + cls : ''); };
+
+    async function load() {
+        const { data, error } = await supabase.from('launch_complexes').select('*').order('sort');
+        if (error) { setStatus('Не удалось загрузить: ' + error.message + ' — проверьте, что SQL выполнен.', 'error'); return; }
+        $('list').innerHTML = (data || []).map(r => {
+            const eff = effectiveStatus(r);
+            return `<div class="item s-${eff}" data-code="${esc(r.code)}">
+                <div class="row"><span class="name">${esc(r.title)}</span><span class="badge b-${eff}">сейчас: ${esc(LABEL[eff])}</span></div>
+                <div class="row">
+                    <span class="lbl">Статус</span>
+                    <select data-f="status">
+                        <option value="closed"${r.status === 'closed' ? ' selected' : ''}>Закрыт</option>
+                        <option value="preview"${r.status === 'preview' ? ' selected' : ''}>Проверка (только сотрудники)</option>
+                        <option value="open"${r.status === 'open' ? ' selected' : ''}>Открыт</option>
+                    </select>
+                    <span class="lbl">Открыть сам</span>
+                    <input type="datetime-local" data-f="opens" value="${esc(toLocalInput(r.opens_at))}">
+                    <button class="btn" data-save type="button">Сохранить</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    $('list').addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-save]');
+        if (!btn) return;
+        const item = btn.closest('.item');
+        const status = item.querySelector('[data-f="status"]').value;
+        const opensVal = item.querySelector('[data-f="opens"]').value;
+        const { error } = await supabase.from('launch_complexes').update({
+            status,
+            opens_at: opensVal ? new Date(opensVal).toISOString() : null,
+            updated_at: new Date().toISOString()
+        }).eq('code', item.dataset.code);
+        if (error) { setStatus('Ошибка: ' + error.message, 'error'); return; }
+        setStatus('Сохранено.', 'ok');
+        load();
+    });
+
+    $('btn-back').addEventListener('click', () => history.back());
+    $('btn-accounting').addEventListener('click', () => window.location.href = 'accounting.html');
+    load();
+</script>
+</body>
+</html>
