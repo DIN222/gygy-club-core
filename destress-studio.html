@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v3.0.0 — 2026-10-28
-  «Сцена и шаги»: фраза и действия с ней всегда на виду (на телефоне сцена закреплена сверху),
-  выбор ситуации рядом. Подключено к проекту: стрелки, общий паспорт, звук по сценарию,
-  перевод через блок перевода, база фраз Supabase (destress_phrases) с проверкой,
-  сохранение PNG/TXT, Telegram, передача в Ателье (текстом на изделие или запросом для ИИ).
+  destress-studio.html — De-Stress Studio — v4.0.0 — 2026-10-31
+  «В глубину»: слой 1 — ситуации; выбрал — слой 2: фраза выходит вперёд, ситуация уходит назад
+  и остаётся меткой; слой 3 — «Забирай» выезжает снизу, фраза остаётся над ним.
+  Без пояснений и слоганов: бренд — логотип. Тексты — русские (основа), EN/FR — блок перевода.
 -->
 <html lang="en">
 <head>
@@ -15,13 +14,13 @@
 <title>De-Stress Studio — GY-GY Club</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root { --black:#100e0b; --panel:rgba(23,20,16,.94); --gold:#d8b36a; --light:#f0d69d; --dark:#76582d; --text:#f0e8d8; --muted:#b0a38d; --line:rgba(216,179,106,.27); --radius:13px; }
+:root { --black:#100e0b; --panel:rgba(23,20,16,.94); --gold:#d8b36a; --light:#f0d69d; --dark:#76582d; --text:#f0e8d8; --muted:#b0a38d; --line:rgba(216,179,106,.27); }
 * { box-sizing: border-box; }
 html { min-height: 100%; background: var(--black); }
 body { min-height: 100vh; margin: 0; color: var(--text); background: var(--black); font: 15px/1.5 Inter, "Segoe UI", Arial, sans-serif; overflow-x: hidden; }
 button, input { font: inherit; }
 button { cursor: pointer; }
-button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--light); outline-offset: 3px; }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--light); outline-offset: 3px; }
 
 .background-photo {
   position: fixed; inset: 0; z-index: 0; pointer-events: none; background-color: var(--black);
@@ -31,78 +30,67 @@ button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visibl
     url("destress_bg.jpg");
   background-size: cover; background-position: center; background-repeat: no-repeat;
 }
-.page { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(1240px, calc(100% - 32px)); min-height: 100vh; margin: 0 auto; padding: 10px 0 14px; }
+.page { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(1100px, calc(100% - 28px)); min-height: 100vh; margin: 0 auto; padding: 10px 0 14px; }
 
-.topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 6px 4px 12px; border-bottom: 1px solid var(--line); }
+.topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 6px 4px 12px; border-bottom: 1px solid var(--line); }
 .nav-area { display: flex; align-items: center; gap: 18px; font: 900 26px/1 'Share Tech Mono', monospace; }
 .back-arrow { color: var(--gold); cursor: pointer; user-select: none; transition: opacity .2s, transform .2s; }
 .back-arrow:hover { opacity: .8; transform: scale(1.1); }
-.charlie-brand { display: flex; align-items: center; justify-content: center; gap: 11px; min-width: 0; }
-.charlie-avatar { width: 50px; height: 50px; flex: 0 0 auto; object-fit: cover; border: 2px solid var(--dark); border-radius: 50%; background: #211a10; }
-.charlie-name { margin: 0; color: var(--light); font: 400 21px/1.2 Georgia, serif; }
-.charlie-caption { margin-top: 4px; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
-.club-brand { justify-self: end; color: var(--light); text-align: right; text-decoration: none; }
-.club-logo { font: 700 clamp(26px,3vw,38px)/1 Georgia, serif; letter-spacing: .045em; }
-.club-subtitle { margin-top: 4px; color: var(--gold); font-size: 10px; letter-spacing: .34em; }
+.zone { color: var(--gold); font-size: 11px; letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; }
+.club-brand { justify-self: end; color: var(--light); text-decoration: none; }
+.club-logo { font: 700 clamp(26px,3vw,36px)/1 Georgia, serif; letter-spacing: .045em; }
 
-.intro { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 14px 2px 12px; }
-.eyebrow { margin: 0 0 6px; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .19em; text-transform: uppercase; }
-.page-title { margin: 0; color: var(--light); font: 400 clamp(28px,3vw,38px)/1.12 Georgia, serif; letter-spacing: -.025em; }
-.intro-copy { max-width: 560px; color: var(--muted); font-size: 13px; line-height: 1.7; }
-.intro-copy p { margin: 0; }
-.charlie-line { margin-top: 5px !important; color: var(--light); font-family: Georgia, serif; font-style: italic; }
+/* слои: front — на переднем плане, back — ушёл назад, ahead — ждёт впереди */
+.stage { position: relative; flex: 1; display: grid; align-items: center; padding: 18px 0; }
+.layer { grid-area: 1 / 1; min-width: 0; transition: transform .5s cubic-bezier(.2,.7,.2,1), opacity .5s, filter .5s; }
+.layer.front { opacity: 1; transform: none; filter: none; visibility: visible; }
+.layer.back { opacity: 0; transform: scale(.92) translateY(-14px); filter: blur(4px); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, filter .5s, visibility 0s .5s; }
+.layer.ahead { opacity: 0; transform: translateY(26px) scale(1.04); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, visibility 0s .5s; }
 
-.layout { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 16px; align-items: start; }
-.panel { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 12px 32px rgba(0,0,0,.18); }
-.stage { position: sticky; top: 10px; background: linear-gradient(145deg, rgba(45,34,21,.97), rgba(22,19,15,.98) 58%); }
-.panel-title { margin: 0 0 3px; color: var(--light); font: 400 22px/1.2 Georgia, serif; }
-.panel-sub { margin: 0 0 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.panel { padding: clamp(16px,3vw,28px); border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 12px 32px rgba(0,0,0,.18); }
+.layer-title { margin: 0 0 16px; color: var(--light); font: 400 clamp(26px,3.4vw,38px)/1.15 Georgia, serif; }
 
-.stage-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 10px; }
-.recipe-mode { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: rgba(0,0,0,.25); }
-.mode-button { padding: 7px 11px; border: 0; border-radius: 6px; color: var(--muted); background: transparent; font-size: 12px; }
-.mode-button.active { color: #18120a; background: var(--gold); font-weight: 700; }
-.mix-count { color: var(--muted); font-size: 11px; }
-.sit-chip { margin: 0 0 10px; min-height: 18px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
-.sit-chip b { color: var(--light); font-weight: 600; }
+.choice-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
+.choice-button { display: flex; align-items: center; gap: 10px; min-height: 62px; padding: 12px; border: 1px solid rgba(216,179,106,.2); border-radius: 9px; color: var(--text); background: rgba(255,255,255,.025); text-align: left; transition: background .16s, border-color .16s, transform .16s; }
+.choice-button:hover { border-color: var(--dark); background: rgba(216,179,106,.075); transform: translateY(-1px); }
+.choice-symbol { flex: 0 0 auto; font-size: 21px; }
+.choice-label { font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
 
-.recipe-card { min-height: 130px; padding: 18px; border: 1px solid rgba(216,179,106,.28); border-radius: 11px; background: rgba(9,8,6,.58); }
-.recipe-label { margin: 0 0 10px; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-.recipe-title { margin: 0; color: var(--light); font: 400 clamp(22px,2.6vw,32px)/1.25 Georgia, serif; overflow-wrap: anywhere; }
-.recipe-description { margin: 10px 0 0; color: var(--text); font-size: 13px; line-height: 1.7; }
-
-.actions-main { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; }
-.text-button { padding: 6px 0; border: 0; color: var(--light); background: transparent; font-size: 12px; }
-.text-button:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
-
-.more { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
-.more summary { cursor: pointer; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; list-style: none; }
-.more summary::-webkit-details-marker { display: none; }
-.more summary::after { content: " ▾"; }
-.more[open] summary::after { content: " ▴"; }
-.share-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-
-.gold-button, .outline-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; text-decoration: none; transition: background .16s, border-color .16s, transform .16s; }
+.custom-form { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 9px; margin-top: 13px; }
+.text-input { width: 100%; min-width: 0; min-height: 44px; padding: 10px 13px; border: 1px solid rgba(216,179,106,.32); border-radius: 8px; color: var(--text); background: rgba(8,7,5,.78); }
+.text-input::placeholder { color: #8f8370; }
+.gold-button, .outline-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; text-decoration: none; transition: background .16s, border-color .16s, transform .16s; }
 .gold-button { border: 1px solid var(--gold); color: #1a1308; background: var(--gold); }
 .gold-button:hover { background: var(--light); transform: translateY(-1px); }
 .outline-button { border: 1px solid var(--line); color: var(--light); background: rgba(0,0,0,.18); }
 .outline-button:hover { border-color: var(--gold); background: rgba(216,179,106,.08); }
 
-.custom-form { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; margin-top: 10px; }
-.text-input { width: 100%; min-width: 0; min-height: 42px; padding: 9px 12px; border: 1px solid rgba(216,179,106,.32); border-radius: 8px; color: var(--text); background: rgba(8,7,5,.78); }
-.text-input::placeholder { color: #8f8370; }
+/* слой 2 */
+.phrase-wrap { max-width: 820px; margin: 0 auto; }
+.topline { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 12px; }
+.chip { display: inline-flex; align-items: center; gap: 10px; max-width: 100%; padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; background: rgba(15,13,10,.85); color: var(--light); font-size: 12px; }
+.chip:hover { border-color: var(--gold); }
+.chip span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recipe-mode { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: rgba(0,0,0,.25); }
+.mode-button { padding: 7px 12px; border: 0; border-radius: 6px; color: var(--muted); background: transparent; font-size: 12px; }
+.mode-button.active { color: #18120a; background: var(--gold); font-weight: 700; }
+.recipe-card { display: flex; flex-direction: column; justify-content: center; min-height: min(40vh, 300px); padding: clamp(18px,4vw,40px); border: 1px solid rgba(216,179,106,.28); border-radius: 14px; background: linear-gradient(145deg, rgba(45,34,21,.96), rgba(22,19,15,.98) 58%); box-shadow: 0 14px 40px rgba(0,0,0,.35); }
+.recipe-title { margin: 0; color: var(--light); font: 400 clamp(28px,4.4vw,52px)/1.2 Georgia, serif; overflow-wrap: anywhere; }
+.mix-count { margin-top: 14px; color: var(--muted); font-size: 11px; }
+.actions-main { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 12px; }
+.text-button { padding: 7px 0; border: 0; color: var(--light); background: transparent; font-size: 12px; }
+.text-button:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+.actions-main .gold-button { margin-left: auto; }
+.status-message { min-height: 18px; margin: 10px 0 0; color: var(--light); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 
-.status-message { min-height: 17px; margin: 8px 0 0; color: var(--light); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
-
-.choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
-.choice-button { display: flex; align-items: center; gap: 9px; min-height: 54px; padding: 9px 11px; border: 1px solid rgba(216,179,106,.2); border-radius: 9px; color: var(--text); background: rgba(255,255,255,.025); text-align: left; transition: background .16s, border-color .16s, transform .16s; }
-.choice-button:hover { border-color: var(--dark); background: rgba(216,179,106,.075); transform: translateY(-1px); }
-.choice-button.selected { border-color: var(--gold); background: rgba(216,179,106,.14); box-shadow: inset 0 0 0 1px rgba(216,179,106,.12); }
-.choice-symbol { flex: 0 0 auto; font-size: 20px; }
-.choice-label { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
-
-.footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: auto; padding: 16px 4px 0; color: #8c806b; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
-.footer strong { color: var(--dark); font-weight: 600; }
+/* слой 3: выезжает снизу */
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; max-height: 60vh; overflow-y: auto; padding: 14px 16px 18px; border-top: 1px solid var(--gold); background: rgba(16,14,11,.97); transform: translateY(105%); transition: transform .38s cubic-bezier(.2,.7,.2,1); }
+.sheet.open { transform: none; }
+.sheet-inner { max-width: 820px; margin: 0 auto; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.sheet-title { color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+.sheet-x { border: 0; background: transparent; color: var(--light); font-size: 20px; line-height: 1; }
+.share-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* паспорт (общий модуль modules/passport.js) */
 .gy-user-badge { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--gold); background: #111; z-index: 1000000; cursor: pointer; display: none; }
@@ -118,27 +106,17 @@ button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visibl
 .gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
 .gy-passport-edit { margin-top: 14px; padding: 8px 20px; background: #000; border: 2px solid var(--gold); color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700; font-size: 11px; }
 
-@media (max-width: 900px) {
-  .layout { grid-template-columns: minmax(0,1fr); }
-  .stage { top: 0; z-index: 20; }
-  .intro { display: block; }
-  .intro-copy { margin-top: 8px; }
-  .intro-copy .charlie-line { display: none; }
-  .recipe-card { min-height: 0; padding: 14px; }
-  .recipe-description { display: none; }
-}
-@media (max-width: 700px) {
+@media (max-width: 900px) { .choice-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 560px) {
   .page { width: calc(100% - 20px); }
-  .topbar { grid-template-columns: auto minmax(0,1fr) auto; gap: 8px; }
-  .charlie-caption { display: none; }
-  .charlie-avatar { width: 40px; height: 40px; }
-  .charlie-name { font-size: 18px; }
-  .panel { padding: 14px; }
+  .zone { display: none; }
+  .topbar { grid-template-columns: 1fr auto; }
+  .choice-grid { grid-template-columns: minmax(0,1fr); gap: 8px; }
   .custom-form { grid-template-columns: minmax(0,1fr); }
+  .actions-main .gold-button { margin-left: 0; width: 100%; }
   .share-row .outline-button, .share-row .gold-button { flex: 1 1 calc(50% - 8px); }
-  .footer { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
 </style>
 </head>
 
@@ -147,104 +125,80 @@ button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visibl
 <div id="passport-badge-container"></div>
 
 <div class="page">
+  <header class="topbar">
+    <nav class="nav-area" translate="no">
+      <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
+      <a class="back-arrow" id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
+    </nav>
+    <div class="zone" translate="no">De-Stress Studio</div>
+    <a class="club-brand" href="hall.html" translate="no"><div class="club-logo">GY-GY</div></a>
+  </header>
 
-<header class="topbar">
-  <nav class="nav-area" translate="no">
-    <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
-    <a class="back-arrow" id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
-  </nav>
-  <div class="charlie-brand">
-    <img class="charlie-avatar" src="horse_welcome.png" alt="">
-    <div>
-      <h2 class="charlie-name">Чарли</h2>
-      <div class="charlie-caption">Мастер-бармен</div>
-    </div>
-  </div>
-  <a class="club-brand" href="hall.html" translate="no">
-    <div class="club-logo">GY-GY</div>
-    <div class="club-subtitle">CLUB</div>
-  </a>
-</header>
+  <main class="stage">
 
-<main>
-  <section class="intro">
-    <div>
-     
-      <h1 class="page-title" translate="no">De-Stress Studio</h1>
-    </div>
-   
-  </section>
-
-  <div class="layout">
-
-    <!-- СЦЕНА: фраза и всё, что с ней можно сделать — всегда на виду -->
-    <section class="panel stage" aria-labelledby="stageTitle">
-      <h2 class="panel-title" id="stageTitle">Случаи от Чарли</h2>
-
-      <div class="stage-top">
-        <div class="recipe-mode" role="group">
-          <button class="mode-button active" id="charlieMode" type="button" aria-pressed="true">Выбор Чарли</button>
-          <button class="mode-button" id="myMode" type="button" aria-pressed="false">Твой вариант</button>
-        </div>
-        <span class="mix-count" id="mixCount"></span>
+    <!-- слой 1: ситуации -->
+    <section class="layer front" id="layer-sit" aria-labelledby="sitTitle">
+      <div class="panel">
+        <h1 class="layer-title" id="sitTitle">Что случилось?</h1>
+        <div class="choice-grid" id="choiceGrid"></div>
+        <form class="custom-form" id="customSituationForm">
+          <input class="text-input" id="customSituationInput" type="text" maxlength="180" placeholder="Твоя ситуация в двух словах" aria-label="Что? Где? Когда?">
+          <button class="gold-button" type="submit">Выпей немного воды и рассказывай →</button>
+        </form>
       </div>
-
-      <p class="sit-chip" id="sitChip"></p>
-
-      <div class="recipe-card" aria-live="polite" aria-atomic="true">
-        <p class="recipe-label" id="recipeLabel"></p>
-        <h3 class="recipe-title" id="recipeTitle"></h3>
-        <p class="recipe-description" id="recipeDescription"></p>
-      </div>
-
-      <form class="custom-form" id="customRecipeForm" hidden>
-        <input class="text-input" id="customRecipeInput" type="text" maxlength="180" placeholder="Придумай своё ..." aria-label="Твой вариант">
-        <button class="gold-button" type="submit">Показать мой вариант</button>
-      </form>
-
-      <div class="actions-main">
-        <button class="text-button" type="button" id="anotherRecipe">↻ Другой замес</button>
-        <button class="text-button" type="button" id="doubleMix">⚡ Чарли, добей!</button>
-        <button class="text-button" type="button" id="copyRecipe">Копировать выражение ↗</button>
-      </div>
-
-      <details class="more" id="more">
-        <summary>Забирай: на футболку, в чат, на компьютер</summary>
-        <div class="share-row">
-          <button class="gold-button" type="button" id="goToAtelier">На футболку (текст) →</button>
-          <button class="gold-button" type="button" id="goToAi">Сделать с ИИ →</button>
-          <button class="outline-button" type="button" id="pngDark">PNG на тёмное ⬇</button>
-          <button class="outline-button" type="button" id="pngLight">PNG на светлое ⬇</button>
-          <button class="outline-button" type="button" id="saveTxt">TXT ⬇</button>
-          <button class="outline-button" type="button" id="shareTelegram">Telegram ✈</button>
-          <button class="outline-button" type="button" id="publishRecipe">Опубликовать в новостях клуба ↗</button>
-        </div>
-      </details>
-
-      <p class="status-message" id="statusMessage" role="status" aria-live="polite"></p>
     </section>
 
-    <!-- ШАГ: что случилось -->
-    <section class="panel" aria-labelledby="situationTitle">
-      <h2 class="panel-title" id="situationTitle">Что случилось?</h2>
-      <p class="panel-sub">Выбери ситуацию</p>
+    <!-- слой 2: фраза -->
+    <section class="layer ahead" id="layer-phrase" aria-live="polite">
+      <div class="phrase-wrap">
+        <div class="topline">
+          <button class="chip" id="chip" type="button"><span id="chipText"></span><span aria-hidden="true">✕</span></button>
+          <div class="recipe-mode" role="group">
+            <button class="mode-button active" id="randomMode" type="button" aria-pressed="true">Случайная</button>
+            <button class="mode-button" id="myMode" type="button" aria-pressed="false">Своя</button>
+          </div>
+        </div>
 
-      <div class="choice-grid" id="choiceGrid"></div>
+        <div class="recipe-card">
+          <h2 class="recipe-title" id="recipeTitle"></h2>
+          <span class="mix-count" id="mixCount"></span>
+        </div>
 
-      <form class="custom-form" id="customSituationForm">
-        <input class="text-input" id="customSituationInput" type="text" maxlength="180" placeholder="Твоя ситуация в двух словах" aria-label="Что? Где? Когда?">
-        <button class="gold-button" type="submit">Выпей немного воды и рассказывай →</button>
-      </form>
+        <form class="custom-form" id="customRecipeForm" hidden>
+          <input class="text-input" id="customRecipeInput" type="text" maxlength="180" placeholder="Придумай своё ..." aria-label="Твой вариант">
+          <button class="gold-button" type="submit">Показать</button>
+        </form>
+
+        <div class="actions-main">
+          <button class="text-button" type="button" id="anotherRecipe">↻ Другой замес</button>
+          <button class="text-button" type="button" id="doubleMix">⚡ Добей!</button>
+          <button class="text-button" type="button" id="copyRecipe">Копировать</button>
+          <button class="gold-button" type="button" id="openSheet">Забирай ▴</button>
+        </div>
+        <p class="status-message" id="statusMessage" role="status"></p>
+      </div>
     </section>
 
+  </main>
+</div>
+
+<!-- слой 3: «Забирай» -->
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <span class="sheet-title">Забирай</span>
+      <button class="sheet-x" id="sheetClose" type="button" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="share-row">
+      <button class="gold-button" type="button" id="goToAtelier">На футболку (текст) →</button>
+      <button class="gold-button" type="button" id="goToAi">Сделать с ИИ →</button>
+      <button class="outline-button" type="button" id="pngDark">PNG на тёмное ⬇</button>
+      <button class="outline-button" type="button" id="pngLight">PNG на светлое ⬇</button>
+      <button class="outline-button" type="button" id="saveTxt">TXT ⬇</button>
+      <button class="outline-button" type="button" id="shareTelegram">Telegram ✈</button>
+      <button class="outline-button" type="button" id="publishRecipe">Опубликовать в новостях клуба ↗</button>
+    </div>
   </div>
-</main>
-
-<footer class="footer">
-  <span><strong>GY-GY Club</strong> · De-Stress Studio</span>
-  <span>Меньше драмы. Больше воображения.</span>
-</footer>
-
 </div>
 
 <script type="module">
@@ -258,7 +212,6 @@ initPassport(document.getElementById('passport-badge-container'));
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-// Ситуации: единый список (кнопки и текст берутся отсюда)
 const SITUATIONS = [
     ['💼', 'Поругался с начальником'],
     ['🚗', 'Обрызгала машина'],
@@ -284,8 +237,7 @@ const FALLBACK_POOL = [
 ].map(([text, en, fr]) => ({ id: null, source: 'club', text, translations: { en, fr } }));
 
 let pool = FALLBACK_POOL.slice();
-
-const state = { situationIndex: null, customSituation: '', mode: 'charlie', phrase: null, customRecipe: '', mixNumber: 0 };
+const state = { situationIndex: null, customSituation: '', mode: 'random', phrase: null, customRecipe: '', mixNumber: 0 };
 
 // ---------- текст фразы ----------
 function displayOf(p) {
@@ -300,50 +252,55 @@ function randomPhrase(avoid) {
     const list = options.length ? options : pool;
     return list[Math.floor(Math.random() * list.length)];
 }
-  
+
+const say = msg => { $('statusMessage').textContent = msg || ''; };
+
+// ---------- слои ----------
+function showPhraseLayer(show) {
+    $('layer-sit').classList.toggle('front', !show);
+    $('layer-sit').classList.toggle('back', show);
+    $('layer-phrase').classList.toggle('front', show);
+    $('layer-phrase').classList.toggle('ahead', !show);
+    if (!show) closeSheet();
+}
+function openSheet() { $('sheet').classList.add('open'); $('sheet').setAttribute('aria-hidden', 'false'); }
+function closeSheet() { $('sheet').classList.remove('open'); $('sheet').setAttribute('aria-hidden', 'true'); }
+
 // ---------- отрисовка ----------
 function renderChip() {
-    const el = $('sitChip');
+    const el = $('chipText');
     if (state.situationIndex !== null) {
         const [icon, label] = SITUATIONS[state.situationIndex];
-        el.innerHTML = 'Ситуация: <b>' + icon + ' ' + esc(label) + '</b>';
+        el.textContent = icon + ' ' + label;
+        el.removeAttribute('translate');
     } else if (state.customSituation) {
-        el.innerHTML = 'Ситуация: <b translate="no">✍️ ' + esc(state.customSituation) + '</b>';
+        el.textContent = '✍️ ' + state.customSituation;
+        el.setAttribute('translate', 'no');     // слова посетителя на перевод не отправляем
     } else {
-        el.textContent = 'Выбери ситуацию справа или напиши свою.';
+        el.textContent = '';
     }
 }
 
 function render() {
     const p = state.phrase;
     const my = state.mode === 'my';
-    $('recipeLabel').textContent = my ? 'Твой вариант'
-        : (p && p.items ? 'Двойной замес · выбор Чарли' : 'Рецепт дня · выбор Чарли');
     const title = $('recipeTitle');
     title.textContent = p ? displayOf(p) : (my ? 'Твой ход, мастер абсурда!' : '');
-    // слова, введённые посетителем, во внешний сервис перевода не отправляем
     if (p && p.source === 'session') title.setAttribute('translate', 'no'); else title.removeAttribute('translate');
-    $('recipeDescription').textContent = my
-        ? (state.customRecipe ? 'Это твоё авторское выражение. Если понравилось — забирай фразу с собой.'
-                              : 'Придумай собственную фразу. Чем неожиданнее сочетание, тем лучше.')
-        : (p && p.items ? 'Два выражения в одном замесе. Не ищи смысл — наслаждайся результатом.'
-                        : 'Уровень абсурда: как у всех. Применять с улыбкой');
-    $('mixCount').textContent = state.mixNumber ? 'Замес № ' + state.mixNumber : '';
+    $('mixCount').textContent = (p && p.items) ? 'Двойной замес' : (state.mixNumber ? 'Замес № ' + state.mixNumber : '');
 }
-
-const say = msg => { $('statusMessage').textContent = msg || ''; };
 
 function setModeButtons() {
     const my = state.mode === 'my';
-    $('charlieMode').classList.toggle('active', !my);
-    $('charlieMode').setAttribute('aria-pressed', String(!my));
+    $('randomMode').classList.toggle('active', !my);
+    $('randomMode').setAttribute('aria-pressed', String(!my));
     $('myMode').classList.toggle('active', my);
     $('myMode').setAttribute('aria-pressed', String(my));
     $('customRecipeForm').hidden = !my;
 }
 
-function chooseCharlie() {
-    state.mode = 'charlie';
+function chooseRandom() {
+    state.mode = 'random';
     setModeButtons();
     state.phrase = randomPhrase(state.phrase);
     state.mixNumber++;
@@ -360,37 +317,41 @@ function bump(kind) {
 
 // ---------- ситуации ----------
 $('choiceGrid').innerHTML = SITUATIONS.map(([icon, label], i) =>
-    `<button class="choice-button" type="button" data-situation="${i}" aria-pressed="false"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
+    `<button class="choice-button" type="button" data-situation="${i}"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
+
+function afterSituation() {
+    renderChip();
+    showPhraseLayer(true);
+    if (state.mode === 'random') chooseRandom();
+    else {
+        state.phrase = state.customRecipe ? { id: null, text: state.customRecipe, translations: {}, source: 'session' } : null;
+        say('');
+        render();
+    }
+}
 
 $('choiceGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-situation]');
     if (!b) return;
-    const index = Number(b.dataset.situation);
-    state.situationIndex = index;
+    state.situationIndex = Number(b.dataset.situation);
     state.customSituation = '';
-    document.querySelectorAll('[data-situation]').forEach(x => {
-        const sel = Number(x.dataset.situation) === index;
-        x.classList.toggle('selected', sel);
-        x.setAttribute('aria-pressed', String(sel));
-    });
-    renderChip();
-    if (state.mode === 'charlie') chooseCharlie();
+    afterSituation();
 });
 
 $('customSituationForm').addEventListener('submit', e => {
     e.preventDefault();
     const value = $('customSituationInput').value.trim();
-    if (!value) { say('Напиши, что случилось, и Чарли возьмётся за дело.'); return; }
+    if (!value) { $('customSituationInput').focus(); return; }
     state.customSituation = value;
     state.situationIndex = null;
-    document.querySelectorAll('[data-situation]').forEach(x => { x.classList.remove('selected'); x.setAttribute('aria-pressed', 'false'); });
     $('customSituationInput').value = '';
-    renderChip();
-    if (state.mode === 'charlie') chooseCharlie();
+    afterSituation();
 });
 
-// ---------- рецепт ----------
-$('charlieMode').addEventListener('click', chooseCharlie);
+$('chip').addEventListener('click', () => showPhraseLayer(false));
+
+// ---------- фраза ----------
+$('randomMode').addEventListener('click', chooseRandom);
 
 $('myMode').addEventListener('click', () => {
     state.mode = 'my';
@@ -398,18 +359,18 @@ $('myMode').addEventListener('click', () => {
     state.phrase = state.customRecipe ? { id: null, text: state.customRecipe, translations: {}, source: 'session' } : null;
     say('');
     render();
+    $('customRecipeInput').focus();
 });
 
 $('anotherRecipe').addEventListener('click', () => {
-    if (state.mode === 'my') { say('Сначала введи свой вариант или переключись на «Выбор Чарли».'); return; }
-    chooseCharlie();
-    say('Чарли перемешал колоду и выдал новый замес.');
+    if (state.mode === 'my') { say('Сначала введи свой вариант или переключись на «Случайная».'); return; }
+    chooseRandom();
 });
 
 $('doubleMix').addEventListener('click', () => {
     const a = randomPhrase(null);
     const b = randomPhrase(a);
-    state.mode = 'charlie';
+    state.mode = 'random';
     setModeButtons();
     state.phrase = { id: null, items: [a, b], source: 'club' };
     state.mixNumber++;
@@ -435,12 +396,18 @@ $('copyRecipe').addEventListener('click', async () => {
     if (!text) { say('Сначала выбери выражение.'); return; }
     try {
         await navigator.clipboard.writeText(text);
-        say('Выражение скопировано.');
+        say('Скопировано.');
         bump('copy');
     } catch (err) {
         say('Копирование недоступно в этом браузере. Выдели фразу и скопируй вручную.');
     }
 });
+
+$('openSheet').addEventListener('click', () => {
+    if (!currentText()) { say('Сначала выбери выражение.'); return; }
+    openSheet();
+});
+$('sheetClose').addEventListener('click', closeSheet);
 
 // «Опубликовать»: своя фраза уходит на проверку; в общий набор попадает после одобрения
 $('publishRecipe').addEventListener('click', async () => {
@@ -460,6 +427,7 @@ $('publishRecipe').addEventListener('click', async () => {
     }
     try { localStorage.setItem(key, String(Date.now())); } catch (err) { /* ок */ }
     say('Отправлено на проверку. После одобрения фраза попадёт в общую базу клуба.');
+    closeSheet();
 });
 
 // ---------- картинки и файлы ----------
@@ -551,6 +519,7 @@ async function savePng(forDark) {
     downloadBlob(blob, forDark ? 'gygy-phrase-for-dark.png' : 'gygy-phrase-for-light.png');
     say('Сохранено на компьютер.');
     bump('download');
+    closeSheet();
 }
 $('pngDark').addEventListener('click', () => savePng(true));
 $('pngLight').addEventListener('click', () => savePng(false));
@@ -561,6 +530,7 @@ $('saveTxt').addEventListener('click', () => {
     downloadBlob(new Blob([text + '\n— GY-GY Club\n'], { type: 'text/plain;charset=utf-8' }), 'gygy-phrase.txt');
     say('Сохранено на компьютер.');
     bump('download');
+    closeSheet();
 });
 
 // ---------- Ателье и Telegram ----------
@@ -572,7 +542,6 @@ function atelierLink(ai) {
     u.searchParams.set('from', 'studio');
     return u.href;
 }
-
 $('goToAtelier').addEventListener('click', () => {
     if (!currentText()) { say('Сначала выбери выражение.'); return; }
     window.location.href = atelierLink(false);
@@ -595,6 +564,7 @@ $('shareTelegram').addEventListener('click', async () => {
                 await navigator.share({ files: [file], text: message + '\n' + link });
                 bump('share');
                 say('Отправлено.');
+                closeSheet();
                 return;
             }
         }
@@ -604,15 +574,22 @@ $('shareTelegram').addEventListener('click', async () => {
     window.open('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(message), '_blank', 'noopener');
     bump('share');
     say('Открываю Telegram…');
+    closeSheet();
 });
 
-// ---------- навигация и язык ----------
-$('btn-back').addEventListener('click', () => { window.location.href = 'bar.html'; });
+// ---------- навигация: стрелка поднимает на слой выше ----------
+$('btn-back').addEventListener('click', () => {
+    if ($('sheet').classList.contains('open')) { closeSheet(); return; }
+    if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
+    window.location.href = 'bar.html';
+});
 $('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if ($('sheet').classList.contains('open')) closeSheet();
+    else if ($('layer-phrase').classList.contains('front')) showPhraseLayer(false);
+});
 onLanguageChange(() => { renderChip(); render(); });
-
-// на компьютере блок «Забирай» открыт, на телефоне свёрнут, чтобы сцена не занимала экран
-if (window.matchMedia('(min-width: 901px)').matches) $('more').open = true;
 
 // ---------- база фраз ----------
 async function loadPool() {
@@ -626,9 +603,8 @@ async function loadPool() {
     }
 }
 
+setModeButtons();
 await loadPool();
-renderChip();
-chooseCharlie();
 </script>
 </body>
 </html>
