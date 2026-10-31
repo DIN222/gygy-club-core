@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v4.0.0 — 2026-10-31
-  «В глубину»: слой 1 — ситуации; выбрал — слой 2: фраза выходит вперёд, ситуация уходит назад
-  и остаётся меткой; слой 3 — «Забирай» выезжает снизу, фраза остаётся над ним.
-  Без пояснений и слоганов: бренд — логотип. Тексты — русские (основа), EN/FR — блок перевода.
+  destress-studio.html — De-Stress Studio — v5.0.0 — 2026-10-31
+  «В глубину»: слой 1 — ситуации; слой 2 — фраза, ситуация остаётся меткой; слой 3 — «Забирай».
+  Название крупно, внутри контейнера. Свой случай и своё выражение — «Добавить в коллекцию».
 -->
 <html lang="en">
 <head>
@@ -16,6 +15,7 @@
 <style>
 :root { --black:#100e0b; --panel:rgba(23,20,16,.94); --gold:#d8b36a; --light:#f0d69d; --dark:#76582d; --text:#f0e8d8; --muted:#b0a38d; --line:rgba(216,179,106,.27); }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { min-height: 100%; background: var(--black); }
 body { min-height: 100vh; margin: 0; color: var(--text); background: var(--black); font: 15px/1.5 Inter, "Segoe UI", Arial, sans-serif; overflow-x: hidden; }
 button, input { font: inherit; }
@@ -32,24 +32,23 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 }
 .page { position: relative; z-index: 1; display: flex; flex-direction: column; width: min(1100px, calc(100% - 28px)); min-height: 100vh; margin: 0 auto; padding: 10px 0 14px; }
 
-.topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 6px 4px 12px; border-bottom: 1px solid var(--line); }
+.topbar { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 6px 4px 12px; border-bottom: 1px solid var(--line); }
 .nav-area { display: flex; align-items: center; gap: 18px; font: 900 26px/1 'Share Tech Mono', monospace; }
 .back-arrow { color: var(--gold); cursor: pointer; user-select: none; transition: opacity .2s, transform .2s; }
 .back-arrow:hover { opacity: .8; transform: scale(1.1); }
-.zone { color: var(--gold); font-size: 11px; letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; }
 .club-brand { justify-self: end; color: var(--light); text-decoration: none; }
 .club-logo { font: 700 clamp(26px,3vw,36px)/1 Georgia, serif; letter-spacing: .045em; }
 
-/* слои: front — на переднем плане, back — ушёл назад, ahead — ждёт впереди */
-.stage { position: relative; flex: 1; display: grid; align-items: center; padding: 18px 0; }
+.container { margin: 18px 0; padding: clamp(16px,3vw,28px); border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 12px 32px rgba(0,0,0,.18); }
+.studio-title { margin: 0 0 clamp(14px,2.4vw,24px); text-align: center; color: var(--light); font: 700 clamp(30px,6.2vw,68px)/1.05 'Playfair Display', Georgia, serif; letter-spacing: .08em; text-transform: uppercase; text-shadow: 0 2px 18px rgba(216,179,106,.25); overflow-wrap: anywhere; }
+
+.stage { position: relative; display: grid; align-items: center; }
 .layer { grid-area: 1 / 1; min-width: 0; transition: transform .5s cubic-bezier(.2,.7,.2,1), opacity .5s, filter .5s; }
 .layer.front { opacity: 1; transform: none; filter: none; visibility: visible; }
 .layer.back { opacity: 0; transform: scale(.92) translateY(-14px); filter: blur(4px); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, filter .5s, visibility 0s .5s; }
 .layer.ahead { opacity: 0; transform: translateY(26px) scale(1.04); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, visibility 0s .5s; }
 
-.panel { padding: clamp(16px,3vw,28px); border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 12px 32px rgba(0,0,0,.18); }
-.layer-title { margin: 0 0 16px; color: var(--light); font: 400 clamp(26px,3.4vw,38px)/1.15 Georgia, serif; }
-
+.layer-title { margin: 0 0 16px; color: var(--light); font: 400 clamp(22px,3vw,32px)/1.15 Georgia, serif; }
 .choice-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
 .choice-button { display: flex; align-items: center; gap: 10px; min-height: 62px; padding: 12px; border: 1px solid rgba(216,179,106,.2); border-radius: 9px; color: var(--text); background: rgba(255,255,255,.025); text-align: left; transition: background .16s, border-color .16s, transform .16s; }
 .choice-button:hover { border-color: var(--dark); background: rgba(216,179,106,.075); transform: translateY(-1px); }
@@ -65,17 +64,18 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .outline-button { border: 1px solid var(--line); color: var(--light); background: rgba(0,0,0,.18); }
 .outline-button:hover { border-color: var(--gold); background: rgba(216,179,106,.08); }
 
-/* слой 2 */
 .phrase-wrap { max-width: 820px; margin: 0 auto; }
 .topline { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 12px; }
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; max-width: 100%; }
 .chip { display: inline-flex; align-items: center; gap: 10px; max-width: 100%; padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; background: rgba(15,13,10,.85); color: var(--light); font-size: 12px; }
 .chip:hover { border-color: var(--gold); }
+.chip.add { border-style: dashed; color: var(--gold); }
 .chip span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .recipe-mode { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: rgba(0,0,0,.25); }
 .mode-button { padding: 7px 12px; border: 0; border-radius: 6px; color: var(--muted); background: transparent; font-size: 12px; }
 .mode-button.active { color: #18120a; background: var(--gold); font-weight: 700; }
-.recipe-card { display: flex; flex-direction: column; justify-content: center; min-height: min(40vh, 300px); padding: clamp(18px,4vw,40px); border: 1px solid rgba(216,179,106,.28); border-radius: 14px; background: linear-gradient(145deg, rgba(45,34,21,.96), rgba(22,19,15,.98) 58%); box-shadow: 0 14px 40px rgba(0,0,0,.35); }
-.recipe-title { margin: 0; color: var(--light); font: 400 clamp(28px,4.4vw,52px)/1.2 Georgia, serif; overflow-wrap: anywhere; }
+.recipe-card { display: flex; flex-direction: column; justify-content: center; min-height: min(36vh, 280px); padding: clamp(18px,4vw,40px); border: 1px solid rgba(216,179,106,.28); border-radius: 14px; background: linear-gradient(145deg, rgba(45,34,21,.96), rgba(22,19,15,.98) 58%); box-shadow: 0 14px 40px rgba(0,0,0,.35); }
+.recipe-title { margin: 0; color: var(--light); font: 400 clamp(26px,4vw,48px)/1.2 Georgia, serif; overflow-wrap: anywhere; }
 .mix-count { margin-top: 14px; color: var(--muted); font-size: 11px; }
 .actions-main { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 12px; }
 .text-button { padding: 7px 0; border: 0; color: var(--light); background: transparent; font-size: 12px; }
@@ -83,7 +83,6 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .actions-main .gold-button { margin-left: auto; }
 .status-message { min-height: 18px; margin: 10px 0 0; color: var(--light); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 
-/* слой 3: выезжает снизу */
 .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; max-height: 60vh; overflow-y: auto; padding: 14px 16px 18px; border-top: 1px solid var(--gold); background: rgba(16,14,11,.97); transform: translateY(105%); transition: transform .38s cubic-bezier(.2,.7,.2,1); }
 .sheet.open { transform: none; }
 .sheet-inner { max-width: 820px; margin: 0 auto; }
@@ -92,7 +91,6 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .sheet-x { border: 0; background: transparent; color: var(--light); font-size: 20px; line-height: 1; }
 .share-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
-/* паспорт (общий модуль modules/passport.js) */
 .gy-user-badge { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--gold); background: #111; z-index: 1000000; cursor: pointer; display: none; }
 .gy-user-badge .badge-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fff; }
 .gy-user-badge .badge-flag { position: absolute; bottom: -2px; right: -4px; width: 16px; height: 11px; object-fit: cover; border: 1px solid var(--gold); }
@@ -109,8 +107,6 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 @media (max-width: 900px) { .choice-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (max-width: 560px) {
   .page { width: calc(100% - 20px); }
-  .zone { display: none; }
-  .topbar { grid-template-columns: 1fr auto; }
   .choice-grid { grid-template-columns: minmax(0,1fr); gap: 8px; }
   .custom-form { grid-template-columns: minmax(0,1fr); }
   .actions-main .gold-button { margin-left: 0; width: 100%; }
@@ -130,59 +126,63 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
       <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
       <a class="back-arrow" id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
     </nav>
-    <div class="zone" translate="no">De-Stress Studio</div>
     <a class="club-brand" href="hall.html" translate="no"><div class="club-logo">GY-GY</div></a>
   </header>
 
-  <main class="stage">
+  <main class="container">
+    <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
 
-    <!-- слой 1: ситуации -->
-    <section class="layer front" id="layer-sit" aria-labelledby="sitTitle">
-      <div class="panel">
-        <h1 class="layer-title" id="sitTitle">Что случилось?</h1>
-        <div class="choice-grid" id="choiceGrid"></div>
-        <form class="custom-form" id="customSituationForm">
-          <input class="text-input" id="customSituationInput" type="text" maxlength="180" placeholder="Твоя ситуация в двух словах" aria-label="Что? Где? Когда?">
-          <button class="gold-button" type="submit">Выпей немного воды и рассказывай →</button>
-        </form>
-      </div>
-    </section>
+    <div class="stage">
 
-    <!-- слой 2: фраза -->
-    <section class="layer ahead" id="layer-phrase" aria-live="polite">
-      <div class="phrase-wrap">
-        <div class="topline">
-          <button class="chip" id="chip" type="button"><span id="chipText"></span><span aria-hidden="true">✕</span></button>
-          <div class="recipe-mode" role="group">
-            <button class="mode-button active" id="randomMode" type="button" aria-pressed="true">Случайная</button>
-            <button class="mode-button" id="myMode" type="button" aria-pressed="false">Своя</button>
+      <section class="layer front" id="layer-sit" aria-labelledby="sitTitle">
+        <div>
+          <h2 class="layer-title" id="sitTitle">Что случилось?</h2>
+          <div class="choice-grid" id="choiceGrid"></div>
+          <form class="custom-form" id="customSituationForm">
+            <input class="text-input" id="customSituationInput" type="text" maxlength="80" placeholder="Твоя ситуация в двух словах" aria-label="Что? Где? Когда?">
+            <button class="gold-button" type="submit">Выпей немного воды и рассказывай →</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="layer ahead" id="layer-phrase" aria-live="polite">
+        <div class="phrase-wrap">
+          <div class="topline">
+            <div class="chip-group">
+              <button class="chip" id="chip" type="button"><span id="chipText"></span><span aria-hidden="true">✕</span></button>
+              <button class="chip add" id="chipAdd" type="button" hidden>＋ Добавить случай в коллекцию</button>
+            </div>
+            <div class="recipe-mode" role="group">
+              <button class="mode-button active" id="randomMode" type="button" aria-pressed="true">Случайная</button>
+              <button class="mode-button" id="myMode" type="button" aria-pressed="false">Своя</button>
+            </div>
           </div>
+
+          <div class="recipe-card">
+            <h2 class="recipe-title" id="recipeTitle"></h2>
+            <span class="mix-count" id="mixCount"></span>
+          </div>
+
+          <form class="custom-form" id="customRecipeForm" hidden>
+            <input class="text-input" id="customRecipeInput" type="text" maxlength="180" placeholder="Придумай своё ..." aria-label="Твой вариант">
+            <button class="gold-button" type="submit">Показать</button>
+          </form>
+
+          <div class="actions-main">
+            <button class="text-button" type="button" id="anotherRecipe">↻ Другой замес</button>
+            <button class="text-button" type="button" id="doubleMix">⚡ Добей!</button>
+            <button class="text-button" type="button" id="copyRecipe">Копировать</button>
+            <button class="text-button" type="button" id="addPhrase" hidden>＋ Добавить в коллекцию</button>
+            <button class="gold-button" type="button" id="openSheet">Забирай ▴</button>
+          </div>
+          <p class="status-message" id="statusMessage" role="status"></p>
         </div>
+      </section>
 
-        <div class="recipe-card">
-          <h2 class="recipe-title" id="recipeTitle"></h2>
-          <span class="mix-count" id="mixCount"></span>
-        </div>
-
-        <form class="custom-form" id="customRecipeForm" hidden>
-          <input class="text-input" id="customRecipeInput" type="text" maxlength="180" placeholder="Придумай своё ..." aria-label="Твой вариант">
-          <button class="gold-button" type="submit">Показать</button>
-        </form>
-
-        <div class="actions-main">
-          <button class="text-button" type="button" id="anotherRecipe">↻ Другой замес</button>
-          <button class="text-button" type="button" id="doubleMix">⚡ Добей!</button>
-          <button class="text-button" type="button" id="copyRecipe">Копировать</button>
-          <button class="gold-button" type="button" id="openSheet">Забирай ▴</button>
-        </div>
-        <p class="status-message" id="statusMessage" role="status"></p>
-      </div>
-    </section>
-
+    </div>
   </main>
 </div>
 
-<!-- слой 3: «Забирай» -->
 <div class="sheet" id="sheet" aria-hidden="true">
   <div class="sheet-inner">
     <div class="sheet-head">
@@ -223,7 +223,6 @@ const SITUATIONS = [
     ['⏰', 'Женился']
 ];
 
-// Встроенный запас: если база фраз недоступна, страница всё равно работает
 const FALLBACK_POOL = [
     ['Зафонарь себе в контейнер!', 'Lantern yourself into the container!', 'Lampadaire-toi dans le conteneur !'],
     ['Сахаруй твою поддон!', 'Sugar your pallet!', 'Sucre ta palette !'],
@@ -237,9 +236,17 @@ const FALLBACK_POOL = [
 ].map(([text, en, fr]) => ({ id: null, source: 'club', text, translations: { en, fr } }));
 
 let pool = FALLBACK_POOL.slice();
-const state = { situationIndex: null, customSituation: '', mode: 'random', phrase: null, customRecipe: '', mixNumber: 0 };
+let extraRaw = [];   // одобренные случаи посетителей из коллекции
+const state = { situationIndex: null, customSituation: '', mode: 'random', phrase: null, customRecipe: '', mixNumber: 0, sentSituationText: '', sentPhraseText: '' };
 
-// ---------- текст фразы ----------
+// случаи: встроенные + коллекция
+const extraList = () => extraRaw.map(r => ['💬', (r.translations && r.translations[getCurrentLang()]) || r.text]);
+const allSituations = () => SITUATIONS.concat(extraList());
+function renderChoices() {
+    $('choiceGrid').innerHTML = allSituations().map(([icon, label], i) =>
+        `<button class="choice-button" type="button" data-situation="${i}"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
+}
+
 function displayOf(p) {
     if (!p) return '';
     if (p.items) return p.items.map(displayOf).join(' ');
@@ -255,7 +262,7 @@ function randomPhrase(avoid) {
 
 const say = msg => { $('statusMessage').textContent = msg || ''; };
 
-// ---------- слои ----------
+// слои
 function showPhraseLayer(show) {
     $('layer-sit').classList.toggle('front', !show);
     $('layer-sit').classList.toggle('back', show);
@@ -266,12 +273,12 @@ function showPhraseLayer(show) {
 function openSheet() { $('sheet').classList.add('open'); $('sheet').setAttribute('aria-hidden', 'false'); }
 function closeSheet() { $('sheet').classList.remove('open'); $('sheet').setAttribute('aria-hidden', 'true'); }
 
-// ---------- отрисовка ----------
+// отрисовка
 function renderChip() {
     const el = $('chipText');
     if (state.situationIndex !== null) {
-        const [icon, label] = SITUATIONS[state.situationIndex];
-        el.textContent = icon + ' ' + label;
+        const [icon, label] = allSituations()[state.situationIndex] || ['', ''];
+        el.textContent = (icon + ' ' + label).trim();
         el.removeAttribute('translate');
     } else if (state.customSituation) {
         el.textContent = '✍️ ' + state.customSituation;
@@ -279,6 +286,7 @@ function renderChip() {
     } else {
         el.textContent = '';
     }
+    $('chipAdd').hidden = !state.customSituation || state.customSituation === state.sentSituationText;
 }
 
 function render() {
@@ -288,6 +296,7 @@ function render() {
     title.textContent = p ? displayOf(p) : (my ? 'Твой ход, мастер абсурда!' : '');
     if (p && p.source === 'session') title.setAttribute('translate', 'no'); else title.removeAttribute('translate');
     $('mixCount').textContent = (p && p.items) ? 'Двойной замес' : (state.mixNumber ? 'Замес № ' + state.mixNumber : '');
+    $('addPhrase').hidden = !(p && p.source === 'session') || p.text === state.sentPhraseText;
 }
 
 function setModeButtons() {
@@ -308,16 +317,14 @@ function chooseRandom() {
     render();
 }
 
-// статистика (только для фраз из базы)
 function bump(kind) {
     const id = state.phrase && state.phrase.id;
     if (!id) return;
     try { supabase.rpc('destress_bump', { p_id: id, p_kind: kind }).then(() => {}, () => {}); } catch (e) { /* не критично */ }
 }
 
-// ---------- ситуации ----------
-$('choiceGrid').innerHTML = SITUATIONS.map(([icon, label], i) =>
-    `<button class="choice-button" type="button" data-situation="${i}"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
+// ситуации
+renderChoices();
 
 function afterSituation() {
     renderChip();
@@ -350,7 +357,7 @@ $('customSituationForm').addEventListener('submit', e => {
 
 $('chip').addEventListener('click', () => showPhraseLayer(false));
 
-// ---------- фраза ----------
+// фраза
 $('randomMode').addEventListener('click', chooseRandom);
 
 $('myMode').addEventListener('click', () => {
@@ -409,28 +416,61 @@ $('openSheet').addEventListener('click', () => {
 });
 $('sheetClose').addEventListener('click', closeSheet);
 
-// «Опубликовать»: своя фраза уходит на проверку; в общий набор попадает после одобрения
+// коллекция: свой случай и своё выражение уходят на проверку
+const SUBMIT_KEY = 'gygy-destress-last-submit';
+const tooSoon = () => Date.now() - Number(localStorage.getItem(SUBMIT_KEY) || 0) < 20000;
+const stamp = () => { try { localStorage.setItem(SUBMIT_KEY, String(Date.now())); } catch (e) { /* ок */ } };
+const SENT_TEXT = 'Отправлено на проверку. После одобрения появится в общей коллекции клуба.';
+
+$('chipAdd').addEventListener('click', async () => {
+    const text = state.customSituation.trim();
+    if (text.length < 3) return;
+    if (tooSoon()) { say('Подожди немного перед следующей отправкой.'); return; }
+    const { error } = await supabase.from('destress_situations').insert({ text, lang: getCurrentLang(), status: 'pending', translations: {} });
+    if (error) { say(error.code === '23505' ? 'Такой случай уже есть в коллекции.' : 'Не удалось отправить. Попробуй позже.'); return; }
+    stamp();
+    state.sentSituationText = state.customSituation;
+    $('chipAdd').hidden = true;
+    say(SENT_TEXT);
+});
+
+$('addPhrase').addEventListener('click', async () => {
+    const p = state.phrase;
+    if (!p || p.source !== 'session') return;
+    if (tooSoon()) { say('Подожди немного перед следующей отправкой.'); return; }
+    const { error } = await supabase.from('destress_phrases').insert({
+        text: p.text.trim(), lang: getCurrentLang(), source: 'user', status: 'pending', translations: {},
+        situation: state.situationIndex !== null && state.situationIndex < SITUATIONS.length ? 'sit_' + state.situationIndex : null
+    });
+    if (error) { say(error.code === '23505' ? 'Такая фраза уже есть в коллекции.' : 'Не удалось отправить. Попробуй позже.'); return; }
+    stamp();
+    state.sentPhraseText = p.text;
+    $('addPhrase').hidden = true;
+    say(SENT_TEXT);
+});
+
+// «Опубликовать в новостях»: та же проверка, но с пометкой «просит в новости»
 $('publishRecipe').addEventListener('click', async () => {
     const p = state.phrase;
     if (!p) { say('Сначала выбери выражение.'); return; }
     if (p.source !== 'session') { say('Эта фраза уже в базе клуба.'); return; }
-    const key = 'gygy-destress-last-submit';
-    const last = Number(localStorage.getItem(key) || 0);
-    if (Date.now() - last < 20000) { say('Подожди немного перед следующей фразой.'); return; }
+    if (tooSoon()) { say('Подожди немного перед следующей отправкой.'); return; }
     const { error } = await supabase.from('destress_phrases').insert({
-        text: p.text.trim(), lang: getCurrentLang(), source: 'user', status: 'pending', translations: {},
-        situation: state.situationIndex !== null ? 'sit_' + state.situationIndex : null
+        text: p.text.trim(), lang: getCurrentLang(), source: 'user', status: 'pending', translations: {}, news_requested: true,
+        situation: state.situationIndex !== null && state.situationIndex < SITUATIONS.length ? 'sit_' + state.situationIndex : null
     });
     if (error) {
-        say(error.code === '23505' ? 'Такая фраза уже есть в базе.' : 'Не удалось отправить фразу. Попробуй позже.');
+        say(error.code === '23505' ? 'Эта фраза уже отправлена на проверку.' : 'Не удалось отправить фразу. Попробуй позже.');
         return;
     }
-    try { localStorage.setItem(key, String(Date.now())); } catch (err) { /* ок */ }
+    stamp();
+    state.sentPhraseText = p.text;
+    render();
     say('Отправлено на проверку. После одобрения фраза попадёт в общую базу клуба.');
     closeSheet();
 });
 
-// ---------- картинки и файлы ----------
+// картинки и файлы
 const FONT = '"Playfair Display", Georgia, serif';
 async function ensureFont() { try { await document.fonts.load('700 120px "Playfair Display"'); } catch (e) { /* запасной шрифт */ } }
 function wrapLines(ctx, text, maxW) {
@@ -445,7 +485,6 @@ function wrapLines(ctx, text, maxW) {
     return lines;
 }
 
-// Принт: прозрачный фон; светлый текст — на тёмное изделие, тёмный — на светлое
 async function phrasePng(text, forDark) {
     await ensureFont();
     const W = 1800, pad = 90;
@@ -470,7 +509,6 @@ async function phrasePng(text, forDark) {
     return new Promise(res => canvas.toBlob(res, 'image/png'));
 }
 
-// Открытка для чата: тёмный фон, золотой текст, подпись клуба
 async function phraseCard(text) {
     await ensureFont();
     const W = 1200, H = 630, pad = 80;
@@ -533,7 +571,7 @@ $('saveTxt').addEventListener('click', () => {
     closeSheet();
 });
 
-// ---------- Ателье и Telegram ----------
+// Ателье и Telegram
 function atelierLink(ai) {
     const u = new URL('atelier.html', location.href);
     u.searchParams.set('phrase', currentText());
@@ -577,7 +615,7 @@ $('shareTelegram').addEventListener('click', async () => {
     closeSheet();
 });
 
-// ---------- навигация: стрелка поднимает на слой выше ----------
+// навигация: стрелка поднимает на слой выше
 $('btn-back').addEventListener('click', () => {
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
     if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
@@ -589,9 +627,9 @@ document.addEventListener('keydown', e => {
     if ($('sheet').classList.contains('open')) closeSheet();
     else if ($('layer-phrase').classList.contains('front')) showPhraseLayer(false);
 });
-onLanguageChange(() => { renderChip(); render(); });
+onLanguageChange(() => { renderChoices(); renderChip(); render(); });
 
-// ---------- база фраз ----------
+// база фраз и коллекция случаев
 async function loadPool() {
     try {
         const { data, error } = await supabase.from('destress_phrases')
@@ -602,9 +640,21 @@ async function loadPool() {
         console.warn('[Studio] База фраз недоступна — используются встроенные фразы.', e);
     }
 }
+async function loadSituations() {
+    try {
+        const { data, error } = await supabase.from('destress_situations')
+            .select('text, translations').eq('status', 'approved').order('created_at', { ascending: true }).limit(60);
+        if (error) throw error;
+        extraRaw = data || [];
+        renderChoices();
+    } catch (e) {
+        console.warn('[Studio] Коллекция случаев недоступна — только встроенные.', e);
+    }
+}
 
 setModeButtons();
 await loadPool();
+await loadSituations();
 </script>
 </body>
 </html>
