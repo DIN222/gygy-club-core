@@ -1,14 +1,9 @@
-/* atelier-layout.css — v1.0.0 — 2026-10-31 — Ателье: «сцена и шаги»
-   Подключается после основного <style> страницы. Размер окна превью не меняется
-   (от него зависит масштаб принта в сантиметрах). */
-
+/* atelier-layout.css — v1.0.0 — Ателье: «сцена и шаги». Размер окна превью не меняется (от него зависит масштаб принта). */
 .page-wrap { padding-top: 54px; }
 .atelier-title-badge { margin-bottom: 12px; }
-
 .at-grid { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 22px; width: 100%; max-width: 1000px; align-items: start; }
 .at-stage { position: sticky; top: 8px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .at-steps { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-
 .at-step { border: 1px solid var(--gold-dim); background: rgba(0,0,0,.6); }
 .at-step[open] { border-color: var(--gold); }
 .at-step > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 11px 12px; font-weight: 700; letter-spacing: 1px; color: var(--gold); }
@@ -19,7 +14,6 @@
 .at-step-body .field-row, .at-step-body .position-row { margin-bottom: 0; }
 .at-step-body .btn-cfg.small.at-next { flex: 0 0 auto; align-self: flex-end; min-width: 110px; }
 .at-more > summary { color: var(--ivory); font-weight: 400; }
-
 .at-ticket { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px solid var(--gold); background: rgba(0,0,0,.78); }
 .at-sum > summary { cursor: pointer; list-style: none; font-size: 10px; letter-spacing: 1px; color: var(--ivory); opacity: .85; }
 .at-sum > summary::-webkit-details-marker { display: none; }
@@ -33,12 +27,10 @@
 .at-qty input { width: 54px; padding: 7px 6px; border: 1px solid var(--gold-dim); background: var(--ivory); color: #1a1408; font-family: inherit; font-size: 12px; }
 .at-ticket .price-line { flex: 1; margin: 0; text-align: center; font-size: 24px; }
 .at-ticket .btn-cfg.confirm { flex: 0 0 auto; padding: 10px 12px; }
-
 @media (max-width: 900px) {
   .at-grid { grid-template-columns: minmax(0, 1fr); max-width: 440px; }
   .at-stage { position: static; }
   .page-wrap { padding-bottom: 150px; }
-  /* на телефоне цена и кнопка заказа закреплены внизу (слева место под кнопку звука) */
   .at-ticket { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; max-height: 55vh; overflow-y: auto; padding: 8px 12px 10px 56px; border-width: 1px 0 0; background: rgba(0,0,0,.94); }
   .at-qty-label { display: none; }
   .at-ticket .price-line { font-size: 20px; }
