@@ -49,10 +49,10 @@ registerDictionary({
             pair($('row-neckline'), $('row-fit')),
             pair(up('select-fabric-composition', '.field-row'), up('select-fabric-density', '.field-row'), 'wide-left'),
             $('row-drawstring'), $('row-zipper'), $('spec-panel'), document.querySelector('.care-notes')
-        ], 2),
-        makeStep(2, 'at_step_design', '2 · DESIGN', [
+              makeStep(2, 'at_step_design', '2 · DESIGN', [
             up('select-technique', '.field-row'), up('print-prev', '.print-strip-row'), $('phrase-note'),
-            $('btn-upload-own'), $('share-row'), $('category-picker'), $('btn-open-prompt'), $('prompt-builder')
+            pair($('btn-upload-own'), $('btn-open-prompt')),
+            $('share-row'), $('category-picker'), $('prompt-builder')
         ], 3),
         makeStep(3, 'at_step_place', '3 · PLACEMENT', [up('select-position', '.position-row'), $('size-lock-row')], null),
         makeStep(4, 'at_step_help', 'HELP AND REVIEWS', [$('link-help'), $('review-box')], null, 'at-more')
