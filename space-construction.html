@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="space.css">
 </head>
 <body>
-<div class="sp-bg" style="--bg: url('space_center_bg.jpg');"></div>
+Стало: <div class="sp-bg" id="sp-bg"></div>
 
 <div class="sp-top">
     <div class="sp-nav" translate="no">
@@ -123,8 +123,9 @@
     import { drawStage, runLaunch, renderEmblem, canvasBlob, ensureFonts } from './modules/spaceArt.js';
     import { mountForum, getCrewName, setCrewName } from './modules/spaceForum.js';
     import { sendImageToAtelier, downloadBlob, shareImage } from './modules/toAtelier.js';
-
-    registerDictionary(SPACE_DICT);
+       import { mountStarfield } from './modules/starfield.js';
+       registerDictionary(SPACE_DICT);
+    
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
 
