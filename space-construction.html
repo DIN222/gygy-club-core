@@ -258,6 +258,7 @@
         box.classList.remove('pulse'); void box.offsetWidth; box.classList.add('pulse');
     });
     $('after-moon').addEventListener('click', () => { window.location.href = 'lunar-base.html'; });
+         $('to-moon-top').addEventListener('click', () => { window.location.href = 'lunar-base.html'; });
     $('again').addEventListener('click', () => {
         if (stopLaunch) stopLaunch();
         launching = false; finished = false;
