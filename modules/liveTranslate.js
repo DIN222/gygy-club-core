@@ -247,7 +247,10 @@ function onMutations(muts) {
 export function start() {
     if (started) return;
     started = true;
-    try { disabled = sessionStorage.getItem('gygy_lt_off') === '1'; } catch (e) { /* ок */ }
+        try {
+        const off = Number(sessionStorage.getItem('gygy_lt_off') || 0);
+        disabled = off > 1 && Date.now() - off < 5 * 60 * 1000;   // пауза 5 минут, потом пробуем снова
+    } catch (e) { /* ок */ }
     loadLocal();
     const go = () => {
         runAll();
