@@ -44,9 +44,10 @@ registerDictionary({
     const steps = mk('div', 'at-steps');
     steps.id = 'at-steps';
     steps.append(
-        makeStep(1, 'at_step_garment', '1 · GARMENT', [
-            up('select-type', '.field-row'), up('select-size', '.field-row'), $('row-neckline'), $('row-fit'),
-            up('select-fabric-composition', '.field-row'), up('select-fabric-density', '.field-row'),
+               makeStep(1, 'at_step_garment', '1 · GARMENT', [
+            up('select-type', '.field-row'), up('select-size', '.field-row'),
+            pair($('row-neckline'), $('row-fit')),
+            pair(up('select-fabric-composition', '.field-row'), up('select-fabric-density', '.field-row'), 'wide-left'),
             $('row-drawstring'), $('row-zipper'), $('spec-panel'), document.querySelector('.care-notes')
         ], 2),
         makeStep(2, 'at_step_design', '2 · DESIGN', [
