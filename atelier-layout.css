@@ -38,4 +38,5 @@
 .at-pair.wide-left { grid-template-columns: 1.7fr 1fr; }
 .at-pair > * { margin: 0; min-width: 0; }
 .at-pair .fixed-note { font-size: 9px; padding: 8px 6px; }
+  .at-pair > .btn-cfg { margin: 0 !important; text-align: center; white-space: normal; line-height: 1.25; padding: 9px 6px; }
 }
