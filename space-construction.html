@@ -127,7 +127,8 @@
        registerDictionary(SPACE_DICT);
     
     initLocalization(document.body);
-    initPassport(document.getElementById('passport-badge-container'));
+          initPassport(document.getElementById('passport-badge-container'));
+       mountStarfield(document.getElementById('sp-bg'));
 
     const $ = id => document.getElementById(id);
     const S = { mission: '', capsule: null, hull: null, engines: null, motto: '' };
