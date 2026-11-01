@@ -96,7 +96,7 @@ async function fetchTranslations(texts, lang) {
             console.warn('[liveTranslate] Перевод недоступен:', (e && e.message) ? e.message : e);
             if (failures >= 2) {
                 disabled = true;
-                try { sessionStorage.setItem('gygy_lt_off', '1'); } catch (_) { /* ок */ }
+                               try { sessionStorage.setItem('gygy_lt_off', String(Date.now())); } catch (_) { /* ок */ }
             }
             break;
         }
