@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!-- translate-test.html — v1.0.0 — 2026-11-01 — проверка перевода: показывает ответ функции translate прямо на странице -->
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY Club — Проверка перевода</title>
+<style>
+    body { margin: 0; padding: 24px 16px; background: #000; color: #F0EAD6; font: 14px/1.6 'Share Tech Mono', monospace; }
+    h1 { color: #FFD700; font-size: 20px; margin: 0 0 12px; }
+    .btn { background: #000; color: #FFD700; border: 1px solid #FFD700; padding: 10px 14px; font: inherit; cursor: pointer; margin: 0 8px 8px 0; }
+    pre { white-space: pre-wrap; word-break: break-word; background: #0a0a0a; border: 1px solid #8a6f24; padding: 12px; min-height: 80px; }
+    .tip { color: #FFD700; }
+</style>
+</head>
+<body>
+<h1>Проверка перевода</h1>
+<p id="info"></p>
+<button class="btn" id="run" type="button">Проверить перевод</button>
+<button class="btn" id="reset" type="button">Сбросить паузу переводчика</button>
+<pre id="out"></pre>
+
+<script type="module">
+    import { supabase } from './core/supabase-init.js';
+
+    const out = document.getElementById('out');
+    const log = (t) => { out.textContent += t + '\n'; };
+    const info = () => {
+        document.getElementById('info').textContent =
+            'Адрес страницы: ' + location.origin + ' · пауза переводчика в этой вкладке: ' +
+            (sessionStorage.getItem('gygy_lt_off') ? 'включена' : 'нет');
+    };
+    info();
+
+    function advice(status, body, name) {
+        if (name === 'FunctionsFetchError') {
+            return 'Запрос не дошёл до функции. Проверьте, что функция translate задеплоена, и что в её списке ALLOWED_ORIGINS записан ' + location.origin + ' (без слеша в конце).';
+        }
+        if (/forbidden/.test(body)) return 'Функция не пускает этот адрес: добавьте ' + location.origin + ' в ALLOWED_ORIGINS в коде функции и нажмите Deploy.';
+        if (/deepl 403/.test(body)) return 'DeepL не принял ключ. Supabase → Edge Functions → Secrets: проверьте, что есть DEEPL_API_KEY и в нём ключ целиком (у бесплатного он заканчивается на :fx). После правки секрета откройте функцию translate и нажмите Deploy ещё раз. Если ключ без :fx (платный), напишите мне: нужен другой адрес сервера DeepL.';
+        if (/deepl 456/.test(body)) return 'Исчерпан лимит символов DeepL (бесплатно 500 000 в месяц). Смотрите Usage в кабинете DeepL.';
+        if (/deepl 429/.test(body)) return 'Слишком частые запросы. Подождите минуту и нажмите кнопку ещё раз.';
+        if (/deepl/.test(body)) return 'DeepL вернул ошибку с этим кодом. Пришлите мне строку «Ответ функции».';
+        if (status === 500) return 'Ошибка внутри функции. Пришлите мне строку «Ответ функции».';
+        return 'Пришлите мне строки «Статус» и «Ответ функции».';
+    }
+
+    document.getElementById('run').addEventListener('click', async () => {
+        out.textContent = '';
+        log('Отправляю слово «Привет» на перевод в English …');
+        let res;
+        try {
+            res = await supabase.functions.invoke('translate', { body: { texts: ['Привет'], target: 'en' } });
+        } catch (e) {
+            log('Сбой запроса: ' + e);
+            return;
+        }
+        const { data, error } = res;
+        if (!error) {
+            log('Ответ: ' + JSON.stringify(data));
+            log('\nПеревод работает. Если на сайте он всё равно молчит, нажмите «Сбросить паузу переводчика» и обновите страницу сайта.');
+            return;
+        }
+        let status = '', body = '';
+        try { status = error.context.status; body = await error.context.text(); } catch (e) { body = String(error.message || error); }
+        log('Тип ошибки: ' + error.name);
+        log('Статус: ' + status);
+        log('Ответ функции: ' + body);
+        log('\n' + advice(status, body, error.name));
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+        try { sessionStorage.removeItem('gygy_lt_off'); } catch (e) { /* ок */ }
+        info();
+        log('Пауза сброшена.');
+    });
+</script>
+</body>
+</html>
