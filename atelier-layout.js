@@ -15,6 +15,7 @@ registerDictionary({
     const up = (id, sel) => { const el = $(id); return el ? el.closest(sel) : null; };
     const mk = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
     const label = (el, key, fb) => { el.dataset.k = key; el.dataset.fb = fb; el.textContent = t(key, fb); return el; };
+        const pair = (a, b, cls) => { if (!a || !b) return a || b; const w = mk('div', 'at-pair' + (cls ? ' ' + cls : '')); w.append(a, b); return w; };
 
     const stepEls = [];
     function openStep(n) {
