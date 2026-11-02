@@ -38,26 +38,26 @@
             <h2 class="sp-h" style="text-align:center; margin-bottom:12px;" data-translate="sp_prep_title">Pre-flight preparation</h2>
             <div class="sp-grid">
                 <div class="sp-left">
-                    <div class="sp-panel sp-prevbox">
+                                       <div class="sp-panel sp-prevbox">
                         <canvas id="preview" width="640" height="400"></canvas>
                         <div class="sp-bar"><i id="barfill"></i></div>
                         <div class="sp-row" style="justify-content:space-between; align-items:center;">
                             <span class="sp-progress" id="progress" translate="no"></span>
                             <button class="sp-btn primary" id="to-pad" type="button" disabled data-translate="sp_to_pad">TO THE LAUNCH PAD →</button>
                         </div>
-                    </div>
-
-                    <div class="sp-panel sp-baybox" id="bay-box">
-                        <h2 class="sp-h" data-translate="sp_bay_title">Print bay</h2>
-                        <p class="sp-sub" data-translate="sp_bay_sub">Your rocket as it stands now, as a patch for a garment.</p>
-                        <div class="sp-bay">
+                        <div class="sp-baybar" id="bay-box">
                             <canvas id="bay" width="480" height="480"></canvas>
-                            <div class="sp-row" style="margin:0;">
+                            <div class="sp-baybtns">
+                                <span class="sp-baytitle" data-translate="sp_bay_title">Print bay</span>
                                 <button class="sp-btn primary" id="bay-atelier" type="button" data-translate="sp_to_atelier">Send to the Atelier →</button>
-                                <button class="sp-btn" id="bay-png" type="button" data-translate="sp_png">Save PNG ⬇</button>
-                                <button class="sp-btn" id="bay-tg" type="button" data-translate="sp_telegram">Telegram ✈</button>
+                                <div class="sp-row" style="margin:0;">
+                                    <button class="sp-btn" id="bay-png" type="button" data-translate="sp_png">Save PNG ⬇</button>
+                                    <button class="sp-btn" id="bay-tg" type="button" data-translate="sp_telegram">Telegram ✈</button>
+                                </div>
                             </div>
                         </div>
+                        <p class="sp-status" id="bay-status" role="status" translate="no"></p>
+                    </div>
                         <p class="sp-status" id="bay-status" role="status" translate="no"></p>
                     </div>
                 </div>
