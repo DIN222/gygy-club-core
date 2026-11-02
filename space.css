@@ -126,3 +126,11 @@ button { cursor: pointer; }
   .sp-cargobox { order: 3; }
   .sp-baybox { order: 4; }
 }
+/* уровни: подготовка и пусковая площадка (один на переднем плане, второй позади) */
+.sp-layers { position: relative; display: grid; }
+.sp-layer { grid-area: 1 / 1; min-width: 0; transition: transform .5s cubic-bezier(.2,.7,.2,1), opacity .5s, filter .5s; }
+.sp-layer.front { opacity: 1; transform: none; filter: none; visibility: visible; }
+.sp-layer.back { opacity: 0; transform: scale(.94) translateY(-12px); filter: blur(3px); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, filter .5s, visibility 0s .5s; }
+.sp-layer.ahead { opacity: 0; transform: translateY(24px) scale(1.03); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, visibility 0s .5s; }
+.sp-prevbox canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: #05060f; }
+@media (min-width: 901px) { .sp-prevbox { position: sticky; top: 64px; } }
