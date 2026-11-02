@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
-  space-construction.html — Центр космического строительства — v1.0.0 — 2026-10-30
-  Сцена (ракета, шкала, пуск) всегда на виду; шаги сборки рядом. Конец: пуск и надпись
-  «See you on the Moon». Print bay: текущая ракета как нашивка → Ателье / PNG / Telegram.
-  Стена экипажа — начало форума. После пуска открывается Лунная база.
+  space-construction.html — Центр космического строительства — v2.0.0 — 2026-11-01
+  Ракета везёт модули для Лунной базы. Слева сцена (ракета с контейнерами, шкала, пуск) и Print bay,
+  справа шаги сборки и «Груз и форум»: у каждого модуля своя ветка обсуждения.
+  Пуск записывает доставку в общую стройку (moon_modules, функция deliver_modules).
 -->
 <html lang="en">
 <head>
@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="space.css">
 </head>
 <body>
-Стало: <div class="sp-bg" id="sp-bg"></div>
+<div class="sp-bg" id="sp-bg"></div>
 
 <div class="sp-top">
     <div class="sp-nav" translate="no">
@@ -29,8 +29,8 @@
 
 <main class="sp-page">
     <h1 class="sp-title" data-translate="sp_center_title">Space Construction Center</h1>
-    <p class="sp-lead" data-translate="sp_center_sub">Assemble the rocket step by step, name the mission and launch.</p>
-         <div class="sp-row" style="justify-content:center; margin:0 0 14px;"><button class="sp-btn" id="to-moon-top" type="button" data-translate="sp_after_moon">To the Lunar Base →</button></div>
+    <p class="sp-lead" data-translate="sp_center_sub">Build the rocket, load modules for the Lunar Base and launch.</p>
+    <div class="sp-row" style="justify-content:center; margin:0 0 14px;"><button class="sp-btn" id="to-moon-top" type="button" data-translate="sp_after_moon">To the Lunar Base →</button></div>
 
     <div class="sp-grid">
         <div class="sp-left">
@@ -106,12 +106,17 @@
                     <summary data-translate="sp_step_motto">5 · Motto (optional)</summary>
                     <div class="body">
                         <input class="sp-input" id="motto" type="text" maxlength="40" placeholder="Motto (up to 40 characters)" data-translate-placeholder="sp_motto_ph">
-                        <div class="sp-row"><button class="sp-btn" id="motto-charlie" type="button" data-translate="sp_motto_charlie">Take a phrase from Charlie</button></div>
+                        <div class="sp-row"><button class="sp-btn" id="motto-charlie" type="button" data-translate="sp_motto_charlie">Take a phrase from De-Stress Studio</button></div>
                     </div>
                 </details>
             </div>
 
-            <div class="sp-panel sp-wallbox" id="wall"></div>
+            <div class="sp-panel sp-cargobox">
+                <h2 class="sp-h" data-translate="sp_cargo_title">Cargo and forum</h2>
+                <p class="sp-sub" data-translate="sp_cargo_sub">Load modules for the Lunar Base. Open a module to read and write in its thread.</p>
+                <p class="sp-slots" id="slots" translate="no"></p>
+                <div id="mods" translate="no"></div>
+            </div>
         </div>
     </div>
 </main>
@@ -124,23 +129,29 @@
     import { drawStage, runLaunch, renderEmblem, canvasBlob, ensureFonts } from './modules/spaceArt.js';
     import { mountForum, getCrewName, setCrewName } from './modules/spaceForum.js';
     import { sendImageToAtelier, downloadBlob, shareImage } from './modules/toAtelier.js';
-       import { mountStarfield } from './modules/starfield.js';
-       registerDictionary(SPACE_DICT);
-    
+    import { mountStarfield } from './modules/starfield.js';
+    import { loadModules, moduleTitle, deliver } from './modules/moonData.js';
+
+    registerDictionary(SPACE_DICT);
     initLocalization(document.body);
-          initPassport(document.getElementById('passport-badge-container'));
-       mountStarfield(document.getElementById('sp-bg'));
+    initPassport(document.getElementById('passport-badge-container'));
+    mountStarfield(document.getElementById('sp-bg'));
 
     const $ = id => document.getElementById(id);
-    const S = { mission: '', capsule: null, hull: null, engines: null, motto: '' };
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    const S = { mission: '', capsule: null, hull: null, engines: null, motto: '', cargo: [] };
+    let modules = [], postCounts = {}, openCode = null;
     let stopLaunch = null, launching = false, finished = false, bayTimer = null;
 
-    const cfg = () => ({ capsule: S.capsule, hull: S.hull, engines: S.engines });
+    const iconOf = (code) => { const m = modules.find(x => x.code === code); return m ? m.icon : '📦'; };
+    const cap = () => (S.engines || 0) * 2;
+    const cfg = () => ({ capsule: S.capsule, hull: S.hull, engines: S.engines, cargo: S.cargo.map(iconOf) });
     const crew = () => ($('crew').value.trim() || getCrewName()).slice(0, 30);
     const say = (m) => { $('status').textContent = m || ''; };
-    const completed = () => [S.mission.trim().length >= 2, !!S.capsule, !!S.hull, !!S.engines].filter(Boolean).length;
+    const completed = () => [S.mission.trim().length >= 2, !!S.capsule, !!S.hull, !!S.engines, S.cargo.length > 0].filter(Boolean).length;
 
-    // ---------- шаги ----------
+    // ---------- шаги сборки ----------
     const steps = [...document.querySelectorAll('details.sp-step')];
     steps.forEach(d => d.addEventListener('toggle', () => {
         if (d.open) steps.forEach(o => { if (o !== d) o.open = false; });
@@ -148,14 +159,104 @@
     const openStep = (name) => { const d = document.querySelector(`details[data-step="${name}"]`); if (d) d.open = true; };
     const markDone = (name, ok) => { const d = document.querySelector(`details[data-step="${name}"]`); if (d) d.classList.toggle('done', ok); };
 
+    // ---------- модули: список, груз, ветки ----------
+    function modRow(m) {
+        const pct = Math.min(100, Math.round(m.delivered / m.needed * 100));
+        const posts = postCounts[m.code] || 0;
+        return `<details class="sp-mod${m.delivered >= m.needed ? ' done' : ''}" data-code="${esc(m.code)}">
+            <summary>
+                <span class="ic">${esc(m.icon)}</span>
+                <span class="mt"><b>${esc(moduleTitle(m))}</b><i class="mp"><u style="width:${pct}%"></u></i>
+                    <small>${esc(t('sp_need', '{d} of {n} delivered', { d: m.delivered, n: m.needed }))} · ${esc(t('sp_posts', '{n} messages', { n: posts }))}</small></span>
+                <button class="sp-btn sm" type="button" data-load></button>
+            </summary>
+            <div class="sp-thread" translate="no"></div>
+        </details>`;
+    }
+
+    function updateButtons() {
+        const full = S.cargo.length >= cap();
+        document.querySelectorAll('.sp-mod').forEach(d => {
+            const m = modules.find(x => x.code === d.dataset.code);
+            const b = d.querySelector('[data-load]');
+            if (!m || !b) return;
+            const done = m.delivered >= m.needed;
+            const on = S.cargo.includes(m.code);
+            b.textContent = done ? t('sp_built', 'Built') : (on ? t('sp_loaded', '✓ Loaded') : t('sp_load', '+ Load'));
+            b.classList.toggle('on', on);
+            b.disabled = done || (!on && (full || !S.engines));
+        });
+        $('slots').textContent = S.engines
+            ? t('sp_cargo_slots', 'Cargo: {n} of {m}', { n: S.cargo.length, m: cap() })
+            : t('sp_cargo_noengine', 'Choose engines first: each engine carries two modules.');
+    }
+
+    function renderModules() {
+        $('mods').innerHTML = modules.map(modRow).join('');
+        updateButtons();
+        if (openCode) {
+            const d = document.querySelector(`.sp-mod[data-code="${openCode}"]`);
+            if (d) d.open = true;          // событие toggle заново подгрузит ветку
+        }
+    }
+
+    function mountThread(d) {
+        const m = modules.find(x => x.code === d.dataset.code);
+        if (!m) return;
+        mountForum(d.querySelector('.sp-thread'), { area: 'center', topic: m.code, title: () => moduleTitle(m) });
+    }
+
+    $('mods').addEventListener('toggle', (e) => {
+        const d = e.target;
+        if (!d.classList || !d.classList.contains('sp-mod')) return;
+        if (d.open) {
+            document.querySelectorAll('.sp-mod').forEach(o => { if (o !== d) o.open = false; });
+            openCode = d.dataset.code;
+            mountThread(d);
+        } else if (openCode === d.dataset.code) {
+            openCode = null;
+        }
+    }, true);
+
+    $('mods').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-load]');
+        if (!b) return;
+        e.preventDefault();
+        e.stopPropagation();               // кнопка внутри строки не должна раскрывать ветку
+        const code = b.closest('.sp-mod').dataset.code;
+        const at = S.cargo.indexOf(code);
+        if (at >= 0) S.cargo.splice(at, 1);
+        else if (S.cargo.length < cap()) S.cargo.push(code);
+        refresh();
+    });
+
+    async function loadCounts() {
+        postCounts = {};
+        try {
+            const { data } = await supabase.from('space_posts').select('topic')
+                .eq('area', 'center').eq('status', 'approved').not('topic', 'is', null).limit(1000);
+            (data || []).forEach(r => { postCounts[r.topic] = (postCounts[r.topic] || 0) + 1; });
+        } catch (e) { /* без счётчиков */ }
+    }
+
+    async function refreshModules() {
+        const r = await loadModules();
+        modules = r.modules;
+        S.cargo = S.cargo.filter(c => modules.some(m => m.code === c && m.delivered < m.needed));
+        await loadCounts();
+        renderModules();
+    }
+
+    // ---------- обновление сцены ----------
     function refresh() {
         const n = completed();
-        $('progress').textContent = t('sp_progress', 'Ready: {n} of 4', { n });
-        $('barfill').style.width = (n * 25) + '%';
-        $('launch').disabled = n < 4 || launching;
+        $('progress').textContent = t('sp_progress', 'Ready: {n} of 5', { n });
+        $('barfill').style.width = (n * 20) + '%';
+        $('launch').disabled = n < 5 || launching;
         markDone('mission', S.mission.trim().length >= 2);
         markDone('capsule', !!S.capsule); markDone('hull', !!S.hull);
         markDone('engines', !!S.engines); markDone('motto', S.motto.trim().length > 0);
+        updateButtons();
         if (!launching && !finished) drawStage($('stage'), cfg());
         clearTimeout(bayTimer);
         bayTimer = setTimeout(updateBay, 150);
@@ -170,6 +271,7 @@
     document.querySelectorAll('.sp-opt').forEach(b => b.addEventListener('click', () => {
         const k = b.dataset.k;
         S[k] = (k === 'engines') ? Number(b.dataset.v) : b.dataset.v;
+        if (k === 'engines') S.cargo = S.cargo.slice(0, cap());     // меньше двигателей — меньше мест
         document.querySelectorAll(`.sp-opt[data-k="${k}"]`).forEach(x => x.classList.toggle('sel', x === b));
         refresh();
         if (NEXT[k]) openStep(NEXT[k]);
@@ -222,13 +324,14 @@
         say(r === 'shared' ? t('sp_shared', 'Shared.') : (r === 'telegram' ? t('sp_opening_tg', 'Opening Telegram…') : ''));
     });
 
-    // ---------- пуск ----------
+    // ---------- пуск и доставка груза ----------
     $('launch').addEventListener('click', async () => {
-        if (launching || completed() < 4) return;
+        if (launching || completed() < 5) return;
         await ensureFonts();
         launching = true; finished = false;
         $('launch').disabled = true;
         $('steps').classList.add('locked');
+        $('mods').classList.add('locked');
         $('after').hidden = true;
         say('');
         const ov = $('overlay');
@@ -240,16 +343,32 @@
         });
     });
 
-    function finish() {
+    async function finish() {
         launching = false; finished = true;
         const ov = $('overlay');
         ov.className = 'sp-overlay show final';
         ov.textContent = t('sp_final', 'See you on the Moon');
         try {
             localStorage.setItem('gygy_space_launched', '1');
-            localStorage.setItem('gygy_space_mission', JSON.stringify({ ...cfg(), mission: S.mission.trim(), motto: S.motto.trim(), crew: crew(), at: Date.now() }));
+            localStorage.setItem('gygy_space_mission', JSON.stringify({
+                capsule: S.capsule, hull: S.hull, engines: S.engines,
+                mission: S.mission.trim(), motto: S.motto.trim(), crew: crew(), at: Date.now()
+            }));
         } catch (e) { /* ок */ }
         $('after').hidden = false;
+
+        // груз уходит на стройплощадку
+        try {
+            const accepted = await deliver(crew(), S.mission.trim(), S.cargo.slice());
+            const names = accepted.map(c => { const m = modules.find(x => x.code === c); return m ? moduleTitle(m) : c; });
+            say(accepted.length
+                ? t('sp_delivered_msg', 'Cargo delivered: {list}', { list: names.join(', ') })
+                : t('sp_delivery_none', 'These modules are already built: the cargo was not needed.'));
+            await refreshModules();
+        } catch (e) {
+            console.warn('[space] Доставка груза не записалась', e);
+            say(t('sp_delivery_fail', 'Launch recorded, but the base did not receive the cargo (try later).'));
+        }
     }
 
     $('after-patch').addEventListener('click', () => {
@@ -258,22 +377,25 @@
         box.classList.remove('pulse'); void box.offsetWidth; box.classList.add('pulse');
     });
     $('after-moon').addEventListener('click', () => { window.location.href = 'lunar-base.html'; });
-         $('to-moon-top').addEventListener('click', () => { window.location.href = 'lunar-base.html'; });
+    $('to-moon-top').addEventListener('click', () => { window.location.href = 'lunar-base.html'; });
     $('again').addEventListener('click', () => {
         if (stopLaunch) stopLaunch();
         launching = false; finished = false;
+        S.cargo = [];
         $('overlay').className = 'sp-overlay';
         $('after').hidden = true;
         $('steps').classList.remove('locked');
+        $('mods').classList.remove('locked');
+        say('');
         refresh();
     });
 
     // ---------- навигация и язык ----------
     $('btn-back').addEventListener('click', () => { window.location.href = 'verses.html'; });
     $('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
-    onLanguageChange(refresh);
+    onLanguageChange(() => { renderModules(); refresh(); });
 
-    mountForum($('wall'), { area: 'center' });
+    await refreshModules();
     refresh();
 </script>
 </body>
