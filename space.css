@@ -134,3 +134,10 @@ button { cursor: pointer; }
 .sp-layer.ahead { opacity: 0; transform: translateY(24px) scale(1.03); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, visibility 0s .5s; }
 .sp-prevbox canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: #05060f; }
 @media (min-width: 901px) { .sp-prevbox { position: sticky; top: 64px; } }
+/* Print bay встроен в превью: нашивка и кнопки всегда рядом с ракетой */
+.sp-baybar { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.sp-baybar canvas { width: 96px; height: 96px; }
+.sp-baybtns { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.sp-baytitle { color: var(--gold); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+.sp-baybar.pulse { animation: sp-pulse 1.2s 2; }
+#preview { max-height: 34vh; object-fit: contain; }
