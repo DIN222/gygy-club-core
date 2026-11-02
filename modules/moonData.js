@@ -1,15 +1,18 @@
 // modules/moonData.js
-// v1.0.0 — 2026-11-01
+// v1.1.0 — 2026-11-02
 // Модули Лунной базы: список (moon_modules), доставка груза (deliver_modules), последние доставки.
 // Нет таблицы или база недоступна — работает встроенный список (стройка тогда не растёт).
+// available — модуль можно погрузить в ракету (первый испытательный полёт: только Ателье).
 
 import { supabase } from '../core/supabase-init.js';
 import { getCurrentLang } from '../core/localization.js';
 
-const mk = (code, title, fr, ru, icon, needed, sort, link = null) =>
-    ({ code, title, titles: { fr, ru }, icon, needed, delivered: 0, sort, link, visible: true });
+const mk = (code, title, fr, ru, icon, needed, sort, extra = {}) =>
+    ({ code, title, titles: { fr, ru }, icon, needed, delivered: 0, sort, link: null, visible: true, available: false, ...extra });
 
 export const FALLBACK_MODULES = [
+    mk('ate', 'Atelier “Horse in a Spacesuit”', 'Atelier « Cheval en scaphandre »', 'Ателье «Конь в скафандре»', '🐴', 1, 0,
+        { link: 'atelier.html?theme=space', available: true }),
     mk('hab', 'Habitat', 'Module d’habitation', 'Жилой модуль', '🏠', 5, 1),
     mk('pow', 'Power plant', 'Centrale électrique', 'Энергостанция', '⚡', 4, 2),
     mk('o2', 'Water and oxygen', 'Eau et oxygène', 'Вода и кислород', '💧', 4, 3),
@@ -17,8 +20,7 @@ export const FALLBACK_MODULES = [
     mk('lab', 'Laboratory', 'Laboratoire', 'Лаборатория', '🔬', 3, 5),
     mk('com', 'Communications', 'Communications', 'Связь и антенна', '📡', 2, 6),
     mk('pad', 'Landing pad and warehouse', 'Aire d’atterrissage et entrepôt', 'Посадочная площадка и склад', '🛬', 4, 7),
-    mk('bar', 'Bar “One Sixth”', 'Bar « Un sixième »', 'Бар «Одна шестая»', '🥃', 2, 8),
-    mk('ate', 'Atelier “Horse in a Spacesuit”', 'Atelier « Cheval en scaphandre »', 'Ателье «Конь в скафандре»', '🐴', 2, 9, 'atelier.html')
+    mk('bar', 'Bar “One Sixth”', 'Bar « Un sixième »', 'Бар «Одна шестая»', '🥃', 2, 8)
 ];
 
 export async function loadModules() {
