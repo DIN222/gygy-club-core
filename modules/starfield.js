@@ -20,18 +20,18 @@ export function mountStarfield(host, opts = {}) {
         const cy = R + 78;                                   // ниже верхней панели
         const r = rng(5);
         ctx.save();
-        ctx.shadowColor = 'rgba(240,235,210,.35)';
+     ctx.shadowColor = 'rgba(255,214,90,.5)';
         ctx.shadowBlur = R * 0.9;
         const g = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.1, cx, cy, R);
-        g.addColorStop(0, '#f6f2e4');
-        g.addColorStop(1, '#b4ae9b');
+              g.addColorStop(0, '#fff2a8');
+        g.addColorStop(1, '#e3ac1c');
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
 
         ctx.save();
         ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
-        ctx.fillStyle = 'rgba(120,114,96,.38)';              // кратеры
+                ctx.fillStyle = 'rgba(150,105,10,.38)';             // кратеры
         for (let i = 0; i < 9; i++) {
             const a = r() * Math.PI * 2, d = Math.sqrt(r()) * R * 0.78, cr = R * (0.06 + r() * 0.13);
             ctx.beginPath(); ctx.ellipse(cx + Math.cos(a) * d, cy + Math.sin(a) * d, cr * 1.2, cr, 0, 0, Math.PI * 2); ctx.fill();
