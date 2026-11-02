@@ -1,6 +1,6 @@
 // modules/spaceForum.js
-// v1.0.0 — 2026-10-30
-// Стена сообщений: area 'center' (Центр космического строительства) или 'moon' (Лунная база).
+// v1.1.0 — 2026-11-01
+// Стена сообщений: area 'center' или 'moon'; topic — ветка (код модуля) или null (вся стена области).
 // Сообщения ждут проверки (space_posts, status 'pending'); показываются только одобренные.
 // onPick(post) — нажатие на сообщение (на Лунной базе превращает его в принт).
 
@@ -30,12 +30,12 @@ export function setCrewName(v) {
     try { localStorage.setItem(CREW_KEY, String(v || '').trim().slice(0, 30)); } catch (e) { /* ок */ }
 }
 
-export function mountForum(el, { area = 'center', onPick = null } = {}) {
+export function mountForum(el, { area = 'center', topic = null, title = null, onPick = null } = {}) {
     const moon = area === 'moon';
     let posts = [];
 
     el.innerHTML = `
-        <h2 class="sp-h"></h2>
+        <h3 class="sp-h"></h3>
         <p class="sp-sub"></p>
         <div class="sp-posts"></div>
         <form class="sp-form">
@@ -48,9 +48,11 @@ export function mountForum(el, { area = 'center', onPick = null } = {}) {
     const status = el.querySelector('.sp-status');
 
     function paint() {
-        h.textContent = t(moon ? 'sp_wall_title_moon' : 'sp_wall_title_center', moon ? 'Moon wall' : 'Crew wall');
-        sub.textContent = moon ? t('sp_wall_sub_moon', 'Messages from the Moon. Tap one to put it on a print.')
-                               : t('sp_wall_sub_center', 'Leave a note for the next crews.');
+        const ttl = typeof title === 'function' ? title() : title;
+        h.textContent = ttl || t(moon ? 'sp_wall_title_moon' : 'sp_wall_title_center', moon ? 'Moon wall' : 'Crew wall');
+        sub.textContent = topic ? '' : (moon ? t('sp_wall_sub_moon', 'Messages from the Moon. Tap one to put it on a print.')
+                                             : t('sp_wall_sub_center', 'Leave a note for the next crews.'));
+        sub.style.display = topic ? 'none' : '';
         input.placeholder = t('sp_wall_ph', 'Your message (up to 140 characters)');
         btn.textContent = t('sp_wall_send', 'Send');
         box.innerHTML = posts.length
@@ -60,9 +62,9 @@ export function mountForum(el, { area = 'center', onPick = null } = {}) {
 
     async function load() {
         try {
-            const { data, error } = await supabase.from('space_posts')
-                .select('id, nickname, text').eq('area', area).eq('status', 'approved')
-                .order('created_at', { ascending: false }).limit(30);
+            let q = supabase.from('space_posts').select('id, nickname, text').eq('area', area).eq('status', 'approved');
+            if (topic) q = q.eq('topic', topic);
+            const { data, error } = await q.order('created_at', { ascending: false }).limit(30);
             posts = error ? [] : (data || []);
         } catch (e) { posts = []; }
         paint();
@@ -79,7 +81,7 @@ export function mountForum(el, { area = 'center', onPick = null } = {}) {
         if (text.length < 2) return;
         const last = Number(localStorage.getItem('gygy-space-last') || 0);
         if (Date.now() - last < 20000) { status.textContent = t('sp_wall_wait', 'Please wait a bit before the next message.'); return; }
-        const { error } = await supabase.from('space_posts').insert({ area, nickname: getCrewName(), text, status: 'pending' });
+        const { error } = await supabase.from('space_posts').insert({ area, topic: topic || null, nickname: getCrewName(), text, status: 'pending' });
         if (error) { status.textContent = t('sp_wall_fail', 'Could not send. Please try again later.'); return; }
         try { localStorage.setItem('gygy-space-last', String(Date.now())); } catch (e2) { /* ок */ }
         input.value = '';
