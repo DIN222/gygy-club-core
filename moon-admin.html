@@ -158,7 +158,7 @@
                 needed: Math.max(1, parseInt(el('needed').value) || 1),
                 delivered: Math.max(0, parseInt(el('delivered').value) || 0),
                 sort: parseInt(el('sort').value) || 0,
-                link: el('link').value.trim() || null, visible: el('visible').checked
+                              link: el('link').value.trim() || null, visible: el('visible').checked, available: el('available').checked
             }).eq('code', code);
             setStatus(msg, error ? 'Ошибка: ' + error.message : 'Сохранено.', error ? 'error' : 'ok');
         }
