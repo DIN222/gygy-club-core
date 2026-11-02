@@ -1,5 +1,5 @@
 // core/i18n/space.js
-// v1.0.0 — 2026-10-30
+// v2.0.0 — 2026-11-01
 // Словарь космических страниц (verses.html, space-construction.html, lunar-base.html). Только данные.
 
 export const SPACE_DICT = {
@@ -8,7 +8,7 @@ export const SPACE_DICT = {
         sp_locked_msg: 'Launch the rocket first: the Lunar Base opens after liftoff.',
 
         sp_center_title: 'Space Construction Center',
-        sp_center_sub: 'Assemble the rocket step by step, name the mission and launch.',
+        sp_center_sub: 'Build the rocket, load modules for the Lunar Base and launch.',
         sp_step_mission: '1 · Mission',
         sp_step_capsule: '2 · Capsule',
         sp_step_hull: '3 · Hull',
@@ -24,8 +24,8 @@ export const SPACE_DICT = {
         sp_hull_black: 'Black',
         sp_engines_label: 'Engines:',
         sp_motto_ph: 'Motto (up to 40 characters)',
-        sp_motto_charlie: 'Take a phrase from Charlie',
-        sp_progress: 'Ready: {n} of 4',
+        sp_motto_charlie: 'Take a phrase from De-Stress Studio',
+        sp_progress: 'Ready: {n} of 5',
         sp_launch: 'LAUNCH',
         sp_liftoff: 'LIFTOFF',
         sp_final: 'See you on the Moon',
@@ -33,6 +33,19 @@ export const SPACE_DICT = {
         sp_after_moon: 'To the Lunar Base →',
         sp_again: 'Build another rocket',
         sp_mission_default: 'NEW MISSION',
+
+        sp_cargo_title: 'Cargo and forum',
+        sp_cargo_sub: 'Load modules for the Lunar Base. Open a module to read and write in its thread.',
+        sp_cargo_slots: 'Cargo: {n} of {m}',
+        sp_cargo_noengine: 'Choose engines first: each engine carries two modules.',
+        sp_load: '+ Load',
+        sp_loaded: '✓ Loaded',
+        sp_built: 'Built',
+        sp_need: '{d} of {n} delivered',
+        sp_posts: '{n} messages',
+        sp_delivered_msg: 'Cargo delivered: {list}',
+        sp_delivery_none: 'These modules are already built: the cargo was not needed.',
+        sp_delivery_fail: 'Launch recorded, but the base did not receive the cargo (try later).',
 
         sp_bay_title: 'Print bay',
         sp_bay_sub: 'Your rocket as it stands now, as a patch for a garment.',
@@ -56,6 +69,14 @@ export const SPACE_DICT = {
         sp_wall_fail: 'Could not send. Please try again later.',
         sp_wall_empty: 'No messages yet. Be the first.',
 
+        sp_site_title: 'Lunar Base: construction site',
+        sp_site_total: 'Base ready: {p}%',
+        sp_site_recent: 'Recent deliveries',
+        sp_site_none: 'No deliveries yet. Launch the first rocket.',
+        sp_journal_title: 'Site journal',
+        sp_journal_sub: 'Pick a module to read its thread.',
+        sp_visit: 'Visit →',
+
         sp_moon_title: 'Lunar Base',
         sp_moon_welcome: 'Welcome to the Lunar Base.',
         sp_mission_label: 'Mission',
@@ -76,7 +97,7 @@ export const SPACE_DICT = {
         sp_locked_msg: 'Lance d’abord la fusée : la Base lunaire s’ouvre après le décollage.',
 
         sp_center_title: 'Centre de construction spatiale',
-        sp_center_sub: 'Assemble la fusée étape par étape, nomme la mission et lance-la.',
+        sp_center_sub: 'Construis la fusée, charge des modules pour la Base lunaire et lance-la.',
         sp_step_mission: '1 · Mission',
         sp_step_capsule: '2 · Capsule',
         sp_step_hull: '3 · Coque',
@@ -92,8 +113,8 @@ export const SPACE_DICT = {
         sp_hull_black: 'Noir',
         sp_engines_label: 'Moteurs :',
         sp_motto_ph: 'Devise (40 caractères max.)',
-        sp_motto_charlie: 'Prendre une phrase de Charlie',
-        sp_progress: 'Prêt : {n} sur 4',
+        sp_motto_charlie: 'Prendre une phrase du De-Stress Studio',
+        sp_progress: 'Prêt : {n} sur 5',
         sp_launch: 'LANCEMENT',
         sp_liftoff: 'DÉCOLLAGE',
         sp_final: 'À bientôt sur la Lune',
@@ -101,6 +122,19 @@ export const SPACE_DICT = {
         sp_after_moon: 'Vers la Base lunaire →',
         sp_again: 'Construire une autre fusée',
         sp_mission_default: 'NOUVELLE MISSION',
+
+        sp_cargo_title: 'Cargaison et forum',
+        sp_cargo_sub: 'Charge des modules pour la Base lunaire. Ouvre un module pour lire et écrire dans son fil.',
+        sp_cargo_slots: 'Cargaison : {n} sur {m}',
+        sp_cargo_noengine: 'Choisis d’abord les moteurs : chaque moteur emporte deux modules.',
+        sp_load: '+ Charger',
+        sp_loaded: '✓ Chargé',
+        sp_built: 'Construit',
+        sp_need: '{d} sur {n} livrés',
+        sp_posts: '{n} messages',
+        sp_delivered_msg: 'Cargaison livrée : {list}',
+        sp_delivery_none: 'Ces modules sont déjà construits : la cargaison n’était pas nécessaire.',
+        sp_delivery_fail: 'Lancement enregistré, mais la base n’a pas reçu la cargaison (réessaie plus tard).',
 
         sp_bay_title: 'Atelier d’impression',
         sp_bay_sub: 'Ta fusée dans son état actuel, en écusson pour un vêtement.',
@@ -123,6 +157,14 @@ export const SPACE_DICT = {
         sp_wall_wait: 'Patiente un peu avant le message suivant.',
         sp_wall_fail: 'Impossible d’envoyer. Réessaie plus tard.',
         sp_wall_empty: 'Pas encore de messages. Sois le premier.',
+
+        sp_site_title: 'Base lunaire : chantier',
+        sp_site_total: 'Base prête à {p} %',
+        sp_site_recent: 'Dernières livraisons',
+        sp_site_none: 'Pas encore de livraisons. Lance la première fusée.',
+        sp_journal_title: 'Journal du chantier',
+        sp_journal_sub: 'Choisis un module pour lire son fil.',
+        sp_visit: 'Visiter →',
 
         sp_moon_title: 'Base lunaire',
         sp_moon_welcome: 'Bienvenue sur la Base lunaire.',
