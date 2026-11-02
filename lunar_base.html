@@ -77,7 +77,8 @@
     import { renderEmblem, canvasBlob } from './modules/spaceArt.js';
     import { mountForum, getCrewName } from './modules/spaceForum.js';
     import { sendImageToAtelier, downloadBlob, shareImage } from './modules/toAtelier.js';
-
+       import { mountStarfield } from './modules/starfield.js';
+       registerDictionary(SPACE_DICT);
     registerDictionary(SPACE_DICT);
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
