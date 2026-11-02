@@ -125,7 +125,8 @@
                     <span class="lbl">Доставлено</span><input type="number" class="num" data-f="delivered" value="${m.delivered}" min="0">
                     <span class="lbl">Порядок</span><input type="number" class="num" data-f="sort" value="${m.sort}">
                     <input type="text" class="wide" data-f="link" placeholder="Ссылка (необязательно)" value="${esc(m.link || '')}">
-                    <label class="lbl"><input type="checkbox" data-f="visible"${m.visible ? ' checked' : ''}> виден</label>
+                                        <label class="lbl"><input type="checkbox" data-f="visible"${m.visible ? ' checked' : ''}> виден</label>
+                    <label class="lbl"><input type="checkbox" data-f="available"${m.available ? ' checked' : ''}> доступен для полёта</label>
                 </div>
                 <div class="row">
                     <button class="btn" data-save type="button">Сохранить</button>
