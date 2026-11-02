@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <!--
-  space-construction.html — Центр космического строительства — v2.1.0 — 2026-11-01
-  Два уровня, один на экране: 1) предполётная подготовка (превью ракеты, шаги, груз и форум, Print bay),
-  2) пусковая площадка (большая сцена, пуск). Груз доставляется в общую стройку (deliver_modules).
+  space-construction.html — Центр космического строительства — v3.0.0 — 2026-11-02
+  Интерфейс «в глубину»: четыре уровня, на каждом завершается своё действие:
+  1 Миссия → 2 Ракета → 3 Груз → 4 Пуск. Форум — отдельный уровень (кнопка в полосе шагов и «Обсудить» у модулей).
+  Переход на Луну появляется только после пуска. Печать отсюда убрана (переедет в Ателье «Конь в скафандре»).
+  Первый испытательный полёт везёт модуль «Ателье».
 -->
 <html lang="en">
 <head>
@@ -11,8 +13,56 @@
 <meta name="google" content="notranslate">
 <title>GY-GY Club — Space Construction Center</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="qrcode.min.js"></script>
 <link rel="stylesheet" href="space.css">
+<style>
+    [hidden] { display: none !important; }
+    .sp-title { text-align: center; font-size: clamp(24px, 4.2vw, 44px); margin-bottom: 12px; }
+
+    .stepbar { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 16px; }
+    .stepbar button { background: rgba(0,0,0,.55); color: var(--ivory); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; font-size: 11px; }
+    .stepbar button.cur { border-color: var(--o); color: var(--o); box-shadow: 0 0 10px var(--og); }
+    .stepbar button.done { border-color: #6fd48a; color: #6fd48a; }
+    .stepbar button:disabled { opacity: .35; cursor: not-allowed; }
+    .stepbar .sep { opacity: .4; }
+    .stepbar .forum-btn { margin-left: 12px; }
+
+    /* уровни: front — на переднем плане, back — позади, ahead — впереди */
+    .layers { position: relative; display: grid; }
+    .L { grid-area: 1 / 1; min-width: 0; transition: transform .5s cubic-bezier(.2,.7,.2,1), opacity .5s, filter .5s; }
+    .L.front { opacity: 1; transform: none; filter: none; visibility: visible; }
+    .L.back { opacity: 0; transform: scale(.93) translateY(-12px); filter: blur(3px); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, filter .5s, visibility 0s .5s; }
+    .L.ahead { opacity: 0; transform: translateY(24px) scale(1.03); pointer-events: none; visibility: hidden; transition: transform .5s, opacity .5s, visibility 0s .5s; }
+    .L-card { max-width: 760px; margin: 0 auto; }
+    .L-head { margin: 0 0 12px; text-align: center; color: var(--gold); font-size: 18px; letter-spacing: 2px; text-transform: uppercase; }
+    .L-nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; }
+    .L-note { font-size: 11px; opacity: .7; text-align: center; margin: 8px 0 0; }
+
+    .opt-group { margin: 12px 0; }
+    .opt-group .lbl2 { font-size: 11px; opacity: .75; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+    .rocket-prev canvas { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; border-radius: 8px; background: #05060f; }
+
+    .cargo-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+    .mcard { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.02); }
+    .mcard.locked { opacity: .55; }
+    .mcard.link { cursor: pointer; }
+    .mcard.link:hover { border-color: var(--o); }
+    .mcard .ic { font-size: 24px; flex: 0 0 auto; }
+    .mcard .mt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .mcard .mt b { color: var(--ivory); font-size: 13px; overflow-wrap: anywhere; }
+    .mcard .mt small { font-size: 10px; opacity: .7; }
+    .mcard .mp { display: block; height: 4px; background: rgba(255,255,255,.12); border-radius: 2px; overflow: hidden; }
+    .mcard .mp u { display: block; height: 100%; background: var(--o); text-decoration: none; }
+    .mcard.done .mp u { background: #6fd48a; }
+    .mcard .mb { display: flex; flex-direction: column; gap: 5px; flex: 0 0 auto; }
+    .sp-btn.sm { padding: 6px 9px; font-size: 10px; }
+    .sp-btn.on { border-color: var(--o); color: var(--o); }
+
+    @media (max-width: 520px) {
+        .stepbar .forum-btn { margin-left: 0; }
+        .mcard { flex-wrap: wrap; }
+        .mcard .mb { flex-direction: row; width: 100%; }
+    }
+</style>
 </head>
 <body>
 <div class="sp-bg" id="sp-bg"></div>
@@ -28,116 +78,105 @@
 
 <main class="sp-page">
     <h1 class="sp-title" data-translate="sp_center_title">Space Construction Center</h1>
-    <p class="sp-lead" data-translate="sp_center_sub">Build the rocket, load modules for the Lunar Base and launch.</p>
-    <div class="sp-row" style="justify-content:center; margin:0 0 14px;"><button class="sp-btn" id="to-moon-top" type="button" data-translate="sp_after_moon">To the Lunar Base →</button></div>
+    <nav class="stepbar" id="stepbar" aria-label="steps" translate="no"></nav>
 
-    <div class="sp-layers">
+    <div class="layers">
 
-        <!-- УРОВЕНЬ 1: предполётная подготовка -->
-        <section class="sp-layer front" id="layer-prep">
-            <h2 class="sp-h" style="text-align:center; margin-bottom:12px;" data-translate="sp_prep_title">Pre-flight preparation</h2>
-            <div class="sp-grid">
-                <div class="sp-left">
-                                       <div class="sp-panel sp-prevbox">
-                        <canvas id="preview" width="640" height="400"></canvas>
-                        <div class="sp-bar"><i id="barfill"></i></div>
-                        <div class="sp-row" style="justify-content:space-between; align-items:center;">
-                            <span class="sp-progress" id="progress" translate="no"></span>
-                            <button class="sp-btn primary" id="to-pad" type="button" disabled data-translate="sp_to_pad">TO THE LAUNCH PAD →</button>
-                        </div>
-                        <div class="sp-baybar" id="bay-box">
-                            <canvas id="bay" width="480" height="480"></canvas>
-                            <div class="sp-baybtns">
-                                <span class="sp-baytitle" data-translate="sp_bay_title">Print bay</span>
-                                <button class="sp-btn primary" id="bay-atelier" type="button" data-translate="sp_to_atelier">Send to the Atelier →</button>
-                                <div class="sp-row" style="margin:0;">
-                                    <button class="sp-btn" id="bay-png" type="button" data-translate="sp_png">Save PNG ⬇</button>
-                                    <button class="sp-btn" id="bay-tg" type="button" data-translate="sp_telegram">Telegram ✈</button>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="sp-status" id="bay-status" role="status" translate="no"></p>
-                    </div>
-                        <p class="sp-status" id="bay-status" role="status" translate="no"></p>
+        <!-- 1. МИССИЯ -->
+        <section class="L front" data-layer="mission">
+            <div class="sp-panel L-card">
+                <h2 class="L-head" data-translate="cx2_l1_title">Name your mission</h2>
+                <input class="sp-input" id="mission" type="text" maxlength="28" placeholder="Mission name (up to 28 characters)" data-translate-placeholder="sp_mission_ph">
+                <input class="sp-input" id="crew" type="text" maxlength="30" placeholder="Crew name" data-translate-placeholder="sp_crew_ph">
+                <input class="sp-input" id="motto" type="text" maxlength="40" placeholder="Motto (up to 40 characters)" data-translate-placeholder="sp_motto_ph">
+                <div class="sp-row"><button class="sp-btn" id="motto-pick" type="button" data-translate="sp_motto_charlie">Take a phrase from De-Stress Studio</button></div>
+                <div class="L-nav"><span></span><button class="sp-btn primary" id="next-1" type="button" disabled data-translate="cx2_next">NEXT →</button></div>
+            </div>
+        </section>
+
+        <!-- 2. РАКЕТА -->
+        <section class="L ahead" data-layer="rocket">
+            <div class="sp-panel L-card">
+                <h2 class="L-head" data-translate="cx2_l2_title">Build the rocket</h2>
+                <div class="rocket-prev"><canvas id="cv-rocket" width="640" height="400"></canvas></div>
+                <p class="L-note" data-translate="cx2_rocket_note">Dashed parts are not chosen yet. Each engine carries two modules.</p>
+                <div class="opt-group">
+                    <div class="lbl2" data-translate="cx2_capsule">Capsule</div>
+                    <div class="sp-row">
+                        <button class="sp-opt" type="button" data-k="capsule" data-v="classic" data-translate="sp_capsule_classic">Classic</button>
+                        <button class="sp-opt" type="button" data-k="capsule" data-v="dome" data-translate="sp_capsule_dome">Dome</button>
+                        <button class="sp-opt" type="button" data-k="capsule" data-v="probe" data-translate="sp_capsule_probe">Probe</button>
                     </div>
                 </div>
-
-                <div class="sp-right">
-                    <div class="sp-panel sp-steps" id="steps">
-                        <details class="sp-step" data-step="mission" open>
-                            <summary data-translate="sp_step_mission">1 · Mission</summary>
-                            <div class="body">
-                                <input class="sp-input" id="mission" type="text" maxlength="28" placeholder="Mission name (up to 28 characters)" data-translate-placeholder="sp_mission_ph">
-                                <input class="sp-input" id="crew" type="text" maxlength="30" placeholder="Crew name" data-translate-placeholder="sp_crew_ph">
-                            </div>
-                        </details>
-                        <details class="sp-step" data-step="capsule">
-                            <summary data-translate="sp_step_capsule">2 · Capsule</summary>
-                            <div class="body"><div class="sp-row">
-                                <button class="sp-opt" type="button" data-k="capsule" data-v="classic" data-translate="sp_capsule_classic">Classic</button>
-                                <button class="sp-opt" type="button" data-k="capsule" data-v="dome" data-translate="sp_capsule_dome">Dome</button>
-                                <button class="sp-opt" type="button" data-k="capsule" data-v="probe" data-translate="sp_capsule_probe">Probe</button>
-                            </div></div>
-                        </details>
-                        <details class="sp-step" data-step="hull">
-                            <summary data-translate="sp_step_hull">3 · Hull</summary>
-                            <div class="body"><div class="sp-row">
-                                <button class="sp-opt" type="button" data-k="hull" data-v="ivory" data-translate="sp_hull_ivory">Ivory</button>
-                                <button class="sp-opt" type="button" data-k="hull" data-v="gold" data-translate="sp_hull_gold">Gold</button>
-                                <button class="sp-opt" type="button" data-k="hull" data-v="black" data-translate="sp_hull_black">Black</button>
-                            </div></div>
-                        </details>
-                        <details class="sp-step" data-step="engines">
-                            <summary data-translate="sp_step_engines">4 · Engines</summary>
-                            <div class="body"><div class="sp-row">
-                                <span data-translate="sp_engines_label" style="align-self:center;">Engines:</span>
-                                <button class="sp-opt" type="button" data-k="engines" data-v="1" translate="no">1</button>
-                                <button class="sp-opt" type="button" data-k="engines" data-v="2" translate="no">2</button>
-                                <button class="sp-opt" type="button" data-k="engines" data-v="3" translate="no">3</button>
-                            </div></div>
-                        </details>
-                        <details class="sp-step" data-step="motto">
-                            <summary data-translate="sp_step_motto">5 · Motto (optional)</summary>
-                            <div class="body">
-                                <input class="sp-input" id="motto" type="text" maxlength="40" placeholder="Motto (up to 40 characters)" data-translate-placeholder="sp_motto_ph">
-                                <div class="sp-row"><button class="sp-btn" id="motto-charlie" type="button" data-translate="sp_motto_charlie">Take a phrase from De-Stress Studio</button></div>
-                            </div>
-                        </details>
+                <div class="opt-group">
+                    <div class="lbl2" data-translate="cx2_hull">Hull</div>
+                    <div class="sp-row">
+                        <button class="sp-opt" type="button" data-k="hull" data-v="ivory" data-translate="sp_hull_ivory">Ivory</button>
+                        <button class="sp-opt" type="button" data-k="hull" data-v="gold" data-translate="sp_hull_gold">Gold</button>
+                        <button class="sp-opt" type="button" data-k="hull" data-v="black" data-translate="sp_hull_black">Black</button>
                     </div>
-
-                    <div class="sp-panel sp-cargobox">
-                        <h2 class="sp-h" data-translate="sp_cargo_title">Cargo and forum</h2>
-                        <p class="sp-sub" data-translate="sp_cargo_sub">Load modules for the Lunar Base. Open a module to read and write in its thread.</p>
-                        <p class="sp-slots" id="slots" translate="no"></p>
-                        <div id="mods" translate="no"></div>
+                </div>
+                <div class="opt-group">
+                    <div class="lbl2" data-translate="cx2_engines">Engines</div>
+                    <div class="sp-row">
+                        <button class="sp-opt" type="button" data-k="engines" data-v="1" translate="no">1</button>
+                        <button class="sp-opt" type="button" data-k="engines" data-v="2" translate="no">2</button>
+                        <button class="sp-opt" type="button" data-k="engines" data-v="3" translate="no">3</button>
                     </div>
+                </div>
+                <div class="L-nav">
+                    <button class="sp-btn" id="back-2" type="button" data-translate="cx2_back">← BACK</button>
+                    <button class="sp-btn primary" id="next-2" type="button" disabled data-translate="cx2_next">NEXT →</button>
                 </div>
             </div>
         </section>
 
-        <!-- УРОВЕНЬ 2: пусковая площадка -->
-        <section class="sp-layer ahead" id="layer-pad" hidden>
-            <div class="sp-panel" style="max-width:900px; margin:0 auto;">
-                <h2 class="sp-h" style="text-align:center;" data-translate="sp_pad_title">Launch pad</h2>
+        <!-- 3. ГРУЗ -->
+        <section class="L ahead" data-layer="cargo">
+            <div class="sp-panel L-card">
+                <h2 class="L-head" data-translate="cx2_l3_title">Load the cargo</h2>
+                <div class="rocket-prev"><canvas id="cv-cargo" width="640" height="340"></canvas></div>
+                <p class="sp-slots" id="slots" translate="no" style="text-align:center; margin-top:8px;"></p>
+                <div class="cargo-grid" id="mods" translate="no"></div>
+                <div class="L-nav">
+                    <button class="sp-btn" id="back-3" type="button" data-translate="cx2_back">← BACK</button>
+                    <button class="sp-btn primary" id="next-3" type="button" disabled data-translate="sp_to_pad">TO THE LAUNCH PAD →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. ПУСК -->
+        <section class="L ahead" data-layer="launch">
+            <div class="sp-panel L-card" style="max-width:900px;">
+                <h2 class="L-head" data-translate="cx2_l4_title">Launch pad</h2>
                 <div class="sp-stagewrap">
                     <canvas id="stage" width="720" height="460"></canvas>
                     <div class="sp-overlay" id="overlay" translate="no"></div>
                 </div>
                 <p class="sp-slots" id="manifest" translate="no" style="text-align:center; margin-top:10px;"></p>
-                <div class="sp-row" style="justify-content:space-between; align-items:center;">
-                    <button class="sp-btn" id="to-prep" type="button" data-translate="sp_to_prep">← PREPARATION</button>
+                <div class="L-nav">
+                    <button class="sp-btn" id="back-4" type="button" data-translate="cx2_back">← BACK</button>
                     <button class="sp-btn primary" id="launch" type="button" disabled data-translate="sp_launch">LAUNCH</button>
                 </div>
                 <div class="sp-after" id="after" hidden>
-                    <div class="sp-row">
-                                    <button class="sp-btn" id="after-patch" type="button" data-translate="sp_after_patch">Print the mission patch</button>
-                        <button class="sp-btn" id="pad-atelier" type="button" data-translate="sp_to_atelier">Send to the Atelier →</button>
-                        <button class="sp-btn" id="pad-tg" type="button" data-translate="sp_telegram">Telegram ✈</button>
+                    <div class="sp-row" style="justify-content:center;">
                         <button class="sp-btn primary" id="after-moon" type="button" data-translate="sp_after_moon">To the Lunar Base →</button>
                         <button class="sp-btn" id="again" type="button" data-translate="sp_again">Build another rocket</button>
                     </div>
                 </div>
-                <p class="sp-status" id="status" role="status" translate="no"></p>
+                <p class="sp-status" id="status" role="status" translate="no" style="text-align:center;"></p>
+            </div>
+        </section>
+
+        <!-- ФОРУМ: отдельный уровень -->
+        <section class="L ahead" data-layer="forum">
+            <div class="sp-panel L-card">
+                <h2 class="L-head" data-translate="cx2_forum_title">Forum: module threads</h2>
+                <div id="forum-list" class="cargo-grid" translate="no"></div>
+                <div id="forum-thread-wrap" hidden>
+                    <button class="sp-btn sm" id="all-threads" type="button" data-translate="cx2_all_threads">← All threads</button>
+                    <div id="forum-thread" translate="no" style="margin-top:10px;"></div>
+                </div>
             </div>
         </section>
 
@@ -149,13 +188,36 @@
     import { SPACE_DICT } from './core/i18n/space.js';
     import { init as initPassport } from './modules/passport.js';
     import { supabase } from './core/supabase-init.js';
-    import { drawStage, runLaunch, renderEmblem, canvasBlob, ensureFonts } from './modules/spaceArt.js';
+    import { drawStage, runLaunch, ensureFonts } from './modules/spaceArt.js';
     import { mountForum, getCrewName, setCrewName } from './modules/spaceForum.js';
-    import { sendImageToAtelier, downloadBlob, shareImage } from './modules/toAtelier.js';
     import { mountStarfield } from './modules/starfield.js';
     import { loadModules, moduleTitle, deliver } from './modules/moonData.js';
 
+    const CENTER_DICT = {
+        en: {
+            cx2_step1: 'Mission', cx2_step2: 'Rocket', cx2_step3: 'Cargo', cx2_step4: 'Launch', cx2_forum: 'Forum',
+            cx2_l1_title: 'Name your mission', cx2_l2_title: 'Build the rocket', cx2_l3_title: 'Load the cargo', cx2_l4_title: 'Launch pad',
+            cx2_capsule: 'Capsule', cx2_hull: 'Hull', cx2_engines: 'Engines',
+            cx2_rocket_note: 'Dashed parts are not chosen yet. Each engine carries two modules.',
+            cx2_next: 'NEXT →', cx2_back: '← BACK',
+            cx2_soon: 'Coming later', cx2_discuss: 'Discuss',
+            cx2_nothing: 'Nothing to deliver now: all available modules are built. You can still fly.',
+            cx2_forum_title: 'Forum: module threads', cx2_all_threads: '← All threads'
+        },
+        fr: {
+            cx2_step1: 'Mission', cx2_step2: 'Fusée', cx2_step3: 'Cargaison', cx2_step4: 'Lancement', cx2_forum: 'Forum',
+            cx2_l1_title: 'Nomme ta mission', cx2_l2_title: 'Construis la fusée', cx2_l3_title: 'Charge la cargaison', cx2_l4_title: 'Piste de lancement',
+            cx2_capsule: 'Capsule', cx2_hull: 'Coque', cx2_engines: 'Moteurs',
+            cx2_rocket_note: 'Les parties en pointillés ne sont pas encore choisies. Chaque moteur emporte deux modules.',
+            cx2_next: 'SUITE →', cx2_back: '← RETOUR',
+            cx2_soon: 'Bientôt', cx2_discuss: 'Discuter',
+            cx2_nothing: 'Rien à livrer pour l’instant : tous les modules disponibles sont construits. Tu peux quand même partir.',
+            cx2_forum_title: 'Forum : fils par module', cx2_all_threads: '← Tous les fils'
+        }
+    };
+
     registerDictionary(SPACE_DICT);
+    registerDictionary(CENTER_DICT);
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
     mountStarfield(document.getElementById('sp-bg'));
@@ -163,116 +225,138 @@
     const $ = id => document.getElementById(id);
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+    const ORDER = ['mission', 'rocket', 'cargo', 'launch'];
+    const STEP_KEYS = { mission: ['cx2_step1', 'Mission'], rocket: ['cx2_step2', 'Rocket'], cargo: ['cx2_step3', 'Cargo'], launch: ['cx2_step4', 'Launch'] };
+
     const S = { mission: '', capsule: null, hull: null, engines: null, motto: '', cargo: [] };
-    let modules = [], postCounts = {}, openCode = null;
-    let stopLaunch = null, launching = false, finished = false, bayTimer = null;
-    let level = 'prep', hideTimer = 0;
+    let modules = [], postCounts = {};
+    let layer = 'mission', prevLayer = 'mission', threadCode = null;
+    let launching = false, finished = false, stopLaunch = null;
 
     const iconOf = (code) => { const m = modules.find(x => x.code === code); return m ? m.icon : '📦'; };
     const cap = () => (S.engines || 0) * 2;
-    const cfg = () => ({ capsule: S.capsule, hull: S.hull, engines: S.engines, cargo: S.cargo.map(iconOf) });
+    const rocketCfg = () => ({ capsule: S.capsule, hull: S.hull, engines: S.engines });
+    const cfg = () => ({ ...rocketCfg(), cargo: S.cargo.map(iconOf) });
     const crew = () => ($('crew').value.trim() || getCrewName()).slice(0, 30);
-    const say = (m) => { $('status').textContent = m || ''; };         // на площадке
-     const sayBay = (m) => { $('bay-status').textContent = m || ''; if (level === 'pad') say(m); };  // в Print bay и на площадке
-  const completed = () => [S.mission.trim().length >= 2, !!S.capsule, !!S.hull, !!S.engines, S.cargo.length > 0].filter(Boolean).length;
+    const say = (m) => { $('status').textContent = m || ''; };
+
+    const loadable = () => modules.filter(m => m.available !== false && m.delivered < m.needed);
+    const cargoOk = () => S.cargo.length > 0 || loadable().length === 0;     // нечего везти — можно лететь без груза
+    const isDone = (n) => n === 'mission' ? S.mission.trim().length >= 2
+        : n === 'rocket' ? !!(S.capsule && S.hull && S.engines)
+        : n === 'cargo' ? cargoOk() : finished;
+    function reach() { let i = 0; while (i < 3 && isDone(ORDER[i])) i++; return i; }
 
     // ---------- уровни ----------
-    function showLevel(name) {
-        level = name;
-        const pad = name === 'pad';
-        const inEl = $(pad ? 'layer-pad' : 'layer-prep');
-        const outEl = $(pad ? 'layer-prep' : 'layer-pad');
-        clearTimeout(hideTimer);
-        inEl.hidden = false;
-        requestAnimationFrame(() => {
-            inEl.classList.remove('back', 'ahead');
-            inEl.classList.add('front');
-            outEl.classList.remove('front');
-            outEl.classList.add(pad ? 'back' : 'ahead');
+    function applyLayers() {
+        document.querySelectorAll('.L').forEach(el => {
+            const n = el.dataset.layer;
+            el.classList.remove('front', 'back', 'ahead');
+            if (n === layer) el.classList.add('front');
+            else if (layer === 'forum') el.classList.add(ORDER.indexOf(n) <= ORDER.indexOf(prevLayer) ? 'back' : 'ahead');
+            else if (n === 'forum') el.classList.add('ahead');
+            else el.classList.add(ORDER.indexOf(n) < ORDER.indexOf(layer) ? 'back' : 'ahead');
         });
-        hideTimer = setTimeout(() => { outEl.hidden = true; }, 520);
+    }
+    function go(name) {
+        if (name !== 'forum' && ORDER.indexOf(name) > reach()) return;
+        if (name === 'forum' && layer !== 'forum') { prevLayer = layer; renderForumList(); showList(); }
+        layer = name;
+        applyLayers();
+        renderStepbar();
+        drawAll();
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        if (pad && !launching && !finished) drawStage($('stage'), cfg());
     }
 
-    // ---------- шаги сборки ----------
-    const steps = [...document.querySelectorAll('details.sp-step')];
-    steps.forEach(d => d.addEventListener('toggle', () => {
-        if (d.open) steps.forEach(o => { if (o !== d) o.open = false; });
-    }));
-    const openStep = (name) => { const d = document.querySelector(`details[data-step="${name}"]`); if (d) d.open = true; };
-    const markDone = (name, ok) => { const d = document.querySelector(`details[data-step="${name}"]`); if (d) d.classList.toggle('done', ok); };
+    function renderStepbar() {
+        const r = reach();
+        const steps = ORDER.map((n, i) => {
+            const [k, fb] = STEP_KEYS[n];
+            const cls = [layer === n ? 'cur' : '', (isDone(n) && layer !== n) ? 'done' : ''].join(' ').trim();
+            return `<button type="button" class="${cls}" data-go="${n}"${(i > r || launching) ? ' disabled' : ''}>${i + 1} · ${esc(t(k, fb))}</button>`;
+        }).join('<span class="sep">›</span>');
+        $('stepbar').innerHTML = steps +
+            `<button type="button" class="forum-btn${layer === 'forum' ? ' cur' : ''}" data-go="forum"${launching ? ' disabled' : ''}>💬 ${esc(t('cx2_forum', 'Forum'))}</button>`;
+    }
+    $('stepbar').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-go]');
+        if (!b || b.disabled || launching) return;
+        go(b.dataset.go);
+    });
 
-    // ---------- модули: список, груз, ветки ----------
-    function modRow(m) {
-        const pct = Math.min(100, Math.round(m.delivered / m.needed * 100));
-        const posts = postCounts[m.code] || 0;
-        return `<details class="sp-mod${m.delivered >= m.needed ? ' done' : ''}" data-code="${esc(m.code)}">
-            <summary>
-                <span class="ic">${esc(m.icon)}</span>
-                <span class="mt"><b>${esc(moduleTitle(m))}</b><i class="mp"><u style="width:${pct}%"></u></i>
-                    <small>${esc(t('sp_need', '{d} of {n} delivered', { d: m.delivered, n: m.needed }))} · ${esc(t('sp_posts', '{n} messages', { n: posts }))}</small></span>
-                <button class="sp-btn sm" type="button" data-load></button>
-            </summary>
-            <div class="sp-thread" translate="no"></div>
-        </details>`;
+    function drawAll() {
+        drawStage($('cv-rocket'), rocketCfg());
+        drawStage($('cv-cargo'), cfg());
+        if (!launching && !finished) drawStage($('stage'), cfg());
     }
 
-    function updateButtons() {
+    // ---------- модули: карточки груза ----------
+    function pctOf(m) { return Math.min(100, Math.round(m.delivered / m.needed * 100)); }
+
+    function cargoCard(m) {
+        const built = m.delivered >= m.needed;
+        const open = m.available !== false;
+        const on = S.cargo.includes(m.code);
         const full = S.cargo.length >= cap();
-        document.querySelectorAll('.sp-mod').forEach(d => {
-            const m = modules.find(x => x.code === d.dataset.code);
-            const b = d.querySelector('[data-load]');
-            if (!m || !b) return;
-            const done = m.delivered >= m.needed;
-            const on = S.cargo.includes(m.code);
-            b.textContent = done ? t('sp_built', 'Built') : (on ? t('sp_loaded', '✓ Loaded') : t('sp_load', '+ Load'));
-            b.classList.toggle('on', on);
-            b.disabled = done || (!on && (full || !S.engines));
-        });
-        $('slots').textContent = S.engines
-            ? t('sp_cargo_slots', 'Cargo: {n} of {m}', { n: S.cargo.length, m: cap() })
-            : t('sp_cargo_noengine', 'Choose engines first: each engine carries two modules.');
+        const label = built ? t('sp_built', 'Built') : (!open ? t('cx2_soon', 'Coming later') : (on ? t('sp_loaded', '✓ Loaded') : t('sp_load', '+ Load')));
+        const disabled = built || !open || (!on && (full || !S.engines));
+        return `<div class="mcard${(built || !open) ? ' locked' : ''}${built ? ' done' : ''}" data-code="${esc(m.code)}">
+            <span class="ic">${esc(m.icon)}</span>
+            <span class="mt"><b>${esc(moduleTitle(m))}</b><i class="mp"><u style="width:${pctOf(m)}%"></u></i>
+                <small>${esc(t('sp_need', '{d} of {n} delivered', { d: m.delivered, n: m.needed }))}</small></span>
+            <span class="mb">
+                <button class="sp-btn sm${on ? ' on' : ''}" type="button" data-load${disabled ? ' disabled' : ''}>${esc(label)}</button>
+                <button class="sp-btn sm" type="button" data-discuss>💬 ${esc(t('cx2_discuss', 'Discuss'))}</button>
+            </span>
+        </div>`;
     }
 
-    function renderModules() {
-        $('mods').innerHTML = modules.map(modRow).join('');
-        updateButtons();
-        if (openCode) {
-            const d = document.querySelector(`.sp-mod[data-code="${openCode}"]`);
-            if (d) d.open = true;
-        }
+    function renderCargo() {
+        $('mods').innerHTML = modules.map(cargoCard).join('');
+        $('slots').textContent = loadable().length === 0
+            ? t('cx2_nothing', 'Nothing to deliver now: all available modules are built. You can still fly.')
+            : (S.engines
+                ? t('sp_cargo_slots', 'Cargo: {n} of {m}', { n: S.cargo.length, m: cap() })
+                : t('sp_cargo_noengine', 'Choose engines first: each engine carries two modules.'));
     }
-
-    function mountThread(d) {
-        const m = modules.find(x => x.code === d.dataset.code);
-        if (!m) return;
-        mountForum(d.querySelector('.sp-thread'), { area: 'center', topic: m.code, title: () => moduleTitle(m) });
-    }
-
-    $('mods').addEventListener('toggle', (e) => {
-        const d = e.target;
-        if (!d.classList || !d.classList.contains('sp-mod')) return;
-        if (d.open) {
-            document.querySelectorAll('.sp-mod').forEach(o => { if (o !== d) o.open = false; });
-            openCode = d.dataset.code;
-            mountThread(d);
-        } else if (openCode === d.dataset.code) {
-            openCode = null;
-        }
-    }, true);
 
     $('mods').addEventListener('click', (e) => {
-        const b = e.target.closest('[data-load]');
-        if (!b) return;
-        e.preventDefault();
-        e.stopPropagation();
-        const code = b.closest('.sp-mod').dataset.code;
-        const at = S.cargo.indexOf(code);
-        if (at >= 0) S.cargo.splice(at, 1);
-        else if (S.cargo.length < cap()) S.cargo.push(code);
-        refresh();
+        const card = e.target.closest('.mcard');
+        if (!card) return;
+        const code = card.dataset.code;
+        if (e.target.closest('[data-discuss]')) { go('forum'); showThread(code); return; }
+        if (e.target.closest('[data-load]')) {
+            const at = S.cargo.indexOf(code);
+            if (at >= 0) S.cargo.splice(at, 1);
+            else if (S.cargo.length < cap()) S.cargo.push(code);
+            refresh();
+        }
     });
+
+    // ---------- форум ----------
+    function forumRow(m) {
+        const posts = postCounts[m.code] || 0;
+        return `<div class="mcard link${m.delivered >= m.needed ? ' done' : ''}" data-code="${esc(m.code)}">
+            <span class="ic">${esc(m.icon)}</span>
+            <span class="mt"><b>${esc(moduleTitle(m))}</b><i class="mp"><u style="width:${pctOf(m)}%"></u></i>
+                <small>${esc(t('sp_need', '{d} of {n} delivered', { d: m.delivered, n: m.needed }))} · ${esc(t('sp_posts', '{n} messages', { n: posts }))}</small></span>
+        </div>`;
+    }
+    function renderForumList() { $('forum-list').innerHTML = modules.map(forumRow).join(''); }
+    function showList() { threadCode = null; $('forum-list').hidden = false; $('forum-thread-wrap').hidden = true; }
+    function showThread(code) {
+        const m = modules.find(x => x.code === code);
+        if (!m) return;
+        threadCode = code;
+        $('forum-list').hidden = true;
+        $('forum-thread-wrap').hidden = false;
+        mountForum($('forum-thread'), { area: 'center', topic: code, title: () => moduleTitle(m) });
+    }
+    $('forum-list').addEventListener('click', (e) => {
+        const row = e.target.closest('.mcard');
+        if (row) showThread(row.dataset.code);
+    });
+    $('all-threads').addEventListener('click', showList);
 
     async function loadCounts() {
         postCounts = {};
@@ -282,51 +366,32 @@
             (data || []).forEach(r => { postCounts[r.topic] = (postCounts[r.topic] || 0) + 1; });
         } catch (e) { /* без счётчиков */ }
     }
-
     async function refreshModules() {
         const r = await loadModules();
         modules = r.modules;
-        S.cargo = S.cargo.filter(c => modules.some(m => m.code === c && m.delivered < m.needed));
+        S.cargo = S.cargo.filter(c => modules.some(m => m.code === c && m.available !== false && m.delivered < m.needed));
         await loadCounts();
-        renderModules();
+        renderForumList();
     }
 
-    // ---------- обновление сцены ----------
+    // ---------- обновление экрана ----------
     function refresh() {
-        const n = completed();
-        $('progress').textContent = t('sp_progress', 'Ready: {n} of 5', { n });
-        $('barfill').style.width = (n * 20) + '%';
-        $('to-pad').disabled = n < 5 || launching;
-        $('launch').disabled = n < 5 || launching || finished;
-        $('manifest').textContent = (S.mission.trim() || '—') + ' · ' + (S.cargo.map(iconOf).join(' ') || '—');
-        markDone('mission', S.mission.trim().length >= 2);
-        markDone('capsule', !!S.capsule); markDone('hull', !!S.hull);
-        markDone('engines', !!S.engines); markDone('motto', S.motto.trim().length > 0);
-        updateButtons();
-        drawStage($('preview'), cfg());
-        if (!launching && !finished) drawStage($('stage'), cfg());
-        clearTimeout(bayTimer);
-        bayTimer = setTimeout(updateBay, 150);
+        $('next-1').disabled = !isDone('mission');
+        $('next-2').disabled = !isDone('rocket');
+        $('next-3').disabled = !isDone('cargo');
+        $('launch').disabled = launching || finished || !(isDone('mission') && isDone('rocket') && cargoOk());
+        $('manifest').textContent = (S.mission.trim() || '—') + ' · ' + crew() + ' · ' + (S.cargo.map(iconOf).join(' ') || '—');
+        renderCargo();
+        renderStepbar();
+        drawAll();
     }
 
+    // ---------- уровень 1: миссия ----------
     $('mission').addEventListener('input', (e) => { S.mission = e.target.value; refresh(); });
-    $('motto').addEventListener('input', (e) => { S.motto = e.target.value; refresh(); });
+    $('motto').addEventListener('input', (e) => { S.motto = e.target.value; });
     $('crew').value = (getCrewName() === 'Guest') ? '' : getCrewName();
     $('crew').addEventListener('change', (e) => { setCrewName(e.target.value); refresh(); });
-
-    const NEXT = { capsule: 'hull', hull: 'engines', engines: 'motto' };
-    document.querySelectorAll('.sp-opt').forEach(b => b.addEventListener('click', () => {
-        const k = b.dataset.k;
-        if (!k) return;
-        S[k] = (k === 'engines') ? Number(b.dataset.v) : b.dataset.v;
-        if (k === 'engines') S.cargo = S.cargo.slice(0, cap());     // меньше двигателей — меньше мест
-        document.querySelectorAll(`.sp-opt[data-k="${k}"]`).forEach(x => x.classList.toggle('sel', x === b));
-        refresh();
-        if (NEXT[k]) openStep(NEXT[k]);
-    }));
-
-    // девиз из фраз De-Stress Studio (только короткие одобренные)
-    $('motto-charlie').addEventListener('click', async () => {
+    $('motto-pick').addEventListener('click', async () => {
         let list = [];
         try {
             const { data } = await supabase.from('destress_phrases').select('text, translations').eq('status', 'approved').limit(200);
@@ -335,58 +400,35 @@
         const pick = list.length ? list[Math.floor(Math.random() * list.length)] : 'Per aspera ad astra';
         $('motto').value = pick;
         S.motto = pick;
+    });
+
+    // ---------- уровень 2: ракета ----------
+    document.querySelectorAll('.sp-opt[data-k]').forEach(b => b.addEventListener('click', () => {
+        const k = b.dataset.k;
+        S[k] = (k === 'engines') ? Number(b.dataset.v) : b.dataset.v;
+        if (k === 'engines') S.cargo = S.cargo.slice(0, cap());     // меньше двигателей — меньше мест
+        document.querySelectorAll(`.sp-opt[data-k="${k}"]`).forEach(x => x.classList.toggle('sel', x === b));
         refresh();
-    });
+    }));
 
-    // ---------- Print bay ----------
-    function emblemOpts(size) {
-        return {
-            scene: 'rocket', cfg: cfg(),
-            top: S.mission.trim() || t('sp_mission_default', 'NEW MISSION'),
-            bottom: crew() + ' · GY-GY SPACE PROGRAM',
-            note: S.motto.trim(), size
-        };
-    }
-    async function updateBay() {
-        const c = await renderEmblem(emblemOpts(480));
-        const b = $('bay');
-        b.width = 480; b.height = 480;
-        b.getContext('2d').drawImage(c, 0, 0);
-    }
-    const patchBlob = async () => canvasBlob(await renderEmblem(emblemOpts(1200)));
+    // ---------- кнопки уровней ----------
+    $('next-1').addEventListener('click', () => go('rocket'));
+    $('next-2').addEventListener('click', () => go('cargo'));
+    $('next-3').addEventListener('click', () => go('launch'));
+    $('back-2').addEventListener('click', () => go('mission'));
+    $('back-3').addEventListener('click', () => go('rocket'));
+    $('back-4').addEventListener('click', () => { if (!launching) go('cargo'); });
 
-    $('bay-atelier').addEventListener('click', async () => {
-        try {
-            sayBay(t('sp_sending', 'Sending to the Atelier…'));
-            await sendImageToAtelier(await patchBlob(), 'space-center');
-        } catch (e) {
-            sayBay(t('sp_too_large', 'The image is too large to send. Save the PNG and upload it in the Atelier.'));
-        }
-    });
-    $('bay-png').addEventListener('click', async () => {
-        downloadBlob(await patchBlob(), 'gygy-mission-patch.png');
-        sayBay(t('sp_saved', 'Saved to your computer.'));
-    });
-    $('bay-tg').addEventListener('click', async () => {
-          $('pad-atelier').addEventListener('click', () => $('bay-atelier').click());
-    $('pad-tg').addEventListener('click', () => $('bay-tg').click());
-        const r = await shareImage(await patchBlob(), (S.mission.trim() + ' · GY-GY Club').trim(), 'gygy-mission-patch.png');
-        sayBay(r === 'shared' ? t('sp_shared', 'Shared.') : (r === 'telegram' ? t('sp_opening_tg', 'Opening Telegram…') : ''));
-    });
-
-    // ---------- переходы между уровнями ----------
-    $('to-pad').addEventListener('click', () => { if (completed() >= 5) showLevel('pad'); });
-    $('to-prep').addEventListener('click', () => { if (!launching) showLevel('prep'); });
-
-    // ---------- пуск и доставка груза ----------
+    // ---------- уровень 4: пуск и доставка груза ----------
     $('launch').addEventListener('click', async () => {
-        if (launching || completed() < 5) return;
+        if (launching || finished || !(isDone('mission') && isDone('rocket') && cargoOk())) return;
         await ensureFonts();
-        launching = true; finished = false;
+        launching = true;
         $('launch').disabled = true;
-        $('to-prep').disabled = true;
+        $('back-4').disabled = true;
         $('after').hidden = true;
         say('');
+        renderStepbar();
         const ov = $('overlay');
         ov.className = 'sp-overlay show';
         stopLaunch = runLaunch($('stage'), cfg(), {
@@ -398,7 +440,7 @@
 
     async function finish() {
         launching = false; finished = true;
-        $('to-prep').disabled = false;
+        $('back-4').disabled = false;
         const ov = $('overlay');
         ov.className = 'sp-overlay show final';
         ov.textContent = t('sp_final', 'See you on the Moon');
@@ -409,9 +451,10 @@
                 mission: S.mission.trim(), motto: S.motto.trim(), crew: crew(), at: Date.now()
             }));
         } catch (e) { /* ок */ }
-        $('after').hidden = false;
+        $('after').hidden = false;       // переход на Луну — только после пуска
+        renderStepbar();
 
-        // груз уходит на стройплощадку
+        if (!S.cargo.length) { say(t('cx2_nothing', 'Nothing to deliver now: all available modules are built. You can still fly.')); return; }
         try {
             const accepted = await deliver(crew(), S.mission.trim(), S.cargo.slice());
             const names = accepted.map(c => { const m = modules.find(x => x.code === c); return m ? moduleTitle(m) : c; });
@@ -419,45 +462,37 @@
                 ? t('sp_delivered_msg', 'Cargo delivered: {list}', { list: names.join(', ') })
                 : t('sp_delivery_none', 'These modules are already built: the cargo was not needed.'));
             await refreshModules();
+            renderCargo();
         } catch (e) {
             console.warn('[space] Доставка груза не записалась', e);
             say(t('sp_delivery_fail', 'Launch recorded, but the base did not receive the cargo (try later).'));
         }
     }
 
-    $('after-patch').addEventListener('click', () => {
-        showLevel('prep');
-        setTimeout(() => {
-            const box = $('bay-box');
-            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            box.classList.remove('pulse'); void box.offsetWidth; box.classList.add('pulse');
-        }, 450);
-    });
     $('after-moon').addEventListener('click', () => { window.location.href = 'lunar-base.html'; });
-    $('to-moon-top').addEventListener('click', () => { window.location.href = 'lunar-base.html'; });
     $('again').addEventListener('click', () => {
         if (stopLaunch) stopLaunch();
         launching = false; finished = false;
         S.cargo = [];
         $('overlay').className = 'sp-overlay';
         $('after').hidden = true;
-        $('to-prep').disabled = false;
         say('');
-        showLevel('prep');
         refresh();
+        go('cargo');
     });
 
-    // ---------- навигация и язык ----------
-    // стрелка поднимает на уровень выше: площадка → подготовка → комната
+    // ---------- навигация: стрелка поднимает на уровень выше ----------
     $('btn-back').addEventListener('click', () => {
         if (launching) return;
-        if (level === 'pad') { showLevel('prep'); return; }
-        window.location.href = 'verses.html';
+        if (layer === 'forum') { if (threadCode) showList(); else go(prevLayer); return; }
+        const i = ORDER.indexOf(layer);
+        if (i > 0) go(ORDER[i - 1]); else window.location.href = 'verses.html';
     });
     $('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
-    onLanguageChange(() => { renderModules(); refresh(); });
+    onLanguageChange(() => { refresh(); renderForumList(); });
 
     await refreshModules();
+    applyLayers();
     refresh();
 </script>
 </body>
