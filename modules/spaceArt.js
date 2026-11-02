@@ -69,6 +69,22 @@ export function drawRocket(ctx, cfg, x, y, h, opts = {}) {
         ctx.beginPath(); ctx.arc(x, top + h * 0.14, w * 0.17, 0, Math.PI * 2); ctx.fillStyle = '#9fe3ff'; ctx.fill();
         ctx.strokeStyle = ink; ctx.lineWidth = lw; ctx.stroke();
     }
+        // грузовые контейнеры по бокам: по одному на каждый погруженный модуль (cfg.cargo — значки модулей)
+    const pods = Array.isArray(cfg.cargo) ? cfg.cargo.slice(0, 6) : [];
+    pods.forEach((icon, i) => {
+        const side = i % 2 === 0 ? -1 : 1, lvl = Math.floor(i / 2);
+        const pw = w * 0.36, ph = h * 0.085;
+        const px = x + side * (w / 2 + pw / 2 - w * 0.02);
+        const py = bottom - h * 0.17 - lvl * (ph + h * 0.018);
+        ctx.beginPath();
+        ctx.rect(px - pw / 2, py - ph / 2, pw, ph);
+        ctx.fillStyle = '#8e939c'; ctx.fill();
+        ctx.strokeStyle = ink; ctx.lineWidth = lw; ctx.stroke();
+        ctx.font = Math.round(ph * 0.72) + 'px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#000';
+        ctx.fillText(icon, px, py + ph * 0.04);
+    });
     // капсула
     const cap = cfg.capsule || 'classic';
     ctx.beginPath();
