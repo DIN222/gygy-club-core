@@ -82,7 +82,7 @@
     registerDictionary(SPACE_DICT);
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
-
+       mountStarfield(document.getElementById('sp-bg'));
     const $ = id => document.getElementById(id);
     $('btn-back').addEventListener('click', () => { window.location.href = 'verses.html'; });
     $('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
