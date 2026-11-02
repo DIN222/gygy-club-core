@@ -368,6 +368,8 @@
         sayBay(t('sp_saved', 'Saved to your computer.'));
     });
     $('bay-tg').addEventListener('click', async () => {
+          $('pad-atelier').addEventListener('click', () => $('bay-atelier').click());
+    $('pad-tg').addEventListener('click', () => $('bay-tg').click());
         const r = await shareImage(await patchBlob(), (S.mission.trim() + ' · GY-GY Club').trim(), 'gygy-mission-patch.png');
         sayBay(r === 'shared' ? t('sp_shared', 'Shared.') : (r === 'telegram' ? t('sp_opening_tg', 'Opening Telegram…') : ''));
     });
