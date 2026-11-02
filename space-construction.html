@@ -173,8 +173,8 @@
     const cfg = () => ({ capsule: S.capsule, hull: S.hull, engines: S.engines, cargo: S.cargo.map(iconOf) });
     const crew = () => ($('crew').value.trim() || getCrewName()).slice(0, 30);
     const say = (m) => { $('status').textContent = m || ''; };         // на площадке
-    const sayBay = (m) => { $('bay-status').textContent = m || ''; };  // в Print bay
-    const completed = () => [S.mission.trim().length >= 2, !!S.capsule, !!S.hull, !!S.engines, S.cargo.length > 0].filter(Boolean).length;
+     const sayBay = (m) => { $('bay-status').textContent = m || ''; if (level === 'pad') say(m); };  // в Print bay и на площадке
+  const completed = () => [S.mission.trim().length >= 2, !!S.capsule, !!S.hull, !!S.engines, S.cargo.length > 0].filter(Boolean).length;
 
     // ---------- уровни ----------
     function showLevel(name) {
