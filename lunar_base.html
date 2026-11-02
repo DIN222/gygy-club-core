@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!--
-  lunar-base.html — Лунная база — v1.0.0 — 2026-10-30
-  Продолжение форума (Лунная стена) и Print lab: сообщение со стены или свой текст → открытка
-  или нашивка посадки → Ателье / PNG / Telegram. Открывается после пуска в Центре.
+  lunar-base.html — Лунная база: стройплощадка — v2.0.0 — 2026-11-01
+  Общая стройка: модули, доставленные пусками из Центра, растут зданиями на площадке.
+  Журнал стройки (ветки форума по модулям), последние доставки, Печатная лаборатория.
+  Открыта всегда: из комнаты (verses.html) и из Центра космического строительства.
 -->
 <html lang="en">
 <head>
@@ -27,44 +28,52 @@
 <div id="passport-badge-container"></div>
 
 <main class="sp-page">
-    <h1 class="sp-title" data-translate="sp_moon_title">Lunar Base</h1>
+    <h1 class="sp-title" data-translate="sp_site_title">Lunar Base: construction site</h1>
+    <div class="sp-row" style="justify-content:center; margin:0 0 14px;"><button class="sp-btn" id="to-center-top" type="button" data-translate="sp_locked_btn">To the Space Construction Center →</button></div>
+    <p class="sp-welcome" style="text-align:center;">
+        <span data-translate="sp_moon_welcome">Welcome to the Lunar Base.</span>
+        <span data-translate="sp_mission_label">Mission</span>: <b translate="no" id="mission-val">—</b> ·
+        <span data-translate="sp_crew_label">Crew</span>: <b translate="no" id="crew-val">—</b>
+    </p>
 
-    <div class="sp-panel sp-lock" id="locked" hidden>
-        <h2 class="sp-h" data-translate="sp_locked_title">The Lunar Base is closed</h2>
-        <p class="sp-sub" data-translate="sp_locked_msg">Launch the rocket first: the Lunar Base opens after liftoff.</p>
-        <button class="sp-btn primary" id="to-center" type="button" data-translate="sp_locked_btn">To the Space Construction Center →</button>
+    <div class="sp-panel">
+        <div class="sp-stagewrap"><canvas id="site" width="900" height="380"></canvas></div>
+        <div class="sp-bar"><i id="total-bar"></i></div>
+        <p class="sp-progress" id="total-text" translate="no"></p>
     </div>
 
-    <div id="base" hidden>
-        <p class="sp-welcome">
-            <span data-translate="sp_moon_welcome">Welcome to the Lunar Base.</span>
-            <span data-translate="sp_mission_label">Mission</span>: <b translate="no" id="mission-val">—</b> ·
-            <span data-translate="sp_crew_label">Crew</span>: <b translate="no" id="crew-val">—</b>
-        </p>
-
-        <div class="sp-grid">
-            <div class="sp-left">
-                <div class="sp-panel sp-stagebox">
-                    <div class="sp-stagewrap"><canvas class="sq" id="preview" width="480" height="480"></canvas></div>
-                    <p class="sp-status" id="status" role="status" translate="no"></p>
+    <div class="sp-grid">
+        <div class="sp-left">
+            <div class="sp-panel sp-steps sp-labbox">
+                <h2 class="sp-h" data-translate="sp_lab_title">Print lab</h2>
+                <p class="sp-sub" data-translate="sp_lab_sub">Turn a message into a postcard or a landing patch.</p>
+                <div class="sp-row">
+                    <button class="sp-opt sel" type="button" data-type="card" data-translate="sp_lab_card">Postcard</button>
+                    <button class="sp-opt" type="button" data-type="patch" data-translate="sp_lab_patch">Landing patch</button>
                 </div>
-                <div class="sp-panel sp-steps">
-                    <h2 class="sp-h" data-translate="sp_lab_title">Print lab</h2>
-                    <p class="sp-sub" data-translate="sp_lab_sub">Turn a message into a postcard or a landing patch.</p>
-                    <div class="sp-row">
-                        <button class="sp-opt sel" type="button" data-type="card" data-translate="sp_lab_card">Postcard</button>
-                        <button class="sp-opt" type="button" data-type="patch" data-translate="sp_lab_patch">Landing patch</button>
-                    </div>
-                    <input class="sp-input" id="lab-text" type="text" maxlength="70" placeholder="Text for the print (up to 70 characters)" data-translate-placeholder="sp_lab_text_ph">
-                    <div class="sp-row">
-                        <button class="sp-btn primary" id="lab-atelier" type="button" data-translate="sp_to_atelier">Send to the Atelier →</button>
-                        <button class="sp-btn" id="lab-png" type="button" data-translate="sp_png">Save PNG ⬇</button>
-                        <button class="sp-btn" id="lab-tg" type="button" data-translate="sp_telegram">Telegram ✈</button>
-                    </div>
+                <div class="sp-stagewrap" style="margin-top:10px;"><canvas class="sq" id="preview" width="480" height="480"></canvas></div>
+                <input class="sp-input" id="lab-text" type="text" maxlength="70" placeholder="Text for the print (up to 70 characters)" data-translate-placeholder="sp_lab_text_ph">
+                <div class="sp-row">
+                    <button class="sp-btn primary" id="lab-atelier" type="button" data-translate="sp_to_atelier">Send to the Atelier →</button>
+                    <button class="sp-btn" id="lab-png" type="button" data-translate="sp_png">Save PNG ⬇</button>
+                    <button class="sp-btn" id="lab-tg" type="button" data-translate="sp_telegram">Telegram ✈</button>
                 </div>
+                <p class="sp-status" id="status" role="status" translate="no"></p>
             </div>
-            <div class="sp-right">
-                <div class="sp-panel sp-wallbox" id="wall"></div>
+
+            <div class="sp-panel">
+                <h2 class="sp-h" data-translate="sp_site_recent">Recent deliveries</h2>
+                <div class="sp-posts" id="recent"></div>
+            </div>
+        </div>
+
+        <div class="sp-right">
+            <div class="sp-panel sp-journalbox">
+                <h2 class="sp-h" data-translate="sp_journal_title">Site journal</h2>
+                <p class="sp-sub" data-translate="sp_journal_sub">Pick a module to read its thread.</p>
+                <div class="sp-row" id="chips" style="margin-bottom:10px;"></div>
+                <div class="sp-row" style="margin:0 0 8px;"><button class="sp-btn primary" id="visit" type="button" hidden data-translate="sp_visit">Visit →</button></div>
+                <div id="thread" translate="no"></div>
             </div>
         </div>
     </div>
@@ -77,91 +86,219 @@
     import { renderEmblem, canvasBlob } from './modules/spaceArt.js';
     import { mountForum, getCrewName } from './modules/spaceForum.js';
     import { sendImageToAtelier, downloadBlob, shareImage } from './modules/toAtelier.js';
-       import { mountStarfield } from './modules/starfield.js';
-       registerDictionary(SPACE_DICT);
+    import { mountStarfield } from './modules/starfield.js';
+    import { loadModules, loadDeliveries, moduleTitle } from './modules/moonData.js';
+
     registerDictionary(SPACE_DICT);
     initLocalization(document.body);
     initPassport(document.getElementById('passport-badge-container'));
-       mountStarfield(document.getElementById('sp-bg'));
+    mountStarfield(document.getElementById('sp-bg'));
+
     const $ = id => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     $('btn-back').addEventListener('click', () => { window.location.href = 'verses.html'; });
     $('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
-    $('to-center').addEventListener('click', () => { window.location.href = 'space-construction.html'; });
-         $('to-center-top').addEventListener('click', () => { window.location.href = 'space-construction.html'; });
+    $('to-center-top').addEventListener('click', () => { window.location.href = 'space-construction.html'; });
 
-    let launched = false, rec = {};
-    try {
-        launched = localStorage.getItem('gygy_space_launched') === '1';
-        rec = JSON.parse(localStorage.getItem('gygy_space_mission') || '{}') || {};
-    } catch (e) { /* ок */ }
+    let rec = {};
+    try { rec = JSON.parse(localStorage.getItem('gygy_space_mission') || '{}') || {}; } catch (e) { /* ок */ }
+    $('mission-val').textContent = rec.mission || '—';
+    $('crew-val').textContent = rec.crew || getCrewName();
 
-    if (false) {
-        $('locked').hidden = false;
-    } else {
-        $('base').hidden = false;
-        $('mission-val').textContent = rec.mission || '—';
-        $('crew-val').textContent = rec.crew || getCrewName();
+    let modules = [], selected = null;
+    const say = (m) => { $('status').textContent = m || ''; };
 
-        const L = { type: 'card', text: String(rec.motto || '').slice(0, 70) };
-        $('lab-text').value = L.text;
-        const say = (m) => { $('status').textContent = m || ''; };
+    // ---------- Печатная лаборатория ----------
+    const L = { type: 'card', text: String(rec.motto || '').slice(0, 70) };
+    $('lab-text').value = L.text;
 
-        function opts(size) {
-            const date = new Date().toISOString().slice(0, 10);
-            return {
-                scene: 'moon', cfg: { capsule: rec.capsule, hull: rec.hull, engines: rec.engines },
-                top: L.type === 'card' ? t('sp_greetings', 'GREETINGS FROM THE MOON') : (rec.mission || t('sp_landed', 'LANDING')),
-                bottom: (rec.crew || getCrewName()) + ' · ' + date,
-                note: L.text, size
-            };
+    function opts(size) {
+        const date = new Date().toISOString().slice(0, 10);
+        return {
+            scene: 'moon', cfg: { capsule: rec.capsule, hull: rec.hull, engines: rec.engines },
+            top: L.type === 'card' ? t('sp_greetings', 'GREETINGS FROM THE MOON') : (rec.mission || t('sp_landed', 'LANDING')),
+            bottom: (rec.crew || getCrewName()) + ' · ' + date,
+            note: L.text, size
+        };
+    }
+    let timer = null;
+    async function updatePreview() {
+        const c = await renderEmblem(opts(480));
+        const p = $('preview');
+        p.width = 480; p.height = 480;
+        p.getContext('2d').drawImage(c, 0, 0);
+    }
+    const schedule = () => { clearTimeout(timer); timer = setTimeout(updatePreview, 150); };
+    const blob = async () => canvasBlob(await renderEmblem(opts(1200)));
+
+    document.querySelectorAll('[data-type]').forEach(b => b.addEventListener('click', () => {
+        L.type = b.dataset.type;
+        document.querySelectorAll('[data-type]').forEach(x => x.classList.toggle('sel', x === b));
+        schedule();
+    }));
+    $('lab-text').addEventListener('input', (e) => { L.text = e.target.value; schedule(); });
+
+    $('lab-atelier').addEventListener('click', async () => {
+        try {
+            say(t('sp_sending', 'Sending to the Atelier…'));
+            await sendImageToAtelier(await blob(), 'lunar-base');
+        } catch (e) {
+            say(t('sp_too_large', 'The image is too large to send. Save the PNG and upload it in the Atelier.'));
         }
-        let timer = null;
-        async function updatePreview() {
-            const c = await renderEmblem(opts(480));
-            const p = $('preview');
-            p.width = 480; p.height = 480;
-            p.getContext('2d').drawImage(c, 0, 0);
-        }
-        const schedule = () => { clearTimeout(timer); timer = setTimeout(updatePreview, 150); };
-        const blob = async () => canvasBlob(await renderEmblem(opts(1200)));
+    });
+    $('lab-png').addEventListener('click', async () => {
+        downloadBlob(await blob(), 'gygy-moon-print.png');
+        say(t('sp_saved', 'Saved to your computer.'));
+    });
+    $('lab-tg').addEventListener('click', async () => {
+        const r = await shareImage(await blob(), (L.text || t('sp_greetings', 'GREETINGS FROM THE MOON')) + ' · GY-GY Club', 'gygy-moon-print.png');
+        say(r === 'shared' ? t('sp_shared', 'Shared.') : (r === 'telegram' ? t('sp_opening_tg', 'Opening Telegram…') : ''));
+    });
 
-        document.querySelectorAll('[data-type]').forEach(b => b.addEventListener('click', () => {
-            L.type = b.dataset.type;
-            document.querySelectorAll('[data-type]').forEach(x => x.classList.toggle('sel', x === b));
-            schedule();
-        }));
-        $('lab-text').addEventListener('input', (e) => { L.text = e.target.value; schedule(); });
+    // ---------- стройплощадка ----------
+    const PALETTE = ['#d8b36a', '#c8501e', '#6fa8c8', '#7bbf8a', '#b58bd6', '#e0a030', '#9aa3ad', '#d97a6c', '#e6d9a8'];
+    const CRATERS = [[0.07, 0.86, 20], [0.21, 0.93, 13], [0.38, 0.88, 24], [0.55, 0.95, 15], [0.7, 0.9, 22], [0.86, 0.94, 14], [0.95, 0.87, 17]];
 
-        $('lab-atelier').addEventListener('click', async () => {
-            try {
-                say(t('sp_sending', 'Sending to the Atelier…'));
-                await sendImageToAtelier(await blob(), 'lunar-base');
-            } catch (e) {
-                say(t('sp_too_large', 'The image is too large to send. Save the PNG and upload it in the Atelier.'));
+    function drawSite() {
+        const cv = $('site'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+        ctx.clearRect(0, 0, W, H);
+        const gy = H * 0.74;
+
+        // Земля в небе
+        ctx.beginPath(); ctx.arc(W * 0.1, H * 0.2, H * 0.07, 0, Math.PI * 2); ctx.fillStyle = '#3b82c4'; ctx.fill();
+        ctx.fillStyle = '#4caf6a';
+        ctx.beginPath(); ctx.arc(W * 0.1 - H * 0.02, H * 0.2 - H * 0.01, H * 0.025, 0, Math.PI * 2); ctx.fill();
+
+        // лунная поверхность
+        const g = ctx.createLinearGradient(0, gy, 0, H);
+        g.addColorStop(0, '#c9c3b0'); g.addColorStop(1, '#6f6a5c');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(0, gy + 10);
+        ctx.quadraticCurveTo(W * 0.25, gy - 14, W * 0.5, gy + 6);
+        ctx.quadraticCurveTo(W * 0.78, gy + 24, W, gy - 6);
+        ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = 'rgba(90,85,70,.35)';
+        CRATERS.forEach(([fx, fy, rx]) => { ctx.beginPath(); ctx.ellipse(W * fx, H * fy, rx, rx * 0.4, 0, 0, Math.PI * 2); ctx.fill(); });
+
+        const n = modules.length;
+        if (!n) return;
+        const sw = (W - 40) / n, fullH = H * 0.42, base = gy + 30;
+        modules.forEach((m, i) => {
+            const f = Math.min(1, m.delivered / m.needed);
+            const color = PALETTE[i % PALETTE.length];
+            const x0 = 20 + i * sw + sw * 0.14, bw = sw * 0.72, bh = fullH * f;
+
+            ctx.setLineDash([6, 5]);
+            ctx.strokeStyle = 'rgba(240,234,214,.6)'; ctx.lineWidth = 1.5;
+            ctx.strokeRect(x0, base - fullH, bw, fullH);
+            ctx.setLineDash([]);
+
+            if (bh > 0) {
+                const bg = ctx.createLinearGradient(0, base - bh, 0, base);
+                bg.addColorStop(0, color); bg.addColorStop(1, '#5b5546');
+                ctx.fillStyle = bg;
+                ctx.fillRect(x0, base - bh, bw, bh);
+                ctx.strokeStyle = '#1a1408'; ctx.lineWidth = 1.5;
+                ctx.strokeRect(x0, base - bh, bw, bh);
+                if (f >= 0.4) {                                   // окна
+                    ctx.fillStyle = 'rgba(255,246,200,.75)';
+                    const ww = bw * 0.16;
+                    for (let r = 0; r < Math.floor(bh / 30); r++) {
+                        for (let c = 0; c < 3; c++) ctx.fillRect(x0 + bw * 0.14 + c * bw * 0.28, base - bh + 10 + r * 30, ww, 12);
+                    }
+                }
+                if (f < 1) {                                       // кран над недостроенным
+                    ctx.strokeStyle = '#ffb02e'; ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x0 + bw * 0.8, base - bh);
+                    ctx.lineTo(x0 + bw * 0.8, base - bh - 20);
+                    ctx.lineTo(x0 + bw * 0.25, base - bh - 20);
+                    ctx.stroke();
+                }
             }
-        });
-        $('lab-png').addEventListener('click', async () => {
-            downloadBlob(await blob(), 'gygy-moon-print.png');
-            say(t('sp_saved', 'Saved to your computer.'));
-        });
-        $('lab-tg').addEventListener('click', async () => {
-            const r = await shareImage(await blob(), (L.text || t('sp_greetings', 'GREETINGS FROM THE MOON')) + ' · GY-GY Club', 'gygy-moon-print.png');
-            say(r === 'shared' ? t('sp_shared', 'Shared.') : (r === 'telegram' ? t('sp_opening_tg', 'Opening Telegram…') : ''));
-        });
 
-        // нажатие на сообщение на Лунной стене превращает его в принт
-        mountForum($('wall'), {
-            area: 'moon',
-            onPick: (p) => {
+            ctx.globalAlpha = f >= 1 ? 1 : 0.4;
+            ctx.font = Math.round(bw * 0.5) + 'px sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(m.icon, x0 + bw / 2, base - fullH - bw * 0.34);
+            ctx.globalAlpha = 1;
+
+            if (m.code === selected) {
+                ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 2.5;
+                ctx.strokeRect(x0 - 4, base - fullH - bw * 0.7, bw + 8, fullH + bw * 0.7 + 8);
+            }
+            ctx.fillStyle = '#1a1408';
+            ctx.font = '700 14px "Share Tech Mono", monospace';
+            ctx.fillText(Math.round(f * 100) + '%', x0 + bw / 2, base + 20);
+        });
+    }
+
+    $('site').addEventListener('click', (e) => {
+        const cv = $('site'), rect = cv.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width * cv.width;
+        const sw = (cv.width - 40) / modules.length;
+        const m = modules[Math.floor((x - 20) / sw)];
+        if (m) selectModule(m.code);
+    });
+
+    function renderTotals() {
+        const need = modules.reduce((a, m) => a + m.needed, 0);
+        const got = modules.reduce((a, m) => a + Math.min(m.delivered, m.needed), 0);
+        const p = need ? Math.round(got / need * 100) : 0;
+        $('total-bar').style.width = p + '%';
+        $('total-text').textContent = t('sp_site_total', 'Base ready: {p}%', { p });
+    }
+
+    function renderChips() {
+        $('chips').innerHTML = modules.map(m =>
+            `<button class="sp-opt${m.code === selected ? ' sel' : ''}" type="button" data-code="${esc(m.code)}" translate="no">${esc(m.icon)} ${esc(moduleTitle(m))}</button>`).join('');
+    }
+    $('chips').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-code]');
+        if (b) selectModule(b.dataset.code);
+    });
+
+    function selectModule(code) {
+        const m = modules.find(x => x.code === code);
+        if (!m) return;
+        selected = code;
+        renderChips();
+        drawSite();
+        mountForum($('thread'), {
+            area: 'moon', topic: code, title: () => moduleTitle(m),
+            onPick: (p) => {                       // сообщение из ветки превращается в принт
                 L.text = String(p.text).slice(0, 70);
                 $('lab-text').value = L.text;
                 schedule();
                 $('preview').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
-        onLanguageChange(schedule);
-        updatePreview();
+        const v = $('visit');
+        v.hidden = !(m.link && m.delivered >= m.needed);
+        v.onclick = () => { window.location.href = m.link; };
     }
+
+    async function renderDeliveries() {
+        const rows = await loadDeliveries(8);
+        const icon = (c) => { const m = modules.find(x => x.code === c); return m ? m.icon : '📦'; };
+        $('recent').innerHTML = rows.length
+            ? rows.map(r => `<div class="sp-post" translate="no"><b>${esc(r.crew)}</b>${esc(r.mission)} ${(r.modules || []).map(icon).join(' ')}</div>`).join('')
+            : `<div class="sp-empty">${esc(t('sp_site_none', 'No deliveries yet. Launch the first rocket.'))}</div>`;
+    }
+
+    onLanguageChange(() => { renderChips(); renderTotals(); renderDeliveries(); schedule(); });
+
+    const r = await loadModules();
+    modules = r.modules;
+    selected = modules[0] ? modules[0].code : null;
+    renderTotals();
+    renderChips();
+    drawSite();
+    if (selected) selectModule(selected);
+    renderDeliveries();
+    updatePreview();
 </script>
 </body>
 </html>
