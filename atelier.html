@@ -1031,7 +1031,7 @@
         }
     }
       // ---------- Картинка из космических страниц: ?inbox=1 ----------
-    async function 'initIncomingInbox'() {
+    async function initIncomingInbox() {
         const params = new URLSearchParams(location.search);
         if (params.get('inbox') !== '1') return;
         let box = null;
