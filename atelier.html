@@ -1030,6 +1030,29 @@
             console.warn('[Atelier] Картинка из космических страниц не загрузилась', e);
         }
     }
+      // ---------- Картинка из космических страниц: ?inbox=1 ----------
+    async function initIncomingInbox() {
+        const params = new URLSearchParams(location.search);
+        if (params.get('inbox') !== '1') return;
+        let box = null;
+        try {
+            box = JSON.parse(sessionStorage.getItem('gygy_inbox_print') || 'null');
+            sessionStorage.removeItem('gygy_inbox_print');
+        } catch (e) { /* ок */ }
+        if (!box || !/^data:image\/png;base64,/.test(box.dataUrl || '')) return;
+        try {
+            const blob = await (await fetch(box.dataUrl)).blob();
+            const img = await loadImage(box.dataUrl);
+            state.technique = 'dtf';
+            document.getElementById('select-technique').value = 'dtf';
+            state.currentPrint = { source: 'own', design: URL.createObjectURL(blob), blob, shared: false, aspect: img.height / img.width };
+            renderPrintOverlay(true);
+            updateShareRowVisibility();
+            renderPrintStrip();
+        } catch (e) {
+            console.warn('[Atelier] Картинка из космических страниц не загрузилась', e);
+        }
+    }
     // ---------- Изделия с вышивкой (из Галереи Офиса) и статистика ----------
     let embProducts = [];
     const LOCK_IDS = ['select-type', 'select-color', 'select-fabric-composition', 'select-fabric-density', 'select-position', 'select-scale'];
@@ -1535,8 +1558,9 @@
             const status = document.getElementById('order-status');
             const orderNumber = 'GY-' + Date.now().toString(36).toUpperCase();
             const order = {
-                orderNumber,
+                               orderNumber,
                 type: 'blank',
+                theme: SPACE ? 'space' : null,
                 garment: state.type, size: state.size, color: state.color,
                 fabricDensity: state.fabricDensity, fabricComposition: state.fabricComposition,
                 drawstring: (state.type === 'hoodie') ? state.drawstring : null,
@@ -1653,11 +1677,14 @@
     renderGarmentPhoto();
     renderPrintOverlay();
     renderSpecPanel();
-       await loadEmbProducts();
+        await loadEmbProducts();
+    await loadSpacePrints();
     renderPrintStrip();
     await initIncomingPhrase();
+     await initIncomingInbox();
     await initIncomingInbox();
 </script>
 <script type="module" src="./atelier-layout.js"></script>
+  <script type="module" src="./atelier-space.js"></script>
 </body>
 </html>
