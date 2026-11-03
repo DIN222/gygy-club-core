@@ -1172,7 +1172,7 @@
                 strip.appendChild(wrap);
             });
         } else {
-                      (SPACE ? spacePrints : (data.dtf || [])).forEach(item => {
+                                (SPACE ? spacePrints : (data.dtf || []).filter(i => i.category !== 'space')).forEach(item => {
                 count++;
                 const wrap = document.createElement('div');
                 wrap.className = 'print-icon-wrap';
