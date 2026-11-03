@@ -116,7 +116,7 @@
     function visibleRows() {
         const f = document.getElementById('cat-filter').value;
         return rows.filter(r => {
-            const cat = r.category === 'embroidery' ? 'embroidery' : 'dtf';
+                     const cat = r.category === 'embroidery' ? 'embroidery' : (r.category === 'space' ? 'space' : 'dtf');
             return f === 'all' || cat === f;
         });
     }
