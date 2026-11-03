@@ -125,7 +125,7 @@
         const shown = visibleRows();
         document.getElementById('grid').innerHTML = shown.map(r => {
             const flag = flags.get(r.id);
-            const cat = r.category === 'embroidery' ? 'Вышивка' : 'Принт';
+                       const cat = r.category === 'embroidery' ? 'Вышивка' : (r.category === 'space' ? 'Космос' : 'Принт');
             const cur = r.bg || 'check';
             const bgClass = r.bg === 'light' ? ' bg-light' : (r.bg === 'dark' ? ' bg-dark' : '');
             return `<div class="pc${flag ? ' flagged' : ''}" data-id="${esc(r.id)}">
