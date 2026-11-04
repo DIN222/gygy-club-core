@@ -455,7 +455,8 @@
                 mission: S.mission.trim(), motto: S.motto.trim(), crew: crew(), at: Date.now()
             }));
         } catch (e) { /* ок */ }
-        $('after').hidden = false;       // переход на Луну — только после пуска
+              $('after').hidden = false;       // переход на Луну — только после пуска
+        $('after').scrollIntoView({ behavior: 'smooth', block: 'center' });
         renderStepbar();
 
         if (!S.cargo.length) { say(t('cx2_nothing', 'Nothing to deliver now: all available modules are built. You can still fly.')); return; }
