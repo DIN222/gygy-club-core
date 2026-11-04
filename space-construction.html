@@ -275,8 +275,10 @@
             const cls = [layer === n ? 'cur' : '', (isDone(n) && layer !== n) ? 'done' : ''].join(' ').trim();
             return `<button type="button" class="${cls}" data-go="${n}"${(i > r || launching) ? ' disabled' : ''}>${i + 1} · ${esc(t(k, fb))}</button>`;
         }).join('<span class="sep">›</span>');
+               const flown = finished || (() => { try { return localStorage.getItem('gygy_space_launched') === '1'; } catch (e) { return false; } })();
         $('stepbar').innerHTML = steps +
-            `<button type="button" class="forum-btn${layer === 'forum' ? ' cur' : ''}" data-go="forum"${launching ? ' disabled' : ''}>💬 ${esc(t('cx2_forum', 'Forum'))}</button>`;
+            `<button type="button" class="forum-btn${layer === 'forum' ? ' cur' : ''}" data-go="forum"${launching ? ' disabled' : ''}>💬 ${esc(t('cx2_forum', 'Forum'))}</button>` +
+            (flown ? `<button type="button" class="forum-btn" data-moon${launching ? ' disabled' : ''}>🌙 ${esc(t('sp_moon_title', 'Lunar Base'))}</button>` : '');
     }
     $('stepbar').addEventListener('click', (e) => {
         const b = e.target.closest('[data-go]');
