@@ -280,7 +280,9 @@
             `<button type="button" class="forum-btn${layer === 'forum' ? ' cur' : ''}" data-go="forum"${launching ? ' disabled' : ''}>💬 ${esc(t('cx2_forum', 'Forum'))}</button>` +
             (flown ? `<button type="button" class="forum-btn" data-moon${launching ? ' disabled' : ''}>🌙 ${esc(t('sp_moon_title', 'Lunar Base'))}</button>` : '');
     }
-    $('stepbar').addEventListener('click', (e) => {
+      $('stepbar').addEventListener('click', (e) => {
+        const m = e.target.closest('[data-moon]');
+        if (m && !m.disabled && !launching) { window.location.href = 'lunar-base.html'; return; }
         const b = e.target.closest('[data-go]');
         if (!b || b.disabled || launching) return;
         go(b.dataset.go);
