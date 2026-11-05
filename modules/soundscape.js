@@ -1,6 +1,7 @@
 // modules/soundscape.js
-// v2.1.0 — 2026-10-28
-// Звуковой блок клуба: клубный фон + собственные треки страниц, плавные переходы.
+// v2.2.0 — 2026-11-04
+// Звуковой блок клуба: клубный фон + собственные треки страниц + эффекты поверх фона (fx).
+// Эффект приглушает фон на время своего звучания и затем плавно возвращает прежний уровень.
 //  • «В оболочке» (страница открыта внутри index.html): звук играет в оболочке и не прерывается;
 //    сценарий применяет оболочка (applyForPage).
 //  • «Сама по себе» (ссылка из Telegram и т.п.): то же в пределах одной страницы.
@@ -11,6 +12,7 @@ import { SOUND_SCENARIO, DEFAULT_SCENE, TRACKS, SFX } from '../core/soundScenari
 const STATE_KEY = 'gygy_ambient';
 const JUMP_KEY = 'gygy_ambient_jump';
 const MUTE_KEY = 'gygy_mute';
+const FX_PREFIX = 'gygy_fx_';
 
 let audio = null;            // клубный фон
 let wantOn = false;          // фон включён для прогулки
@@ -18,8 +20,11 @@ let ambientHere = false;     // на текущей странице фон до
 let hooked = false;
 let saveTimer = null;
 let targetVolume = 0.5;
+let duck = 1;                // 1 — обычный уровень фона; меньше — фон приглушён на время эффекта
 let track = { audio: null, cfg: null };   // собственный трек страницы
 let currentPage = '';
+let fxTimer = 0;
+let fxPlaying = null;
 
 function hostApi() {
     try {
@@ -29,6 +34,7 @@ function hostApi() {
 }
 const pageNameOf = (path) => (String(path || '').split('/').pop() || 'index.html').split('?')[0];
 const sceneFor = (name) => SOUND_SCENARIO[name] || DEFAULT_SCENE;
+const effVol = () => targetVolume * duck;
 
 function isMuted() { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { return false; } }
 function setMuted(v) { try { localStorage.setItem(MUTE_KEY, v ? '1' : '0'); } catch (e) { /* ок */ } }
@@ -95,7 +101,7 @@ export function kick() {
     if (isMuted()) return;
     if (audio && wantOn && ambientHere && audio.paused) {
         audio.volume = 0;
-        fadeAudio(audio, targetVolume, 1.2);
+        fadeAudio(audio, effVol(), 1.2);
         audio.play().catch(() => {});
     }
     if (track.audio && track.audio.paused) {
@@ -108,7 +114,7 @@ export function kick() {
 function tryPlay() {
     if (isMuted() || !ambientHere) return;
     audio.volume = 0;
-    fadeAudio(audio, targetVolume, 1.2);
+    fadeAudio(audio, effVol(), 1.2);
     const p = audio.play();
     if (p && p.catch) {
         p.catch(() => {
@@ -145,6 +151,7 @@ function showMuteButton() {
         if (m) {
             if (audio) audio.pause();
             if (track.audio) track.audio.pause();
+            if (fxPlaying) { try { fxPlaying.pause(); } catch (e) { /* ок */ } }
         } else {
             kick();
         }
@@ -163,7 +170,7 @@ function begin(volume, jumpTo) {
 
     // уже играет (оболочка): плавно подводим громкость
     if (!fresh && !audio.paused) {
-        fadeAudio(audio, isMuted() ? 0 : targetVolume, 1.5);
+        fadeAudio(audio, isMuted() ? 0 : effVol(), 1.5);
         showMuteButton();
         startSaveTimer();
         return;
@@ -201,6 +208,7 @@ function realStart({ volume = 0.5 } = {}) {
 }
 
 function realStop() {
+    stopFx();
     wantOn = false;
     ambientHere = false;
     if (audio) audio.pause();
@@ -210,6 +218,8 @@ function realStop() {
 
 // Вернулись к дверям: звук выключается полностью, прогулка начнётся заново
 function realReset() {
+    stopFx();
+    try { Object.keys(sessionStorage).filter(k => k.indexOf(FX_PREFIX) === 0).forEach(k => sessionStorage.removeItem(k)); } catch (e) { /* ок */ }
     wantOn = false;
     ambientHere = false;
     clearInterval(saveTimer);
@@ -221,6 +231,48 @@ function realReset() {
     dropTrack(0.5);
     try { sessionStorage.removeItem(STATE_KEY); sessionStorage.removeItem(JUMP_KEY); } catch (e) { /* ок */ }
     removeMuteButton();
+}
+
+// ---------- эффект поверх фона: фон приглушается, потом возвращается ----------
+function duckTo(factor, sec) {
+    duck = factor;
+    if (audio && !audio.paused && ambientHere && !isMuted()) fadeAudio(audio, effVol(), sec);
+}
+
+function stopFx() {
+    clearTimeout(fxTimer);
+    if (fxPlaying) { try { fxPlaying.pause(); } catch (e) { /* ок */ } fxPlaying = null; }
+    duck = 1;
+}
+
+function playFx(name, cfg) {
+    const a = new Audio(cfg.file);
+    a.volume = cfg.volume ?? 1;
+    fxPlaying = a;
+    const finish = () => {
+        if (fxPlaying === a) { fxPlaying = null; duckTo(1, cfg.restoreSec ?? 1.5); }
+    };
+    a.addEventListener('ended', finish);
+    a.addEventListener('error', () => {
+        console.warn('[soundscape] Не найден или не читается файл эффекта: ' + cfg.file + ' — проверьте имя в core/soundScenario.js и что файл лежит в корне репозитория (регистр букв важен).');
+        finish();
+    });
+    try { sessionStorage.setItem(FX_PREFIX + name, '1'); } catch (e) { /* ок */ }
+    duckTo(cfg.duck ?? 0.3, cfg.fadeSec ?? 0.8);
+    const p = a.play();
+    if (p && p.catch) p.catch(() => finish());      // браузер не дал играть — не оставляем фон приглушённым
+}
+
+function scheduleFx(name, cfg) {
+    clearTimeout(fxTimer);
+    let done = false;
+    try { done = cfg.once !== false && sessionStorage.getItem(FX_PREFIX + name) === '1'; } catch (e) { /* ок */ }
+    if (done) return;
+    fxTimer = setTimeout(() => {
+        if (currentPage !== name || isMuted()) return;
+        if (!(audio && !audio.paused && ambientHere)) return;   // фон не играет — эффекту не над чем приглушать
+        playFx(name, cfg);
+    }, (cfg.delaySec ?? 1.5) * 1000);
 }
 
 // ---------- собственный трек страницы ----------
@@ -240,11 +292,12 @@ function startTrack(cfg) {
     a.preload = 'auto';
     a.volume = 0;
     track = { audio: a, cfg };
+    a.addEventListener('error', () => console.warn('[soundscape] Не найден или не читается файл трека: ' + cfg.file + ' — проверьте имя в core/soundScenario.js и что файл лежит в корне репозитория (регистр букв важен).'));
     showMuteButton();
     if (isMuted()) return;
     fadeAudio(a, vol, cfg.fadeInSec ?? 2);
     const p = a.play();
-    if (p && p.catch) p.catch(() => {});                   // по первому касанию запустит kick()
+    if (p && p.catch) p.catch((err) => console.warn('[soundscape] Браузер не дал запустить трек сразу (' + (err && err.name) + '): он начнётся по первому касанию.'));
 }
 
 function dropTrack(sec) {
@@ -275,13 +328,14 @@ function realSfx(name) {
 
 // ---------- сценарий ----------
 // Применить сценарий для страницы с этим именем (в оболочке — при каждой загрузке вложенного окна).
-// Страница с собственным треком: клубный фон плавно затихает, трек плавно нарастает;
-// уходим со страницы: трек затихает за fadeOutSec.
 function applyForPage(name) {
     currentPage = name;
+    clearTimeout(fxTimer);
     const s = sceneFor(name);
     const st = readState();
     const active = wantOn || !!(st && st.on);
+
+    if (s.ambient !== 'continue') stopFx();               // эффект бара не должен звучать на других страницах
 
     if (s.track) startTrack(s.track);
     else if (track.audio) dropTrack(track.cfg.fadeOutSec ?? 3);
@@ -298,6 +352,8 @@ function applyForPage(name) {
     } else if (s.ambient === 'manual') {
         if (active) realReset();                           // пришли к дверям
     }
+
+    if (s.fx && s.ambient === 'continue' && active) scheduleFx(name, s.fx);
 }
 
 // ---------- то, что вызывают страницы ----------
