@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.0.0 — 2026-10-31
+  destress-studio.html — De-Stress Studio — v5.1.0 — 2026-11-08
   «В глубину»: слой 1 — ситуации; слой 2 — фраза, ситуация остаётся меткой; слой 3 — «Забирай».
   Название крупно, внутри контейнера. Свой случай и своё выражение — «Добавить в коллекцию».
 -->
@@ -205,6 +205,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
 import { init as initPassport } from './modules/passport.js';
 import { supabase } from './core/supabase-init.js';
+import { playEffect } from './modules/soundscape.js';
 
 initLocalization(document.body);
 initPassport(document.getElementById('passport-badge-container'));
@@ -349,6 +350,7 @@ $('customSituationForm').addEventListener('submit', e => {
     e.preventDefault();
     const value = $('customSituationInput').value.trim();
     if (!value) { $('customSituationInput').focus(); return; }
+    playEffect('whisky');
     state.customSituation = value;
     state.situationIndex = null;
     $('customSituationInput').value = '';
