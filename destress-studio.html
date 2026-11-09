@@ -332,9 +332,10 @@ function chooseRandom() {
     state.mode = 'random';
     setModeButtons();
     state.phrase = randomPhrase(state.phrase);
- trackStudioEvent('PHRASE_CREATED', {
+trackStudioEvent('PHRASE_CREATED', {
     mode: 'random',
-    source: 'club'
+    source: 'club',
+    isDoubleMix: true
 });
     state.mixNumber++;
     say('');
