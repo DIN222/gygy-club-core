@@ -415,6 +415,10 @@ $('doubleMix').addEventListener('click', () => {
     state.mode = 'random';
     setModeButtons();
     state.phrase = { id: null, items: [a, b], source: 'club' };
+  trackStudioEvent('PHRASE_CREATED', {
+    kind: 'double_mix',
+    source: 'club'
+});
     state.mixNumber++;
     say('');
     render();
