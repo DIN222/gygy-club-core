@@ -298,16 +298,18 @@ function closeSheet() { $('sheet').classList.remove('open'); $('sheet').setAttri
 // отрисовка
 function renderChip() {
     const el = $('chipText');
+
     if (state.situationIndex !== null) {
         const [icon, label] = allSituations()[state.situationIndex] || ['', ''];
         el.textContent = (icon + ' ' + label).trim();
         el.removeAttribute('translate');
     } else if (state.customSituation) {
         el.textContent = '✍️ ' + state.customSituation;
-        el.setAttribute('translate', 'no');     // слова посетителя на перевод не отправляем
+        el.setAttribute('translate', 'no'); // слова посетителя на перевод не отправляем
     } else {
         el.textContent = '';
     }
+
     $('chipAdd').hidden = !state.customSituation || state.customSituation === state.sentSituationText;
 }
 
