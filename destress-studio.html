@@ -225,10 +225,6 @@ import { playEffect } from './modules/soundscape.js';
 initLocalization(document.body);
 initPassport(document.getElementById('passport-badge-container'));
 initStudioEvents(document.body);
-
-initLocalization(document.body);
-initPassport(document.getElementById('passport-badge-container'));
-
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
