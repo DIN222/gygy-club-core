@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.1.0 — 2026-11-08
+  destress-studio.html — De-Stress Studio — v5.2.0 — 2026-11-09
   «В глубину»: слой 1 — ситуации; слой 2 — фраза, ситуация остаётся меткой; слой 3 — «Забирай».
   Название крупно, внутри контейнера. Свой случай и своё выражение — «Добавить в коллекцию».
 -->
@@ -25,8 +25,8 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .background-photo {
   position: fixed; inset: 0; z-index: 0; pointer-events: none; background-color: var(--black);
   background-image:
-    linear-gradient(90deg, rgba(10,9,7,.666), rgba(10,9,7,.513) 50%, rgba(10,9,7,.648)),
-    linear-gradient(0deg, rgba(10,9,7,.684), rgba(10,9,7,.135) 55%, rgba(10,9,7,.468)),
+    linear-gradient(90deg, rgba(10,9,7,.43), rgba(10,9,7,.30) 50%, rgba(10,9,7,.43)),
+    linear-gradient(0deg, rgba(10,9,7,.46), rgba(10,9,7,.06) 55%, rgba(10,9,7,.30)),
     url("destress_bg.jpg");
   background-size: cover; background-position: center; background-repeat: no-repeat;
 }
@@ -40,7 +40,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .club-logo { font: 700 clamp(26px,3vw,36px)/1 Georgia, serif; letter-spacing: .045em; }
 
 .container { margin: 18px 0; padding: clamp(16px,3vw,28px); border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 12px 32px rgba(0,0,0,.18); }
-.studio-title { margin: 0 0 clamp(14px,2.4vw,24px); text-align: center; color: var(--light); font: 700 clamp(30px,6.2vw,68px)/1.05 'Playfair Display', Georgia, serif; letter-spacing: .08em; text-transform: uppercase; text-shadow: 0 2px 18px rgba(216,179,106,.25); overflow-wrap: anywhere; }
+.studio-title { margin: 0 0 clamp(14px,2.4vw,24px); text-align: center; color: var(--light); font: 700 clamp(25px,5.27vw,58px)/1.05 'Playfair Display', Georgia, serif; letter-spacing: .08em; text-transform: uppercase; text-shadow: 0 2px 18px rgba(216,179,106,.25); overflow-wrap: anywhere; }
 
 .stage { position: relative; display: grid; align-items: center; }
 .layer { grid-area: 1 / 1; min-width: 0; transition: transform .5s cubic-bezier(.2,.7,.2,1), opacity .5s, filter .5s; }
@@ -58,6 +58,11 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .custom-form { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 9px; margin-top: 13px; }
 .text-input { width: 100%; min-width: 0; min-height: 44px; padding: 10px 13px; border: 1px solid rgba(216,179,106,.32); border-radius: 8px; color: var(--text); background: rgba(8,7,5,.78); }
 .text-input::placeholder { color: #8f8370; }
+.studio-intro { max-width: 760px; margin: -5px auto 22px; color: #e5d7bd; text-align: center; font: 400 clamp(14px,1.6vw,17px)/1.65 Georgia, serif; }
+.charlie-button { display: inline-flex; align-items: center; justify-content: center; gap: 11px; min-height: 62px; padding: 7px 17px 7px 9px; border: 1px solid var(--gold); border-radius: 9px; color: var(--light); background: rgba(8,7,5,.88); box-shadow: inset 0 0 0 1px rgba(216,179,106,.10), 0 5px 16px rgba(0,0,0,.24); font-size: 12px; line-height: 1.35; font-weight: 700; text-align: left; transition: background .16s, border-color .16s, transform .16s; }
+.charlie-button:hover { border-color: var(--light); background: rgba(24,19,11,.96); transform: translateY(-1px); }
+.charlie-avatar { flex: 0 0 46px; width: 46px; height: 46px; border: 1px solid rgba(216,179,106,.65); border-radius: 6px; object-fit: cover; background: #17120b; }
+.charlie-button-text { display: block; max-width: 230px; }
 .gold-button, .outline-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; text-decoration: none; transition: background .16s, border-color .16s, transform .16s; }
 .gold-button { border: 1px solid var(--gold); color: #1a1308; background: var(--gold); }
 .gold-button:hover { background: var(--light); transform: translateY(-1px); }
@@ -109,6 +114,8 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
   .page { width: calc(100% - 20px); }
   .choice-grid { grid-template-columns: minmax(0,1fr); gap: 8px; }
   .custom-form { grid-template-columns: minmax(0,1fr); }
+  .charlie-button { width: 100%; justify-content: flex-start; }
+  .charlie-button-text { max-width: none; }
   .actions-main .gold-button { margin-left: 0; width: 100%; }
   .share-row .outline-button, .share-row .gold-button { flex: 1 1 calc(50% - 8px); }
 }
@@ -131,6 +138,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 
   <main class="container">
     <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
+    <p class="studio-intro">Есть моменты, когда приличные слова заканчиваются, а неприличные уже давно надоели.<br>Предлагаем немного обновить ваш словарный запас.<br>Выберите ситуацию — и подходящие варианты.</p>
 
     <div class="stage">
 
@@ -140,7 +148,10 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
           <div class="choice-grid" id="choiceGrid"></div>
           <form class="custom-form" id="customSituationForm">
             <input class="text-input" id="customSituationInput" type="text" maxlength="80" placeholder="Твоя ситуация в двух словах" aria-label="Что? Где? Когда?">
-            <button class="gold-button" type="submit">Выпей немного виски и рассказывай →</button>
+            <button class="charlie-button" type="submit">
+              <img class="charlie-avatar" src="horse_bar.png" alt="" aria-hidden="true">
+              <span class="charlie-button-text">Выпей немного виски и рассказывай →</span>
+            </button>
           </form>
         </div>
       </section>
@@ -220,8 +231,10 @@ const SITUATIONS = [
     ['🍺', 'Опрокинул бокал с пивом'],
     ['🏴‍☠️', 'Забыл, где заначка'],
     ['💸', 'По пьяне дал в займы'],
-    ['💻', 'Не помню, как сюда попал'],
-    ['⏰', 'Женился']
+    ['📱', 'Телефон заглючил'],
+    ['🐕', 'Наступил на собачий привет'],
+    ['🔥', 'Газ в зажигалке закончился'],
+    ['🔑', 'Ключ застрял в замке']
 ];
 
 const FALLBACK_POOL = [
