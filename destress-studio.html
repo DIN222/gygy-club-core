@@ -431,6 +431,10 @@ $('customRecipeForm').addEventListener('submit', e => {
     state.customRecipe = value;
     state.mode = 'my';
     state.phrase = { id: null, text: value, translations: {}, source: 'session' };
+  trackStudioEvent('PHRASE_CREATED', {
+    kind: 'custom',
+    source: 'visitor'
+});
     state.mixNumber++;
     $('customRecipeInput').value = '';
     say('');
