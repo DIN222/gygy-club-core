@@ -217,6 +217,14 @@ import { init as initLocalization, getCurrentLang, onLanguageChange } from './co
 import { init as initPassport } from './modules/passport.js';
 import { supabase } from './core/supabase-init.js';
 import { playEffect } from './modules/soundscape.js';
+  import {
+    init as initStudioEvents,
+    track as trackStudioEvent
+} from './modules/destressStudioEvents.js';
+
+initLocalization(document.body);
+initPassport(document.getElementById('passport-badge-container'));
+initStudioEvents(document.body);
 
 initLocalization(document.body);
 initPassport(document.getElementById('passport-badge-container'));
