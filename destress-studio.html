@@ -378,6 +378,10 @@ $('customSituationForm').addEventListener('submit', e => {
     playEffect('whisky');
     state.customSituation = value;
     state.situationIndex = null;
+  trackStudioEvent('SITUATION_SELECTED', {
+    kind: 'custom',
+    source: 'visitor'
+});
     $('customSituationInput').value = '';
     afterSituation();
 });
