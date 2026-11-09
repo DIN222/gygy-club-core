@@ -332,6 +332,10 @@ function chooseRandom() {
     state.mode = 'random';
     setModeButtons();
     state.phrase = randomPhrase(state.phrase);
+  trackStudioEvent('PHRASE_CREATED', {
+    kind: 'random',
+    source: 'club'
+});
     state.mixNumber++;
     say('');
     render();
