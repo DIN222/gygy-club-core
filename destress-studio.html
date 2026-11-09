@@ -362,6 +362,12 @@ $('choiceGrid').addEventListener('click', e => {
     if (!b) return;
     state.situationIndex = Number(b.dataset.situation);
     state.customSituation = '';
+  trackStudioEvent('SITUATION_SELECTED', {
+    kind: 'preset',
+    source: state.situationIndex < SITUATIONS.length
+        ? 'builtin'
+        : 'approved_collection'
+});
     afterSituation();
 });
 
