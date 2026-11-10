@@ -272,10 +272,15 @@
         </div>
     </div>
 
-    <div id="global-user-badge" class="ui-user-badge notranslate" onclick="openPassport()">
-        <img id="badge-avatar-img" class="badge-img" src="" alt="">
-        <img id="badge-flag-img" class="badge-flag" src="https://flagcdn.com/w20/fr.png" alt="FR">
-    </div>
+    <button
+    id="bar-passport-trigger"
+    class="bar-passport-trigger notranslate"
+    type="button"
+    onclick="openPassport()"
+    title="GY-GY Passport"
+    aria-label="Open GY-GY Passport">
+    <span aria-hidden="true">▤</span>
+</button>
 
     <div id="modal-passport" class="passport-overlay" onclick="closePassport()">
         <div class="passport-card" onclick="event.stopPropagation()">
