@@ -424,16 +424,10 @@
     </script>
 
     <script type="module">
-        import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
+        import { init as initLocalization } from './core/localization.js';
         import { resumeAmbient } from './modules/ambient.js';
 
         initLocalization(document.body);
-
-        // Сразу после инициализации локализации выставляем правильный флаг.
-        updateBadgeFlag(getCurrentLang());
-
-        // И поддерживаем его в актуальном состоянии при смене языка.
-        onLanguageChange(({ langCode }) => updateBadgeFlag(langCode || getCurrentLang()));
 
         resumeAmbient({ volume: 0.55 });
     </script>
