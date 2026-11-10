@@ -323,49 +323,50 @@
         }
 
         // Флаг отражает выбранный язык витрины, а не устаревшее значение gygy_flag.
-        function countryForClubLanguage(langCode) {
-            const countries = {
-                en: "gb", fr: "fr", ru: "ru", es: "es", de: "de", it: "it",
-                "zh-CN": "cn", ja: "jp", tr: "tr", pt: "pt", uk: "ua", pl: "pl"
-            };
-            return countries[langCode] || "gb";
-        }
-
-        function updateBadgeFlag(langCode) {
-            const country = countryForClubLanguage(langCode || "en");
-            const flag = document.getElementById("badge-flag-img");
-            if (flag) {
-                flag.src = `https://flagcdn.com/w20/${country}.png`;
-                flag.alt = country.toUpperCase();
-            }
-        }
-
         function syncUserBadge() {
-            currentUserImage = safeStorageGet('gygy_avatar') || safeStorageGet('gy_user_img') || safeStorageGet('gy_user_avatar');
-            currentID = safeStorageGet('gygy_id') || safeStorageGet('gy_user_id') || safeStorageGet('gy_trace');
+    currentUserImage =
+        safeStorageGet('gygy_avatar') ||
+        safeStorageGet('gy_user_img') ||
+        safeStorageGet('gy_user_avatar');
 
-            const badge = document.getElementById('global-user-badge');
-            const badgeImg = document.getElementById('badge-avatar-img');
-            const passImg = document.getElementById('pass-avatar-img');
+    currentID =
+        safeStorageGet('gygy_id') ||
+        safeStorageGet('gy_user_id') ||
+        safeStorageGet('gy_trace');
 
-            if (currentUserImage) {
-                if (badge) badge.style.display = 'block';
-                if (badgeImg) badgeImg.src = currentUserImage;
-                if (passImg) passImg.src = currentUserImage;
-            } else if (badge) {
-                badge.style.display = 'none';
-            }
+    const trigger = document.getElementById('bar-passport-trigger');
+    const passImg = document.getElementById('pass-avatar-img');
 
-            if (currentID) {
-                const passIdVal = document.getElementById('pass-id-val');
-                const passQrBox = document.getElementById('pass-qr-box');
-                if (passIdVal) passIdVal.innerText = currentID;
-                if (passQrBox && typeof QRCode !== 'undefined') {
-                    passQrBox.innerHTML = "";
-                    new QRCode(passQrBox, { text: currentID, width: 100, height: 100 });
-                }
-            }
+    if (trigger) {
+        trigger.style.display = currentID ? 'flex' : 'none';
+    }
+
+    if (passImg) {
+        if (currentUserImage) {
+            passImg.src = currentUserImage;
+            passImg.style.display = 'block';
+        } else {
+            passImg.removeAttribute('src');
+            passImg.style.display = 'none';
         }
+    }
+
+    if (currentID) {
+        const passIdVal = document.getElementById('pass-id-val');
+        const passQrBox = document.getElementById('pass-qr-box');
+
+        if (passIdVal) passIdVal.innerText = currentID;
+
+        if (passQrBox && typeof QRCode !== 'undefined') {
+            passQrBox.innerHTML = "";
+            new QRCode(passQrBox, {
+                text: currentID,
+                width: 100,
+                height: 100
+            });
+        }
+    }
+}
 
         function switchLocalBlock(blockId) {
             document.querySelectorAll('.block').forEach(b => {
