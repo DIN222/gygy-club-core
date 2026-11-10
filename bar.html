@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  bar.html — GY-GY Club BAR — v1.69
+  bar.html — GY-GY Club BAR — v1.70
   Исправления:
   1. Компактная подложка приветствия Чарли вместо широкого затемнённого поля.
   2. Флаг аватара определяется текущим языком клуба (langCode), а не устаревшим gygy_flag.
@@ -127,19 +127,38 @@
     object-position: center;
     z-index: 1;
 }
-        .bar-top-content {
-            position: absolute;
-            top: clamp(76px, 12vh, 118px);
-            left: 4%;
-            width: fit-content;
-            max-width: min(52%, 620px);
-            padding: 16px 22px 18px;
-            display: flex; flex-direction: column; align-items: flex-start;
-            z-index: 2; pointer-events: none;
-            background: linear-gradient(90deg, rgba(0,0,0,.68), rgba(0,0,0,.30));
-            border-left: 1px solid rgba(212,175,55,.62);
-            border-radius: 0 7px 7px 0;
-        }
+       .bar-top-content {
+    position: absolute;
+    top: clamp(76px, 12vh, 118px);
+    left: 4%;
+    width: fit-content;
+    max-width: min(52%, 620px);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    z-index: 2;
+    pointer-events: none;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.bar-top-content .quote-text {
+    text-align: left;
+    max-width: 100%;
+    color: #f5f0df;
+    font-size: clamp(16px, 2.2vw, 24px);
+    line-height: 1.35;
+    -webkit-text-stroke: 0.45px rgba(115, 82, 20, 0.95);
+    paint-order: stroke fill;
+    text-shadow:
+        -1px -1px 0 rgba(0,0,0,.95),
+         1px -1px 0 rgba(0,0,0,.95),
+        -1px  1px 0 rgba(0,0,0,.95),
+         1px  1px 0 rgba(0,0,0,.95),
+         0 2px 8px rgba(0,0,0,.95);
+}
         .bar-top-content .quote-text {
             text-align: left; max-width: 100%;
             font-size: clamp(16px, 2.2vw, 24px); line-height: 1.35;
