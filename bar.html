@@ -120,6 +120,43 @@
 /* BAR v1.72 — корректировка композиции */
 
 /* Лошадь: увеличение на 15%, строго по центру */
+      /* Фон BAR */
+#block-bar {
+    background: radial-gradient(
+        ellipse at center,
+        #292116 0%,
+        #17130e 48%,
+        #090807 78%,
+        #020202 100%
+    ) !important;
+}
+
+/* Значок паспорта */
+.bar-passport-trigger {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 42px;
+    height: 42px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.88);
+    color: var(--gold);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 1000001;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.25);
+}
+
+.bar-passport-trigger:hover {
+    background: #292116;
+}
 #block-bar img.bar-bg-horse {
     position: absolute !important;
     width: 92vw !important;
