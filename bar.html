@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <!--
-  bar.html — GY-GY Club BAR — v1.71
-  Исправления:
-  1. Компактная подложка приветствия Чарли вместо широкого затемнённого поля.
-  2. Флаг аватара определяется текущим языком клуба (langCode), а не устаревшим gygy_flag.
-  3. При смене языка флаг обновляется без перезагрузки страницы.
-  Остальная навигация, звук, зоны и паспорт сохранены.
+  bar.html — GY-GY Club BAR — v1.72
+  Изменения относительно v1.71:
+  1. Компьютерный Конь увеличен ещё на 12% относительно размера 101.2vw/101.2vh.
+  2. Мобильный bar_horse.jpg сохранён в прежнем масштабе 94vw/78vh.
+  3. Приветствие поднято ещё на 5vh.
+  4. Паспорт расположен справа под логотипом GY-GY.
+  5. Компьютерные и мобильные правила разделены; мобильные переопределения
+     находятся только внутри media query.
+  Навигация, паспорт, локализация, звук и переходы сохранены.
 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="google" content="notranslate">
-    <title>GY-GY Club - BAR (v1.69)</title>
+    <title>GY-GY Club - BAR (v1.72)</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -34,7 +37,7 @@
             text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
 
-        /* Сквозной аватар — внешний вид сохранён */
+        /* Сквозной аватар: сохранён для совместимости, отдельно не показывается. */
         .ui-user-badge {
             position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
             width: 42px; height: 42px; border-radius: 50%;
@@ -52,7 +55,7 @@
             border: 1px solid var(--gold); box-shadow: 0 0 0 1px #000;
         }
 
-        /* Паспорт — прежняя разметка и поведение */
+        /* Паспорт */
         .passport-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000000;
             display: none; align-items: center; justify-content: center;
@@ -114,161 +117,99 @@
         .arrow-item:hover { opacity: 0.8; }
         .arrow-item span:nth-child(2) { margin-left: -4px; }
 
-        /* BAR: лошадь занимает весь экран, приветствие — компактную область по содержимому */
- 
+        /* BAR: фон */
+        #block-bar {
+            background: radial-gradient(ellipse at center, #292116 0%, #17130e 48%, #090807 78%, #020202 100%) !important;
+        }
 
-/* BAR v1.72 — корректировка композиции */
+        /* Паспорт — справа непосредственно под логотипом GY-GY. */
+        .bar-passport-trigger {
+            position: fixed; top: 52px; right: 8px; left: auto;
+            transform: none; width: 42px; height: 42px;
+            display: none; align-items: center; justify-content: center;
+            border: 2px solid var(--gold); border-radius: 50%;
+            background: rgba(0,0,0,0.88); color: var(--gold);
+            font-family: 'Share Tech Mono', monospace; font-size: 25px; line-height: 1;
+            cursor: pointer; z-index: 1000001;
+            box-shadow: 0 0 8px rgba(212,175,55,0.25);
+        }
+        .bar-passport-trigger:hover { background: #292116; }
 
-/* Лошадь: увеличение на 15%, строго по центру */
-      /* Фон BAR */
-#block-bar {
-    background: radial-gradient(
-        ellipse at center,
-        #292116 0%,
-        #17130e 48%,
-        #090807 78%,
-        #020202 100%
-    ) !important;
-}
+        /* Компьютерный Конь: +12% к прежним 101.2vw/101.2vh. */
+        #block-bar img.bar-bg-horse {
+            position: absolute !important;
+            width: 113.344vw !important;
+            height: 113.344vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            top: 50% !important; left: 50% !important;
+            right: auto !important; bottom: auto !important;
+            transform: translate(-50%, -50%) !important;
+            object-fit: contain !important;
+            object-position: center !important;
+            z-index: 1 !important;
+        }
 
-/* Значок паспорта */
-/* Паспорт — под логотипом GY-GY */
-.bar-passport-trigger {
-    position: fixed;
-    top: 52px;
-    right: 8px;
-    left: auto;
-    transform: none;
-    width: 42px;
-    height: 42px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--gold);
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.88);
-    color: var(--gold);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 25px;
-    line-height: 1;
-    cursor: pointer;
-    z-index: 1000001;
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.25);
-}
+        /* Приветствие: ещё на 5vh выше предыдущего положения. */
+        #block-bar .bar-top-content {
+            position: absolute !important;
+            top: calc(clamp(76px, 12vh, 118px) - 18vh) !important;
+            left: 50% !important; right: auto !important;
+            width: 92% !important; max-width: 760px !important;
+            padding: 0 !important; margin: 0 !important;
+            transform: translateX(-50%) !important;
+            display: flex !important; flex-direction: column !important;
+            align-items: center !important; justify-content: center !important;
+            background: transparent !important; border: none !important;
+            border-radius: 0 !important; z-index: 2 !important;
+            pointer-events: none !important;
+        }
+        #block-bar .bar-top-content .quote-text {
+            width: 100% !important; max-width: 100% !important;
+            text-align: center !important; color: #f5f0df !important;
+            font-size: clamp(16px, 2.2vw, 24px) !important;
+            line-height: 1.35 !important;
+            -webkit-text-stroke: 0 !important; paint-order: normal !important;
+            text-shadow: 2px 2px 6px #000 !important;
+        }
 
-.bar-passport-trigger:hover {
-    background: #292116;
-}
-/* Конь: увеличение на 10% относительно предыдущего размера */
-#block-bar img.bar-bg-horse {
-    position: absolute !important;
-    width: 101.2vw !important;
-    height: 101.2vh !important;
-    max-width: none !important;
-    max-height: none !important;
-    top: 50% !important;
-    left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: translate(-50%, -50%) !important;
-    object-fit: contain !important;
-    object-position: center !important;
-    z-index: 1 !important;
-}
-/* Приветствие: центр экрана, выше на 5% */
-#block-bar .bar-top-content {
-    position: absolute !important;
-     top: calc(clamp(76px, 12vh, 118px) - 13vh) !important;
-    left: 50% !important;
-    right: auto !important;
-    width: 92% !important;
-    max-width: 760px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    transform: translateX(-50%) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    z-index: 2 !important;
-    pointer-events: none !important;
-}
+        /* Нижняя панель */
+        #block-bar .bar-bottom-panel {
+            position: fixed; bottom: 5vh; left: 50%;
+            transform: translateX(-50%); z-index: 999999 !important;
+            display: flex; gap: 15px; width: auto;
+            justify-content: center; pointer-events: auto !important;
+        }
 
-/* Текст без обводки и подложки */
-#block-bar .bar-top-content .quote-text {
-    width: 100% !important;
-    max-width: 100% !important;
-    text-align: center !important;
-    color: #f5f0df !important;
-    font-size: clamp(16px, 2.2vw, 24px) !important;
-    line-height: 1.35 !important;
-    -webkit-text-stroke: 0 !important;
-    paint-order: normal !important;
-    text-shadow: 2px 2px 6px #000 !important;
-}
+        /* МОБИЛЬНАЯ ВЕРСИЯ: изменения действуют только при ширине до 700px. */
+        @media (max-width: 700px) {
+            .bar-passport-trigger { top: 48px; right: 14px; }
 
-/* Нижняя панель */
-#block-bar .bar-bottom-panel {
-    position: fixed;
-    bottom: 5vh;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 999999 !important;
-    display: flex;
-    gap: 15px;
-    width: auto;
-    justify-content: center;
-    pointer-events: auto !important;
-}
+            /* Мобильный bar_horse.jpg — масштаб оставлен без изменений. */
+            #block-bar img.bar-bg-horse {
+                width: 94vw !important;
+                height: 78vh !important;
+            }
 
-/* Мобильная версия */
-@media (max-width: 700px) {
-    .bar-passport-trigger {
-        top: 48px;
-        right: 14px;
-    }
-}
+            /* Мобильное приветствие также поднято на 5vh. */
+            #block-bar .bar-top-content {
+                top: calc(76px - 15vh) !important;
+                width: 92% !important; max-width: 92% !important;
+            }
+            #block-bar .bar-top-content .quote-text {
+                font-size: clamp(15px, 4vw, 21px) !important;
+            }
 
-    #block-bar .bar-top-content {
-        top: calc(76px - 10vh) !important;
-        width: 92% !important;
-        max-width: 92% !important;
-    }
-      #block-bar img.bar-bg-horse {
-    width: 94vw !important;
-    height: 78vh !important;
-}
-
-    #block-bar .bar-top-content .quote-text {
-        font-size: clamp(15px, 4vw, 21px) !important;
-    }
-
-    #block-bar .bar-bottom-panel {
-        gap: 8px;
-        width: calc(100% - 24px);
-    }
-
-    #block-bar .btn-gy {
-        min-width: 0;
-        padding: 9px 10px;
-        font-size: 11px;
-    }
-
-    .ui-header-right {
-        right: 14px;
-        font-size: 20px;
-    }
-
-    .ui-nav-arrows {
-        left: 14px;
-        gap: 14px;
-    }
-}
-</style>
-
+            #block-bar .bar-bottom-panel {
+                gap: 8px; width: calc(100% - 24px);
+            }
+            #block-bar .btn-gy {
+                min-width: 0; padding: 9px 10px; font-size: 11px;
+            }
+            .ui-header-right { right: 14px; font-size: 20px; }
+            .ui-nav-arrows { left: 14px; gap: 14px; }
+        }
+    </style>
 </head>
 <body oncontextmenu="return false;">
 
@@ -279,15 +220,11 @@
         </div>
     </div>
 
-    <button
-    id="bar-passport-trigger"
-    class="bar-passport-trigger notranslate"
-    type="button"
-    onclick="openPassport()"
-    title="GY-GY Passport"
-    aria-label="Open GY-GY Passport">
-    <span aria-hidden="true">▤</span>
-</button>
+    <button id="bar-passport-trigger" class="bar-passport-trigger notranslate"
+        type="button" onclick="openPassport()" title="GY-GY Passport"
+        aria-label="Open GY-GY Passport">
+        <span aria-hidden="true">▤</span>
+    </button>
 
     <div id="modal-passport" class="passport-overlay" onclick="closePassport()">
         <div class="passport-card" onclick="event.stopPropagation()">
@@ -306,11 +243,11 @@
     <audio id="snd-ambient" src="bar_ambient.mp3" loop preload="auto"></audio>
 
     <div id="block-bar" class="block">
-      <picture>
-    <source media="(max-width: 700px)" srcset="bar_horse.jpg">
-    <source srcset="bar_horse_desktop.png">
-    <img src="bar_horse.jpg" class="bar-bg-horse" alt="">
-</picture>
+        <picture>
+            <source media="(max-width: 700px)" srcset="bar_horse.jpg">
+            <source srcset="bar_horse_desktop.png">
+            <img src="bar_horse.jpg" class="bar-bg-horse" alt="">
+        </picture>
         <div class="bar-top-content">
             <div class="quote-text" data-translate="welcome_quote">In every joke there is a share of whisky</div>
         </div>
@@ -329,51 +266,43 @@
             catch (e) { return fallback; }
         }
 
-        // Флаг отражает выбранный язык витрины, а не устаревшее значение gygy_flag.
+        // Паспорт использует актуальные данные пользователя из localStorage.
         function syncUserBadge() {
-    currentUserImage =
-        safeStorageGet('gygy_avatar') ||
-        safeStorageGet('gy_user_img') ||
-        safeStorageGet('gy_user_avatar');
+            currentUserImage =
+                safeStorageGet('gygy_avatar') ||
+                safeStorageGet('gy_user_img') ||
+                safeStorageGet('gy_user_avatar');
 
-    currentID =
-        safeStorageGet('gygy_id') ||
-        safeStorageGet('gy_user_id') ||
-        safeStorageGet('gy_trace');
+            currentID =
+                safeStorageGet('gygy_id') ||
+                safeStorageGet('gy_user_id') ||
+                safeStorageGet('gy_trace');
 
-    const trigger = document.getElementById('bar-passport-trigger');
-    const passImg = document.getElementById('pass-avatar-img');
+            const trigger = document.getElementById('bar-passport-trigger');
+            const passImg = document.getElementById('pass-avatar-img');
 
-    if (trigger) {
-        trigger.style.display = currentID ? 'flex' : 'none';
-    }
+            if (trigger) trigger.style.display = currentID ? 'flex' : 'none';
 
-    if (passImg) {
-        if (currentUserImage) {
-            passImg.src = currentUserImage;
-            passImg.style.display = 'block';
-        } else {
-            passImg.removeAttribute('src');
-            passImg.style.display = 'none';
+            if (passImg) {
+                if (currentUserImage) {
+                    passImg.src = currentUserImage;
+                    passImg.style.display = 'block';
+                } else {
+                    passImg.removeAttribute('src');
+                    passImg.style.display = 'none';
+                }
+            }
+
+            if (currentID) {
+                const passIdVal = document.getElementById('pass-id-val');
+                const passQrBox = document.getElementById('pass-qr-box');
+                if (passIdVal) passIdVal.innerText = currentID;
+                if (passQrBox && typeof QRCode !== 'undefined') {
+                    passQrBox.innerHTML = "";
+                    new QRCode(passQrBox, { text: currentID, width: 100, height: 100 });
+                }
+            }
         }
-    }
-
-    if (currentID) {
-        const passIdVal = document.getElementById('pass-id-val');
-        const passQrBox = document.getElementById('pass-qr-box');
-
-        if (passIdVal) passIdVal.innerText = currentID;
-
-        if (passQrBox && typeof QRCode !== 'undefined') {
-            passQrBox.innerHTML = "";
-            new QRCode(passQrBox, {
-                text: currentID,
-                width: 100,
-                height: 100
-            });
-        }
-    }
-}
 
         function switchLocalBlock(blockId) {
             document.querySelectorAll('.block').forEach(b => {
@@ -435,7 +364,6 @@
         import { resumeAmbient } from './modules/ambient.js';
 
         initLocalization(document.body);
-
         resumeAmbient({ volume: 0.55 });
     </script>
     <script type="module" src="./bar-complexes.js"></script>
