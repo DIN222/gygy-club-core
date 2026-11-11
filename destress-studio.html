@@ -37,6 +37,20 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .back-arrow { color: var(--gold); cursor: pointer; user-select: none; transition: opacity .2s, transform .2s; }
 .back-arrow:hover { opacity: .8; transform: scale(1.1); }
 .club-brand { justify-self: end; color: var(--light); text-decoration: none; }
+  .brand-group {
+    position: absolute;
+    top: 18px;
+    right: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+}
+
+.club-brand {
+    text-decoration: none;
+}
 .club-logo {
     font: 700 24px/1 'Cinzel', serif;
     letter-spacing: 5px;
