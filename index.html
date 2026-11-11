@@ -34,7 +34,15 @@
         const frame = document.getElementById('stage');
 
         const go = new URLSearchParams(location.search).get('go');
-        const first = (go && /^[a-z0-9_-]+\.html$/i.test(go)) ? go : 'entrance.html';
+     const saved = sessionStorage.getItem('gygy:last-club-page');
+
+const validPage = page => page && /^[a-z0-9_-]+\.html$/i.test(page);
+
+const first = validPage(go)
+    ? go
+    : validPage(saved)
+        ? saved
+        : 'entrance.html';
 
         frame.addEventListener('load', () => {
             let win;
