@@ -49,6 +49,9 @@ const first = validPage(go)
             try { win = frame.contentWindow; } catch (e) { return; }
             try {
                 const name = (win.location.pathname.split('/').pop() || 'entrance.html');
+              if (validPage(name)) {
+    sessionStorage.setItem('gygy:last-club-page', name);
+}
                 window.GY_SOUND.applyForPage(name);
                 document.title = win.document.title || 'GY-GY Club';
             } catch (e) { /* страница ещё не готова */ }
