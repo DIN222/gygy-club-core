@@ -1455,12 +1455,17 @@ $('showPhrasePicker').addEventListener('click', () => {
 $('phrasePicker').addEventListener('click', e => {
     const b = e.target.closest('[data-phrase]');
     if (!b) return;
+
     state.phrase = pool[Number(b.dataset.phrase)] || null;
     state.mode = 'random';
     state.mixNumber++;
+
     setModeButtons();
     render();
+
     $('phrasePickerPanel').hidden = true;
+
+    updateSelectionDisplay();
     showPhraseLayer(true);
 });
 
