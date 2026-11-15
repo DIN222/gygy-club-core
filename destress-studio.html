@@ -1463,15 +1463,30 @@ $('phrasePicker').addEventListener('click', e => {
     showPhraseLayer(true);
 });
 
+function updateSelectionDisplay() {
+    const situation = currentSituationText().trim();
+    const phrase = currentPhraseText().trim();
+
+    $('selectedSituation').textContent = situation;
+    $('selectedPhrase').textContent = phrase;
+
+    $('situationBird').classList.toggle('active', !!situation);
+    $('phraseBird').classList.toggle('active', !!phrase);
+
+    $('openPhrases').disabled = !situation;
+}
+
 function afterSituation() {
     renderChip();
-    showPhraseLayer(true);
-    if (state.mode === 'random') chooseRandom();
-    else {
-        state.phrase = state.customRecipe ? { id: null, text: state.customRecipe, translations: {}, source: 'session' } : null;
-        say('');
-        render();
-    }
+
+    state.phrase = null;
+    state.mode = 'random';
+
+    $('phrasePickerPanel').hidden = true;
+
+    render();
+    updateSelectionDisplay();
+    say('');
 }
 
 $('choiceGrid').addEventListener('click', e => {
