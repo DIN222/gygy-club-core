@@ -997,21 +997,23 @@ a:focus-visible {
  
 <div class="studio-controls" aria-label="Основные действия студии">
 
-  <button class="outline-button" id="openSituations" type="button">
-    Выбери случай
+  <button class="outline-button choice-trigger"
+          id="openSituations" type="button">
+    <span class="choice-trigger-label">Выбери случай</span>
+    <span class="choice-bird" id="situationBird" aria-hidden="true">🐦</span>
   </button>
 
-  <div class="control-panel" id="situationsPanel" hidden>
-    <h2 class="layer-title">Выбери клубный случай</h2>
-    <div class="choice-grid" id="choiceGrid" hidden></div>
+  <div class="choice-list-panel" id="situationsPanel" hidden>
+    <div class="choice-grid" id="choiceGrid"></div>
   </div>
 
-  <button class="outline-button" id="openPhrases" type="button">
-    Выбери крепкое выражение
+  <button class="outline-button choice-trigger"
+          id="openPhrases" type="button" disabled>
+    <span class="choice-trigger-label">Выбери крепкое слово</span>
+    <span class="choice-bird" id="phraseBird" aria-hidden="true">🐦</span>
   </button>
 
-  <div class="control-panel" id="phrasePickerPanel" hidden>
-    <h2 class="layer-title">Выбери клубное крепкое выражение</h2>
+  <div class="choice-list-panel" id="phrasePickerPanel" hidden>
     <div class="phrase-picker" id="phrasePicker"></div>
   </div>
 
@@ -1019,6 +1021,9 @@ a:focus-visible {
     <img src="bar_horse_desktop.png" alt="Чарли">
     <span class="charlie-button-text">Чарли — выпьем немного виски?</span>
   </button>
+
+  <div class="selected-output" id="selectedSituation"></div>
+  <div class="selected-output" id="selectedPhrase"></div>
 
   <button class="outline-button" id="openMyCase" type="button">
     Мой случай
@@ -1029,7 +1034,6 @@ a:focus-visible {
   </button>
 
 </div>
-
 
     <div class="stage">
 
