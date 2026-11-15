@@ -751,24 +751,35 @@ a:focus-visible {
 /* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ */
 .studio-controls {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 9px;
+  flex-direction: column;
+  align-items: stretch;
+  width: min(100%, 680px);
   margin: 0 auto 20px;
+  gap: 9px;
 }
+
+.studio-controls > button {
+  width: 100%;
+  min-height: 44px;
+}
+
 .studio-controls .gold-button,
 .studio-controls .outline-button {
   min-height: 44px;
 }
+
 .control-panel {
-  margin: 0 0 16px;
+  width: 100%;
+  margin: 0 0 7px;
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: rgba(8,7,5,.42);
 }
+
 .control-panel[hidden] { display: none !important; }
 .choice-grid[hidden] { display: none !important; }
+
 .phrase-picker {
   display: flex;
   flex-direction: column;
@@ -777,6 +788,7 @@ a:focus-visible {
   overflow-y: auto;
   margin: 10px 0 14px;
 }
+
 .phrase-pick {
   padding: 10px 12px;
   border: 1px solid var(--line);
@@ -785,28 +797,46 @@ a:focus-visible {
   background: rgba(0,0,0,.28);
   text-align: left;
 }
+
 .phrase-pick:hover { border-color: var(--gold); }
+
 .charlie-launch {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
 }
+
 .charlie-launch img {
   width: 54px;
   height: 54px;
+  flex: 0 0 auto;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--gold);
   background: #17120c;
 }
+
 .author-tools {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
 }
-#customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
+
+#customSituationForm[hidden],
+#customRecipeForm[hidden] {
+  display: none !important;
+}
+
 @media (max-width:560px) {
+  .charlie-launch img {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+ {
   .studio-controls { display:grid; grid-template-columns:1fr 1fr; }
   .studio-controls > button { width:100%; }
   .charlie-launch img { width:48px; height:48px; }
