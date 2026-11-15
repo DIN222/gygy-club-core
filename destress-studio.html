@@ -162,9 +162,35 @@ a:focus-visible {
   margin-top: 2px;
 }
 
-/* Общий Passport-модуль создаёт модалку; вход в неё — отдельная кнопка под логотипом. */
-#passport-badge-container .gy-user-badge { display: none !important; }
-.passport-open-button { font-size: 10px; min-height: 34px; padding: 5px 9px; }
+
+/* PASSPORT — иконка как в BAR */
+#passport-badge-container .gy-user-badge {
+  display: none !important;
+}
+
+.brand-group .passport-open-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  margin-top: 2px;
+  padding: 0;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: rgba(0,0,0,.88);
+  color: var(--gold);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 25px;
+  line-height: 1;
+  box-shadow: 0 0 8px rgba(212,175,55,.25);
+}
+
+.brand-group .passport-open-button:hover {
+  background: #292116;
+}
+
 
 /* ОСНОВНОЙ КОНТЕЙНЕР */
 
