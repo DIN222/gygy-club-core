@@ -4,7 +4,7 @@ Version: 0.1.1
 Status: Draft for approval
 Date: 15 November 2026
 Repository path: Development/OFFICE/GOVERNANCE_PRINCIPLES.md
-
+ 
 1. Purpose and scope
 This document establishes the common governance principles for GY-GY Club and the OFFICE management system.
 
