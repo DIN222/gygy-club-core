@@ -1415,12 +1415,14 @@ $('openSituations').addEventListener('click', () => {
     $('phrasePickerPanel').hidden = true;
 });
 $('openPhrases').addEventListener('click', () => {
-    if (!currentSituationText()) {
-        say('Сначала выбери клубный случай или расскажи Чарли свой.');
-        $('situationsPanel').hidden = false;
-        $('choiceGrid').hidden = false;
-        return;
-    }
+    if (!currentSituationText()) return;
+
+    renderPhrasePicker();
+
+    const panel = $('phrasePickerPanel');
+    panel.hidden = !panel.hidden;
+    $('situationsPanel').hidden = true;
+});
     renderPhrasePicker();
     $('phrasePickerPanel').hidden = !$('phrasePickerPanel').hidden;
     $('situationsPanel').hidden = true;
