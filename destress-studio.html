@@ -2,9 +2,9 @@
 <!DOCTYPE html>
 <!--
   destress-studio.html — De-Stress Studio — v5.2.0
-  Изменения интерфейса:
-  1. Единое прокручиваемое окно выбора случаев.
-  2. Аватар Чарли под логотипом GY-GY.
+  Согласованные изменения интерфейса:
+  1. Единое окно выбора случаев с вертикальной прокруткой.
+  2. Личный значок GY-GY Passport под логотипом GY-GY.
   3. Фотофон затемнён на 10%.
   Остальная функциональность сохранена.
 -->
@@ -149,17 +149,19 @@ a:focus-visible {
   letter-spacing: 5px;
 }
 
-/* АВАТАР ЧАРЛИ ПОД ЛОГОТИПОМ */
+/* ЛИЧНЫЙ ЗНАЧОК PASSPORT ПОД ЛОГОТИПОМ */
 
-.brand-charlie {
-  display: block;
-  width: 46px;
-  height: 46px;
-  border: 1px solid rgba(216,179,106,.65);
-  border-radius: 6px;
-  object-fit: cover;
-  background: #17120b;
+.brand-group .gy-user-badge {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  width: 38px;
+  height: 38px;
+  margin-top: 2px;
 }
+
+/* Значок и личный аватар создаются механизмом GY-GY Passport. */
 
 /* ОСНОВНОЙ КОНТЕЙНЕР */
 
@@ -227,7 +229,7 @@ a:focus-visible {
   font: 400 clamp(22px,3vw,32px)/1.15 Georgia, serif;
 }
 
-/* ЕДИНОЕ ПРОКРУЧИВАЕМОЕ ОКНО СЛУЧАЕВ */
+/* ЕДИНОЕ ОКНО СЛУЧАЕВ С ПРОКРУТКОЙ */
 
 .choice-grid {
   display: flex;
@@ -235,7 +237,10 @@ a:focus-visible {
   gap: 8px;
   max-height: 300px;
   overflow-y: auto;
-  padding: 5px 8px 5px 2px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(8,7,5,.38);
   scrollbar-width: thin;
   scrollbar-color: var(--gold) rgba(0,0,0,.25);
 }
@@ -766,10 +771,6 @@ a:focus-visible {
       <a class="club-brand" href="hall.html" translate="no">
         <div class="club-logo">GY-GY</div>
       </a>
-
-      <img class="charlie-avatar brand-charlie"
-           src="horse_bar.png"
-           alt="Charlie">
 
       <div id="passport-badge-container"></div>
 
