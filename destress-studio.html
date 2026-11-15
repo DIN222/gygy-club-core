@@ -867,7 +867,79 @@ a:focus-visible {
   .studio-controls > button { width:100%; }
   .charlie-launch img { width:48px; height:48px; }
 }
+/* ВЫБОР СЛУЧАЯ И КРЕПКОГО СЛОВА */
 
+.choice-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 9px 14px;
+  text-align: left;
+}
+
+.choice-trigger-label {
+  flex: 1;
+}
+
+.choice-bird {
+  flex: 0 0 auto;
+  font-size: 21px;
+  filter: grayscale(1);
+  opacity: .35;
+  transition: filter .2s, opacity .2s;
+}
+
+.choice-bird.active {
+  filter: none;
+  opacity: 1;
+}
+
+.choice-trigger:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+}
+
+.choice-list-panel {
+  width: 100%;
+  margin: 5px 0 8px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(8,7,5,.72);
+}
+
+.choice-list-panel .choice-grid,
+.choice-list-panel .phrase-picker {
+  max-height: 62px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 2px;
+}
+
+.choice-list-panel .choice-button,
+.choice-list-panel .phrase-pick {
+  min-height: 48px;
+}
+
+.selected-output {
+  width: 100%;
+  min-height: 42px;
+  margin: 0 0 8px;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--light);
+  background: rgba(0,0,0,.48);
+  font: 14px/1.45 Georgia, serif;
+  overflow-wrap: anywhere;
+}
+
+.selected-output:empty {
+  display: none;
+}
 </style>
 </head>
 
