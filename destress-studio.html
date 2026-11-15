@@ -1412,7 +1412,6 @@ renderChoices();
 $('openSituations').addEventListener('click', () => {
     const panel = $('situationsPanel');
     panel.hidden = !panel.hidden;
-    $('choiceGrid').hidden = panel.hidden;
     $('phrasePickerPanel').hidden = true;
 });
 $('openPhrases').addEventListener('click', () => {
