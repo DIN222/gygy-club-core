@@ -440,49 +440,67 @@ The Creator may retain the coordinator for follow-up monitoring of specific resu
 
 ## 9. Independent Review and Serious Concerns
 
-### 9.1. General Principle
+### 9.1. Grounds for Independent Review
 
-A department head may raise serious concerns directly with the Creator, including concerns involving another department head or the Creator personally.
+A department head may initiate an independent review when specific circumstances or information provide grounds to suspect a possible violation of law connected with the work of a department or the conduct of a person exercising management authority within OFFICE.
 
-Where there are indications of a possible violation of law involving the Creator, a department head may initiate an independent review without waiting for the Creator's consent.
+The existence of a violation does not have to be proven before the review is initiated. The purpose of the review is, among other things, to establish whether a violation occurred.
 
 A mere disagreement about management opinions, priorities or decisions does not, by itself, provide grounds for initiating this independent procedure.
+
+Where the concern involves the Creator personally, the department head may initiate an independent review without obtaining the Creator's prior consent.
+
+This special guarantee does not remove or weaken the general right of department heads to initiate an independent review concerning possible violations involving another department head or department.
 
 ### 9.2. Selection of Independent Specialists
 
 The proposed independent specialist must be competent, independent and free from conflicts of interest.
 
-The candidate must be agreed with the Creator.
+The candidate must be agreed with the Creator and the department head initiating the review.
 
-If the proposed candidate is not accepted, the department head must propose alternative candidates.
+If a proposed candidate is not accepted, alternative candidates must be proposed and considered.
 
-If agreement cannot be reached, the search continues jointly until a suitable candidate acceptable to both sides is identified.
+The search for a suitable specialist continues jointly until a candidate acceptable to both sides is identified. Neither side may unilaterally appoint a specialist in circumvention of this procedure.
 
-Where different areas of expertise are required, the department head may propose temporarily engaging several specialists. Their candidacies are also subject to agreement.
+The inability to reach agreement promptly must not be used as a means of indefinitely obstructing the review.
+
+Where different areas of expertise are required, the department head may propose engaging several specialists with different competencies. Their candidacies are also subject to agreement.
+
+The special right to initiate a review concerning the Creator without prior consent does not, by itself, grant either party the right to bypass the agreed procedure for selecting specialists.
 
 ### 9.3. Information During the Review
 
-The department head must receive information from the engaged specialists about the progress of the review and its interim results to the extent necessary.
+The department head and the Creator must receive information about the progress of the review and its interim results at the same time and within the same scope.
 
-The Creator must receive the same information at the same time, together with the department head's position on the findings.
+Exceptions are permitted only where required by applicable law or where temporarily restricting particular information is reasonably necessary to protect the objectivity or integrity of the review.
+
+Any such restriction must be limited to what is necessary and must not be used to obstruct the review or unfairly deprive either party of relevant information.
 
 The department head may submit their own conclusion even if it differs from the specialists' opinion.
 
-Both positions must be retained and considered separately.
+The specialists' conclusions and the department head's position must be retained and considered separately. Neither may be removed from the record merely because the other position is accepted.
 
-The Creator must consider the specialists' conclusions and the department head's position and record the grounds for the final management decision.
+The Creator must consider the specialists' conclusions and the department head's position and record the grounds for the final management decision, including the reasons for accepting or rejecting significant findings.
 
-### 9.4. Scope and Limits
+### 9.4. External Legal Remedies
 
-This general procedure applies to department heads of OFFICE when concerns involving the Creator include indications of a possible violation of law.
+The internal review procedure is not an obligatory preliminary stage for contacting competent public authorities or courts where such contact is permitted by applicable law.
 
-The internal procedure does not restrict any right to contact competent public authorities where such contact is permitted or required by applicable law.
+Internal procedures, the need to agree on a specialist or a management decision by the Creator must not be used to delay or prevent a lawful external complaint or application.
 
-Any court proceedings remain separate from internal management procedures. Internal decisions cannot replace or override a court decision.
+Internal management decisions cannot replace or override a decision of a competent court or public authority.
+
+### 9.5. Department-Specific Review Procedures
 
 Special procedures established for independent audits within individual departments remain governed by their own approved departmental rules.
 
+The general procedure in this section applies to department heads throughout OFFICE and must not be confused with special audit arrangements established for GY-GY NEWS or another department.
+
+Special departmental procedures operate within their approved scope and do not automatically become general rules for all OFFICE departments.
+
 ## 10. AI in Management
+
+### 10.1. Role and General Principles
 
 AI systems may be used to support the management and operation of GY-GY Club.
 
@@ -496,9 +514,7 @@ Their functions may include:
 - preparation of recommendations;
 - evaluation of possible consequences of proposed decisions.
 
-AI may independently adapt the frequency and intensity of monitoring within the approved monitoring framework.
-
-AI must not become an autonomous management authority.
+AI acts as an observer, analyst and adviser. It is not an autonomous management authority.
 
 AI does not independently make operational, disciplinary or other consequential management decisions.
 
@@ -506,7 +522,265 @@ Final management decisions remain under human control and are made by the author
 
 AI recommendations must be distinguishable from approved management decisions.
 
-The Creator establishes the common principles, functions and boundaries of AI use throughout the club.
+### 10.2. Independent Identification and Reporting of Risks
+
+AI may independently identify a problem, anomaly or risk and initiate a report to the Creator, even if the relevant department head has not yet reported the matter.
+
+A report must distinguish between established information, observations, assumptions and conclusions.
+
+Where possible, AI must indicate:
+
+- what it has detected;
+- the information and evidence available to it;
+- the grounds for its assessment;
+- the presumed level and nature of risk;
+- possible ways to verify the concern;
+- possible actions for human consideration.
+
+AI must not present an assumption or preliminary assessment as an established fact.
+
+As a general rule, AI must inform the Creator and the head of the relevant department simultaneously.
+
+An exception applies when the concern directly involves that department head or when notification could reasonably interfere with an objective review. In such circumstances, AI sends the report to the Creator and notification to the affected person may be temporarily delayed until the further procedure is determined.
+
+### 10.3. Mandatory Human Consideration of Significant AI Signals
+
+The Creator and the head of the relevant department must consider significant AI signals.
+
+They must assess the information and grounds presented and determine whether additional verification or action is necessary.
+
+They are not required to accept or follow an AI recommendation. However, a significant signal must not simply be ignored without consideration.
+
+The decision remains with the authorised human decision-maker.
+
+### 10.4. Recording Significant AI Signals and Responses
+
+Significant AI signals and the human response to them must be preserved in the management history of OFFICE.
+
+The record must include, as applicable:
+
+- the content of the detected signal;
+- the information and grounds on which it was based;
+- the persons notified and the time of notification;
+- the assessment made by the Creator and the relevant department head;
+- the decision taken and its grounds;
+- any additional checks or measures assigned;
+- the results and completion of those measures.
+
+The record must also be retained when the decision is not to take further action.
+
+This history must make it possible to assess both the handling of the reported issue and the quality, accuracy and reliability of AI monitoring.
+
+### 10.5. Adaptive Monitoring
+
+AI may independently increase or decrease the frequency and intensity of monitoring within the approved monitoring system.
+
+In particular, AI may increase monitoring when it detects:
+
+- unusual activity;
+- repeated violations or anomalies;
+- an increased level of risk;
+- sudden or unexplained changes in behaviour or performance indicators.
+
+AI may adjust monitoring intensity according to the significance and dynamics of the relevant area, provided that it remains within the approved monitoring framework.
+
+A department head may not independently disable, restrict or change the approved AI monitoring of their department.
+
+A department head who considers monitoring excessive, inaccurate or disruptive may submit a reasoned proposal to the Creator.
+
+Changes to the common monitoring settings and boundaries are determined by the Creator. Significant changes must be recorded.
+
+### 10.6. AI Access to Information
+
+AI receives access only to the information and information systems necessary to perform its approved functions.
+
+AI does not automatically receive access to all club data.
+
+Access to confidential information must be determined separately and limited according to the approved functions, authorised permissions and necessity of use.
+
+Access and its use must be recorded in accordance with the applicable information-security and access-control rules.
+
+Any expansion of AI access must have a documented justification and appropriate authorisation.
+
+### 10.7. Preservation of Original Information
+
+AI must not independently delete, alter, conceal or replace original club information.
+
+This includes original data, documents, operation logs and other source materials.
+
+AI may create analytical copies, summaries, reports and recommendations, provided that these do not replace or alter the original materials.
+
+Correction, alteration or deletion of original information may be carried out only by authorised persons and in accordance with the common rules of GY-GY Club and applicable law.
+
+AI must not conceal source information or substitute its own conclusions for the original record.
+
+### 10.8. AI Errors and Malfunctions
+
+If AI identifies an error, malfunction, data loss, incorrect algorithmic operation or unreliability in its own conclusions, it must report the matter to the Creator and the head of the affected department.
+
+The report must describe, as applicable:
+
+- the nature of the error or malfunction;
+- which conclusions, processes or actions may have been affected;
+- the possible consequences;
+- available information about the cause;
+- proposed ways to verify and correct the problem.
+
+AI must not conceal its own errors or present an unreliable result as certain.
+
+### 10.9. Temporary Restriction of an Unreliable AI Function
+
+If an error or malfunction places the reliability of a particular AI function in doubt, the Creator may temporarily restrict the use of that function until the problem has been examined and resolved.
+
+The restriction should apply only to the affected function unless there are justified grounds for a broader restriction.
+
+Other functions that continue to operate reliably may remain available.
+
+The decision to restore the restricted function is made by the Creator after assessing the results of the relevant verification.
+
+### 10.10. AI Updates and Changes to Capabilities
+
+AI models, algorithms and analytical methods may be updated and improved.
+
+However, an update must not automatically expand AI's management authority, access to information or degree of autonomy within GY-GY Club.
+
+Any change to these boundaries requires separate approval by the Creator.
+
+### 10.11. Assessment of Significant AI Updates
+
+Significant AI updates must be assessed before implementation.
+
+The assessment must consider, as applicable:
+
+- accuracy and reliability;
+- security and data protection;
+- compatibility with the GY-GY Club architecture;
+- compliance with approved authority boundaries and restrictions;
+- possible new risks or unintended consequences.
+
+The Creator decides whether a significant update may be implemented.
+
+Where necessary, the update must first be tested in an environment that does not affect the live operation of the club.
+
+### 10.12. Rollback to a Stable Version
+
+Before a significant AI update is implemented, the possibility of returning to the previous stable version must be provided for.
+
+Rollback may be necessary if an update causes malfunctions, reduces the quality or reliability of work, or creates unacceptable risks.
+
+The Creator decides whether to initiate a rollback.
+
+The rollback, its reasons and its results must be recorded in the management history of OFFICE.
+
+### 10.13. Independence from External AI Providers
+
+When AI uses external models, services or platforms, their providers do not acquire authority to determine the management rules of GY-GY Club.
+
+External providers may not independently change the authority or autonomy of AI within the club.
+
+They must not receive access to club data beyond the conditions expressly agreed and authorised for the relevant integration.
+
+The Creator retains control over the selection of providers, the terms of use and the permitted boundaries of external integrations.
+
+The use of an external AI service does not transfer management authority over GY-GY Club to that provider.
+
+### 10.14. Technological Independence and Replaceability
+
+The AI architecture should, wherever reasonably possible, allow an external model, platform or provider to be replaced without requiring the entire OFFICE system or the club's principal processes to be rebuilt.
+
+When selecting technical solutions, consideration must be given to:
+
+- the ability to transfer necessary data;
+- preservation of relevant history and records;
+- compatibility with alternative services;
+- continuity of essential processes during a transition.
+
+The Creator retains the right to select and replace providers.
+
+### 10.15. Continuity During AI Service Unavailability
+
+The architecture of GY-GY Club should support the continued operation of essential club processes when an external AI service becomes temporarily unavailable.
+
+This includes:
+
+- identifying critical AI functions;
+- providing for a possible transition to an available and verified alternative service;
+- preserving necessary data and history;
+- allowing safe continuation of essential processes without temporarily unavailable AI functions.
+
+The unavailability of an AI service must not, by itself, result in the suspension of the entire GY-GY Club.
+
+### 10.16. Permitted Automatic Technical Recovery
+
+AI may independently perform limited technical actions to restore its own operation, provided that those actions are already authorised by the approved system.
+
+Such actions may include:
+
+- retrying an unsuccessful request;
+- restarting its own service;
+- switching to a previously approved backup model;
+- performing other pre-authorised technical recovery procedures.
+
+AI may not use recovery as a reason to:
+
+- change the club's architecture;
+- expand its own access permissions;
+- disable security mechanisms;
+- bypass established restrictions;
+- grant itself new authority.
+
+### 10.17. Recording Automatic Recovery Actions
+
+Significant automatic recovery actions must be recorded.
+
+The record must make it possible for the Creator to establish:
+
+- what action was performed;
+- when it was performed;
+- why it was initiated;
+- what result was achieved;
+- whether any consequences or further malfunctions occurred.
+
+The Creator must be able to review this history.
+
+Prior approval is not required for each individual technical recovery action that has already been expressly permitted by the approved rules.
+
+### 10.18. Emergency Termination of an Automated Operation
+
+If AI detects a situation in which continuing a particular automated operation may cause harm to the club, its data or its participants, AI may independently terminate that specific operation.
+
+AI must promptly notify the Creator and provide:
+
+- the reason for termination;
+- the nature of the detected risk;
+- the available information and grounds;
+- possible consequences.
+
+The event and relevant information must be preserved for subsequent analysis.
+
+This limited emergency authority does not give AI the right to suspend an entire department or the club.
+
+Any broader restrictions remain a decision for an authorised human.
+
+### 10.19. Resumption After an AI Emergency Termination
+
+AI may not independently resume an operation that it terminated because of a risk of harm.
+
+Before resumption, the reason for termination must be assessed and the removal of the relevant threat and safety of further operation must be verified.
+
+Resumption requires authorisation from the Creator or another person specifically authorised by the Creator.
+
+The decision and its grounds must be recorded in the management history of OFFICE.
+
+### 10.20. Repeated Emergency Terminations
+
+Repeated emergency termination of the same operation must be treated as a possible indication of a systemic problem rather than merely as a series of unrelated technical incidents.
+
+AI must identify the repeated pattern, notify the Creator and provide the available history of the incidents.
+
+AI must also propose an analysis of the possible root cause.
+
+The assessment of the problem, any corrective measures and decisions about further operation remain under human control.
 
 ## 11. Departmental Rules and Special Procedures
 
@@ -540,7 +814,7 @@ No unrestricted or arbitrary authority is granted to execution-level roles by th
 
 ## 13. Recording Decisions and Management History
 
-The management history of OFFICE must preserve information necessary to understand significant decisions, interventions and changes.
+The management history of OFFICE must preserve information necessary to understand significant decisions, interventions, reviews and changes.
 
 The following must be documented:
 
@@ -552,13 +826,50 @@ The following must be documented:
 - serious incidents, violations and risks;
 - decisions to suspend or resume significant processes;
 - approved cross-departmental assignments and their completion;
+- significant AI signals and the human response to them;
+- significant AI errors, malfunctions and recovery actions;
+- significant AI updates, restrictions, rollbacks and restoration decisions;
 - outcomes of independent reviews and the resulting management decisions.
 
 Records must be sufficiently clear to establish what was decided, by whom, when and on what grounds.
 
-The common rules for information storage, access, archiving and deletion apply to these records.
+### 13.1. Independent Review Records
 
-Access to confidential information must be limited according to authorised responsibilities and applicable data-protection requirements.
+Materials from independent reviews must be preserved together with the subsequent management decisions of the Creator.
+
+The record must include, as applicable:
+
+- the specialists' conclusions;
+- the department head's own conclusion, including any position that differs from the specialists' conclusions;
+- the Creator's position on each significant finding;
+- the grounds for accepting or rejecting significant findings;
+- corrective measures established as a result of the review;
+- the persons responsible for those measures;
+- deadlines and arrangements for monitoring implementation.
+
+The specialists' conclusions and the department head's position must remain part of the record even when the Creator reaches a different final management decision.
+
+### 13.2. General Archive and Access Principles
+
+OFFICE records must be stored securely.
+
+Access to confidential materials must be limited according to authorised responsibilities, legitimate work-related necessity and applicable data-protection requirements.
+
+Participation in a review or management process does not automatically grant unrestricted access to the entire OFFICE archive.
+
+Each access to confidential materials must be recorded.
+
+Retention periods and deletion must follow the common rules of GY-GY Club and applicable law.
+
+### 13.3. Special Archive Rules for GY-GY NEWS
+
+The special protected archive established for GY-GY NEWS audits remains governed by the approved NEWS audit procedures.
+
+Access to that archive is restricted to the Creator.
+
+An auditor may receive access only to specific materials following separate authorisation by the Creator. Each access must be recorded, and the Creator may revoke the access.
+
+These special NEWS archive rules must not automatically be applied to all OFFICE departments.
 
 ## 14. Compliance with Common Rules
 
@@ -584,7 +895,15 @@ It is intended to serve as a foundation for:
 
 This document does not, by itself, establish the detailed permissions of every employee or system component.
 
-Changes to this document must be approved by the Creator and recorded through version control.
+It remains a draft until reviewed and approved by the Creator.
+
+Once approved, it must be reflected in `Development/OFFICE/PROJECT_STATE.md`.
+
+The document must preserve the distinction between:
+
+- common governance principles applicable throughout OFFICE;
+- special authority and procedures established for individual departments;
+- execution-level responsibilities, which remain subject to further development.
 
 **Current status:** Draft for approval.
 
