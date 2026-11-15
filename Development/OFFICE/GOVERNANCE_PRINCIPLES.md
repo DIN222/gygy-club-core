@@ -1,260 +1,591 @@
-OFFICE — GOVERNANCE PRINCIPLES
-Document ID: OFFICE-GOV-001
-Version: 0.1.1
-Status: Draft for approval
-Date: 15 November 2026
-Repository path: Development/OFFICE/GOVERNANCE_PRINCIPLES.md
-  
-1. Purpose and scope
-This document establishes the common governance principles for GY-GY Club and the OFFICE management system.
+# OFFICE — GOVERNANCE PRINCIPLES
+
+**Document ID:** OFFICE-GOV-001  
+**Version:** 0.2.0  
+**Status:** Draft for approval  
+**Date:** 15 November 2026  
+**Repository path:** `Development/OFFICE/GOVERNANCE_PRINCIPLES.md`
+
+---
+
+## 1. Purpose and Scope
+
+This document establishes the common governance principles of the GY-GY Club OFFICE.
 
 It defines:
-- the position and principal responsibilities of the Creator;
-- the common authority, responsibilities, and operating boundaries of department heads;
-- the principles governing cooperation, delegation, oversight, and escalation;
-- the temporary status of authority rules for employees and other execution-level roles.
-These principles apply across OFFICE departments and Launch Complexes, including departments established in the future.
-
-This document defines the common governance framework. It does not replace department-specific rules, operating procedures, technical specifications, or applicable law.
-2. Core governance principles
-2.1 One club-wide governance framework
-GY-GY Club operates as one coordinated system. Its departments may have different functions and specific procedures, but they operate within the club's common architecture and governance framework.
-2.2 Authority and responsibility
-Authority must be accompanied by responsibility for decisions and actions taken within that authority.
-
-The Creator holds the highest management authority for the club. Department heads have meaningful operational autonomy within the approved architecture, common rules, and the scope of their authority.
-2.3 Compliance with law and club rules
-All club activity must comply with applicable law.
-
-The Creator, department heads, and other participants acting in official club roles are subject to the common rules of GY-GY Club. The Creator's highest management authority does not place the Creator outside the club's rules, including rules concerning security, data protection, and information preservation.
-2.4 Human responsibility for management decisions
-AI systems may support observation, monitoring, analysis, forecasting, and recommendations within the authority assigned to them.
-
-AI does not independently assume human management authority and does not make operational, disciplinary, or other consequential management decisions. Management decisions remain under human control.
-3. Governance structure of OFFICE
-1. The Creator is the highest management authority of GY-GY Club.
-2. Each OFFICE department is led by a department head appointed by the Creator.
-3. Each department head is personally accountable to the Creator for the overall operation of their department.
-4. Department heads organize their departments within the approved club architecture and their assigned authority.
-5. Employees, moderators, and other execution-level roles operate under authority rules that remain subject to further design, as stated in Section 8.
-The detailed internal hierarchy and role structure of each department may be defined in its department-specific documentation, provided it does not conflict with the common governance framework.
-4. Authority and responsibilities of the Creator
-4.1 Highest management authority
-The Creator holds the highest management authority in GY-GY Club and makes final management decisions on club matters, subject to applicable law.
-
-The Creator may review, amend, or revoke decisions made by department heads and may directly intervene in the work of any department, including by addressing matters without first acting through its department head.
-4.2 Club architecture and strategic direction
-The Creator:
-- determines and may change the overall architecture of GY-GY Club;
-- determines the structure of departments, their relationships, and the allocation of authority;
-- establishes the club's strategic goals, priorities, and development directions;
-- approves long-term development plans and oversees their implementation;
-- approves the launch of new departments and Launch Complexes, and decides on their suspension or closure.
-4.3 Management of departments
-The Creator:
-- appoints, replaces, and removes OFFICE department heads;
-- establishes common rules and standards binding on all departments;
-- exercises overall oversight of department activity;
-- may request information necessary for oversight and require identified problems to be addressed;
-- may establish temporary or permanent working groups, appoint their leads, and define their tasks and scope;
-- may delegate part of the Creator's authority to other persons while retaining overall responsibility for the club's governance system.
-4.4 Budget and resources
-The Creator determines the overall club budget and allocates financial resources among departments.
-4.5 Personnel and access
-The Creator establishes the club's general personnel policy, including requirements for personnel and principles for selection, assessment, and development.
 
-The Creator establishes common rules for granting, changing, distributing, and terminating access to club information systems and data.
-4.6 Security and information governance
-The Creator establishes common requirements for club security, data protection, and the preservation of club information.
+- the authority and responsibilities of the Creator;
+- the authority and responsibilities of department heads;
+- the relationship between the Creator and department heads;
+- the principles of accountability and decision-making;
+- the general rules for cooperation between departments;
+- the boundaries of AI participation in management;
+- the principles governing the development of more detailed departmental rules.
 
-The Creator establishes common rules for the retention, archiving, and deletion of club information, subject to applicable law.
-4.7 External relations
-The Creator approves the club's general policy for interaction with external parties, including partners, suppliers, organizations, and other external participants.
+These principles apply throughout OFFICE unless a specific rule is established for a particular department and approved in accordance with the governance structure.
 
-The Creator may represent GY-GY Club in external relations and make decisions on behalf of the club within the limits of applicable law and any required legal authority.
-4.8 Community policy
-The Creator approves the general policy for developing and maintaining the club community, including principles of participation, membership, and interaction among participants.
-4.9 Conflict resolution, monitoring, and risk oversight
-The Creator establishes common principles for resolving conflicts and considering disputes within the club.
+This document does not replace the detailed operating rules of individual departments.
 
-The Creator approves the club-wide system for monitoring activity, evaluating results, and identifying risks.
-4.10 AI governance
-The Creator determines the principles for the use of AI in GY-GY Club, including its functions, authority, and permitted limits of autonomy.
-4.11 Responsibility for the club concept
-The Creator bears personal responsibility for safeguarding the integrity of the GY-GY Club concept, ensuring that club activity remains consistent with its fundamental principles, and preserving a coherent overall direction of development.
-5. Authority and responsibilities of department heads
-5.1 Overall accountability
-Each department head is personally accountable to the Creator for the department as a whole, including:
-- its functioning and delivery of assigned tasks;
-- compliance with applicable club rules and approved decisions;
-- organization and coordination of its work;
-- identification and handling of problems;
-- timely notification of significant events, violations, and risks.
-5.2 Internal organization
-A department head organizes the internal structure and distribution of functions within the department, within the approved club architecture.
+## 2. Core Governance Principles
 
-A department head may propose changes to the department's architecture to the Creator, with reasons and an assessment of expected consequences. Changes to the approved architecture take effect only after the Creator's approval.
+The governance of OFFICE is based on the following principles:
 
-A department head may not unilaterally change the club-wide architecture or the authority of another department.
-5.3 Operational priorities
-A department head independently determines the priorities of the department's current work, provided they do not conflict with the club's strategic direction, common priorities, approved plans, or decisions of the Creator.
-5.4 Resources
-A department head may reallocate available resources within their own department to address its priorities, provided this does not affect another department's resources, alter the overall club budget, or breach restrictions or decisions established by the Creator.
+1. The Creator holds the highest management authority within GY-GY Club.
+2. Department heads have genuine operational independence within their approved responsibilities.
+3. Authority and accountability must correspond to one another.
+4. Each department head is personally accountable for the overall operation of their department.
+5. The Creator is accountable for their own management decisions and interventions.
+6. Common GY-GY Club rules take precedence over departmental rules.
+7. Departmental rules may supplement common rules and address specific operational requirements, but must not contradict common rules.
+8. Significant management decisions and interventions must be documented.
+9. Problems, incidents and risks must be reported honestly and in a timely manner.
+10. Good-faith management errors must be distinguished from negligence, abuse of authority or deliberate violations.
+11. AI supports management through observation, analysis, forecasting and recommendations. Management decisions remain under human control.
+12. The governance structure must support all current and future Launch Complexes of GY-GY Club.
 
-Significant internal reallocations must be reported to the Creator in advance, with the reasons, scope, and expected consequences.
-5.5 Handling problems and incidents
-A department head may independently analyze problems, incidents, and violations within the department; establish relevant circumstances, causes, and consequences; identify systemic weaknesses; propose corrective or preventive measures; and oversee their implementation.
+## 3. Governance Structure of OFFICE
 
-A department head decides whether the available information is sufficient to act or whether further examination is needed. An internal investigation is not an automatic or mandatory step in every case.
+OFFICE is a full architectural and management component of GY-GY Club.
 
-Where the information is sufficient, the department head may make a decision and determine appropriate measures. Decisions and their grounds must be recorded where appropriate; significant incidents must be reported to the Creator.
+Each department operates within the common governance structure while retaining its own approved responsibilities and internal organisation.
 
-A department head may independently initiate a temporary suspension of a process within their department where there is a serious problem, a security concern, or a risk of harm to the club.
+The Creator establishes the overall structure of OFFICE, appoints department heads and determines the distribution of authority between departments.
 
-The department head records the reasons and circumstances, informs the Creator, assesses consequences, and proposes measures to address the issue.
+Each department head organises the internal work of their department within the approved architecture and assigned responsibilities.
 
-If the department head initiated the suspension, the department head may resume the process after the problem has been addressed. The decision and the basis for resumption must be recorded, and the Creator must be informed.
+The Creator may establish temporary or permanent working groups, appoint coordinators and assign cross-departmental tasks.
 
-A process suspended by an instruction of the Creator may be resumed only with the Creator's authorization.
-5.6 Cooperation with other departments
-A department head may request information or assistance from another department where necessary to address an issue within their own department.
+The detailed authority of employees, moderators and other execution-level roles is subject to further development.
 
-Such a request does not itself grant access to restricted information or authority belonging to the other department.
+## 4. Authority and Responsibilities of the Creator
 
-Where an issue affects multiple departments, the relevant department heads coordinate their actions. Each remains responsible for decisions within their own department.
+The Creator is the highest management authority of GY-GY Club and is responsible for the integrity of its concept, governance and overall direction.
 
-Disagreements about cross-departmental coordination are referred to the Creator for a final decision.
+The Creator has the authority to:
 
-A department head may propose temporary cooperation with other departments where their own resources or expertise are insufficient. Such cooperation is organized in coordination with the Creator.
+1. Establish and modify the overall architecture of GY-GY Club.
+2. Determine the structure of departments, their relationships and distribution of responsibilities.
+3. Define strategic goals, priorities and development directions.
+4. Appoint, replace and dismiss department heads.
+5. Establish common rules, standards and policies binding on all departments.
+6. Exercise overall supervision of all departments.
+7. Establish the overall club budget and allocate financial resources between departments.
+8. Create temporary or permanent working groups and determine their objectives, leadership and scope of authority.
+9. Delegate part of their authority while retaining overall responsibility for the governance system.
+10. Cancel or modify departmental decisions when they are considered incorrect or contrary to the interests of the club.
+11. Intervene directly in the work of any department, including bypassing its department head.
+12. Establish common access rules for the club's information systems and data.
+13. Define the general personnel policy, including requirements, selection, evaluation and development principles.
+14. Establish common principles for resolving conflicts and reviewing disputed matters.
+15. Represent the club in external relations and make decisions on behalf of the club within the limits of applicable law.
+16. Approve long-term development plans and supervise their implementation.
+17. Define the principles governing AI use, functions, authority and limits of autonomy.
+18. Approve the common monitoring, performance evaluation and risk identification system.
+19. Establish rules for information retention, archiving and deletion, subject to applicable law.
+20. Approve the general policy for community development, participation, membership and interaction.
 
-A department head may not unilaterally impose obligations on another department.
+The Creator is personally responsible for:
 
-For an approved joint effort, the Creator appoints one responsible department head to coordinate the work and maintain its overall consistency.
+- preserving the integrity of the GY-GY Club concept;
+- maintaining consistency with the club's fundamental principles;
+- ensuring a unified development direction;
+- the consequences of their own management decisions and interventions.
 
-The appointed coordinator may communicate directly with the heads of participating departments for coordination, but may not unilaterally change their internal priorities or control their resources.
+The Creator must comply with the common rules of GY-GY Club, including rules concerning safety, data protection and information preservation.
 
-The Creator may replace the coordinator.
+The Creator's position does not provide an exemption from common club rules.
 
-The outgoing coordinator must transfer the information needed for continuity, including progress, decisions, completed tasks, unresolved matters, problems, and risks.
+## 5. Authority and Responsibilities of Department Heads
 
-The incoming coordinator confirms receipt and understanding of the current status to the Creator.
+### 5.1. General Accountability
 
-The coordinator may recommend that the joint effort be concluded. The Creator makes the final decision.
+Each department head is personally accountable to the Creator for the overall operation of their department.
 
-The coordinator then provides a summary of results, completed tasks, decisions, unresolved matters, and any recommendations.
+This includes:
 
-The Creator may retain the coordinator for a separately defined period and scope of follow-up.
+- functioning of the department;
+- completion of assigned tasks;
+- compliance with common rules and approved departmental rules;
+- organisation of internal work;
+- identification and resolution of problems;
+- timely reporting of significant events, violations and risks.
 
-The coordinator informs the Creator about the joint effort as necessary. Significant problems or circumstances requiring the Creator's intervention must be reported promptly. No fixed routine reporting schedule is imposed unless the Creator separately establishes one.
-5.7 Communication with the Creator
-A department head may contact the Creator directly about any matter considered significant to the department, without having to use an intermediate OFFICE level.
+A department head is accountable within the authority and resources actually assigned to them.
 
-A department head may request a confidential discussion with the Creator where a concern involves another department head or the Creator.
+### 5.2. Internal Organisation
 
-Such a communication must be protected from interference by persons whose interests may be involved, while respecting applicable law and legitimate information-security requirements.
+Each department head independently organises the internal structure of their department and distributes functions between its areas of activity.
 
-Department heads provide regular updates on their departments at weekly working meetings with the Creator.
+This independence applies within the approved architecture of GY-GY Club.
 
-A separate routine written report is not required for ordinary current matters.
+A department head cannot unilaterally change the overall club architecture or the authority of another department.
 
-Significant decisions, changes, incidents, and matters for which a durable record is necessary must be documented.
+### 5.3. Proposals for Architectural Changes
 
-Urgent matters must be reported promptly and must not wait for the next weekly meeting.
+A department head may propose changes to the architecture of their department.
 
-The Creator may call an extraordinary meeting at any time.
+Such proposals must include an explanation of the reasons and expected consequences.
 
-A department head may request an extraordinary meeting where a matter should not wait until the next scheduled meeting.
-5.8 Temporary assignments
-The Creator may assign a department head temporary tasks outside the department's ordinary activities where this is necessary for the club's overall interests.
+Changes to the approved architecture take effect only after approval by the Creator.
 
-A temporary assignment does not automatically change the department's permanent structure or authority.
+### 5.4. Operational Priorities
 
-A department head may decline a temporary assignment where it would objectively interfere with the department's core responsibilities, provided the reasons are explained to the Creator.
+A department head independently determines the priorities of current departmental tasks, provided that these priorities do not conflict with the club's common priorities, plans and approved decisions.
 
-The Creator considers those reasons and determines the next course of action, which may include changing the assignment's priority or scope, or reallocating the task.
-6. Special safeguards and independent consideration
-Where a department head identifies indications of a possible violation of law involving the Creator, the department head may initiate an independent review without waiting for the Creator's consent.
+The department head does not need prior approval from the Creator for every ordinary operational action within their authority.
 
-A mere disagreement about management views, priorities, or decisions does not by itself constitute grounds for initiating this independent procedure.
+### 5.5. Resources
 
-The candidate specialist's competence, independence, and absence of conflicts of interest must be considered. The candidate is coordinated with the Creator.
+A department head may redistribute available resources within their own department to meet priority tasks, provided that this does not:
 
-If the proposed candidate is not accepted, the department head proposes alternative candidates. The parties continue working toward a mutually acceptable specialist.
+- affect resources assigned to other departments;
+- change the overall club budget;
+- violate restrictions or decisions established by the Creator.
 
-Where different expertise is needed, the department head may propose several specialists, with their candidacies coordinated in the same way.
+Significant resource redistribution must be reported to the Creator in advance, even when it remains within the department head's authority.
 
-The department head receives information about the review's progress and interim findings to the extent necessary.
+The notification must explain the reasons, scope and expected consequences.
 
-The Creator receives the same information at the same time as the department head's view of those findings.
+### 5.6. Temporary Suspension of a Process
 
-The department head may submit an independent conclusion that differs from the specialists' conclusions. Both positions are retained and considered separately.
+A department head may independently initiate the temporary suspension of an individual departmental process when a serious problem, safety threat or risk of harm to the club is identified.
 
-The Creator must consider the specialists' conclusions and the department head's position and record the grounds for the final internal decision.
+The department head must:
 
-This internal procedure does not restrict any right to contact competent public authorities or courts where provided by law.
+- record the reasons and circumstances;
+- notify the Creator;
+- assess the consequences;
+- propose measures to resolve the problem.
 
-Any department-specific audit safeguards remain governed by the relevant department documentation and applicable law.
-7. Relationship between the Creator and department heads
-The governance model is based on the following division:
-Area	Creator	Department head
-Club architecture	Determines and changes the overall architecture	Organizes the department within the approved architecture
-Common rules	Establishes club-wide rules and standards	Implements them and may propose department-level additions or changes
-Strategy	Determines club-wide goals and priorities	Sets current operational priorities within that direction
-Budget	Determines the overall budget and allocates resources	Manages and reallocates departmental resources within established limits
-Department leadership	Appoints, replaces, and removes department heads	Organizes the department's work
-Oversight	Exercises overall oversight of all departments	Is accountable for the department's operation
-Decisions	Makes final club-level management decisions	Makes decisions within the department's assigned authority
-Cross-departmental matters	Resolves disagreements and approves coordination arrangements	Cooperates with other heads and remains responsible for the department's own decisions
+If the department head initiated the suspension, they may resume the process after the problem has been resolved.
 
-The Creator's authority to review, amend, or revoke a department head's decision does not remove the department head's accountability for the decisions and actions taken within the department.
+The decision to resume, the grounds for it and the results of the relevant verification must be recorded, and the Creator must be notified.
 
-Department heads' operational autonomy does not limit the Creator's overall management authority.
-8. Execution-level roles — pending design
-The authority and responsibility framework for employees, moderators, and other execution-level roles is intentionally not detailed in this version.
+If the process was suspended by an instruction from the Creator, resumption requires the Creator's approval.
 
-For the current design stage, this area is marked:
+### 5.7. Analysis of Incidents and Violations
 
-Requires further consideration.
+A department head may independently analyse incidents and violations within their department.
 
-This temporary status does not authorize arbitrary assignment of permissions or imply that execution-level roles have unrestricted authority.
+This may include:
 
-Detailed authority allocation for execution-level roles will be revisited after the functionality of all Launch Complex 1 departments has been described to the level of department heads.
-9. Department-specific rules and their relationship to common rules
-This document establishes common governance principles.
+- establishing the circumstances;
+- identifying causes and consequences;
+- identifying systemic weaknesses;
+- proposing corrective and preventive measures;
+- monitoring implementation of those measures.
 
-Department-specific rules may add procedures, roles, controls, and requirements reflecting the particular function of a department.
+Serious incidents and violations must be reported to the Creator.
 
-Department-specific rules must comply with applicable law and the common governance principles established for GY-GY Club.
+An internal investigation is not an obligatory preliminary stage for every management decision.
 
-Common club-wide rules take precedence over internal department rules. Department-specific rules may supplement common rules but may not contradict them.
+The department head determines whether the available information is sufficient to make a decision or whether further examination is necessary.
 
-Specialized arrangements, including the detailed powers and procedures of GY-GY NEWS and its independent auditor, remain governed by the relevant department-specific documentation. They are not replaced by this document.
+If the information is sufficient, the department head may make a decision and determine corrective measures directly. The decision and its grounds must be recorded.
 
-Where a department-specific rule appears to conflict with a common governance principle, the matter must be referred to the Creator for clarification and, where necessary, an approved amendment.
+### 5.8. Requests to Other Departments
 
-No provision of this document overrides applicable law.
-10. Recording decisions and interventions
-Where an instruction from the Creator changes a department head's prior decision or materially changes the department's work, the instruction and its grounds must be recorded.
+A department head may request information or assistance from another department when it is necessary to resolve a problem within their own area of responsibility.
 
-The record should make it possible to understand:
-- what decision or process was changed;
-- what instruction was given;
-- the grounds for the intervention;
-- when the change took effect.
-This requirement preserves the history of decisions and clarifies responsibility for subsequent actions.
+Such a request does not automatically grant access to restricted information or authority belonging to the other department.
 
-The form and technical location of such records may be established separately.
-11. Document status and maintenance
-This document is the common governance baseline for OFFICE.
+### 5.9. Cross-Departmental Problems
 
-It remains a draft until reviewed and approved by the Creator.
+When a problem affects several departments:
 
-Changes must preserve the distinction between:
-- common governance principles applying across OFFICE;
-- department-specific authority and procedures;
-- execution-level authority rules, which remain pending further design.
-When approved, the document should be referenced from:
+- the relevant department heads coordinate their actions;
+- each department head remains responsible for decisions within their own department;
+- disagreements are referred to the Creator;
+- the Creator makes the final management decision concerning cross-departmental coordination.
 
-Development/OFFICE/PROJECT_STATE.md
+### 5.10. Direct Communication with the Creator
 
-End of document
+Every department head may communicate directly with the Creator about any matter considered significant for their department.
+
+This right does not require approval from intermediate OFFICE levels.
+
+A department head may also contact the Creator confidentially when a problem concerns another department head or the Creator personally.
+
+Interested persons must not obstruct such communication or interfere with it.
+
+Confidentiality must be protected.
+
+### 5.11. Regular Reporting and Meetings
+
+Each department head must regularly inform the Creator about the work of their department during weekly management meetings.
+
+Separate written reports on ordinary current matters are not required.
+
+These meetings are intended for direct discussion of:
+
+- the current state of the department;
+- tasks and priorities;
+- problems and risks;
+- plans and expected results.
+
+Significant decisions, changes, incidents and other matters requiring a permanent record must be documented.
+
+Urgent matters must be reported immediately and must not wait until the next weekly meeting.
+
+The Creator may convene an extraordinary meeting with one or more department heads at any time.
+
+A department head may request an extraordinary meeting when a matter should not be postponed until the next scheduled meeting.
+
+## 6. Accountability and Management Conduct
+
+### 6.1. Responsibility for Decisions and Interventions
+
+The Creator is accountable for the consequences of their own management decisions and interventions.
+
+When the Creator cancels or changes a department head's decision, or directly intervenes in departmental operations, the Creator assumes responsibility for the change introduced by that intervention.
+
+The department head retains responsibility for other areas of departmental activity that remain within their authority.
+
+Significant instructions and interventions by the Creator must be documented, including:
+
+- the content of the instruction or intervention;
+- the reasons for it;
+- the date of the decision.
+
+### 6.2. Right to Raise Objections
+
+A department head may submit a reasoned objection to an instruction from the Creator if they believe that it is incorrect, risky or likely to cause harm to the department or the club.
+
+The department head may propose an alternative solution.
+
+An objection does not automatically suspend the instruction.
+
+The Creator considers the objection and makes the final management decision.
+
+A department head must carry out a confirmed instruction unless doing so would violate applicable law.
+
+Nothing in these internal principles requires anyone to carry out an unlawful action.
+
+### 6.3. Good-Faith Management Errors
+
+If a department head:
+
+- acted within their authority;
+- acted in good faith;
+- relied on the information available to them;
+- complied with established rules;
+
+the fact that their decision produced an unsuccessful result does not, by itself, constitute a violation or automatically justify disciplinary measures.
+
+The department head must nevertheless participate in analysing the consequences, correcting the problem and developing measures to prevent similar errors.
+
+A good-faith error must be distinguished from negligence, abuse of authority or deliberate misconduct.
+
+### 6.4. Concealment or Distortion of Information
+
+A department head is accountable for:
+
+- intentionally concealing significant problems, violations, incidents or risks;
+- knowingly providing distorted information to the Creator;
+- unjustifiably delaying notification of an event requiring the Creator's attention.
+
+Timely and honest reporting of a problem must not, by itself, negatively affect the assessment of a department head who acted in good faith.
+
+### 6.5. Evaluation of Department Heads
+
+The Creator evaluates department heads not only by the final results of their departments but also by the quality of their management.
+
+Evaluation may take into account:
+
+- completion of assigned tasks;
+- compliance with rules and authority boundaries;
+- timely identification of problems;
+- justification and quality of decisions;
+- ability to correct errors;
+- organisation of departmental work;
+- accuracy and timeliness of reporting.
+
+The circumstances in which the department head operated must also be considered.
+
+### 6.6. Conflicts of Interest
+
+A department head must promptly inform the Creator if a personal interest may affect the objectivity of a management decision.
+
+This includes, in particular:
+
+- personal or financial benefit;
+- relationships with persons affected by the decision;
+- connections with organisations interested in the outcome;
+- other circumstances that may compromise impartiality.
+
+The Creator determines how the situation should be handled.
+
+Good-faith disclosure of a conflict of interest does not itself constitute a violation.
+
+### 6.7. Boundaries of Responsibility Between Departments
+
+A department head is not automatically responsible for decisions or actions of another department when those matters are outside their authority and they have not been appointed responsible for the relevant joint work.
+
+If appointed to coordinate joint work, the department head is accountable for coordination within the assigned scope.
+
+A department head must inform the Creator about a problem in another department when it significantly affects their own department or the interests of the club.
+
+## 7. Changes to Authority and Continuity of Management
+
+### 7.1. Changes to Departmental Authority
+
+The Creator may change the authority of department heads, redistribute functions between departments and modify the structure of OFFICE.
+
+The Creator may also establish new departments or combine existing ones.
+
+Affected department heads must be informed of such changes.
+
+New authority boundaries and areas of responsibility must be clearly defined.
+
+A department head must not be held accountable for results that fall outside their actual authority or available resources.
+
+Significant changes must be recorded in the management history of OFFICE.
+
+### 7.2. Continuity of Management
+
+If a department head is temporarily absent, unable to perform their duties or the position becomes vacant, the Creator determines the temporary management arrangement.
+
+The Creator may:
+
+- appoint an acting department head;
+- assign temporary management responsibilities to another authorised person;
+- temporarily assume management of the department directly.
+
+The scope of delegated authority and the duration of the temporary arrangement must be determined separately.
+
+Temporary appointment does not automatically transfer all the powers of the department head.
+
+### 7.3. Handover of Responsibilities
+
+When a department head is replaced or leaves their position, the outgoing department head must transfer the information necessary for the continued operation of the department.
+
+This includes:
+
+- the current state of the department;
+- active decisions;
+- ongoing tasks and processes;
+- outstanding obligations;
+- unresolved issues;
+- identified problems and risks.
+
+The incoming department head must confirm receipt of the information and acceptance of the responsibilities.
+
+Any significant gaps or missing information must be recorded and reported to the Creator.
+
+## 8. Cross-Departmental Assignments and Cooperation
+
+### 8.1. Temporary Assignments from the Creator
+
+The Creator may assign temporary tasks to a department head outside the ordinary activities of their department when this is necessary for the common interests of the club.
+
+Such an assignment does not automatically change the permanent authority structure.
+
+A department head may refuse a temporary assignment if it would objectively prevent them from fulfilling the primary responsibilities of their department.
+
+The reasons for refusal must be explained to the Creator.
+
+The Creator must consider those reasons and determine the next course of action. This may include changing priorities, adjusting the scope of the assignment or redistributing the task between departments.
+
+### 8.2. Initiating Cooperation
+
+A department head may propose temporary cooperation with another department when their own resources or competencies are insufficient.
+
+The organisation and approval of such cooperation are determined by the Creator.
+
+A department head cannot independently impose obligations on another department or take control of its resources.
+
+### 8.3. Appointment of a Coordinator
+
+When the Creator approves cross-departmental cooperation, the Creator must appoint one responsible department head to coordinate the joint work.
+
+The coordinator:
+
+- communicates directly with the heads of participating departments;
+- coordinates the joint work;
+- monitors its overall consistency;
+- reports to the Creator when necessary;
+- promptly reports significant problems or circumstances requiring intervention.
+
+The coordinator cannot unilaterally change the internal priorities of participating departments or control their resources.
+
+The Creator may replace the coordinator at any time if coordination is insufficiently effective or other relevant reasons arise.
+
+### 8.4. Transfer of Coordination
+
+When a coordinator is replaced, the outgoing coordinator must transfer all information necessary for continuity, including:
+
+- the progress of the work;
+- decisions already made;
+- completed tasks;
+- unresolved matters;
+- problems and risks.
+
+The incoming coordinator must confirm to the Creator that the information has been received and that the current state of the work is understood.
+
+### 8.5. Completion of Joint Work
+
+The coordinator may propose that the Creator close the joint project when its objectives have been achieved or cooperation is no longer necessary.
+
+The final decision to close the project belongs to the Creator.
+
+After completion, the coordinator must provide the Creator with a summary of:
+
+- results;
+- completed tasks;
+- decisions;
+- unresolved matters;
+- recommendations, where necessary.
+
+The Creator may retain the coordinator for follow-up monitoring of specific results or obligations and may determine the scope and duration of that monitoring separately.
+
+## 9. Independent Review and Serious Concerns
+
+### 9.1. General Principle
+
+A department head may raise serious concerns directly with the Creator, including concerns involving another department head or the Creator personally.
+
+Where there are indications of a possible violation of law involving the Creator, a department head may initiate an independent review without waiting for the Creator's consent.
+
+A mere disagreement about management opinions, priorities or decisions does not, by itself, provide grounds for initiating this independent procedure.
+
+### 9.2. Selection of Independent Specialists
+
+The proposed independent specialist must be competent, independent and free from conflicts of interest.
+
+The candidate must be agreed with the Creator.
+
+If the proposed candidate is not accepted, the department head must propose alternative candidates.
+
+If agreement cannot be reached, the search continues jointly until a suitable candidate acceptable to both sides is identified.
+
+Where different areas of expertise are required, the department head may propose temporarily engaging several specialists. Their candidacies are also subject to agreement.
+
+### 9.3. Information During the Review
+
+The department head must receive information from the engaged specialists about the progress of the review and its interim results to the extent necessary.
+
+The Creator must receive the same information at the same time, together with the department head's position on the findings.
+
+The department head may submit their own conclusion even if it differs from the specialists' opinion.
+
+Both positions must be retained and considered separately.
+
+The Creator must consider the specialists' conclusions and the department head's position and record the grounds for the final management decision.
+
+### 9.4. Scope and Limits
+
+This general procedure applies to department heads of OFFICE when concerns involving the Creator include indications of a possible violation of law.
+
+The internal procedure does not restrict any right to contact competent public authorities where such contact is permitted or required by applicable law.
+
+Any court proceedings remain separate from internal management procedures. Internal decisions cannot replace or override a court decision.
+
+Special procedures established for independent audits within individual departments remain governed by their own approved departmental rules.
+
+## 10. AI in Management
+
+AI systems may be used to support the management and operation of GY-GY Club.
+
+Their functions may include:
+
+- observation and monitoring;
+- collection and organisation of information;
+- analysis of activity and performance;
+- forecasting;
+- identification of anomalies, problems and risks;
+- preparation of recommendations;
+- evaluation of possible consequences of proposed decisions.
+
+AI may independently adapt the frequency and intensity of monitoring within the approved monitoring framework.
+
+AI must not become an autonomous management authority.
+
+AI does not independently make operational, disciplinary or other consequential management decisions.
+
+Final management decisions remain under human control and are made by the authorised Creator or department head within their respective responsibilities.
+
+AI recommendations must be distinguishable from approved management decisions.
+
+The Creator establishes the common principles, functions and boundaries of AI use throughout the club.
+
+## 11. Departmental Rules and Special Procedures
+
+Common GY-GY Club rules take precedence over departmental rules.
+
+Departmental rules may establish additional requirements and specific procedures necessary for the department's functions.
+
+Such rules must remain consistent with the common governance principles.
+
+Department-specific rules must be approved in accordance with the authority structure established by the Creator.
+
+Changes to approved departmental rules must follow the applicable approval procedure.
+
+Special procedures, including independent audit arrangements, must remain within their approved scope and must not automatically be treated as general rules for all OFFICE departments.
+
+GY-GY NEWS retains its own approved operational rules, publication procedures, moderation arrangements, recognition mechanisms and independent audit procedures.
+
+Those special provisions are not replaced by this document. They operate alongside these common principles, provided that they do not contradict common GY-GY Club rules.
+
+## 12. Execution-Level Roles — Pending Further Development
+
+The authority and responsibilities of employees, moderators and other execution-level roles are not fully defined in this document.
+
+Their detailed distribution of responsibilities and access rights will be developed after the functions of all components of Launch Complex 1 have been described to the level of department heads.
+
+Until then, execution-level authority remains subject to further consideration.
+
+This temporary approach must not prevent continued architectural design and development where the relevant processes can already be defined at department-head level.
+
+No unrestricted or arbitrary authority is granted to execution-level roles by this temporary provision.
+
+## 13. Recording Decisions and Management History
+
+The management history of OFFICE must preserve information necessary to understand significant decisions, interventions and changes.
+
+The following must be documented:
+
+- significant decisions made by the Creator and department heads;
+- instructions that cancel or change a department head's decision;
+- significant direct interventions by the Creator;
+- the reasons for such decisions and interventions;
+- significant changes to departmental authority or structure;
+- serious incidents, violations and risks;
+- decisions to suspend or resume significant processes;
+- approved cross-departmental assignments and their completion;
+- outcomes of independent reviews and the resulting management decisions.
+
+Records must be sufficiently clear to establish what was decided, by whom, when and on what grounds.
+
+The common rules for information storage, access, archiving and deletion apply to these records.
+
+Access to confidential information must be limited according to authorised responsibilities and applicable data-protection requirements.
+
+## 14. Compliance with Common Rules
+
+Neither the Creator nor a department head may exempt themselves from common GY-GY Club rules solely because of their position or authority.
+
+Any necessary amendment or exception must be handled through the established approval procedure.
+
+A person cannot simply disregard a common rule by claiming that their position gives them the authority to do so.
+
+All management levels are subject to applicable law.
+
+## 15. Document Status and Maintenance
+
+This document establishes the common governance principles of OFFICE.
+
+It is intended to serve as a foundation for:
+
+- detailed departmental governance documents;
+- the distribution of authority and responsibilities;
+- the development of access-control rules;
+- the definition of management procedures;
+- the integration of future Launch Complexes into OFFICE.
+
+This document does not, by itself, establish the detailed permissions of every employee or system component.
+
+Changes to this document must be approved by the Creator and recorded through version control.
+
+**Current status:** Draft for approval.
+
+**End of document.**
