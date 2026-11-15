@@ -1,12 +1,13 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.2.0
-  Согласованные изменения интерфейса:
-  1. Единое окно выбора случаев с вертикальной прокруткой.
-  2. Личный значок GY-GY Passport под логотипом GY-GY.
-  3. Фотофон затемнён на 10%.
-  Остальная функциональность сохранена.
+  destress-studio.html — De-Stress Studio — v5.3.0
+  De-Stress Studio v5.3.0
+  Основа: v5.2.0, без переписывания с нуля.
+  Добавлено: отдельные действия Passport, выбор случая и выражения,
+  кнопки Чарли / Мой случай / Крепкие слова, формирование пары
+  «случай + выражение» для копирования, сохранения и отправки.
+  Серверная публикация, лайки, таймеры и архивы ещё не подключены.
 -->
 <html lang="en">
 <head>
@@ -161,7 +162,9 @@ a:focus-visible {
   margin-top: 2px;
 }
 
-/* Значок и личный аватар создаются механизмом GY-GY Passport. */
+/* Общий Passport-модуль создаёт модалку; вход в неё — отдельная кнопка под логотипом. */
+#passport-badge-container .gy-user-badge { display: none !important; }
+.passport-open-button { font-size: 10px; min-height: 34px; padding: 5px 9px; }
 
 /* ОСНОВНОЙ КОНТЕЙНЕР */
 
@@ -744,6 +747,71 @@ a:focus-visible {
     transition-duration: .01ms !important;
   }
 }
+
+/* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ */
+.studio-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+  margin: 0 auto 20px;
+}
+.studio-controls .gold-button,
+.studio-controls .outline-button {
+  min-height: 44px;
+}
+.control-panel {
+  margin: 0 0 16px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(8,7,5,.42);
+}
+.control-panel[hidden] { display: none !important; }
+.choice-grid[hidden] { display: none !important; }
+.phrase-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 10px 0 14px;
+}
+.phrase-pick {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(0,0,0,.28);
+  text-align: left;
+}
+.phrase-pick:hover { border-color: var(--gold); }
+.charlie-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.charlie-launch img {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--gold);
+  background: #17120c;
+}
+.author-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+#customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
+@media (max-width:560px) {
+  .studio-controls { display:grid; grid-template-columns:1fr 1fr; }
+  .studio-controls > button { width:100%; }
+  .charlie-launch img { width:48px; height:48px; }
+}
+
 </style>
 </head>
 
@@ -772,7 +840,9 @@ a:focus-visible {
         <div class="club-logo">GY-GY</div>
       </a>
 
-      <div id="passport-badge-container"></div>
+      <button class="outline-button passport-open-button" id="passportOpen" type="button"
+              aria-label="Открыть GY-GY Passport">▤ GY-GY Passport</button>
+      <div id="passport-badge-container" aria-hidden="true"></div>
 
     </div>
 
@@ -787,8 +857,30 @@ a:focus-visible {
     <p class="studio-intro">
       Есть моменты, когда приличные слова заканчиваются, а неприличные уже давно надоели.<br>
       Предлагаем немного обновить ваш словарный запас.<br>
-      Выберите ситуацию — и подходящие варианты.
+      Выберите клубный случай или расскажите Чарли свой.<br>
+      Затем добавьте крепкое выражение — получится законченная работа.
     </p>
+
+    <div class="studio-controls" aria-label="Основные действия студии">
+      <button class="outline-button" id="openSituations" type="button">Выбрать случай</button>
+      <button class="outline-button" id="openPhrases" type="button">Выбрать крепкое выражение</button>
+      <button class="charlie-button charlie-launch" id="openCharlie" type="button">
+        <img src="bar_horse_desktop.png" alt="Чарли">
+        <span class="charlie-button-text">Чарли — выпьем немного виски?</span>
+      </button>
+      <button class="outline-button" id="openMyCase" type="button">Мой случай</button>
+      <button class="outline-button" id="openMyWords" type="button">Крепкие слова</button>
+    </div>
+
+    <div class="control-panel" id="situationsPanel" hidden>
+      <h2 class="layer-title">Выбери клубный случай</h2>
+      <div class="choice-grid" id="choiceGrid" hidden></div>
+    </div>
+
+    <div class="control-panel" id="phrasePickerPanel" hidden>
+      <h2 class="layer-title">Выбери клубное крепкое выражение</h2>
+      <div class="phrase-picker" id="phrasePicker"></div>
+    </div>
 
     <div class="stage">
 
@@ -804,9 +896,7 @@ a:focus-visible {
             Что случилось?
           </h2>
 
-          <div class="choice-grid" id="choiceGrid"></div>
-
-          <form class="custom-form" id="customSituationForm">
+          <form class="custom-form" id="customSituationForm" hidden>
 
             <input class="text-input"
                    id="customSituationInput"
@@ -897,6 +987,12 @@ a:focus-visible {
           </form>
 
           <div class="actions-main">
+
+            <button class="text-button"
+                    type="button"
+                    id="showPhrasePicker">
+              ☷ Список выражений
+            </button>
 
             <button class="text-button"
                     type="button"
@@ -1007,7 +1103,7 @@ a:focus-visible {
       <button class="outline-button"
               type="button"
               id="publishRecipe">
-        Опубликовать в новостях клуба ↗
+        Опубликовать пару в чате De-Stress Studio ↗
       </button>
 
     </div>
@@ -1018,12 +1114,13 @@ a:focus-visible {
 
 <script type="module">
 import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
-import { init as initPassport } from './modules/passport.js';
+import { init as initPassport, openModal as openPassport } from './modules/passport.js';
 import { supabase } from './core/supabase-init.js';
 import { playEffect } from './modules/soundscape.js';
 
 initLocalization(document.body);
 initPassport(document.getElementById('passport-badge-container'));
+document.getElementById('passportOpen').addEventListener('click', () => openPassport());
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1064,13 +1161,29 @@ function renderChoices() {
     $('choiceGrid').innerHTML = allSituations().map(([icon, label], i) =>
         `<button class="choice-button" type="button" data-situation="${i}"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
 }
+function renderPhrasePicker() {
+    $('phrasePicker').innerHTML = pool.map((phrase, i) =>
+        `<button class="phrase-pick" type="button" data-phrase="${i}">${esc(displayOf(phrase))}</button>`).join('');
+}
 
 function displayOf(p) {
     if (!p) return '';
     if (p.items) return p.items.map(displayOf).join(' ');
     return (p.translations && p.translations[getCurrentLang()]) || p.text;
 }
-const currentText = () => displayOf(state.phrase);
+const currentPhraseText = () => displayOf(state.phrase);
+function currentSituationText() {
+    if (state.situationIndex !== null) {
+        const item = allSituations()[state.situationIndex];
+        return item ? item[1] : '';
+    }
+    return state.customSituation || '';
+}
+const currentText = () => {
+    const situation = currentSituationText().trim();
+    const phrase = currentPhraseText().trim();
+    return situation && phrase ? situation + '\n\n' + phrase : (phrase || situation);
+};
 
 function randomPhrase(avoid) {
     const options = pool.filter(p => p !== avoid && !(avoid && avoid.id && p.id === avoid.id));
@@ -1141,8 +1254,61 @@ function bump(kind) {
     try { supabase.rpc('destress_bump', { p_id: id, p_kind: kind }).then(() => {}, () => {}); } catch (e) { /* не критично */ }
 }
 
-// ситуации
+// Ситуации и основные действия
 renderChoices();
+$('openSituations').addEventListener('click', () => {
+    const panel = $('situationsPanel');
+    panel.hidden = !panel.hidden;
+    $('choiceGrid').hidden = panel.hidden;
+    $('phrasePickerPanel').hidden = true;
+});
+$('openPhrases').addEventListener('click', () => {
+    if (!currentSituationText()) {
+        say('Сначала выбери клубный случай или расскажи Чарли свой.');
+        $('situationsPanel').hidden = false;
+        $('choiceGrid').hidden = false;
+        return;
+    }
+    renderPhrasePicker();
+    $('phrasePickerPanel').hidden = !$('phrasePickerPanel').hidden;
+    $('situationsPanel').hidden = true;
+});
+$('openCharlie').addEventListener('click', () => {
+    $('situationsPanel').hidden = true;
+    $('phrasePickerPanel').hidden = true;
+    $('customSituationForm').hidden = false;
+    $('customSituationInput').focus();
+    say('Чарли слушает. Расскажи, что произошло.');
+    playEffect('whisky');
+});
+$('openMyCase').addEventListener('click', () => $('openCharlie').click());
+$('openMyWords').addEventListener('click', () => {
+    if (!currentSituationText()) {
+        say('Сначала выбери или опиши случай.');
+        $('openCharlie').click();
+        return;
+    }
+    showPhraseLayer(true);
+    state.mode = 'my';
+    setModeButtons();
+    $('customRecipeForm').hidden = false;
+    $('customRecipeInput').focus();
+});
+$('showPhrasePicker').addEventListener('click', () => {
+    renderPhrasePicker();
+    $('phrasePickerPanel').hidden = !$('phrasePickerPanel').hidden;
+});
+$('phrasePicker').addEventListener('click', e => {
+    const b = e.target.closest('[data-phrase]');
+    if (!b) return;
+    state.phrase = pool[Number(b.dataset.phrase)] || null;
+    state.mode = 'random';
+    state.mixNumber++;
+    setModeButtons();
+    render();
+    $('phrasePickerPanel').hidden = true;
+    showPhraseLayer(true);
+});
 
 function afterSituation() {
     renderChip();
@@ -1160,6 +1326,8 @@ $('choiceGrid').addEventListener('click', e => {
     if (!b) return;
     state.situationIndex = Number(b.dataset.situation);
     state.customSituation = '';
+    $('situationsPanel').hidden = true;
+    $('choiceGrid').hidden = true;
     afterSituation();
 });
 
@@ -1167,7 +1335,6 @@ $('customSituationForm').addEventListener('submit', e => {
     e.preventDefault();
     const value = $('customSituationInput').value.trim();
     if (!value) { $('customSituationInput').focus(); return; }
-    playEffect('whisky');
     state.customSituation = value;
     state.situationIndex = null;
     $('customSituationInput').value = '';
@@ -1270,23 +1437,17 @@ $('addPhrase').addEventListener('click', async () => {
 
 // «Опубликовать в новостях»: та же проверка, но с пометкой «просит в новости»
 $('publishRecipe').addEventListener('click', async () => {
-    const p = state.phrase;
-    if (!p) { say('Сначала выбери выражение.'); return; }
-    if (p.source !== 'session') { say('Эта фраза уже в базе клуба.'); return; }
-    if (tooSoon()) { say('Подожди немного перед следующей отправкой.'); return; }
-    const { error } = await supabase.from('destress_phrases').insert({
-        text: p.text.trim(), lang: getCurrentLang(), source: 'user', status: 'pending', translations: {}, news_requested: true,
-        situation: state.situationIndex !== null && state.situationIndex < SITUATIONS.length ? 'sit_' + state.situationIndex : null
-    });
-    if (error) {
-        say(error.code === '23505' ? 'Эта фраза уже отправлена на проверку.' : 'Не удалось отправить фразу. Попробуй позже.');
+    const situation = currentSituationText().trim();
+    const phrase = currentPhraseText().trim();
+    if (!situation || !phrase) {
+        say('Для публикации собери целую работу: случай + крепкое выражение.');
         return;
     }
-    stamp();
-    state.sentPhraseText = p.text;
-    render();
-    say('Отправлено на проверку. После одобрения фраза попадёт в общую базу клуба.');
-    closeSheet();
+    if (!state.customSituation.trim() || !state.phrase || state.phrase.source !== 'session') {
+        say('В чат De-Stress Studio публикуется собственная авторская пара: твой случай + твоё крепкое выражение.');
+        return;
+    }
+    say('Авторская пара сформирована. Публикация в общем чате, учёт уникальных лайков и автоматические переходы требуют серверного модуля GY-GY NEWS. В этой версии они ещё не подключены.');
 });
 
 // картинки и файлы
@@ -1446,7 +1607,7 @@ document.addEventListener('keydown', e => {
     if ($('sheet').classList.contains('open')) closeSheet();
     else if ($('layer-phrase').classList.contains('front')) showPhraseLayer(false);
 });
-onLanguageChange(() => { renderChoices(); renderChip(); render(); });
+onLanguageChange(() => { renderChoices(); renderPhrasePicker(); renderChip(); render(); });
 
 // база фраз и коллекция случаев
 async function loadPool() {
@@ -1473,6 +1634,7 @@ async function loadSituations() {
 
 setModeButtons();
 await loadPool();
+renderPhrasePicker();
 await loadSituations();
 </script>
 </body>
