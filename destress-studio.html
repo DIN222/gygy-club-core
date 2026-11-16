@@ -1,9 +1,9 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.3
-  De-Stress Studio v5.3.3
-  Основа: v5.3.1; сохранены существующие функции. Исправлено открытие Passport по клику на аватар; кнопки растянуты почти на всю ширину экрана, расстояния уменьшены.
+  destress-studio.html — De-Stress Studio — v5.3.4
+  De-Stress Studio v5.3.4
+  Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлены ширина и интервалы панели управления, подписи увеличены и центрированы.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
   «случай + выражение» для копирования, сохранения и отправки.
@@ -17,6 +17,7 @@
 <meta name="google" content="notranslate">
 <title>De-Stress Studio — GY-GY Club</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 :root {
@@ -150,39 +151,41 @@ a:focus-visible {
   letter-spacing: 5px;
 }
 
-/* Passport: круглый кликабельный аватар со значком флага — как в BAR */
+/* Passport — компактная кнопка под логотипом, как в BAR. Сам модуль
+   создаёт кликабельный бейдж и открывает собственное модальное окно. */
 #passport-badge-container .gy-user-badge {
   position: fixed;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 52px;
+  right: 8px;
+  left: auto;
+  transform: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
   width: 42px;
   height: 42px;
   border: 2px solid var(--gold);
   border-radius: 50%;
-  background: #111;
-  box-shadow: 0 0 0 1px #000, inset 0 0 5px rgba(0,0,0,.8);
+  color: var(--gold);
+  background: rgba(0,0,0,.88);
+  box-shadow: 0 0 8px rgba(216,179,106,.25);
   z-index: 1000000;
   cursor: pointer;
-  display: block;
 }
-#passport-badge-container .gy-user-badge .badge-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #fff;
-}
-#passport-badge-container .gy-user-badge .badge-flag {
+#passport-badge-container .gy-user-badge::before {
+  content: "▤";
   position: absolute;
-  right: -4px;
-  bottom: -2px;
-  width: 17px;
-  height: 12px;
-  object-fit: cover;
-  border: 1px solid var(--gold);
-  box-shadow: 0 0 0 1px #000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 25px/1 'Share Tech Mono', monospace;
+}
+#passport-badge-container .gy-user-badge .badge-img,
+#passport-badge-container .gy-user-badge .badge-flag {
+  display: none !important;
+}
+#passport-badge-container .gy-user-badge:hover {
+  background: #292116;
 }
 
 /* ОСНОВНОЙ КОНТЕЙНЕР */
@@ -263,8 +266,9 @@ a:focus-visible {
 }
 .top-choice-label {
   color: var(--light);
-  font: 600 12px/1.25 Inter, "Segoe UI", Arial, sans-serif;
+  font: 600 14.4px/1.25 Inter, "Segoe UI", Arial, sans-serif;
   letter-spacing: .04em;
+  text-align: center;
 }
 .top-choice-control {
   position: relative;
@@ -803,12 +807,13 @@ a:focus-visible {
   flex-wrap: nowrap;
   align-items: stretch;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 4px;
   width: calc(100vw - 24px);
   max-width: none;
+  min-width: 0;
   position: relative;
-  left: 50%;
-  transform: translateX(-50%);
+  left: calc((100% - 100vw + 24px) / 2);
+  transform: none;
   margin: 0 0 20px;
 }
 .studio-controls > *,
@@ -816,6 +821,7 @@ a:focus-visible {
 .studio-controls .top-choice {
   width: 100%;
   min-width: 0;
+  flex: 0 0 auto;
 }
 .studio-controls .gold-button,
 .studio-controls .outline-button,
@@ -880,6 +886,7 @@ a:focus-visible {
 #customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
 @media (max-width:560px) {
   .page { width: calc(100% - 12px); }
+  #passport-badge-container .gy-user-badge { top: 48px; right: 14px; }
   .studio-controls { display:flex; flex-direction:column; }
   .studio-controls > button,
   .studio-controls > .top-choice { width:100%; }
@@ -1198,18 +1205,14 @@ a:focus-visible {
 
 <script type="module">
 import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
-import { init as initPassport, openModal as openPassport } from './modules/passport.js';
+import { init as initPassport } from './modules/passport.js';
 import { supabase } from './core/supabase-init.js';
 import { playEffect } from './modules/soundscape.js';
 
 initLocalization(document.body);
 const passportContainer = document.getElementById('passport-badge-container');
 initPassport(passportContainer);
-// Passport-модуль создаёт аватар динамически. Делегирование гарантирует,
-// что нажатие на сам значок открывает паспорт, как в BAR.
-passportContainer.addEventListener('click', event => {
-    if (event.target.closest('.gy-user-badge')) openPassport();
-});
+// modules/passport.js самостоятельно назначает openModal на созданную кнопку.
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
