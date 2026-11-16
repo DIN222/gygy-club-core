@@ -1,8 +1,8 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.4
-  De-Stress Studio v5.3.4
+  destress-studio.html — De-Stress Studio — v5.3.5
+  De-Stress Studio v5.3.5
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлены ширина и интервалы панели управления, подписи увеличены и центрированы.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
@@ -151,12 +151,19 @@ a:focus-visible {
   letter-spacing: 5px;
 }
 
-/* Passport — компактная кнопка под логотипом, как в BAR. Сам модуль
-   создаёт кликабельный бейдж и открывает собственное модальное окно. */
+/* Passport — компактная кнопка в группе логотипа.
+   Бейдж находится в обычном потоке brand-group и прокручивается вместе с ним. */
+#passport-badge-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 42px;
+}
 #passport-badge-container .gy-user-badge {
-  position: fixed;
-  top: 52px;
-  right: 8px;
+  position: relative;
+  top: auto;
+  right: auto;
+  bottom: auto;
   left: auto;
   transform: none;
   display: none;
@@ -886,7 +893,6 @@ a:focus-visible {
 #customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
 @media (max-width:560px) {
   .page { width: calc(100% - 12px); }
-  #passport-badge-container .gy-user-badge { top: 48px; right: 14px; }
   .studio-controls { display:flex; flex-direction:column; }
   .studio-controls > button,
   .studio-controls > .top-choice { width:100%; }
