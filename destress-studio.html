@@ -1,9 +1,9 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.2
-  De-Stress Studio v5.3.2
-  Основа: v5.3.1; сохранены существующие функции. Обновлены значок Passport и вертикальная компоновка кнопок.
+  destress-studio.html — De-Stress Studio — v5.3.3
+  De-Stress Studio v5.3.3
+  Основа: v5.3.1; сохранены существующие функции. Исправлено открытие Passport по клику на аватар; кнопки растянуты почти на всю ширину экрана, расстояния уменьшены.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
   «случай + выражение» для копирования, сохранения и отправки.
@@ -150,7 +150,7 @@ a:focus-visible {
   letter-spacing: 5px;
 }
 
-/* Passport: только круглый аватар со значком флага — как в BAR */
+/* Passport: круглый кликабельный аватар со значком флага — как в BAR */
 #passport-badge-container .gy-user-badge {
   position: fixed;
   top: 12px;
@@ -164,6 +164,7 @@ a:focus-visible {
   box-shadow: 0 0 0 1px #000, inset 0 0 5px rgba(0,0,0,.8);
   z-index: 1000000;
   cursor: pointer;
+  display: block;
 }
 #passport-badge-container .gy-user-badge .badge-img {
   display: block;
@@ -795,17 +796,20 @@ a:focus-visible {
   }
 }
 
-/* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ — одна вертикальная колонка на всю ширину */
+/* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ — вертикальная колонка почти на всю ширину экрана */
 .studio-controls {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: stretch;
   justify-content: flex-start;
-  gap: 10px;
-  width: 100%;
+  gap: 6px;
+  width: calc(100vw - 24px);
   max-width: none;
-  margin: 0 auto 20px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0 0 20px;
 }
 .studio-controls > *,
 .studio-controls > button,
@@ -1194,12 +1198,18 @@ a:focus-visible {
 
 <script type="module">
 import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
-import { init as initPassport } from './modules/passport.js';
+import { init as initPassport, openModal as openPassport } from './modules/passport.js';
 import { supabase } from './core/supabase-init.js';
 import { playEffect } from './modules/soundscape.js';
 
 initLocalization(document.body);
-initPassport(document.getElementById('passport-badge-container'));
+const passportContainer = document.getElementById('passport-badge-container');
+initPassport(passportContainer);
+// Passport-модуль создаёт аватар динамически. Делегирование гарантирует,
+// что нажатие на сам значок открывает паспорт, как в BAR.
+passportContainer.addEventListener('click', event => {
+    if (event.target.closest('.gy-user-badge')) openPassport();
+});
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
