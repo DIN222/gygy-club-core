@@ -302,7 +302,9 @@ a:focus-visible {
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--dark) transparent;
-  scroll-snap-type: y proximity;
+  scroll-snap-type: y mandatory;
+  scroll-padding-block: 0;
+  scroll-behavior: auto;
 }
 .top-choice-scroll::-webkit-scrollbar { width: 4px; }
 .top-choice-scroll::-webkit-scrollbar-thumb { background: var(--dark); border-radius: 4px; }
@@ -322,6 +324,7 @@ a:focus-visible {
   font-size: 13px;
   line-height: 1.25;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 .choice-button:hover,
 .phrase-control-option:hover,
@@ -825,11 +828,25 @@ a:focus-visible {
 }
 .studio-controls > *,
 .studio-controls > button,
-.studio-controls .top-choice {
+.studio-controls .top-choice,
+.studio-controls .choice-group {
   width: 100%;
   min-width: 0;
   flex: 0 0 auto;
 }
+.choice-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.choice-group-title {
+  margin: 5px 0 3px;
+  color: var(--gold);
+  font: 600 17px/1.25 Inter, "Segoe UI", Arial, sans-serif;
+  text-align: center;
+  letter-spacing: .035em;
+}
+.personal-choice-group { margin-top: 7px; }
 .studio-controls .gold-button,
 .studio-controls .outline-button,
 .studio-controls .charlie-button {
@@ -950,28 +967,34 @@ a:focus-visible {
     </p>
 
     <div class="studio-controls" aria-label="Основные действия студии">
-      <div class="top-choice">
-        <div class="top-choice-label">Выбери случай</div>
-        <div class="top-choice-control" id="openSituations">
-          <div class="top-choice-scroll choice-grid" id="choiceGrid" role="listbox" aria-label="Список случаев"></div>
-          <span class="choice-bird" id="situationBird" aria-hidden="true">🐦</span>
+      <section class="choice-group" aria-label="Варианты клуба">
+        <h2 class="choice-group-title">Варианты клуба</h2>
+        <div class="top-choice">
+          <div class="top-choice-label">Выбери случай</div>
+          <div class="top-choice-control" id="openSituations">
+            <div class="top-choice-scroll choice-grid" id="choiceGrid" role="listbox" aria-label="Список случаев"></div>
+            <span class="choice-bird" id="situationBird" aria-hidden="true">🐦</span>
+          </div>
         </div>
-      </div>
 
-      <div class="top-choice">
-        <div class="top-choice-label">Выбери крепкое слово</div>
-        <div class="top-choice-control is-disabled" id="openPhrases" aria-disabled="true">
-          <div class="top-choice-scroll" id="phraseControlGrid" role="listbox" aria-label="Список крепких выражений"></div>
-          <span class="choice-bird" id="phraseBird" aria-hidden="true">🐦</span>
+        <div class="top-choice">
+          <div class="top-choice-label">Выбери крепкое слово</div>
+          <div class="top-choice-control is-disabled" id="openPhrases" aria-disabled="true">
+            <div class="top-choice-scroll" id="phraseControlGrid" role="listbox" aria-label="Список крепких выражений"></div>
+            <span class="choice-bird" id="phraseBird" aria-hidden="true">🐦</span>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <button class="charlie-button charlie-launch" id="openCharlie" type="button">
-        <img src="bar_horse_desktop.png" alt="Чарли">
-        <span class="charlie-button-text">Чарли — выпьем немного виски?</span>
-      </button>
-      <button class="outline-button" id="openMyCase" type="button">Мой случай</button>
-      <button class="outline-button" id="openMyWords" type="button">Крепкие слова</button>
+      <section class="choice-group personal-choice-group" aria-label="Твои варианты">
+        <h2 class="choice-group-title">Твои варианты</h2>
+        <button class="charlie-button charlie-launch" id="openCharlie" type="button">
+          <img src="bar_horse_desktop.png" alt="Чарли">
+          <span class="charlie-button-text">Чарли — выпьем немного виски?</span>
+        </button>
+        <button class="outline-button" id="openMyCase" type="button">Мой случай</button>
+        <button class="outline-button" id="openMyWords" type="button">Крепкие слова</button>
+      </section>
     </div>
 
     <div class="control-panel" id="phrasePickerPanel" hidden>
@@ -1250,7 +1273,7 @@ const FALLBACK_POOL = [
 
 let pool = FALLBACK_POOL.slice();
 let extraRaw = [];   // одобренные случаи посетителей из коллекции
-const state = { situationIndex: null, customSituation: '', mode: 'random', phrase: null, customRecipe: '', mixNumber: 0, sentSituationText: '', sentPhraseText: '' };
+const state = { situationIndex: null, customSituation: '', mode: 'random', phrase: null, customRecipe: '', mixNumber: 0, sentSituationText: '', sentPhraseText: '', situationConfirmed: false, phraseConfirmed: false };
 
 // случаи: встроенные + коллекция
 const extraList = () => extraRaw.map(r => ['💬', (r.translations && r.translations[getCurrentLang()]) || r.text]);
@@ -1258,29 +1281,21 @@ const allSituations = () => SITUATIONS.concat(extraList());
 function renderChoices() {
     const selected = state.situationIndex;
     $('choiceGrid').innerHTML = allSituations().map(([icon, label], i) =>
-        `<button class="choice-button${selected === i ? ' is-selected' : ''}" type="button" role="option" aria-selected="${selected === i}" data-situation="${i}"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
-    if (selected !== null) {
-        const active = $('choiceGrid').querySelector(`[data-situation="${selected}"]`);
-        if (active) active.scrollIntoView({ block: 'nearest' });
-    }
+        `<button class="choice-button${selected === i && state.situationConfirmed ? ' is-selected' : ''}" type="button" role="option" aria-selected="${selected === i && state.situationConfirmed}" data-situation="${i}"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
     updateTopChoiceIndicators();
 }
 function renderTopPhraseChoices() {
     const options = pool.map((phrase, i) =>
-        `<button class="phrase-control-option${state.phrase === phrase ? ' is-selected' : ''}" type="button" role="option" aria-selected="${state.phrase === phrase}" data-top-phrase="${i}">${esc(displayOf(phrase))}</button>`);
-    if (state.phrase && !pool.includes(state.phrase)) {
+        `<button class="phrase-control-option${state.phrase === phrase && state.phraseConfirmed ? ' is-selected' : ''}" type="button" role="option" aria-selected="${state.phrase === phrase && state.phraseConfirmed}" data-top-phrase="${i}">${esc(displayOf(phrase))}</button>`);
+    if (state.phrase && state.phraseConfirmed && !pool.includes(state.phrase)) {
         options.unshift(`<div class="phrase-control-option is-selected" role="option" aria-selected="true">${esc(displayOf(state.phrase))}</div>`);
     }
     $('phraseControlGrid').innerHTML = options.join('');
-    if (state.phrase) {
-        const active = $('phraseControlGrid').querySelector('.is-selected');
-        if (active) active.scrollIntoView({ block: 'nearest' });
-    }
     updateTopChoiceIndicators();
 }
 function updateTopChoiceIndicators() {
-    const hasSituation = !!currentSituationText().trim();
-    const hasPhrase = !!currentPhraseText().trim();
+    const hasSituation = state.situationConfirmed && !!currentSituationText().trim();
+    const hasPhrase = state.phraseConfirmed && !!currentPhraseText().trim();
     $('situationBird').classList.toggle('active', hasSituation);
     $('phraseBird').classList.toggle('active', hasPhrase);
     $('openPhrases').classList.toggle('is-disabled', !hasSituation);
@@ -1383,12 +1398,36 @@ function bump(kind) {
 // Ситуации и основные действия
 renderChoices();
 renderTopPhraseChoices();
+// Намерение листать снимает подтверждение; повторный клик по строке включает птичку снова.
+function clearChoiceConfirmation(grid, kind) {
+    const key = kind === 'situation' ? 'situationConfirmed' : 'phraseConfirmed';
+    if (!state[key]) return;
+    state[key] = false;
+    grid.querySelectorAll('.is-selected').forEach(el => {
+        el.classList.remove('is-selected');
+        el.setAttribute('aria-selected', 'false');
+    });
+    updateTopChoiceIndicators();
+}
+function bindChoiceScrolling(grid, kind) {
+    const clear = () => clearChoiceConfirmation(grid, kind);
+    grid.addEventListener('wheel', clear, { passive: true });
+    grid.addEventListener('touchmove', clear, { passive: true });
+    grid.addEventListener('pointerdown', clear, { passive: true });
+    grid.addEventListener('keydown', e => {
+        if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) clear();
+    });
+}
+bindChoiceScrolling($('choiceGrid'), 'situation');
+bindChoiceScrolling($('phraseControlGrid'), 'phrase');
 $('choiceGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-situation]');
     if (!b) return;
     state.situationIndex = Number(b.dataset.situation);
     state.customSituation = '';
+    state.situationConfirmed = true;
     state.phrase = null;
+    state.phraseConfirmed = false;
     renderChoices();
     renderTopPhraseChoices();
     afterSituation();
@@ -1397,6 +1436,7 @@ $('phraseControlGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-top-phrase]');
     if (!b || !currentSituationText().trim()) return;
     state.phrase = pool[Number(b.dataset.topPhrase)] || null;
+    state.phraseConfirmed = !!state.phrase;
     state.mode = 'random';
     state.mixNumber++;
     setModeButtons();
