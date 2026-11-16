@@ -1,13 +1,14 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.6
-  De-Stress Studio v5.3.6
-  Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлены ширина и интервалы панели управления, подписи увеличены и центрированы.
+  destress-studio.html — De-Stress Studio — v5.3.8
+  De-Stress Studio v5.3.8
+  Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
   «случай + выражение» для копирования, сохранения и отправки.
   Исправлено: сохранение позиции прокрутки списков при перерисовке; фиксированная высота строк 44px; прокрутка не подтверждает выбор, а перетаскивание не вызывает случайный выбор строки.
+  Кнопка Чарли подписана «Чарли угощает»; по нажатию звучит только эффект кашля, открывания и наливания — без голосовой реплики.
   Серверная публикация, лайки, таймеры и архивы ещё не подключены.
 -->
 <html lang="en">
@@ -282,9 +283,10 @@ a:focus-visible {
   position: relative;
   display: flex;
   align-items: stretch;
+  width: 100%;
   min-width: 0;
   height: 46px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(216,179,106,.30);
   border-radius: 8px;
   background: rgba(8,7,5,.72);
   overflow: hidden;
@@ -829,46 +831,61 @@ a:focus-visible {
   }
 }
 
-/* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ — вертикальная колонка почти на всю ширину экрана */
+/* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ — все пять функциональных рамок внутри подложки */
 .studio-controls {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: stretch;
   justify-content: flex-start;
-  gap: 4px;
-  width: calc(100vw - 24px);
-  max-width: none;
+  gap: 7px;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
-  position: relative;
-  left: calc((100% - 100vw + 24px) / 2);
+  position: static;
+  left: auto;
   transform: none;
   margin: 0 0 20px;
 }
 .studio-controls > *,
-.studio-controls > button,
 .studio-controls .top-choice,
 .studio-controls .choice-group {
   width: 100%;
+  max-width: 100%;
   min-width: 0;
   flex: 0 0 auto;
 }
 .choice-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .choice-group-title {
-  margin: 5px 0 3px;
-  color: var(--gold);
+  display: block;
+  width: 100%;
+  margin: 3px 0 5px;
+  padding: 8px 12px;
+  border: 1px solid rgba(216,179,106,.30);
+  border-radius: 8px;
+  color: var(--light);
+  background: rgba(8,7,5,.42);
   font: 600 17px/1.25 Inter, "Segoe UI", Arial, sans-serif;
   text-align: center;
-  letter-spacing: .035em;
+  letter-spacing: .045em;
+  box-shadow: inset 0 0 0 1px rgba(216,179,106,.05);
 }
-.personal-choice-group { margin-top: 7px; }
+.personal-choice-group { margin-top: 2px; }
+/* Контуры пяти функциональных элементов на 10% ярче прежней линии */
+.studio-controls .top-choice-control,
+.studio-controls .charlie-button,
+.studio-controls .outline-button {
+  border-color: rgba(216,179,106,.30);
+}
 .studio-controls .gold-button,
 .studio-controls .outline-button,
 .studio-controls .charlie-button {
+  width: 100%;
+  min-width: 0;
   min-height: 52px;
   padding: 10px 16px;
   white-space: normal;
@@ -929,9 +946,10 @@ a:focus-visible {
 #customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
 @media (max-width:560px) {
   .page { width: calc(100% - 12px); }
-  .studio-controls { display:flex; flex-direction:column; }
+  .studio-controls { display:flex; flex-direction:column; width:100%; }
   .studio-controls > button,
-  .studio-controls > .top-choice { width:100%; }
+  .studio-controls > .top-choice,
+  .studio-controls > .choice-group { width:100%; max-width:100%; }
   .studio-controls .gold-button,
   .studio-controls .outline-button,
   .studio-controls .charlie-button { min-height:54px; }
@@ -1005,12 +1023,12 @@ a:focus-visible {
         </div>
       </section>
 
-      <section class="choice-group personal-choice-group" aria-label="Твои варианты">
-        <h2 class="choice-group-title">Твои варианты</h2>
+      <section class="choice-group personal-choice-group" aria-label="Твой вариант">
         <button class="charlie-button charlie-launch" id="openCharlie" type="button">
           <img src="bar_horse_desktop.png" alt="Чарли">
-          <span class="charlie-button-text">Чарли — выпьем немного виски?</span>
+          <span class="charlie-button-text">Чарли угощает</span>
         </button>
+        <h2 class="choice-group-title">Твой вариант</h2>
         <button class="outline-button" id="openMyCase" type="button">Мой случай</button>
         <button class="outline-button" id="openMyWords" type="button">Крепкие слова</button>
       </section>
@@ -1529,7 +1547,7 @@ $('openCharlie').addEventListener('click', () => {
     $('phrasePickerPanel').hidden = true;
     $('customSituationForm').hidden = false;
     $('customSituationInput').focus();
-    say('Чарли слушает. Расскажи, что произошло.');
+    say('Чарли угощает. Расскажи, что произошло.');
     playEffect('whisky');
 });
 $('openMyCase').addEventListener('click', () => $('openCharlie').click());
