@@ -1,9 +1,9 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.1
-  De-Stress Studio v5.3.1
-  Основа: v5.3.0; сохранены существующие функции, изменён только верхний блок выбора.
+  destress-studio.html — De-Stress Studio — v5.3.2
+  De-Stress Studio v5.3.2
+  Основа: v5.3.1; сохранены существующие функции. Обновлены значок Passport и вертикальная компоновка кнопок.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
   «случай + выражение» для копирования, сохранения и отправки.
@@ -92,7 +92,7 @@ a:focus-visible {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  width: min(1100px, calc(100% - 28px));
+  width: min(1600px, calc(100% - 20px));
   min-height: 100vh;
   margin: 0 auto;
   padding: 10px 0 14px;
@@ -150,21 +150,39 @@ a:focus-visible {
   letter-spacing: 5px;
 }
 
-/* ЛИЧНЫЙ ЗНАЧОК PASSPORT ПОД ЛОГОТИПОМ */
-
-.brand-group .gy-user-badge {
-  position: relative;
-  top: auto;
-  left: auto;
-  transform: none;
-  width: 38px;
-  height: 38px;
-  margin-top: 2px;
+/* Passport: только круглый аватар со значком флага — как в BAR */
+#passport-badge-container .gy-user-badge {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 42px;
+  height: 42px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 0 0 1px #000, inset 0 0 5px rgba(0,0,0,.8);
+  z-index: 1000000;
+  cursor: pointer;
 }
-
-/* Общий Passport-модуль создаёт модалку; вход в неё — отдельная кнопка под логотипом. */
-#passport-badge-container .gy-user-badge { display: none !important; }
-.passport-open-button { font-size: 10px; min-height: 34px; padding: 5px 9px; }
+#passport-badge-container .gy-user-badge .badge-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+}
+#passport-badge-container .gy-user-badge .badge-flag {
+  position: absolute;
+  right: -4px;
+  bottom: -2px;
+  width: 17px;
+  height: 12px;
+  object-fit: cover;
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 0 1px #000;
+}
 
 /* ОСНОВНОЙ КОНТЕЙНЕР */
 
@@ -777,18 +795,38 @@ a:focus-visible {
   }
 }
 
-/* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ */
+/* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ — одна вертикальная колонка на всю ширину */
 .studio-controls {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 9px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  max-width: none;
   margin: 0 auto 20px;
 }
+.studio-controls > *,
+.studio-controls > button,
+.studio-controls .top-choice {
+  width: 100%;
+  min-width: 0;
+}
 .studio-controls .gold-button,
-.studio-controls .outline-button {
-  min-height: 44px;
+.studio-controls .outline-button,
+.studio-controls .charlie-button {
+  min-height: 52px;
+  padding: 10px 16px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+  text-align: center;
+}
+.studio-controls .charlie-button-text {
+  max-width: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .control-panel {
   margin: 0 0 16px;
@@ -837,10 +875,14 @@ a:focus-visible {
 }
 #customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
 @media (max-width:560px) {
-  .studio-controls { display:grid; grid-template-columns:1fr 1fr; }
-  .top-choice { grid-column:1 / -1; }
-  .studio-controls > button { width:100%; }
-  .charlie-launch img { width:48px; height:48px; }
+  .page { width: calc(100% - 12px); }
+  .studio-controls { display:flex; flex-direction:column; }
+  .studio-controls > button,
+  .studio-controls > .top-choice { width:100%; }
+  .studio-controls .gold-button,
+  .studio-controls .outline-button,
+  .studio-controls .charlie-button { min-height:54px; }
+  .charlie-launch img { width:48px; height:48px; flex:0 0 48px; }
 }
 
 </style>
@@ -871,9 +913,7 @@ a:focus-visible {
         <div class="club-logo">GY-GY</div>
       </a>
 
-      <button class="outline-button passport-open-button" id="passportOpen" type="button"
-              aria-label="Открыть GY-GY Passport">▤ GY-GY Passport</button>
-      <div id="passport-badge-container" aria-hidden="true"></div>
+      <div id="passport-badge-container"></div>
 
     </div>
 
@@ -1154,13 +1194,12 @@ a:focus-visible {
 
 <script type="module">
 import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
-import { init as initPassport, openModal as openPassport } from './modules/passport.js';
+import { init as initPassport } from './modules/passport.js';
 import { supabase } from './core/supabase-init.js';
 import { playEffect } from './modules/soundscape.js';
 
 initLocalization(document.body);
 initPassport(document.getElementById('passport-badge-container'));
-document.getElementById('passportOpen').addEventListener('click', () => openPassport());
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
