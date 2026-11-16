@@ -1,8 +1,8 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.9
-  De-Stress Studio v5.3.9
+  destress-studio.html — De-Stress Studio — v5.3.10
+  De-Stress Studio v5.3.10
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
@@ -863,7 +863,9 @@ a:focus-visible {
 }
 .choice-group-title {
   display: block;
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
+  align-self: center;
   margin: 3px 0 5px;
   padding: 8px 12px;
   border: 1px solid rgba(216,179,106,.30);
