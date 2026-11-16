@@ -1,14 +1,15 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.8
-  De-Stress Studio v5.3.8
+  destress-studio.html — De-Stress Studio — v5.3.9
+  De-Stress Studio v5.3.9
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
   «случай + выражение» для копирования, сохранения и отправки.
   Исправлено: сохранение позиции прокрутки списков при перерисовке; фиксированная высота строк 44px; прокрутка не подтверждает выбор, а перетаскивание не вызывает случайный выбор строки.
   Кнопка Чарли подписана «Чарли угощает»; по нажатию звучит только эффект кашля, открывания и наливания — без голосовой реплики.
+  Исправлено: колесо мыши перемещает списки случаев и выражений ровно на одну строку за жест.
   Серверная публикация, лайки, таймеры и архивы ещё не подключены.
 -->
 <html lang="en">
@@ -862,9 +863,7 @@ a:focus-visible {
 }
 .choice-group-title {
   display: block;
-  width: fit-content;
-  max-width: 100%;
-  align-self: center;
+  width: 100%;
   margin: 3px 0 5px;
   padding: 8px 12px;
   border: 1px solid rgba(216,179,106,.30);
@@ -1460,7 +1459,30 @@ function bindChoiceScrolling(grid, kind) {
     let suppressNextClick = false;
     let suppressTimer = null;
 
-    grid.addEventListener('wheel', clear, { passive: true });
+    // Колесо мыши листает ровно на одну строку за один жест.
+    // Браузерные deltaY часто равны высоте двух строк, поэтому нативная
+    // прокрутка перескакивала через пункт. Несколько wheel-событий одного
+    // непрерывного жеста объединяются в один шаг.
+    let wheelLocked = false;
+    let wheelTimer = null;
+    grid.addEventListener('wheel', e => {
+        e.preventDefault();
+        const direction = Math.sign(e.deltaY);
+        if (direction && !wheelLocked) {
+            clear();
+            const rowHeight = 44;
+            const currentRow = Math.round(grid.scrollTop / rowHeight);
+            const maxTop = Math.max(0, grid.scrollHeight - grid.clientHeight);
+            const nextTop = Math.max(0, Math.min(maxTop, (currentRow + direction) * rowHeight));
+            grid.scrollTo({ top: nextTop, behavior: 'smooth' });
+            wheelLocked = true;
+        }
+        if (wheelTimer !== null) clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(() => {
+            wheelLocked = false;
+            wheelTimer = null;
+        }, 160);
+    }, { passive: false });
     grid.addEventListener('scroll', () => {
         // Программное восстановление scrollTop при перерисовке не является жестом пользователя.
         if (!pointerStart) return;
