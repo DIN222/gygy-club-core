@@ -1,12 +1,13 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.5
-  De-Stress Studio v5.3.5
+  destress-studio.html — De-Stress Studio — v5.3.6
+  De-Stress Studio v5.3.6
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлены ширина и интервалы панели управления, подписи увеличены и центрированы.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
   «случай + выражение» для копирования, сохранения и отправки.
+  Исправлено: сохранение позиции прокрутки списков при перерисовке; фиксированная высота строк 44px; прокрутка не подтверждает выбор, а перетаскивание не вызывает случайный выбор строки.
   Серверная публикация, лайки, таймеры и архивы ещё не подключены.
 -->
 <html lang="en">
@@ -333,8 +334,26 @@ a:focus-visible {
   color: var(--light);
   background: rgba(216,179,106,.10);
 }
+.choice-button,
+.phrase-control-option {
+  flex: 0 0 44px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  padding: 0 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.phrase-control-option { display: block; }
 .choice-symbol { flex: 0 0 auto; font-size: 17px; }
-.choice-label { min-width: 0; overflow-wrap: anywhere; }
+.choice-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 .choice-bird {
   position: absolute;
   z-index: 2;
@@ -1279,18 +1298,24 @@ const state = { situationIndex: null, customSituation: '', mode: 'random', phras
 const extraList = () => extraRaw.map(r => ['💬', (r.translations && r.translations[getCurrentLang()]) || r.text]);
 const allSituations = () => SITUATIONS.concat(extraList());
 function renderChoices() {
+    const grid = $('choiceGrid');
+    const scrollTop = grid.scrollTop;
     const selected = state.situationIndex;
-    $('choiceGrid').innerHTML = allSituations().map(([icon, label], i) =>
+    grid.innerHTML = allSituations().map(([icon, label], i) =>
         `<button class="choice-button${selected === i && state.situationConfirmed ? ' is-selected' : ''}" type="button" role="option" aria-selected="${selected === i && state.situationConfirmed}" data-situation="${i}"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
+    grid.scrollTop = scrollTop;
     updateTopChoiceIndicators();
 }
 function renderTopPhraseChoices() {
+    const grid = $('phraseControlGrid');
+    const scrollTop = grid.scrollTop;
     const options = pool.map((phrase, i) =>
         `<button class="phrase-control-option${state.phrase === phrase && state.phraseConfirmed ? ' is-selected' : ''}" type="button" role="option" aria-selected="${state.phrase === phrase && state.phraseConfirmed}" data-top-phrase="${i}">${esc(displayOf(phrase))}</button>`);
     if (state.phrase && state.phraseConfirmed && !pool.includes(state.phrase)) {
         options.unshift(`<div class="phrase-control-option is-selected" role="option" aria-selected="true">${esc(displayOf(state.phrase))}</div>`);
     }
-    $('phraseControlGrid').innerHTML = options.join('');
+    grid.innerHTML = options.join('');
+    grid.scrollTop = scrollTop;
     updateTopChoiceIndicators();
 }
 function updateTopChoiceIndicators() {
@@ -1411,9 +1436,65 @@ function clearChoiceConfirmation(grid, kind) {
 }
 function bindChoiceScrolling(grid, kind) {
     const clear = () => clearChoiceConfirmation(grid, kind);
+    let pointerStart = null;
+    let suppressNextClick = false;
+    let suppressTimer = null;
+
     grid.addEventListener('wheel', clear, { passive: true });
+    grid.addEventListener('scroll', () => {
+        // Программное восстановление scrollTop при перерисовке не является жестом пользователя.
+        if (!pointerStart) return;
+        clear();
+        if (grid.scrollTop !== pointerStart.scrollTop) pointerStart.dragged = true;
+    }, { passive: true });
     grid.addEventListener('touchmove', clear, { passive: true });
-    grid.addEventListener('pointerdown', clear, { passive: true });
+
+    grid.addEventListener('pointerdown', e => {
+        pointerStart = {
+            x: e.clientX,
+            y: e.clientY,
+            scrollTop: grid.scrollTop,
+            dragged: false
+        };
+    }, { passive: true });
+
+    grid.addEventListener('pointermove', e => {
+        if (!pointerStart) return;
+        const deltaX = Math.abs(e.clientX - pointerStart.x);
+        const deltaY = Math.abs(e.clientY - pointerStart.y);
+        if (deltaY > 5 || deltaX > 8 || grid.scrollTop !== pointerStart.scrollTop) {
+            pointerStart.dragged = true;
+            clear();
+        }
+    }, { passive: true });
+
+    const finishPointer = () => {
+        if (!pointerStart) return;
+        const wasDragged = pointerStart.dragged;
+        pointerStart = null;
+        if (!wasDragged) return;
+
+        suppressNextClick = true;
+        if (suppressTimer !== null) clearTimeout(suppressTimer);
+        suppressTimer = setTimeout(() => {
+            suppressNextClick = false;
+            suppressTimer = null;
+        }, 500);
+    };
+    grid.addEventListener('pointerup', finishPointer, { passive: true });
+    grid.addEventListener('pointercancel', finishPointer, { passive: true });
+
+    grid.addEventListener('click', e => {
+        if (!suppressNextClick) return;
+        suppressNextClick = false;
+        if (suppressTimer !== null) {
+            clearTimeout(suppressTimer);
+            suppressTimer = null;
+        }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, true);
+
     grid.addEventListener('keydown', e => {
         if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) clear();
     });
