@@ -1,16 +1,18 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.11
-  De-Stress Studio v5.3.11
-  Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
-  Добавлено: отдельные действия Passport, выбор случая и выражения,
-  кнопки Чарли / Мой случай / Крепкие слова, формирование пары
-  «случай + выражение» для копирования, сохранения и отправки.
-  Исправлено: сохранение позиции прокрутки списков при перерисовке; фиксированная высота строк 44px; прокрутка не подтверждает выбор, а перетаскивание не вызывает случайный выбор строки.
-  Кнопка Чарли подписана «Чарли угощает»; по нажатию звучит только эффект кашля, открывания и наливания — без голосовой реплики.
-  Исправлено: колесо мыши перемещает списки случаев и выражений ровно на одну строку за жест.
-  Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
+  De-Stress Studio — v5.3.12 WORKING DRAFT
+  Основа: действующий destress-studio.html v5.3.11.
+  Новое: приветствие Чарли, сценка угощения, история Чарли после
+  угощения и форма из двух авторских полей.
+  Сохранены существующие интеграции Passport, localization,
+  navigation, soundscape, Supabase initialization, PNG/TXT export
+  и creation-actions. Старая библиотека ситуаций и фраз не загружается.
+  Рабочая копия находится в Development/DESTRESS_STUDIO.
+  Относительные пути намеренно направлены к корню репозитория.
+  Не заменяет действующую страницу destress-studio.html.
+  Серверная публикация и лайки не подключены; локальный архив
+  работает в пределах браузера участника.
 -->
 <html lang="en">
 <head>
@@ -84,7 +86,7 @@ a:focus-visible {
     linear-gradient(rgba(0,0,0,.10), rgba(0,0,0,.10)),
     linear-gradient(90deg, rgba(10,9,7,.25), rgba(10,9,7,.15) 50%, rgba(10,9,7,.25)),
     linear-gradient(0deg, rgba(10,9,7,.30), rgba(10,9,7,.02) 55%, rgba(10,9,7,.18)),
-    url("destress_bg.jpg");
+    url("../../destress_bg.jpg");
 
   background-size: cover;
   background-position: center;
@@ -974,10 +976,88 @@ a:focus-visible {
   .charlie-launch img { width:48px; height:48px; flex:0 0 48px; }
 }
 
+
+/* v5.3.12 — welcome, whisky scene and two-field authoring flow */
+body:not(.studio-ready) .page { visibility: hidden; }
+.entry-screen {
+  position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center;
+  padding: 22px; background: radial-gradient(ellipse at center, rgba(48,37,24,.97), rgba(7,6,5,.99) 72%);
+}
+.entry-card {
+  width: min(760px, 100%); padding: clamp(22px,4vw,42px);
+  border: 1px solid rgba(216,179,106,.62); border-radius: 16px;
+  background: linear-gradient(145deg, rgba(39,31,22,.98), rgba(12,10,8,.98));
+  box-shadow: 0 24px 90px rgba(0,0,0,.62); text-align: center;
+}
+.entry-avatar {
+  width: clamp(104px,18vw,154px); height: clamp(104px,18vw,154px);
+  border-radius: 50%; object-fit: cover; border: 2px solid var(--gold);
+  box-shadow: 0 0 28px rgba(216,179,106,.24); margin: 0 auto 18px;
+}
+.entry-title { color: var(--light); font: 700 clamp(25px,4vw,38px)/1.15 "Playfair Display",Georgia,serif; margin: 0 0 14px; }
+.entry-copy { color: var(--text); font-size: clamp(16px,2.2vw,19px); line-height: 1.65; max-width: 590px; margin: 0 auto 22px; }
+.entry-button { min-height: 52px; padding: 12px 26px; border: 1px solid var(--gold); border-radius: 8px; color: #171109; background: linear-gradient(135deg,#f0d69d,#b88c48); font-weight: 800; cursor: pointer; }
+.entry-button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.drink-stage { display: none; }
+.drink-stage.is-active { display: block; }
+.drink-scene {
+  width: min(560px,100%); max-height: min(48vh,420px); object-fit: contain;
+  border-radius: 12px; border: 1px solid rgba(216,179,106,.48);
+  box-shadow: 0 14px 45px rgba(0,0,0,.55); margin: 0 auto 18px;
+}
+.drink-caption { min-height: 2.8em; color: var(--light); font-size: clamp(18px,2.6vw,23px); font-weight: 700; }
+.drink-progress { display:flex; justify-content:center; gap:9px; margin:18px 0 22px; }
+.drink-progress span { width:9px; height:9px; border-radius:50%; background:rgba(216,179,106,.25); }
+.drink-progress span.active { background:var(--gold); box-shadow:0 0 10px var(--gold); }
+.skip-scene { display:block; margin:14px auto 0; padding:8px 12px; border:0; color:var(--muted); background:transparent; text-decoration:underline; cursor:pointer; }
+.studio-intro.charlie-story { margin-top:10px; }
+.charlie-story-photo {
+  display:block; width:min(100%,620px); max-height:330px; object-fit:cover;
+  margin:0 auto 18px; border-radius:10px; border:1px solid rgba(216,179,106,.42);
+}
+.author-work {
+  max-width:900px; margin:22px auto 28px; padding:clamp(17px,3vw,26px);
+  border:1px solid rgba(216,179,106,.45); border-radius:12px;
+  background:rgba(8,7,5,.78); box-shadow:0 12px 34px rgba(0,0,0,.22);
+}
+.author-work h2 { margin:0 0 18px; text-align:center; color:var(--light); font-family:"Playfair Display",Georgia,serif; }
+.author-field { display:block; margin:0 0 17px; }
+.author-field span { display:block; margin:0 0 8px; color:var(--light); font-weight:700; font-size:18px; }
+.author-field textarea {
+  display:block; width:100%; min-height:116px; padding:13px 14px; resize:vertical;
+  color:var(--text); background:rgba(0,0,0,.55); border:1px solid rgba(216,179,106,.52);
+  border-radius:8px; font:inherit; line-height:1.55; box-sizing:border-box;
+}
+.author-field textarea:focus { outline:2px solid rgba(216,179,106,.45); outline-offset:2px; }
+.author-submit { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; margin-top:8px; }
+.author-status { min-height:1.5em; margin:13px 0 0; color:var(--light); text-align:center; }
+.studio-controls, .stage, #phrasePickerPanel { display:none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .entry-button:hover { transform:none; }
+}
+
 </style>
 </head>
 
 <body>
+
+<div class="entry-screen" id="entryScreen" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
+  <section class="entry-card">
+    <img class="entry-avatar" src="../../OIGБФ1d.png" alt="Чарли, хозяин De-Stress Studio">
+    <h2 class="entry-title" id="entryTitle">Добро пожаловать в De-Stress Studio!</h2>
+    <p class="entry-copy">Рад тебя видеть! Устраивайся поудобнее. Предлагаю начать с бокала моего фирменного виски — сегодня за счёт заведения.</p>
+    <button class="entry-button" id="acceptWhisky" type="button">С удовольствием, Чарли!</button>
+  </section>
+  <section class="entry-card drink-stage" id="drinkStage" aria-live="polite">
+    <img class="drink-scene" src="../../OIG4.jpg" alt="Чарли угощает гостя фирменным виски">
+    <h2 class="entry-title">Фирменный виски от Чарли</h2>
+    <p class="drink-caption" id="drinkCaption">Кхе-кхе…</p>
+    <div class="drink-progress" aria-hidden="true"><span id="drinkStep1" class="active"></span><span id="drinkStep2"></span><span id="drinkStep3"></span></div>
+    <button class="entry-button" id="finishWhisky" type="button" hidden>Спасибо, Чарли. Продолжим!</button>
+    <button class="skip-scene" id="skipWhisky" type="button">Перейти дальше</button>
+  </section>
+</div>
+
 <div class="background-photo" aria-hidden="true"></div>
 
 <div class="page">
@@ -998,7 +1078,7 @@ a:focus-visible {
 
     <div class="brand-group">
 
-      <a class="club-brand" href="hall.html" translate="no">
+      <a class="club-brand" href="../../hall.html" translate="no">
         <div class="club-logo">GY-GY</div>
       </a>
 
@@ -1011,14 +1091,32 @@ a:focus-visible {
   <main class="container">
 
     <div class="title-with-charlie">
-      <img src="bar_horse_desktop.png" alt="Чарли" class="title-charlie">
+      <img src="../../OIGБФ1d.png" alt="Чарли" class="title-charlie">
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
     <div class="studio-intro charlie-story">
-      <p>Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке. Бывало у тебя что-то подобное?</p>
-      <p class="charlie-offer">Предлагаю за счёт заведения! <span>Кхе-кхе…</span></p>
+      <img class="charlie-story-photo" src="../../OIG4.jpg" alt="Чарли рассказывает свою историю за барной стойкой">
+      <p>Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке.</p>
+      <p class="charlie-offer">Вот так иногда одно крепкое словцо спасает весь день. А теперь твоя очередь — расскажи, что случилось у тебя.</p>
     </div>
+
+    <form class="author-work" id="authorWorkForm">
+      <h2>Твоя история — твоё крепкое слово</h2>
+      <label class="author-field" for="authorSituation">
+        <span>Мой случай</span>
+        <textarea id="authorSituation" maxlength="1200" required placeholder="Расскажи, что произошло. Несколько строк вполне достаточно…"></textarea>
+      </label>
+      <label class="author-field" for="authorPhrase">
+        <span>Моё крепкое выражение</span>
+        <textarea id="authorPhrase" maxlength="500" required placeholder="Какое крепкое выражение пришло тебе на ум?"></textarea>
+      </label>
+      <div class="author-submit">
+        <button class="entry-button" type="submit">Собрать мою работу</button>
+        <button class="outline-button" id="openNewSheet" type="button">Сохранить / поделиться</button>
+      </div>
+      <p class="author-status" id="authorStatus" role="status" aria-live="polite"></p>
+    </form>
 
     <div class="studio-controls" aria-label="Основные действия студии">
       <section class="choice-group" aria-label="Варианты клуба">
@@ -1042,7 +1140,7 @@ a:focus-visible {
 
       <section class="choice-group personal-choice-group" aria-label="Твой вариант">
         <button class="charlie-button charlie-launch" id="openCharlie" type="button">
-          <img src="bar_horse_desktop.png" alt="Чарли">
+          <img src="../../OIGБФ1d.png" alt="Чарли">
           <span class="charlie-button-text">Чарли угощает</span>
         </button>
         <h2 class="choice-group-title">Твой вариант</h2>
@@ -1266,11 +1364,11 @@ a:focus-visible {
 </div>
 
 <script type="module">
-import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
-import { init as initPassport } from './modules/passport.js';
-import { supabase } from './core/supabase-init.js';
-import { playEffect } from './modules/soundscape.js';
-import { initCreationActions } from './modules/creation-actions.js';
+import { init as initLocalization, getCurrentLang, onLanguageChange } from '../../core/localization.js';
+import { init as initPassport } from '../../modules/passport.js';
+import { supabase } from '../../core/supabase-init.js';
+import { playEffect } from '../../modules/soundscape.js';
+import { initCreationActions } from '../../modules/creation-actions.js';
 
 initLocalization(document.body);
 const passportContainer = document.getElementById('passport-badge-container');
@@ -1791,7 +1889,7 @@ $('saveTxt').addEventListener('click', () => {
 
 // Ателье и Telegram
 function atelierLink(ai) {
-    const u = new URL('atelier.html', location.href);
+    const u = new URL('../../atelier.html', location.href);
     u.searchParams.set('phrase', currentText());
     if (ai) u.searchParams.set('ai', '1');
     if (state.phrase && state.phrase.id) u.searchParams.set('pid', state.phrase.id);
@@ -1805,7 +1903,78 @@ const creationActions = initCreationActions({
     getAtelierUrl: () => atelierLink(false),
     onStatus: say
 });
+
 window.addEventListener('pagehide', () => creationActions.destroy(), { once: true });
+
+// v5.3.12 — the authoring form is the only active creation interface.
+const authorWorkForm = $('authorWorkForm');
+authorWorkForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const situation = $('authorSituation').value.trim();
+    const phrase = $('authorPhrase').value.trim();
+    if (!situation || !phrase) {
+        $('authorStatus').textContent = 'Заполни оба поля — случай и крепкое выражение.';
+        return;
+    }
+    state.situationIndex = null;
+    state.customSituation = situation;
+    state.situationConfirmed = true;
+    state.customRecipe = phrase;
+    state.mode = 'my';
+    state.phrase = { id: null, text: phrase, translations: {}, source: 'session' };
+    state.phraseConfirmed = true;
+    state.mixNumber++;
+    render();
+    $('authorStatus').textContent = 'Готово! Твоя авторская работа собрана. Её можно сохранить или отправить.';
+});
+$('openNewSheet').addEventListener('click', () => {
+    if (!currentSituationText().trim() || !currentPhraseText().trim()) {
+        $('authorStatus').textContent = 'Сначала заполни оба поля и собери свою работу.';
+        return;
+    }
+    openSheet();
+});
+
+const entryScreen = $('entryScreen');
+const drinkStage = $('drinkStage');
+const drinkCaption = $('drinkCaption');
+let drinkTimers = [];
+function clearDrinkTimers() {
+    drinkTimers.forEach(timer => clearTimeout(timer));
+    drinkTimers = [];
+}
+function revealStudio() {
+    clearDrinkTimers();
+    entryScreen.remove();
+    document.body.classList.add('studio-ready');
+    $('authorSituation').focus({ preventScroll: true });
+}
+function startWhiskyScene() {
+    $('entryScreen').querySelector('.entry-card').hidden = true;
+    drinkStage.classList.add('is-active');
+    $('finishWhisky').hidden = true;
+    $('drinkStep1').classList.add('active');
+    try { playEffect('whisky'); } catch (error) { console.warn('[Studio] Whisky effect could not start.', error); }
+    const steps = [
+        { delay: 0, text: 'Кхе-кхе… Чарли прочищает горло.', active: 1 },
+        { delay: 1700, text: 'Чарли открывает бутылку фирменного виски…', active: 2 },
+        { delay: 3500, text: 'И наливает тебе щедрый бокал. За знакомство!', active: 3 }
+    ];
+    steps.forEach(step => {
+        drinkTimers.push(setTimeout(() => {
+            drinkCaption.textContent = step.text;
+            [1,2,3].forEach(n => $('drinkStep' + n).classList.toggle('active', n <= step.active));
+        }, step.delay));
+    });
+    drinkTimers.push(setTimeout(() => {
+        drinkCaption.textContent = 'Угощение готово. Ну что, поговорим?';
+        $('finishWhisky').hidden = false;
+    }, 5200));
+}
+$('acceptWhisky').addEventListener('click', startWhiskyScene);
+$('finishWhisky').addEventListener('click', revealStudio);
+$('skipWhisky').addEventListener('click', revealStudio);
+
 $('goToAi').addEventListener('click', () => {
     if (!currentSituationText().trim() || !currentPhraseText().trim()) { say('Сначала собери целую работу: случай + крепкое выражение.'); return; }
     window.location.href = atelierLink(true);
@@ -1815,9 +1984,9 @@ $('goToAi').addEventListener('click', () => {
 $('btn-back').addEventListener('click', () => {
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
     if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
-    window.location.href = 'bar.html';
+    window.location.href = '../../bar.html';
 });
-$('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
+$('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
 document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if ($('sheet').classList.contains('open')) closeSheet();
@@ -1849,10 +2018,8 @@ async function loadSituations() {
 }
 
 setModeButtons();
-await loadPool();
-renderPhrasePicker();
-renderTopPhraseChoices();
-await loadSituations();
+// v5.3.12: the old situation/phrase library is intentionally not loaded.
+// The active authoring flow consists only of the two fields above.
 </script>
 </body>
 </html>
