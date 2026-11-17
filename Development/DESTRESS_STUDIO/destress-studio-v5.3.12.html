@@ -977,7 +977,7 @@ a:focus-visible {
 }
 
 
-/* v5.3.12 — welcome, whisky scene and two-field authoring flow */
+/* v5.3.12 — Charlie's story, whisky welcome and two-field authoring flow */
 body:not(.studio-ready) .page { visibility: hidden; }
 .entry-screen {
   position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center;
@@ -1009,7 +1009,6 @@ body:not(.studio-ready) .page { visibility: hidden; }
 .drink-progress { display:flex; justify-content:center; gap:9px; margin:18px 0 22px; }
 .drink-progress span { width:9px; height:9px; border-radius:50%; background:rgba(216,179,106,.25); }
 .drink-progress span.active { background:var(--gold); box-shadow:0 0 10px var(--gold); }
-.skip-scene { display:block; margin:14px auto 0; padding:8px 12px; border:0; color:var(--muted); background:transparent; text-decoration:underline; cursor:pointer; }
 .studio-intro.charlie-story { margin-top:10px; }
 .charlie-story-photo {
   display:block; width:min(100%,620px); max-height:330px; object-fit:cover;
@@ -1042,19 +1041,19 @@ body:not(.studio-ready) .page { visibility: hidden; }
 <body>
 
 <div class="entry-screen" id="entryScreen" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
-  <section class="entry-card">
-    <img class="entry-avatar" src="../../OIGБФ1d.png" alt="Чарли, хозяин De-Stress Studio">
-    <h2 class="entry-title" id="entryTitle">Добро пожаловать в De-Stress Studio!</h2>
-    <p class="entry-copy">Рад тебя видеть! Устраивайся поудобнее. Предлагаю начать с бокала моего фирменного виски — сегодня за счёт заведения.</p>
+  <section class="entry-card charlie-first-story">
+    <img class="charlie-story-photo" src="../../OIG4.jpg" alt="Чарли за барной стойкой рассказывает свою историю">
+    <h2 class="entry-title" id="entryTitle">История от Чарли</h2>
+    <p class="entry-copy">Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке.</p>
+    <p class="entry-copy">Вот так иногда одно крепкое словцо спасает весь день. А теперь позволь сначала угостить тебя.</p>
     <button class="entry-button" id="acceptWhisky" type="button">С удовольствием, Чарли!</button>
   </section>
   <section class="entry-card drink-stage" id="drinkStage" aria-live="polite">
-    <img class="drink-scene" src="../../OIG4.jpg" alt="Чарли угощает гостя фирменным виски">
+    <img class="drink-scene" src="../../OIGБФ1d.png" alt="Чарли готовит для гостя фирменный виски">
     <h2 class="entry-title">Фирменный виски от Чарли</h2>
     <p class="drink-caption" id="drinkCaption">Кхе-кхе…</p>
     <div class="drink-progress" aria-hidden="true"><span id="drinkStep1" class="active"></span><span id="drinkStep2"></span><span id="drinkStep3"></span></div>
-    <button class="entry-button" id="finishWhisky" type="button" hidden>Спасибо, Чарли. Продолжим!</button>
-    <button class="skip-scene" id="skipWhisky" type="button">Перейти дальше</button>
+    <button class="entry-button" id="finishWhisky" type="button" hidden>Спасибо, Чарли. Теперь расскажу свою историю.</button>
   </section>
 </div>
 
@@ -1095,14 +1094,9 @@ body:not(.studio-ready) .page { visibility: hidden; }
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
-    <div class="studio-intro charlie-story">
-      <img class="charlie-story-photo" src="../../OIG4.jpg" alt="Чарли рассказывает свою историю за барной стойкой">
-      <p>Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке.</p>
-      <p class="charlie-offer">Вот так иногда одно крепкое словцо спасает весь день. А теперь твоя очередь — расскажи, что случилось у тебя.</p>
-    </div>
-
     <form class="author-work" id="authorWorkForm">
       <h2>Твоя история — твоё крепкое слово</h2>
+      <p class="charlie-offer">Спасибо, что разделил со мной бокал. Теперь твоя очередь: расскажи, что случилось у тебя, и какое крепкое выражение помогло бы выпустить пар.</p>
       <label class="author-field" for="authorSituation">
         <span>Мой случай</span>
         <textarea id="authorSituation" maxlength="1200" required placeholder="Расскажи, что произошло. Несколько строк вполне достаточно…"></textarea>
@@ -1996,7 +1990,6 @@ function startWhiskyScene() {
 }
 $('acceptWhisky').addEventListener('click', startWhiskyScene);
 $('finishWhisky').addEventListener('click', revealStudio);
-$('skipWhisky').addEventListener('click', revealStudio);
 
 $('goToAi').addEventListener('click', () => {
     if (!currentSituationText().trim() || !currentPhraseText().trim()) { say('Сначала собери целую работу: случай + крепкое выражение.'); return; }
