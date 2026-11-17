@@ -954,7 +954,7 @@ a:focus-visible {
 .title-charlie { width:clamp(58px,8vw,92px); height:clamp(58px,8vw,92px); flex:0 0 auto; border-radius:50%; object-fit:cover; border:1px solid var(--gold); box-shadow:0 0 18px rgba(216,179,106,.18); }
 .charlie-story { max-width:900px; margin:0 auto 22px; padding:17px 21px; border:1px solid rgba(216,179,106,.25); border-radius:10px; background:rgba(8,7,5,.34); text-align:left; }
 .charlie-story p { margin:0 0 10px; }
-.charlie-story .charlie-offer { margin:12px 0 0; color:var(--light); font-weight:700; }
+.charlie-story .charlie-offer, .author-work .charlie-offer { margin:12px 0 16px; color:var(--light); font-weight:700; line-height:1.55; }
 .situation-input { min-height:132px; resize:vertical; line-height:1.5; }
 .phrase-author-form { grid-template-columns:minmax(0,1fr) auto; }
 .phrase-author-form label { grid-column:1 / -1; margin:0 0 2px; font-size:clamp(18px,2.4vw,24px); }
@@ -1976,7 +1976,7 @@ function startWhiskyScene() {
         { delay: 0, text: 'Кхе-кхе… Чарли прочищает горло.', active: 1 },
         { delay: 1700, text: 'Чарли открывает бутылку фирменного виски…', active: 2 },
         { delay: 3500, text: 'Чарли наливает тебе щедрый бокал. За знакомство!', active: 3 },
-        { delay: 5200, text: 'Чарли возвращает бутылку на стойку. Угощение готово!', active: 3 }
+        { delay: 5200, text: 'Чарли возвращает бутылку на стол. Угощение готово!', active: 3 }
     ];
     steps.forEach(step => {
         drinkTimers.push(setTimeout(() => {
