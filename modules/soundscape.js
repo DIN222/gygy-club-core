@@ -419,7 +419,7 @@ function playFx(name, cfg) {
 
 // Запуск эффекта по прямому действию посетителя.
 // В отличие от автоматических сценариев, этот эффект не привязан к загрузке страницы.
-function realPlayEffect(name) {
+function realPlayEffect(name, fileOverride) {
     if (isMuted()) return Promise.resolve();
 
     const cfg = EFFECTS[name];
@@ -428,10 +428,13 @@ function realPlayEffect(name) {
         return Promise.resolve();
     }
 
+    // Вложенные рабочие страницы могут передать путь к общему ресурсу от своего URL.
+    const effectCfg = fileOverride ? { ...cfg, file: fileOverride } : cfg;
+
     // Не допускаем наложения двух эффектов друг на друга.
     stopFx();
 
-    return playFx(name, cfg);
+    return playFx(name, effectCfg);
 }
 
 function scheduleFx(name, cfg) {
@@ -638,14 +641,14 @@ export function playSfx(name) {
 }
 
 // Новый публичный интерфейс для эффектов, запускаемых действием посетителя.
-export function playEffect(name) {
+export function playEffect(name, fileOverride) {
     const h = hostApi();
 
     if (h && h.fx) {
-        return h.fx(name);
+        return h.fx(name, fileOverride);
     }
 
-    return realPlayEffect(name);
+    return realPlayEffect(name, fileOverride);
 }
 
 // Плавно затушить собственный трек страницы
