@@ -1,16 +1,18 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.12
-  De-Stress Studio v5.3.12
-  Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
-  Добавлено: отдельные действия Passport, выбор случая и выражения,
-  кнопки Чарли / Мой случай / Крепкие слова, формирование пары
-  «случай + выражение» для копирования, сохранения и отправки.
-  Исправлено: сохранение позиции прокрутки списков при перерисовке; фиксированная высота строк 44px; прокрутка не подтверждает выбор, а перетаскивание не вызывает случайный выбор строки.
-  Кнопка Чарли подписана «Чарли угощает»; по нажатию звучит только эффект кашля, открывания и наливания — без голосовой реплики.
-  Исправлено: колесо мыши перемещает списки случаев и выражений ровно на одну строку за жест.
-  Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
+  De-Stress Studio — v5.3.12 WORKING DRAFT
+  Основа: действующий destress-studio.html v5.3.11.
+  Новое: приветствие Чарли, сценка угощения, история Чарли после
+  угощения и форма из двух авторских полей.
+  Сохранены существующие интеграции Passport, localization,
+  navigation, soundscape, Supabase initialization, PNG/TXT export
+  и creation-actions. Старая библиотека ситуаций и фраз не загружается.
+  Рабочая копия находится в Development/DESTRESS_STUDIO.
+  Относительные пути намеренно направлены к корню репозитория.
+  Не заменяет действующую страницу destress-studio.html.
+  Серверная публикация и лайки не подключены; локальный архив
+  работает в пределах браузера участника.
 -->
 <html lang="en">
 <head>
@@ -84,7 +86,7 @@ a:focus-visible {
     linear-gradient(rgba(0,0,0,.10), rgba(0,0,0,.10)),
     linear-gradient(90deg, rgba(10,9,7,.25), rgba(10,9,7,.15) 50%, rgba(10,9,7,.25)),
     linear-gradient(0deg, rgba(10,9,7,.30), rgba(10,9,7,.02) 55%, rgba(10,9,7,.18)),
-    url("destress_bg.jpg");
+    url("../../destress_bg.jpg");
 
   background-size: cover;
   background-position: center;
@@ -1041,13 +1043,13 @@ body:not(.studio-ready) .page { visibility: hidden; }
 
 <div class="entry-screen" id="entryScreen" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
   <section class="entry-card">
-    <img class="entry-avatar" src="OIGБФ1d.png" alt="Чарли, хозяин De-Stress Studio">
+    <img class="entry-avatar" src="../../OIGБФ1d.png" alt="Чарли, хозяин De-Stress Studio">
     <h2 class="entry-title" id="entryTitle">Добро пожаловать в De-Stress Studio!</h2>
     <p class="entry-copy">Рад тебя видеть! Устраивайся поудобнее. Предлагаю начать с бокала моего фирменного виски — сегодня за счёт заведения.</p>
     <button class="entry-button" id="acceptWhisky" type="button">С удовольствием, Чарли!</button>
   </section>
   <section class="entry-card drink-stage" id="drinkStage" aria-live="polite">
-    <img class="drink-scene" src="OIG4.jpg" alt="Чарли угощает гостя фирменным виски">
+    <img class="drink-scene" src="../../OIG4.jpg" alt="Чарли угощает гостя фирменным виски">
     <h2 class="entry-title">Фирменный виски от Чарли</h2>
     <p class="drink-caption" id="drinkCaption">Кхе-кхе…</p>
     <div class="drink-progress" aria-hidden="true"><span id="drinkStep1" class="active"></span><span id="drinkStep2"></span><span id="drinkStep3"></span></div>
@@ -1076,7 +1078,7 @@ body:not(.studio-ready) .page { visibility: hidden; }
 
     <div class="brand-group">
 
-      <a class="club-brand" href="hall.html" translate="no">
+      <a class="club-brand" href="../../hall.html" translate="no">
         <div class="club-logo">GY-GY</div>
       </a>
 
@@ -1089,12 +1091,12 @@ body:not(.studio-ready) .page { visibility: hidden; }
   <main class="container">
 
     <div class="title-with-charlie">
-      <img src="OIGБФ1d.png" alt="Чарли" class="title-charlie">
+      <img src="../../OIGБФ1d.png" alt="Чарли" class="title-charlie">
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
     <div class="studio-intro charlie-story">
-      <img class="charlie-story-photo" src="OIG4.jpg" alt="Чарли рассказывает свою историю за барной стойкой">
+      <img class="charlie-story-photo" src="../../OIG4.jpg" alt="Чарли рассказывает свою историю за барной стойкой">
       <p>Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке.</p>
       <p class="charlie-offer">Вот так иногда одно крепкое словцо спасает весь день. А теперь твоя очередь — расскажи, что случилось у тебя.</p>
     </div>
@@ -1138,7 +1140,7 @@ body:not(.studio-ready) .page { visibility: hidden; }
 
       <section class="choice-group personal-choice-group" aria-label="Твой вариант">
         <button class="charlie-button charlie-launch" id="openCharlie" type="button">
-          <img src="OIGБФ1d.png" alt="Чарли">
+          <img src="../../OIGБФ1d.png" alt="Чарли">
           <span class="charlie-button-text">Чарли угощает</span>
         </button>
         <h2 class="choice-group-title">Твой вариант</h2>
@@ -1362,11 +1364,11 @@ body:not(.studio-ready) .page { visibility: hidden; }
 </div>
 
 <script type="module">
-import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
-import { init as initPassport } from './modules/passport.js';
-import { supabase } from './core/supabase-init.js';
-import { playEffect } from './modules/soundscape.js';
-import { initCreationActions } from './modules/creation-actions.js';
+import { init as initLocalization, getCurrentLang, onLanguageChange } from '../../core/localization.js';
+import { init as initPassport } from '../../modules/passport.js';
+import { supabase } from '../../core/supabase-init.js';
+import { playEffect } from '../../modules/soundscape.js';
+import { initCreationActions } from '../../modules/creation-actions.js';
 
 initLocalization(document.body);
 const passportContainer = document.getElementById('passport-badge-container');
@@ -1887,7 +1889,7 @@ $('saveTxt').addEventListener('click', () => {
 
 // Ателье и Telegram
 function atelierLink(ai) {
-    const u = new URL('atelier.html', location.href);
+    const u = new URL('../../atelier.html', location.href);
     u.searchParams.set('phrase', currentText());
     if (ai) u.searchParams.set('ai', '1');
     if (state.phrase && state.phrase.id) u.searchParams.set('pid', state.phrase.id);
@@ -1982,9 +1984,9 @@ $('goToAi').addEventListener('click', () => {
 $('btn-back').addEventListener('click', () => {
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
     if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
-    window.location.href = 'bar.html';
+    window.location.href = '../../bar.html';
 });
-$('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
+$('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
 document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if ($('sheet').classList.contains('open')) closeSheet();
