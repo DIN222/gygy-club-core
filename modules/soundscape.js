@@ -384,53 +384,54 @@ function playFx(name, cfg) {
 
     fxPlaying = a;
 
-    const finish = () => {
-        if (fxPlaying === a) {
-            fxPlaying = null;
-            duckTo(1, cfg.restoreSec ?? 1.5);
-        }
-    };
+    return new Promise(resolve => {
+        let settled = false;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            if (fxPlaying === a) {
+                fxPlaying = null;
+                duckTo(1, cfg.restoreSec ?? 1.5);
+            }
+            resolve();
+        };
 
-    a.addEventListener('ended', finish);
+        a.addEventListener('ended', finish, { once: true });
+        a.addEventListener('error', () => {
+            console.warn(
+                '[soundscape] Не найден или не читается файл эффекта: ' +
+                cfg.file +
+                ' — проверьте имя в core/soundScenario.js и что файл лежит в корне репозитория (регистр букв важен).'
+            );
+            finish();
+        }, { once: true });
 
-    a.addEventListener('error', () => {
-        console.warn(
-            '[soundscape] Не найден или не читается файл эффекта: ' +
-            cfg.file +
-            ' — проверьте имя в core/soundScenario.js и что файл лежит в корне репозитория (регистр букв важен).'
-        );
+        try {
+            sessionStorage.setItem(FX_PREFIX + name, '1');
+        } catch (e) { /* ок */ }
 
-        finish();
+        duckTo(cfg.duck ?? 0.3, cfg.fadeSec ?? 0.8);
+
+        const p = a.play();
+        if (p && p.catch) p.catch(finish);
     });
-
-    try {
-        sessionStorage.setItem(FX_PREFIX + name, '1');
-    } catch (e) { /* ок */ }
-
-    duckTo(cfg.duck ?? 0.3, cfg.fadeSec ?? 0.8);
-
-    const p = a.play();
-
-    if (p && p.catch) {
-        p.catch(() => finish());
-    }
 }
 
 // Запуск эффекта по прямому действию посетителя.
 // В отличие от автоматических сценариев, этот эффект не привязан к загрузке страницы.
 function realPlayEffect(name) {
-    if (isMuted()) return;
+    if (isMuted()) return Promise.resolve();
 
     const cfg = EFFECTS[name];
     if (!cfg) {
         console.warn('[soundscape] Неизвестный звуковой эффект: ' + name);
-        return;
+        return Promise.resolve();
     }
 
     // Не допускаем наложения двух эффектов друг на друга.
     stopFx();
 
-    playFx(name, cfg);
+    return playFx(name, cfg);
 }
 
 function scheduleFx(name, cfg) {
@@ -641,11 +642,10 @@ export function playEffect(name) {
     const h = hostApi();
 
     if (h && h.fx) {
-        h.fx(name);
-        return;
+        return h.fx(name);
     }
 
-    realPlayEffect(name);
+    return realPlayEffect(name);
 }
 
 // Плавно затушить собственный трек страницы
