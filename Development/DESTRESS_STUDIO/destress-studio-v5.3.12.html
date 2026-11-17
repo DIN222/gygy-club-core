@@ -1906,32 +1906,55 @@ const creationActions = initCreationActions({
 
 window.addEventListener('pagehide', () => creationActions.destroy(), { once: true });
 
-// v5.3.12 — the authoring form is the only active creation interface.
+// v5.3.12 — the two author fields are the single source of truth.
 const authorWorkForm = $('authorWorkForm');
-authorWorkForm.addEventListener('submit', event => {
-    event.preventDefault();
+
+function syncAuthorWorkToState() {
     const situation = $('authorSituation').value.trim();
     const phrase = $('authorPhrase').value.trim();
-    if (!situation || !phrase) {
-        $('authorStatus').textContent = 'Заполни оба поля — случай и крепкое выражение.';
-        return;
-    }
+
     state.situationIndex = null;
     state.customSituation = situation;
-    state.situationConfirmed = true;
+    state.situationConfirmed = !!situation;
     state.customRecipe = phrase;
     state.mode = 'my';
-    state.phrase = { id: null, text: phrase, translations: {}, source: 'session' };
-    state.phraseConfirmed = true;
+    state.phrase = phrase
+        ? { id: null, text: phrase, translations: {}, source: 'session' }
+        : null;
+    state.phraseConfirmed = !!phrase;
+
+    render();
+    return { situation, phrase, complete: !!(situation && phrase) };
+}
+
+// Состояние обновляется при вводе: кнопки в панели «Забирай»
+// всегда получают последнюю версию обоих авторских полей.
+$('authorSituation').addEventListener('input', syncAuthorWorkToState);
+$('authorPhrase').addEventListener('input', syncAuthorWorkToState);
+
+authorWorkForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const work = syncAuthorWorkToState();
+
+    if (!work.complete) {
+        $('authorStatus').textContent = 'Заполни оба поля — случай и крепкое выражение.';
+        (!work.situation ? $('authorSituation') : $('authorPhrase')).focus();
+        return;
+    }
+
     state.mixNumber++;
     render();
     $('authorStatus').textContent = 'Готово! Твоя авторская работа собрана. Её можно сохранить или отправить.';
 });
+
 $('openNewSheet').addEventListener('click', () => {
-    if (!currentSituationText().trim() || !currentPhraseText().trim()) {
-        $('authorStatus').textContent = 'Сначала заполни оба поля и собери свою работу.';
+    const work = syncAuthorWorkToState();
+    if (!work.complete) {
+        $('authorStatus').textContent = 'Сначала заполни оба поля — случай и крепкое выражение.';
+        (!work.situation ? $('authorSituation') : $('authorPhrase')).focus();
         return;
     }
+    $('authorStatus').textContent = 'Твоя работа готова к сохранению и отправке.';
     openSheet();
 });
 
