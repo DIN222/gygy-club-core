@@ -1,5 +1,6 @@
+
 // modules/soundscape.js
-// v2.3.0 — 2026-11-08
+// v2.3.1 — 2026-11-17
 // Звуковой блок клуба: клубный фон + собственные треки страниц + эффекты поверх фона (fx).
 // Эффект приглушает фон на время своего звучания и затем плавно возвращает прежний уровень.
 //  • «В оболочке» (страница открыта внутри index.html): звук играет в оболочке и не прерывается;
@@ -31,6 +32,7 @@ let track = { audio: null, cfg: null };   // собственный трек с�
 let currentPage = '';
 let fxTimer = 0;
 let fxPlaying = null;
+let fxFinish = null;
 
 function hostApi() {
     try {
@@ -374,6 +376,12 @@ function stopFx() {
         fxPlaying = null;
     }
 
+    // Если эффект остановлен принудительно (например, посетитель выключил звук),
+    // завершаем и ожидающий Promise, чтобы интерфейс не зависал.
+    const finish = fxFinish;
+    fxFinish = null;
+    if (finish) finish();
+
     // Сбрасываем коэффициент приглушения.
     duck = 1;
 }
@@ -393,9 +401,11 @@ function playFx(name, cfg) {
                 fxPlaying = null;
                 duckTo(1, cfg.restoreSec ?? 1.5);
             }
+            if (fxFinish === finish) fxFinish = null;
             resolve();
         };
 
+        fxFinish = finish;
         a.addEventListener('ended', finish, { once: true });
         a.addEventListener('error', () => {
             console.warn(
