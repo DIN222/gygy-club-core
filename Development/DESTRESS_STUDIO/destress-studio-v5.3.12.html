@@ -1975,7 +1975,8 @@ function startWhiskyScene() {
     const steps = [
         { delay: 0, text: 'Кхе-кхе… Чарли прочищает горло.', active: 1 },
         { delay: 1700, text: 'Чарли открывает бутылку фирменного виски…', active: 2 },
-        { delay: 3500, text: 'И наливает тебе щедрый бокал. За знакомство!', active: 3 }
+        { delay: 3500, text: 'Чарли наливает тебе щедрый бокал. За знакомство!', active: 3 },
+        { delay: 5200, text: 'Чарли возвращает бутылку на стойку. Угощение готово!', active: 3 }
     ];
     steps.forEach(step => {
         drinkTimers.push(setTimeout(() => {
@@ -1986,7 +1987,7 @@ function startWhiskyScene() {
     drinkTimers.push(setTimeout(() => {
         drinkCaption.textContent = 'Угощение готово. Ну что, поговорим?';
         $('finishWhisky').hidden = false;
-    }, 5200));
+    }, 6500));
 }
 $('acceptWhisky').addEventListener('click', startWhiskyScene);
 $('finishWhisky').addEventListener('click', revealStudio);
