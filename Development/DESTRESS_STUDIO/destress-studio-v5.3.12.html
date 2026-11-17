@@ -1,0 +1,2023 @@
+
+<!DOCTYPE html>
+<!--
+  destress-studio.html — De-Stress Studio — v5.3.12
+  De-Stress Studio v5.3.12
+  Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
+  Добавлено: отдельные действия Passport, выбор случая и выражения,
+  кнопки Чарли / Мой случай / Крепкие слова, формирование пары
+  «случай + выражение» для копирования, сохранения и отправки.
+  Исправлено: сохранение позиции прокрутки списков при перерисовке; фиксированная высота строк 44px; прокрутка не подтверждает выбор, а перетаскивание не вызывает случайный выбор строки.
+  Кнопка Чарли подписана «Чарли угощает»; по нажатию звучит только эффект кашля, открывания и наливания — без голосовой реплики.
+  Исправлено: колесо мыши перемещает списки случаев и выражений ровно на одну строку за жест.
+  Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100e0b">
+<meta name="google" content="notranslate">
+<title>De-Stress Studio — GY-GY Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+:root {
+  --black: #100e0b;
+  --panel: rgba(42,35,27,.70);
+  --gold: #d8b36a;
+  --light: #f0d69d;
+  --dark: #76582d;
+  --text: #f0e8d8;
+  --muted: #b0a38d;
+  --line: rgba(216,179,106,.27);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  min-height: 100%;
+  background: var(--black);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  background: var(--black);
+  font: 15px/1.5 Inter, "Segoe UI", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+button, input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--light);
+  outline-offset: 3px;
+}
+
+/* ФОТОФОН — затемнение на 10% */
+
+.background-photo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--black);
+
+  background-image:
+    linear-gradient(rgba(0,0,0,.10), rgba(0,0,0,.10)),
+    linear-gradient(90deg, rgba(10,9,7,.25), rgba(10,9,7,.15) 50%, rgba(10,9,7,.25)),
+    linear-gradient(0deg, rgba(10,9,7,.30), rgba(10,9,7,.02) 55%, rgba(10,9,7,.18)),
+    url("destress_bg.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(1600px, calc(100% - 20px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 10px 0 14px;
+}
+
+/* ШАПКА */
+
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nav-area {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font: 900 26px/1 'Share Tech Mono', monospace;
+}
+
+.back-arrow {
+  color: var(--gold);
+  cursor: pointer;
+  user-select: none;
+  transition: opacity .2s, transform .2s;
+}
+
+.back-arrow:hover {
+  opacity: .8;
+  transform: scale(1.1);
+}
+
+.brand-group {
+  position: absolute;
+  top: 18px;
+  right: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.club-brand {
+  justify-self: end;
+  color: var(--light);
+  text-decoration: none;
+}
+
+.club-logo {
+  font: 700 24px/1 'Cinzel', serif;
+  letter-spacing: 5px;
+}
+
+/* Passport — компактная кнопка в группе логотипа.
+   Бейдж находится в обычном потоке brand-group и прокручивается вместе с ним. */
+#passport-badge-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 42px;
+}
+#passport-badge-container .gy-user-badge {
+  position: relative;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  color: var(--gold);
+  background: rgba(0,0,0,.88);
+  box-shadow: 0 0 8px rgba(216,179,106,.25);
+  z-index: 1000000;
+  cursor: pointer;
+}
+#passport-badge-container .gy-user-badge::before {
+  content: "▤";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 25px/1 'Share Tech Mono', monospace;
+}
+#passport-badge-container .gy-user-badge .badge-img,
+#passport-badge-container .gy-user-badge .badge-flag {
+  display: none !important;
+}
+#passport-badge-container .gy-user-badge:hover {
+  background: #292116;
+}
+
+/* ОСНОВНОЙ КОНТЕЙНЕР */
+
+.container {
+  margin: 18px 0;
+  padding: clamp(16px,3vw,28px);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--panel);
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
+}
+
+.studio-title {
+  margin: 0 0 clamp(14px,2.4vw,24px);
+  text-align: center;
+  color: var(--light);
+  font: 700 clamp(22px,3.5vw,40px)/1.05 'Playfair Display', Georgia, serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 18px rgba(216,179,106,.25);
+  overflow-wrap: anywhere;
+}
+
+/* СЛОИ СТУДИИ */
+
+.stage {
+  position: relative;
+  display: grid;
+  align-items: center;
+}
+
+.layer {
+  grid-area: 1 / 1;
+  min-width: 0;
+  transition: transform .5s cubic-bezier(.2,.7,.2,1), opacity .5s, filter .5s;
+}
+
+.layer.front {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  visibility: visible;
+}
+
+.layer.back {
+  opacity: 0;
+  transform: scale(.92) translateY(-14px);
+  filter: blur(4px);
+  pointer-events: none;
+  visibility: hidden;
+  transition: transform .5s, opacity .5s, filter .5s, visibility 0s .5s;
+}
+
+.layer.ahead {
+  opacity: 0;
+  transform: translateY(26px) scale(1.04);
+  pointer-events: none;
+  visibility: hidden;
+  transition: transform .5s, opacity .5s, visibility 0s .5s;
+}
+
+.layer-title {
+  margin: 0 0 16px;
+  color: var(--light);
+  font: 400 clamp(22px,3vw,32px)/1.15 Georgia, serif;
+}
+
+/* ЕДИНОЕ ОКНО СЛУЧАЕВ С ПРОКРУТКОЙ */
+
+/* ДВА КОМПАКТНЫХ ВЕРТИКАЛЬНЫХ СПИСКА В ВЕРХНЕЙ ПАНЕЛИ */
+.top-choice {
+  display: flex;
+  flex: 1 1 260px;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.top-choice-label {
+  color: var(--light);
+  font: 600 14.4px/1.25 Inter, "Segoe UI", Arial, sans-serif;
+  letter-spacing: .04em;
+  text-align: center;
+}
+.top-choice-control {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  border: 1px solid rgba(216,179,106,.30);
+  border-radius: 8px;
+  background: rgba(8,7,5,.72);
+  overflow: hidden;
+}
+.top-choice-control.is-disabled {
+  opacity: .38;
+  pointer-events: none;
+}
+.top-choice-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0 38px 0 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dark) transparent;
+  scroll-snap-type: y mandatory;
+  scroll-padding-block: 0;
+  scroll-behavior: auto;
+}
+.top-choice-scroll::-webkit-scrollbar { width: 4px; }
+.top-choice-scroll::-webkit-scrollbar-thumb { background: var(--dark); border-radius: 4px; }
+.choice-button,
+.phrase-control-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 7px 4px;
+  border: 0;
+  border-bottom: 1px solid rgba(216,179,106,.12);
+  color: var(--text);
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.25;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.choice-button:hover,
+.phrase-control-option:hover,
+.choice-button.is-selected,
+.phrase-control-option.is-selected {
+  color: var(--light);
+  background: rgba(216,179,106,.10);
+}
+.choice-button,
+.phrase-control-option {
+  flex: 0 0 44px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  padding: 0 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.phrase-control-option { display: block; }
+.choice-symbol { flex: 0 0 auto; font-size: 17px; }
+.choice-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.choice-bird {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 44px;
+  border-left: 1px solid rgba(216,179,106,.18);
+  background: rgba(8,7,5,.96);
+  filter: grayscale(1);
+  opacity: .38;
+  font-size: 19px;
+  transition: filter .2s, opacity .2s;
+  pointer-events: none;
+}
+.choice-bird.active { filter: none; opacity: 1; }
+
+
+/* ФОРМА СВОЕЙ СИТУАЦИИ */
+
+.custom-form {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.text-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 1px solid rgba(216,179,106,.32);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(8,7,5,.78);
+}
+
+.text-input::placeholder {
+  color: #8f8370;
+}
+
+.studio-intro {
+  max-width: 760px;
+  margin: -5px auto 22px;
+  color: #e5d7bd;
+  text-align: center;
+  font: 400 clamp(14px,1.6vw,17px)/1.65 Georgia, serif;
+}
+
+/* КНОПКА ЧАРЛИ */
+
+.charlie-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  min-height: 62px;
+  padding: 7px 17px;
+  border: 1px solid var(--gold);
+  border-radius: 9px;
+  color: var(--light);
+  background: rgba(8,7,5,.88);
+  box-shadow: inset 0 0 0 1px rgba(216,179,106,.10), 0 5px 16px rgba(0,0,0,.24);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 700;
+  text-align: left;
+  transition: background .16s, border-color .16s, transform .16s;
+}
+
+.charlie-button:hover {
+  border-color: var(--light);
+  background: rgba(24,19,11,.96);
+  transform: translateY(-1px);
+}
+
+.charlie-button-text {
+  display: block;
+  max-width: 230px;
+}
+
+/* КНОПКИ */
+
+.gold-button,
+.outline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition: background .16s, border-color .16s, transform .16s;
+}
+
+.gold-button {
+  border: 1px solid var(--gold);
+  color: #1a1308;
+  background: var(--gold);
+}
+
+.gold-button:hover {
+  background: var(--light);
+  transform: translateY(-1px);
+}
+
+.outline-button {
+  border: 1px solid var(--line);
+  color: var(--light);
+  background: rgba(0,0,0,.18);
+}
+
+.outline-button:hover {
+  border-color: var(--gold);
+  background: rgba(216,179,106,.08);
+}
+
+/* БЛОК ФРАЗЫ */
+
+.phrase-wrap {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(15,13,10,.85);
+  color: var(--light);
+  font-size: 12px;
+}
+
+.chip:hover {
+  border-color: var(--gold);
+}
+
+.chip.add {
+  border-style: dashed;
+  color: var(--gold);
+}
+
+.chip span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recipe-mode {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(0,0,0,.25);
+}
+
+.mode-button {
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 12px;
+}
+
+.mode-button.active {
+  color: #18120a;
+  background: var(--gold);
+  font-weight: 700;
+}
+
+.recipe-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: min(36vh, 280px);
+  padding: clamp(18px,4vw,40px);
+  border: 1px solid rgba(216,179,106,.28);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(45,34,21,.96), rgba(22,19,15,.98) 58%);
+  box-shadow: 0 14px 40px rgba(0,0,0,.35);
+}
+
+.recipe-title {
+  margin: 0;
+  color: var(--light);
+  font: 400 clamp(26px,4vw,48px)/1.2 Georgia, serif;
+  overflow-wrap: anywhere;
+}
+
+.mix-count {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.actions-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  margin-top: 12px;
+}
+
+.text-button {
+  padding: 7px 0;
+  border: 0;
+  color: var(--light);
+  background: transparent;
+  font-size: 12px;
+}
+
+.text-button:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.actions-main .gold-button {
+  margin-left: auto;
+}
+
+.status-message {
+  min-height: 18px;
+  margin: 10px 0 0;
+  color: var(--light);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* ПАНЕЛЬ «ЗАБИРАЙ» */
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--gold);
+  background: rgba(16,14,11,.97);
+  transform: translateY(105%);
+  transition: transform .38s cubic-bezier(.2,.7,.2,1);
+}
+
+.sheet.open {
+  transform: none;
+}
+
+.sheet-inner {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.sheet-title {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.sheet-x {
+  border: 0;
+  background: transparent;
+  color: var(--light);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.share-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* PASSPORT */
+
+.gy-user-badge {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: #111;
+  z-index: 1000000;
+  cursor: pointer;
+  display: none;
+}
+
+.gy-user-badge .badge-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+}
+
+.gy-user-badge .badge-flag {
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  width: 16px;
+  height: 11px;
+  object-fit: cover;
+  border: 1px solid var(--gold);
+}
+
+.gy-passport-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  z-index: 2000000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.gy-passport-card {
+  background: #F5F5DC;
+  border: 3px solid var(--gold);
+  border-radius: 16px;
+  padding: 25px;
+  width: 280px;
+  max-width: 94vw;
+  color: #000;
+  text-align: center;
+  position: relative;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.gy-passport-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.gy-passport-title {
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.gy-passport-id {
+  font-weight: 700;
+  font-size: 13px;
+  margin-top: 5px;
+  color: #555;
+}
+
+.gy-passport-nick {
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.gy-passport-avatar-box,
+.gy-passport-qr-box {
+  width: 90px;
+  height: 90px;
+  border: 2px solid var(--gold);
+  background: #fff;
+  margin: 8px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gy-passport-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gy-passport-edit {
+  margin-top: 14px;
+  padding: 8px 20px;
+  background: #000;
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* АДАПТИВНОСТЬ */
+
+@media (max-width: 560px) {
+  .page {
+    width: calc(100% - 20px);
+  }
+
+  .custom-form {
+    grid-template-columns: minmax(0,1fr);
+  }
+
+  .charlie-button {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .charlie-button-text {
+    max-width: none;
+  }
+
+  .actions-main .gold-button {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .share-row .outline-button,
+  .share-row .gold-button {
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  .brand-group {
+    right: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ПАНЕЛЬ ОСНОВНЫХ ДЕЙСТВИЙ — все пять функциональных рамок внутри подложки */
+.studio-controls {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 7px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  position: static;
+  left: auto;
+  transform: none;
+  margin: 0 0 20px;
+}
+.studio-controls > *,
+.studio-controls .top-choice,
+.studio-controls .choice-group {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+.choice-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.choice-group-title {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  align-self: center;
+  margin: 3px 0 5px;
+  padding: 8px 12px;
+  border: 1px solid rgba(216,179,106,.30);
+  border-radius: 8px;
+  color: var(--light);
+  background: rgba(8,7,5,.42);
+  font: 600 17px/1.25 Inter, "Segoe UI", Arial, sans-serif;
+  text-align: center;
+  letter-spacing: .045em;
+  box-shadow: inset 0 0 0 1px rgba(216,179,106,.05);
+}
+.personal-choice-group { margin-top: 2px; }
+/* Контуры пяти функциональных элементов на 10% ярче прежней линии */
+.studio-controls .top-choice-control,
+.studio-controls .charlie-button,
+.studio-controls .outline-button {
+  border-color: rgba(216,179,106,.30);
+}
+.studio-controls .gold-button,
+.studio-controls .outline-button,
+.studio-controls .charlie-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 10px 16px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+  text-align: center;
+}
+.studio-controls .charlie-button-text {
+  max-width: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.control-panel {
+  margin: 0 0 16px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(8,7,5,.42);
+}
+.control-panel[hidden] { display: none !important; }
+.choice-grid[hidden] { display: none !important; }
+.phrase-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 10px 0 14px;
+}
+.phrase-pick {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(0,0,0,.28);
+  text-align: left;
+}
+.phrase-pick:hover { border-color: var(--gold); }
+.charlie-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.charlie-launch img {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--gold);
+  background: #17120c;
+}
+.author-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+#customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
+.title-with-charlie { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:clamp(14px,2.4vw,24px); }
+.title-with-charlie .studio-title { margin:0; }
+.title-charlie { width:clamp(58px,8vw,92px); height:clamp(58px,8vw,92px); flex:0 0 auto; border-radius:50%; object-fit:cover; border:1px solid var(--gold); box-shadow:0 0 18px rgba(216,179,106,.18); }
+.charlie-story { max-width:900px; margin:0 auto 22px; padding:17px 21px; border:1px solid rgba(216,179,106,.25); border-radius:10px; background:rgba(8,7,5,.34); text-align:left; }
+.charlie-story p { margin:0 0 10px; }
+.charlie-story .charlie-offer { margin:12px 0 0; color:var(--light); font-weight:700; }
+.situation-input { min-height:132px; resize:vertical; line-height:1.5; }
+.phrase-author-form { grid-template-columns:minmax(0,1fr) auto; }
+.phrase-author-form label { grid-column:1 / -1; margin:0 0 2px; font-size:clamp(18px,2.4vw,24px); }
+.phrase-input { min-height:104px; resize:vertical; line-height:1.5; border-color:rgba(216,179,106,.58); background:rgba(8,7,5,.88); box-shadow:inset 0 0 0 1px rgba(216,179,106,.08); }
+.creation-actions { display:flex; flex-wrap:wrap; gap:8px; width:100%; margin-top:4px; }
+.creation-actions button { flex:1 1 180px; min-height:44px; }
+.creation-actions .creation-news-choice { flex-basis:100%; padding:12px; border:1px solid var(--line); border-radius:8px; background:rgba(0,0,0,.35); }
+.creation-actions select { min-height:40px; margin-right:8px; padding:6px 10px; color:var(--text); background:#17120c; border:1px solid var(--gold); border-radius:6px; }
+@media (max-width:560px) { .title-with-charlie { gap:10px; } .title-charlie { width:52px; height:52px; } .creation-actions button { flex-basis:100%; } .charlie-story { padding:13px; } }
+@media (max-width:560px) {
+  .page { width: calc(100% - 12px); }
+  .studio-controls { display:flex; flex-direction:column; width:100%; }
+  .studio-controls > button,
+  .studio-controls > .top-choice,
+  .studio-controls > .choice-group { width:100%; max-width:100%; }
+  .studio-controls .gold-button,
+  .studio-controls .outline-button,
+  .studio-controls .charlie-button { min-height:54px; }
+  .charlie-launch img { width:48px; height:48px; flex:0 0 48px; }
+}
+
+
+/* v5.3.12 — welcome, whisky scene and two-field authoring flow */
+body:not(.studio-ready) .page { visibility: hidden; }
+.entry-screen {
+  position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center;
+  padding: 22px; background: radial-gradient(ellipse at center, rgba(48,37,24,.97), rgba(7,6,5,.99) 72%);
+}
+.entry-card {
+  width: min(760px, 100%); padding: clamp(22px,4vw,42px);
+  border: 1px solid rgba(216,179,106,.62); border-radius: 16px;
+  background: linear-gradient(145deg, rgba(39,31,22,.98), rgba(12,10,8,.98));
+  box-shadow: 0 24px 90px rgba(0,0,0,.62); text-align: center;
+}
+.entry-avatar {
+  width: clamp(104px,18vw,154px); height: clamp(104px,18vw,154px);
+  border-radius: 50%; object-fit: cover; border: 2px solid var(--gold);
+  box-shadow: 0 0 28px rgba(216,179,106,.24); margin: 0 auto 18px;
+}
+.entry-title { color: var(--light); font: 700 clamp(25px,4vw,38px)/1.15 "Playfair Display",Georgia,serif; margin: 0 0 14px; }
+.entry-copy { color: var(--text); font-size: clamp(16px,2.2vw,19px); line-height: 1.65; max-width: 590px; margin: 0 auto 22px; }
+.entry-button { min-height: 52px; padding: 12px 26px; border: 1px solid var(--gold); border-radius: 8px; color: #171109; background: linear-gradient(135deg,#f0d69d,#b88c48); font-weight: 800; cursor: pointer; }
+.entry-button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.drink-stage { display: none; }
+.drink-stage.is-active { display: block; }
+.drink-scene {
+  width: min(560px,100%); max-height: min(48vh,420px); object-fit: contain;
+  border-radius: 12px; border: 1px solid rgba(216,179,106,.48);
+  box-shadow: 0 14px 45px rgba(0,0,0,.55); margin: 0 auto 18px;
+}
+.drink-caption { min-height: 2.8em; color: var(--light); font-size: clamp(18px,2.6vw,23px); font-weight: 700; }
+.drink-progress { display:flex; justify-content:center; gap:9px; margin:18px 0 22px; }
+.drink-progress span { width:9px; height:9px; border-radius:50%; background:rgba(216,179,106,.25); }
+.drink-progress span.active { background:var(--gold); box-shadow:0 0 10px var(--gold); }
+.skip-scene { display:block; margin:14px auto 0; padding:8px 12px; border:0; color:var(--muted); background:transparent; text-decoration:underline; cursor:pointer; }
+.studio-intro.charlie-story { margin-top:10px; }
+.charlie-story-photo {
+  display:block; width:min(100%,620px); max-height:330px; object-fit:cover;
+  margin:0 auto 18px; border-radius:10px; border:1px solid rgba(216,179,106,.42);
+}
+.author-work {
+  max-width:900px; margin:22px auto 28px; padding:clamp(17px,3vw,26px);
+  border:1px solid rgba(216,179,106,.45); border-radius:12px;
+  background:rgba(8,7,5,.78); box-shadow:0 12px 34px rgba(0,0,0,.22);
+}
+.author-work h2 { margin:0 0 18px; text-align:center; color:var(--light); font-family:"Playfair Display",Georgia,serif; }
+.author-field { display:block; margin:0 0 17px; }
+.author-field span { display:block; margin:0 0 8px; color:var(--light); font-weight:700; font-size:18px; }
+.author-field textarea {
+  display:block; width:100%; min-height:116px; padding:13px 14px; resize:vertical;
+  color:var(--text); background:rgba(0,0,0,.55); border:1px solid rgba(216,179,106,.52);
+  border-radius:8px; font:inherit; line-height:1.55; box-sizing:border-box;
+}
+.author-field textarea:focus { outline:2px solid rgba(216,179,106,.45); outline-offset:2px; }
+.author-submit { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; margin-top:8px; }
+.author-status { min-height:1.5em; margin:13px 0 0; color:var(--light); text-align:center; }
+.studio-controls, .stage, #phrasePickerPanel { display:none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .entry-button:hover { transform:none; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="entry-screen" id="entryScreen" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
+  <section class="entry-card">
+    <img class="entry-avatar" src="OIGБФ1d.png" alt="Чарли, хозяин De-Stress Studio">
+    <h2 class="entry-title" id="entryTitle">Добро пожаловать в De-Stress Studio!</h2>
+    <p class="entry-copy">Рад тебя видеть! Устраивайся поудобнее. Предлагаю начать с бокала моего фирменного виски — сегодня за счёт заведения.</p>
+    <button class="entry-button" id="acceptWhisky" type="button">С удовольствием, Чарли!</button>
+  </section>
+  <section class="entry-card drink-stage" id="drinkStage" aria-live="polite">
+    <img class="drink-scene" src="OIG4.jpg" alt="Чарли угощает гостя фирменным виски">
+    <h2 class="entry-title">Фирменный виски от Чарли</h2>
+    <p class="drink-caption" id="drinkCaption">Кхе-кхе…</p>
+    <div class="drink-progress" aria-hidden="true"><span id="drinkStep1" class="active"></span><span id="drinkStep2"></span><span id="drinkStep3"></span></div>
+    <button class="entry-button" id="finishWhisky" type="button" hidden>Спасибо, Чарли. Продолжим!</button>
+    <button class="skip-scene" id="skipWhisky" type="button">Перейти дальше</button>
+  </section>
+</div>
+
+<div class="background-photo" aria-hidden="true"></div>
+
+<div class="page">
+
+  <header class="topbar">
+
+    <nav class="nav-area" translate="no">
+      <a class="back-arrow"
+         id="btn-back"
+         title="Back"
+         data-translate-title="nav_back">&lt;</a>
+
+      <a class="back-arrow"
+         id="btn-home"
+         title="Home"
+         data-translate-title="nav_home">&lt;&lt;</a>
+    </nav>
+
+    <div class="brand-group">
+
+      <a class="club-brand" href="hall.html" translate="no">
+        <div class="club-logo">GY-GY</div>
+      </a>
+
+      <div id="passport-badge-container"></div>
+
+    </div>
+
+  </header>
+
+  <main class="container">
+
+    <div class="title-with-charlie">
+      <img src="OIGБФ1d.png" alt="Чарли" class="title-charlie">
+      <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
+    </div>
+
+    <div class="studio-intro charlie-story">
+      <img class="charlie-story-photo" src="OIG4.jpg" alt="Чарли рассказывает свою историю за барной стойкой">
+      <p>Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке.</p>
+      <p class="charlie-offer">Вот так иногда одно крепкое словцо спасает весь день. А теперь твоя очередь — расскажи, что случилось у тебя.</p>
+    </div>
+
+    <form class="author-work" id="authorWorkForm">
+      <h2>Твоя история — твоё крепкое слово</h2>
+      <label class="author-field" for="authorSituation">
+        <span>Мой случай</span>
+        <textarea id="authorSituation" maxlength="1200" required placeholder="Расскажи, что произошло. Несколько строк вполне достаточно…"></textarea>
+      </label>
+      <label class="author-field" for="authorPhrase">
+        <span>Моё крепкое выражение</span>
+        <textarea id="authorPhrase" maxlength="500" required placeholder="Какое крепкое выражение пришло тебе на ум?"></textarea>
+      </label>
+      <div class="author-submit">
+        <button class="entry-button" type="submit">Собрать мою работу</button>
+        <button class="outline-button" id="openNewSheet" type="button">Сохранить / поделиться</button>
+      </div>
+      <p class="author-status" id="authorStatus" role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="studio-controls" aria-label="Основные действия студии">
+      <section class="choice-group" aria-label="Варианты клуба">
+        <h2 class="choice-group-title">Варианты клуба</h2>
+        <div class="top-choice">
+          <div class="top-choice-label">Выбери случай</div>
+          <div class="top-choice-control" id="openSituations">
+            <div class="top-choice-scroll choice-grid" id="choiceGrid" role="listbox" aria-label="Список случаев"></div>
+            <span class="choice-bird" id="situationBird" aria-hidden="true">🐦</span>
+          </div>
+        </div>
+
+        <div class="top-choice">
+          <div class="top-choice-label">Выбери крепкое слово</div>
+          <div class="top-choice-control is-disabled" id="openPhrases" aria-disabled="true">
+            <div class="top-choice-scroll" id="phraseControlGrid" role="listbox" aria-label="Список крепких выражений"></div>
+            <span class="choice-bird" id="phraseBird" aria-hidden="true">🐦</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="choice-group personal-choice-group" aria-label="Твой вариант">
+        <button class="charlie-button charlie-launch" id="openCharlie" type="button">
+          <img src="OIGБФ1d.png" alt="Чарли">
+          <span class="charlie-button-text">Чарли угощает</span>
+        </button>
+        <h2 class="choice-group-title">Твой вариант</h2>
+        <button class="outline-button" id="openMyCase" type="button">Мой случай</button>
+        <button class="outline-button" id="openMyWords" type="button">Крепкие слова</button>
+      </section>
+    </div>
+
+    <div class="control-panel" id="phrasePickerPanel" hidden>
+      <h2 class="layer-title">Выбери клубное крепкое выражение</h2>
+      <div class="phrase-picker" id="phrasePicker"></div>
+    </div>
+
+    <div class="stage">
+
+      <!-- СЛУЧАЙ -->
+
+      <section class="layer front"
+               id="layer-sit"
+               aria-labelledby="sitTitle">
+
+        <div>
+
+          <h2 class="layer-title" id="sitTitle">
+            Что случилось?
+          </h2>
+
+          <form class="custom-form" id="customSituationForm" hidden>
+
+            <textarea class="text-input situation-input"
+                      id="customSituationInput"
+                      rows="5"
+                      maxlength="1200"
+                      placeholder="Расскажи, что произошло. 4–5 строк вполне достаточно…"
+                      aria-label="Опиши свою ситуацию"></textarea>
+
+            <button class="charlie-button" type="submit">
+              <span class="charlie-button-text">
+                Выпей немного виски и рассказывай →
+              </span>
+            </button>
+
+          </form>
+
+        </div>
+
+      </section>
+
+      <!-- КРЕПКОЕ СЛОВО -->
+
+      <section class="layer ahead"
+               id="layer-phrase"
+               aria-live="polite">
+
+        <div class="phrase-wrap">
+
+          <div class="topline">
+
+            <div class="chip-group">
+
+              <button class="chip" id="chip" type="button">
+                <span id="chipText"></span>
+                <span aria-hidden="true">✕</span>
+              </button>
+
+
+            </div>
+
+            <div class="recipe-mode" role="group">
+
+              <button class="mode-button active"
+                      id="randomMode"
+                      type="button"
+                      aria-pressed="true">
+                Случайная
+              </button>
+
+              <button class="mode-button"
+                      id="myMode"
+                      type="button"
+                      aria-pressed="false">
+                Своя
+              </button>
+
+            </div>
+
+          </div>
+
+          <div class="recipe-card">
+
+            <h2 class="recipe-title" id="recipeTitle"></h2>
+
+            <span class="mix-count" id="mixCount"></span>
+
+          </div>
+
+          <form class="custom-form phrase-author-form" id="customRecipeForm" hidden>
+
+            <label class="layer-title" for="customRecipeInput">И какое крепкое слово нашлось?</label>
+            <textarea class="text-input phrase-input"
+                      id="customRecipeInput"
+                      rows="4"
+                      maxlength="500"
+                      placeholder="И какое крепкое слово нашлось?"
+                      aria-label="Твоё крепкое выражение"></textarea>
+
+            <button class="gold-button" type="submit">
+              Показать
+            </button>
+
+          </form>
+
+          <div class="actions-main">
+
+            <button class="text-button"
+                    type="button"
+                    id="showPhrasePicker">
+              ☷ Список выражений
+            </button>
+
+            <button class="text-button"
+                    type="button"
+                    id="anotherRecipe">
+              ↻ Другой замес
+            </button>
+
+            <button class="text-button"
+                    type="button"
+                    id="doubleMix">
+              ⚡ Добей!
+            </button>
+
+            <button class="text-button"
+                    type="button"
+                    id="copyRecipe">
+              Копировать
+            </button>
+
+            <button class="gold-button"
+                    type="button"
+                    id="openSheet">
+              Забирай ▴
+            </button>
+
+          </div>
+
+          <p class="status-message"
+             id="statusMessage"
+             role="status"></p>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+</div>
+
+<!-- ПАНЕЛЬ «ЗАБИРАЙ» -->
+
+<div class="sheet" id="sheet" aria-hidden="true">
+
+  <div class="sheet-inner">
+
+    <div class="sheet-head">
+
+      <span class="sheet-title">
+        Забирай
+      </span>
+
+      <button class="sheet-x"
+              id="sheetClose"
+              type="button"
+              aria-label="Закрыть">
+        ✕
+      </button>
+
+    </div>
+
+    <div class="share-row">
+
+      <button class="gold-button"
+              type="button"
+              id="goToAi">
+        Сделать с ИИ →
+      </button>
+
+      <button class="outline-button"
+              type="button"
+              id="pngDark">
+        PNG на тёмное ⬇
+      </button>
+
+      <button class="outline-button"
+              type="button"
+              id="pngLight">
+        PNG на светлое ⬇
+      </button>
+
+      <button class="outline-button"
+              type="button"
+              id="saveTxt">
+        TXT ⬇
+      </button>
+
+      <div class="creation-actions" id="creationActions" aria-label="Действия с авторской работой">
+        <button class="gold-button" type="button" data-creation-action="atelier">На футболку</button>
+        <button class="outline-button" type="button" data-creation-action="telegram">Telegram</button>
+        <button class="outline-button" type="button" data-creation-action="friend">Другу</button>
+        <button class="outline-button" type="button" data-creation-action="archive">Личный архив</button>
+        <button class="outline-button" type="button" data-creation-action="chat">Клубный чат</button>
+        <button class="outline-button" type="button" data-creation-action="news">GY-GY NEWS</button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script type="module">
+import { init as initLocalization, getCurrentLang, onLanguageChange } from './core/localization.js';
+import { init as initPassport } from './modules/passport.js';
+import { supabase } from './core/supabase-init.js';
+import { playEffect } from './modules/soundscape.js';
+import { initCreationActions } from './modules/creation-actions.js';
+
+initLocalization(document.body);
+const passportContainer = document.getElementById('passport-badge-container');
+initPassport(passportContainer);
+// modules/passport.js самостоятельно назначает openModal на созданную кнопку.
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const SITUATIONS = [
+    ['💼', 'Поругался с начальником'],
+    ['🚗', 'Обрызгала машина'],
+    ['💩', 'Сел на жвачку'],
+    ['🍺', 'Опрокинул бокал с пивом'],
+    ['🏴‍☠️', 'Забыл, где заначка'],
+    ['💸', 'По пьяне дал в займы'],
+    ['📱', 'Телефон заглючил'],
+    ['🐕', 'Наступил на собачий привет'],
+    ['🔥', 'Газ в зажигалке закончился'],
+    ['🔑', 'Ключ застрял в замке']
+];
+
+const FALLBACK_POOL = [
+    ['Зафонарь себе в контейнер!', 'Lantern yourself into the container!', 'Lampadaire-toi dans le conteneur !'],
+    ['Сахаруй твою поддон!', 'Sugar your pallet!', 'Sucre ta palette !'],
+    ['Маракуй тебе в подкладку!', 'Passion-fruit into your lining!', 'Maracuja-toi dans la doublure !'],
+    ['Залуди свою табуретку!', 'Solder your stool!', 'Soude ton tabouret !'],
+    ['Напильником по сепаратору!', 'File the separator!', 'Un coup de lime sur le séparateur !'],
+    ['Застакань свои тапочки!', 'Glassify your slippers!', 'Vitrifie tes pantoufles !'],
+    ['Распадись компот в баян!', 'Fall apart, compote, into the accordion!', 'Désagrège-toi, compote, dans l’accordéon !'],
+    ['Завались забор в предмете!', 'Collapse, fence, into the object!', 'Écroule-toi, clôture, dans l’objet !'],
+    ['Трамбуй педаль в резинку!', 'Tamp the pedal into the rubber band!', 'Tasse la pédale dans l’élastique !']
+].map(([text, en, fr]) => ({ id: null, source: 'club', text, translations: { en, fr } }));
+
+let pool = FALLBACK_POOL.slice();
+let extraRaw = [];   // одобренные случаи посетителей из коллекции
+const state = { situationIndex: null, customSituation: '', mode: 'random', phrase: null, customRecipe: '', mixNumber: 0, situationConfirmed: false, phraseConfirmed: false };
+
+// случаи: встроенные + коллекция
+const extraList = () => extraRaw.map(r => ['💬', (r.translations && r.translations[getCurrentLang()]) || r.text]);
+const allSituations = () => SITUATIONS.concat(extraList());
+function renderChoices() {
+    const grid = $('choiceGrid');
+    const scrollTop = grid.scrollTop;
+    const selected = state.situationIndex;
+    grid.innerHTML = allSituations().map(([icon, label], i) =>
+        `<button class="choice-button${selected === i && state.situationConfirmed ? ' is-selected' : ''}" type="button" role="option" aria-selected="${selected === i && state.situationConfirmed}" data-situation="${i}"><span class="choice-symbol">${icon}</span><span class="choice-label">${esc(label)}</span></button>`).join('');
+    grid.scrollTop = scrollTop;
+    updateTopChoiceIndicators();
+}
+function renderTopPhraseChoices() {
+    const grid = $('phraseControlGrid');
+    const scrollTop = grid.scrollTop;
+    const options = pool.map((phrase, i) =>
+        `<button class="phrase-control-option${state.phrase === phrase && state.phraseConfirmed ? ' is-selected' : ''}" type="button" role="option" aria-selected="${state.phrase === phrase && state.phraseConfirmed}" data-top-phrase="${i}">${esc(displayOf(phrase))}</button>`);
+    if (state.phrase && state.phraseConfirmed && !pool.includes(state.phrase)) {
+        options.unshift(`<div class="phrase-control-option is-selected" role="option" aria-selected="true">${esc(displayOf(state.phrase))}</div>`);
+    }
+    grid.innerHTML = options.join('');
+    grid.scrollTop = scrollTop;
+    updateTopChoiceIndicators();
+}
+function updateTopChoiceIndicators() {
+    const hasSituation = state.situationConfirmed && !!currentSituationText().trim();
+    const hasPhrase = state.phraseConfirmed && !!currentPhraseText().trim();
+    $('situationBird').classList.toggle('active', hasSituation);
+    $('phraseBird').classList.toggle('active', hasPhrase);
+    $('openPhrases').classList.toggle('is-disabled', !hasSituation);
+    $('openPhrases').setAttribute('aria-disabled', String(!hasSituation));
+}
+function renderPhrasePicker() {
+    $('phrasePicker').innerHTML = pool.map((phrase, i) =>
+        `<button class="phrase-pick" type="button" data-phrase="${i}">${esc(displayOf(phrase))}</button>`).join('');
+}
+
+function displayOf(p) {
+    if (!p) return '';
+    if (p.items) return p.items.map(displayOf).join(' ');
+    return (p.translations && p.translations[getCurrentLang()]) || p.text;
+}
+const currentPhraseText = () => displayOf(state.phrase);
+function currentSituationText() {
+    if (state.situationIndex !== null) {
+        const item = allSituations()[state.situationIndex];
+        return item ? item[1] : '';
+    }
+    return state.customSituation || '';
+}
+const currentText = () => {
+    const situation = currentSituationText().trim();
+    const phrase = currentPhraseText().trim();
+    if (situation && phrase) return 'СЛУЧАЙ\n' + situation + '\n\nКРЕПКОЕ ВЫРАЖЕНИЕ\n' + phrase;
+    return situation || phrase;
+};
+
+function randomPhrase(avoid) {
+    const options = pool.filter(p => p !== avoid && !(avoid && avoid.id && p.id === avoid.id));
+    const list = options.length ? options : pool;
+    return list[Math.floor(Math.random() * list.length)];
+}
+
+const say = msg => { $('statusMessage').textContent = msg || ''; };
+
+// слои
+function showPhraseLayer(show) {
+    $('layer-sit').classList.toggle('front', !show);
+    $('layer-sit').classList.toggle('back', show);
+    $('layer-phrase').classList.toggle('front', show);
+    $('layer-phrase').classList.toggle('ahead', !show);
+    if (!show) closeSheet();
+}
+function openSheet() { $('sheet').classList.add('open'); $('sheet').setAttribute('aria-hidden', 'false'); }
+function closeSheet() { $('sheet').classList.remove('open'); $('sheet').setAttribute('aria-hidden', 'true'); }
+
+// отрисовка
+function renderChip() {
+    const el = $('chipText');
+    if (state.situationIndex !== null) {
+        const [icon, label] = allSituations()[state.situationIndex] || ['', ''];
+        el.textContent = (icon + ' ' + label).trim();
+        el.removeAttribute('translate');
+    } else if (state.customSituation) {
+        el.textContent = '✍️ ' + state.customSituation;
+        el.setAttribute('translate', 'no');     // слова посетителя на перевод не отправляем
+    } else {
+        el.textContent = '';
+    }
+}
+
+function render() {
+    const p = state.phrase;
+    const my = state.mode === 'my';
+    const title = $('recipeTitle');
+    title.textContent = p ? displayOf(p) : (my ? 'Твой ход, мастер абсурда!' : '');
+    if (p && p.source === 'session') title.setAttribute('translate', 'no'); else title.removeAttribute('translate');
+    $('mixCount').textContent = (p && p.items) ? 'Двойной замес' : (state.mixNumber ? 'Замес № ' + state.mixNumber : '');
+}
+
+function setModeButtons() {
+    const my = state.mode === 'my';
+    $('randomMode').classList.toggle('active', !my);
+    $('randomMode').setAttribute('aria-pressed', String(!my));
+    $('myMode').classList.toggle('active', my);
+    $('myMode').setAttribute('aria-pressed', String(my));
+    $('customRecipeForm').hidden = !my;
+}
+
+function chooseRandom() {
+    state.mode = 'random';
+    setModeButtons();
+    state.phrase = randomPhrase(state.phrase);
+    state.mixNumber++;
+    say('');
+    render();
+    renderTopPhraseChoices();
+}
+
+function bump(kind) {
+    const id = state.phrase && state.phrase.id;
+    if (!id) return;
+    try { supabase.rpc('destress_bump', { p_id: id, p_kind: kind }).then(() => {}, () => {}); } catch (e) { /* не критично */ }
+}
+
+// Ситуации и основные действия
+renderChoices();
+renderTopPhraseChoices();
+// Намерение листать снимает подтверждение; повторный клик по строке включает птичку снова.
+function clearChoiceConfirmation(grid, kind) {
+    const key = kind === 'situation' ? 'situationConfirmed' : 'phraseConfirmed';
+    if (!state[key]) return;
+    state[key] = false;
+    grid.querySelectorAll('.is-selected').forEach(el => {
+        el.classList.remove('is-selected');
+        el.setAttribute('aria-selected', 'false');
+    });
+    updateTopChoiceIndicators();
+}
+function bindChoiceScrolling(grid, kind) {
+    const clear = () => clearChoiceConfirmation(grid, kind);
+    let pointerStart = null;
+    let suppressNextClick = false;
+    let suppressTimer = null;
+
+    // Колесо мыши листает ровно на одну строку за один жест.
+    // Браузерные deltaY часто равны высоте двух строк, поэтому нативная
+    // прокрутка перескакивала через пункт. Несколько wheel-событий одного
+    // непрерывного жеста объединяются в один шаг.
+    let wheelLocked = false;
+    let wheelTimer = null;
+    grid.addEventListener('wheel', e => {
+        e.preventDefault();
+        const direction = Math.sign(e.deltaY);
+        if (direction && !wheelLocked) {
+            clear();
+            const rowHeight = 44;
+            const currentRow = Math.round(grid.scrollTop / rowHeight);
+            const maxTop = Math.max(0, grid.scrollHeight - grid.clientHeight);
+            const nextTop = Math.max(0, Math.min(maxTop, (currentRow + direction) * rowHeight));
+            grid.scrollTo({ top: nextTop, behavior: 'smooth' });
+            wheelLocked = true;
+        }
+        if (wheelTimer !== null) clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(() => {
+            wheelLocked = false;
+            wheelTimer = null;
+        }, 160);
+    }, { passive: false });
+    grid.addEventListener('scroll', () => {
+        // Программное восстановление scrollTop при перерисовке не является жестом пользователя.
+        if (!pointerStart) return;
+        clear();
+        if (grid.scrollTop !== pointerStart.scrollTop) pointerStart.dragged = true;
+    }, { passive: true });
+    grid.addEventListener('touchmove', clear, { passive: true });
+
+    grid.addEventListener('pointerdown', e => {
+        pointerStart = {
+            x: e.clientX,
+            y: e.clientY,
+            scrollTop: grid.scrollTop,
+            dragged: false
+        };
+    }, { passive: true });
+
+    grid.addEventListener('pointermove', e => {
+        if (!pointerStart) return;
+        const deltaX = Math.abs(e.clientX - pointerStart.x);
+        const deltaY = Math.abs(e.clientY - pointerStart.y);
+        if (deltaY > 5 || deltaX > 8 || grid.scrollTop !== pointerStart.scrollTop) {
+            pointerStart.dragged = true;
+            clear();
+        }
+    }, { passive: true });
+
+    const finishPointer = () => {
+        if (!pointerStart) return;
+        const wasDragged = pointerStart.dragged;
+        pointerStart = null;
+        if (!wasDragged) return;
+
+        suppressNextClick = true;
+        if (suppressTimer !== null) clearTimeout(suppressTimer);
+        suppressTimer = setTimeout(() => {
+            suppressNextClick = false;
+            suppressTimer = null;
+        }, 500);
+    };
+    grid.addEventListener('pointerup', finishPointer, { passive: true });
+    grid.addEventListener('pointercancel', finishPointer, { passive: true });
+
+    grid.addEventListener('click', e => {
+        if (!suppressNextClick) return;
+        suppressNextClick = false;
+        if (suppressTimer !== null) {
+            clearTimeout(suppressTimer);
+            suppressTimer = null;
+        }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, true);
+
+    grid.addEventListener('keydown', e => {
+        if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) clear();
+    });
+}
+bindChoiceScrolling($('choiceGrid'), 'situation');
+bindChoiceScrolling($('phraseControlGrid'), 'phrase');
+$('choiceGrid').addEventListener('click', e => {
+    const b = e.target.closest('[data-situation]');
+    if (!b) return;
+    state.situationIndex = Number(b.dataset.situation);
+    state.customSituation = '';
+    state.situationConfirmed = true;
+    state.phrase = null;
+    state.phraseConfirmed = false;
+    renderChoices();
+    renderTopPhraseChoices();
+    afterSituation();
+});
+$('phraseControlGrid').addEventListener('click', e => {
+    const b = e.target.closest('[data-top-phrase]');
+    if (!b || !currentSituationText().trim()) return;
+    state.phrase = pool[Number(b.dataset.topPhrase)] || null;
+    state.phraseConfirmed = !!state.phrase;
+    state.mode = 'random';
+    state.mixNumber++;
+    setModeButtons();
+    render();
+    renderTopPhraseChoices();
+    showPhraseLayer(true);
+});
+$('openCharlie').addEventListener('click', () => {
+    $('phrasePickerPanel').hidden = true;
+    $('customSituationForm').hidden = false;
+    $('customSituationInput').focus();
+    say('Чарли угощает. Расскажи, что произошло.');
+    playEffect('whisky');
+});
+$('openMyCase').addEventListener('click', () => $('openCharlie').click());
+$('openMyWords').addEventListener('click', () => {
+    if (!currentSituationText()) {
+        say('Сначала выбери или опиши случай.');
+        $('openCharlie').click();
+        return;
+    }
+    showPhraseLayer(true);
+    state.mode = 'my';
+    setModeButtons();
+    $('customRecipeForm').hidden = false;
+    $('customRecipeInput').focus();
+});
+$('showPhrasePicker').addEventListener('click', () => {
+    renderPhrasePicker();
+    $('phrasePickerPanel').hidden = !$('phrasePickerPanel').hidden;
+});
+$('phrasePicker').addEventListener('click', e => {
+    const b = e.target.closest('[data-phrase]');
+    if (!b) return;
+    state.phrase = pool[Number(b.dataset.phrase)] || null;
+    state.mode = 'random';
+    state.mixNumber++;
+    setModeButtons();
+    render();
+    $('phrasePickerPanel').hidden = true;
+    renderTopPhraseChoices();
+    showPhraseLayer(true);
+});
+
+function afterSituation() {
+    renderChip();
+    showPhraseLayer(true);
+    if (state.mode === 'random') chooseRandom();
+    else {
+        state.phrase = state.customRecipe ? { id: null, text: state.customRecipe, translations: {}, source: 'session' } : null;
+        say('');
+        render();
+    }
+}
+
+$('customSituationForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const value = $('customSituationInput').value.trim();
+    if (!value) { $('customSituationInput').focus(); return; }
+    state.customSituation = value;
+    state.situationIndex = null;
+    $('customSituationInput').value = '';
+    renderChoices();
+    renderTopPhraseChoices();
+    afterSituation();
+});
+
+$('chip').addEventListener('click', () => showPhraseLayer(false));
+
+// фраза
+$('randomMode').addEventListener('click', chooseRandom);
+
+$('myMode').addEventListener('click', () => {
+    state.mode = 'my';
+    setModeButtons();
+    state.phrase = state.customRecipe ? { id: null, text: state.customRecipe, translations: {}, source: 'session' } : null;
+    say('');
+    render();
+    $('customRecipeInput').focus();
+});
+
+$('anotherRecipe').addEventListener('click', () => {
+    if (state.mode === 'my') { say('Сначала введи свой вариант или переключись на «Случайная».'); return; }
+    chooseRandom();
+});
+
+$('doubleMix').addEventListener('click', () => {
+    const a = randomPhrase(null);
+    const b = randomPhrase(a);
+    state.mode = 'random';
+    setModeButtons();
+    state.phrase = { id: null, items: [a, b], source: 'club' };
+    state.mixNumber++;
+    renderTopPhraseChoices();
+    say('');
+    render();
+});
+
+$('customRecipeForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const value = $('customRecipeInput').value.trim();
+    if (!value) { say('Пустой стакан. Напиши своё выражение.'); return; }
+    state.customRecipe = value;
+    state.mode = 'my';
+    state.phrase = { id: null, text: value, translations: {}, source: 'session' };
+    state.mixNumber++;
+    renderTopPhraseChoices();
+    $('customRecipeInput').value = '';
+    say('');
+    render();
+});
+
+$('copyRecipe').addEventListener('click', async () => {
+    const text = currentText();
+    if (!text) { say('Сначала выбери выражение.'); return; }
+    try {
+        await navigator.clipboard.writeText(text);
+        say('Скопировано.');
+        bump('copy');
+    } catch (err) {
+        say('Копирование недоступно в этом браузере. Выдели фразу и скопируй вручную.');
+    }
+});
+
+$('openSheet').addEventListener('click', () => {
+    if (!currentSituationText().trim() || !currentPhraseText().trim()) { say('Сначала собери целую работу: случай + крепкое выражение.'); return; }
+    openSheet();
+});
+$('sheetClose').addEventListener('click', closeSheet);
+
+// Старые индивидуальные отправки в коллекции удалены из интерфейса.
+// Одобренные записи продолжают читаться ниже для совместимости.
+
+// картинки и файлы
+const FONT = '"Playfair Display", Georgia, serif';
+async function ensureFont() { try { await document.fonts.load('700 120px "Playfair Display"'); } catch (e) { /* запасной шрифт */ } }
+function wrapLines(ctx, text, maxW) {
+    const words = text.split(/\s+/);
+    const lines = [];
+    let cur = '';
+    words.forEach(w => {
+        const test = cur ? cur + ' ' + w : w;
+        if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; } else cur = test;
+    });
+    if (cur) lines.push(cur);
+    return lines;
+}
+
+async function phrasePng(text, forDark) {
+    await ensureFont();
+    const W = 1800, pad = 90;
+    const probe = document.createElement('canvas').getContext('2d');
+    let size = 240, lines;
+    for (;;) {
+        probe.font = `700 ${size}px ${FONT}`;
+        lines = wrapLines(probe, text, W - pad * 2);
+        if (lines.length <= 5 || size <= 70) break;
+        size -= 10;
+    }
+    const lineH = Math.round(size * 1.2);
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = lines.length * lineH + pad * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.font = `700 ${size}px ${FONT}`;
+    ctx.fillStyle = forDark ? '#F0EAD6' : '#1a1408';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    lines.forEach((ln, i) => ctx.fillText(ln, W / 2, pad + lineH * i + lineH / 2));
+    return new Promise(res => canvas.toBlob(res, 'image/png'));
+}
+
+async function phraseCard(text) {
+    await ensureFont();
+    const W = 1200, H = 630, pad = 80;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#100e0b';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#76582d';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(24, 24, W - 48, H - 48);
+    let size = 120, lines;
+    for (;;) {
+        ctx.font = `700 ${size}px ${FONT}`;
+        lines = wrapLines(ctx, text, W - pad * 2);
+        if (lines.length * size * 1.2 <= H - 220 || size <= 40) break;
+        size -= 6;
+    }
+    ctx.fillStyle = '#f0d69d';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const lineH = Math.round(size * 1.2);
+    const top = (H - 90 - lines.length * lineH) / 2 + lineH / 2;
+    lines.forEach((ln, i) => ctx.fillText(ln, W / 2, top + lineH * i));
+    ctx.font = `700 34px ${FONT}`;
+    ctx.fillStyle = '#d8b36a';
+    ctx.fillText('GY-GY CLUB', W / 2, H - 70);
+    return new Promise(res => canvas.toBlob(res, 'image/png'));
+}
+
+function downloadBlob(blob, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+async function savePng(forDark) {
+    const text = currentText();
+    if (!text) { say('Сначала выбери выражение.'); return; }
+    const blob = await phrasePng(text, forDark);
+    if (!blob) return;
+    downloadBlob(blob, forDark ? 'gygy-phrase-for-dark.png' : 'gygy-phrase-for-light.png');
+    say('Сохранено на компьютер.');
+    bump('download');
+    closeSheet();
+}
+$('pngDark').addEventListener('click', () => savePng(true));
+$('pngLight').addEventListener('click', () => savePng(false));
+
+$('saveTxt').addEventListener('click', () => {
+    const text = currentText();
+    if (!text) { say('Сначала выбери выражение.'); return; }
+    downloadBlob(new Blob([text + '\n— GY-GY Club\n'], { type: 'text/plain;charset=utf-8' }), 'gygy-phrase.txt');
+    say('Сохранено на компьютер.');
+    bump('download');
+    closeSheet();
+});
+
+// Ателье и Telegram
+function atelierLink(ai) {
+    const u = new URL('atelier.html', location.href);
+    u.searchParams.set('phrase', currentText());
+    if (ai) u.searchParams.set('ai', '1');
+    if (state.phrase && state.phrase.id) u.searchParams.set('pid', state.phrase.id);
+    u.searchParams.set('from', 'studio');
+    return u.href;
+}
+
+const creationActions = initCreationActions({
+    root: $('creationActions'),
+    getWork: () => ({ situation: currentSituationText().trim(), phrase: currentPhraseText().trim() }),
+    getAtelierUrl: () => atelierLink(false),
+    onStatus: say
+});
+
+window.addEventListener('pagehide', () => creationActions.destroy(), { once: true });
+
+// v5.3.12 — the authoring form is the only active creation interface.
+const authorWorkForm = $('authorWorkForm');
+authorWorkForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const situation = $('authorSituation').value.trim();
+    const phrase = $('authorPhrase').value.trim();
+    if (!situation || !phrase) {
+        $('authorStatus').textContent = 'Заполни оба поля — случай и крепкое выражение.';
+        return;
+    }
+    state.situationIndex = null;
+    state.customSituation = situation;
+    state.situationConfirmed = true;
+    state.customRecipe = phrase;
+    state.mode = 'my';
+    state.phrase = { id: null, text: phrase, translations: {}, source: 'session' };
+    state.phraseConfirmed = true;
+    state.mixNumber++;
+    render();
+    $('authorStatus').textContent = 'Готово! Твоя авторская работа собрана. Её можно сохранить или отправить.';
+});
+$('openNewSheet').addEventListener('click', () => {
+    if (!currentSituationText().trim() || !currentPhraseText().trim()) {
+        $('authorStatus').textContent = 'Сначала заполни оба поля и собери свою работу.';
+        return;
+    }
+    openSheet();
+});
+
+const entryScreen = $('entryScreen');
+const drinkStage = $('drinkStage');
+const drinkCaption = $('drinkCaption');
+let drinkTimers = [];
+function clearDrinkTimers() {
+    drinkTimers.forEach(timer => clearTimeout(timer));
+    drinkTimers = [];
+}
+function revealStudio() {
+    clearDrinkTimers();
+    entryScreen.remove();
+    document.body.classList.add('studio-ready');
+    $('authorSituation').focus({ preventScroll: true });
+}
+function startWhiskyScene() {
+    $('entryScreen').querySelector('.entry-card').hidden = true;
+    drinkStage.classList.add('is-active');
+    $('finishWhisky').hidden = true;
+    $('drinkStep1').classList.add('active');
+    try { playEffect('whisky'); } catch (error) { console.warn('[Studio] Whisky effect could not start.', error); }
+    const steps = [
+        { delay: 0, text: 'Кхе-кхе… Чарли прочищает горло.', active: 1 },
+        { delay: 1700, text: 'Чарли открывает бутылку фирменного виски…', active: 2 },
+        { delay: 3500, text: 'И наливает тебе щедрый бокал. За знакомство!', active: 3 }
+    ];
+    steps.forEach(step => {
+        drinkTimers.push(setTimeout(() => {
+            drinkCaption.textContent = step.text;
+            [1,2,3].forEach(n => $('drinkStep' + n).classList.toggle('active', n <= step.active));
+        }, step.delay));
+    });
+    drinkTimers.push(setTimeout(() => {
+        drinkCaption.textContent = 'Угощение готово. Ну что, поговорим?';
+        $('finishWhisky').hidden = false;
+    }, 5200));
+}
+$('acceptWhisky').addEventListener('click', startWhiskyScene);
+$('finishWhisky').addEventListener('click', revealStudio);
+$('skipWhisky').addEventListener('click', revealStudio);
+
+$('goToAi').addEventListener('click', () => {
+    if (!currentSituationText().trim() || !currentPhraseText().trim()) { say('Сначала собери целую работу: случай + крепкое выражение.'); return; }
+    window.location.href = atelierLink(true);
+});
+
+// навигация: стрелка поднимает на слой выше
+$('btn-back').addEventListener('click', () => {
+    if ($('sheet').classList.contains('open')) { closeSheet(); return; }
+    if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
+    window.location.href = 'bar.html';
+});
+$('btn-home').addEventListener('click', () => { window.location.href = 'index.html'; });
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if ($('sheet').classList.contains('open')) closeSheet();
+    else if ($('layer-phrase').classList.contains('front')) showPhraseLayer(false);
+});
+onLanguageChange(() => { renderChoices(); renderTopPhraseChoices(); renderPhrasePicker(); renderChip(); render(); });
+
+// база фраз и коллекция случаев
+async function loadPool() {
+    try {
+        const { data, error } = await supabase.from('destress_phrases')
+            .select('id, text, translations').eq('status', 'approved').limit(500);
+        if (error) throw error;
+        if (data && data.length) pool = data.map(r => ({ id: r.id, text: r.text, translations: r.translations || {}, source: 'club' }));
+    } catch (e) {
+        console.warn('[Studio] База фраз недоступна — используются встроенные фразы.', e);
+    }
+}
+async function loadSituations() {
+    try {
+        const { data, error } = await supabase.from('destress_situations')
+            .select('text, translations').eq('status', 'approved').order('created_at', { ascending: true }).limit(60);
+        if (error) throw error;
+        extraRaw = data || [];
+        renderChoices();
+    } catch (e) {
+        console.warn('[Studio] Коллекция случаев недоступна — только встроенные.', e);
+    }
+}
+
+setModeButtons();
+// v5.3.12: the old situation/phrase library is intentionally not loaded.
+// The active authoring flow consists only of the two fields above.
+</script>
+</body>
+</html>
