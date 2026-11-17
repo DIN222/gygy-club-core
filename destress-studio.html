@@ -1,8 +1,8 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.10
-  De-Stress Studio v5.3.10
+  destress-studio.html — De-Stress Studio — v5.3.11
+  De-Stress Studio v5.3.11
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
@@ -10,7 +10,7 @@
   Исправлено: сохранение позиции прокрутки списков при перерисовке; фиксированная высота строк 44px; прокрутка не подтверждает выбор, а перетаскивание не вызывает случайный выбор строки.
   Кнопка Чарли подписана «Чарли угощает»; по нажатию звучит только эффект кашля, открывания и наливания — без голосовой реплики.
   Исправлено: колесо мыши перемещает списки случаев и выражений ровно на одну строку за жест.
-  Серверная публикация, лайки, таймеры и архивы ещё не подключены.
+  Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
 -->
 <html lang="en">
 <head>
@@ -947,6 +947,21 @@ a:focus-visible {
   margin-top: 12px;
 }
 #customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
+.title-with-charlie { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:clamp(14px,2.4vw,24px); }
+.title-with-charlie .studio-title { margin:0; }
+.title-charlie { width:clamp(58px,8vw,92px); height:clamp(58px,8vw,92px); flex:0 0 auto; border-radius:50%; object-fit:cover; border:1px solid var(--gold); box-shadow:0 0 18px rgba(216,179,106,.18); }
+.charlie-story { max-width:900px; margin:0 auto 22px; padding:17px 21px; border:1px solid rgba(216,179,106,.25); border-radius:10px; background:rgba(8,7,5,.34); text-align:left; }
+.charlie-story p { margin:0 0 10px; }
+.charlie-story .charlie-offer { margin:12px 0 0; color:var(--light); font-weight:700; }
+.situation-input { min-height:132px; resize:vertical; line-height:1.5; }
+.phrase-author-form { grid-template-columns:minmax(0,1fr) auto; }
+.phrase-author-form label { grid-column:1 / -1; margin:0 0 2px; font-size:clamp(18px,2.4vw,24px); }
+.phrase-input { min-height:104px; resize:vertical; line-height:1.5; border-color:rgba(216,179,106,.58); background:rgba(8,7,5,.88); box-shadow:inset 0 0 0 1px rgba(216,179,106,.08); }
+.creation-actions { display:flex; flex-wrap:wrap; gap:8px; width:100%; margin-top:4px; }
+.creation-actions button { flex:1 1 180px; min-height:44px; }
+.creation-actions .creation-news-choice { flex-basis:100%; padding:12px; border:1px solid var(--line); border-radius:8px; background:rgba(0,0,0,.35); }
+.creation-actions select { min-height:40px; margin-right:8px; padding:6px 10px; color:var(--text); background:#17120c; border:1px solid var(--gold); border-radius:6px; }
+@media (max-width:560px) { .title-with-charlie { gap:10px; } .title-charlie { width:52px; height:52px; } .creation-actions button { flex-basis:100%; } .charlie-story { padding:13px; } }
 @media (max-width:560px) {
   .page { width: calc(100% - 12px); }
   .studio-controls { display:flex; flex-direction:column; width:100%; }
@@ -995,16 +1010,15 @@ a:focus-visible {
 
   <main class="container">
 
-    <h1 class="studio-title" translate="no">
-      DE-STRESS STUDIO
-    </h1>
+    <div class="title-with-charlie">
+      <img src="bar_horse_desktop.png" alt="Чарли" class="title-charlie">
+      <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
+    </div>
 
-    <p class="studio-intro">
-      Есть моменты, когда приличные слова заканчиваются, а неприличные уже давно надоели.<br>
-      Предлагаем немного обновить ваш словарный запас.<br>
-      Выберите клубный случай или расскажите Чарли свой.<br>
-      Затем добавьте крепкое выражение — получится законченная работа.
-    </p>
+    <div class="studio-intro charlie-story">
+      <p>Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке. Бывало у тебя что-то подобное?</p>
+      <p class="charlie-offer">Предлагаю за счёт заведения! <span>Кхе-кхе…</span></p>
+    </div>
 
     <div class="studio-controls" aria-label="Основные действия студии">
       <section class="choice-group" aria-label="Варианты клуба">
@@ -1058,12 +1072,12 @@ a:focus-visible {
 
           <form class="custom-form" id="customSituationForm" hidden>
 
-            <input class="text-input"
-                   id="customSituationInput"
-                   type="text"
-                   maxlength="80"
-                   placeholder="Твоя ситуация в двух словах"
-                   aria-label="Что? Где? Когда?">
+            <textarea class="text-input situation-input"
+                      id="customSituationInput"
+                      rows="5"
+                      maxlength="1200"
+                      placeholder="Расскажи, что произошло. 4–5 строк вполне достаточно…"
+                      aria-label="Опиши свою ситуацию"></textarea>
 
             <button class="charlie-button" type="submit">
               <span class="charlie-button-text">
@@ -1094,12 +1108,6 @@ a:focus-visible {
                 <span aria-hidden="true">✕</span>
               </button>
 
-              <button class="chip add"
-                      id="chipAdd"
-                      type="button"
-                      hidden>
-                ＋ Добавить случай в коллекцию
-              </button>
 
             </div>
 
@@ -1131,14 +1139,15 @@ a:focus-visible {
 
           </div>
 
-          <form class="custom-form" id="customRecipeForm" hidden>
+          <form class="custom-form phrase-author-form" id="customRecipeForm" hidden>
 
-            <input class="text-input"
-                   id="customRecipeInput"
-                   type="text"
-                   maxlength="180"
-                   placeholder="Придумай своё ..."
-                   aria-label="Твой вариант">
+            <label class="layer-title" for="customRecipeInput">И какое крепкое слово нашлось?</label>
+            <textarea class="text-input phrase-input"
+                      id="customRecipeInput"
+                      rows="4"
+                      maxlength="500"
+                      placeholder="И какое крепкое слово нашлось?"
+                      aria-label="Твоё крепкое выражение"></textarea>
 
             <button class="gold-button" type="submit">
               Показать
@@ -1170,13 +1179,6 @@ a:focus-visible {
                     type="button"
                     id="copyRecipe">
               Копировать
-            </button>
-
-            <button class="text-button"
-                    type="button"
-                    id="addPhrase"
-                    hidden>
-              ＋ Добавить в коллекцию
             </button>
 
             <button class="gold-button"
@@ -1226,12 +1228,6 @@ a:focus-visible {
 
       <button class="gold-button"
               type="button"
-              id="goToAtelier">
-        На футболку (текст) →
-      </button>
-
-      <button class="gold-button"
-              type="button"
               id="goToAi">
         Сделать с ИИ →
       </button>
@@ -1254,17 +1250,14 @@ a:focus-visible {
         TXT ⬇
       </button>
 
-      <button class="outline-button"
-              type="button"
-              id="shareTelegram">
-        Telegram ✈
-      </button>
-
-      <button class="outline-button"
-              type="button"
-              id="publishRecipe">
-        Опубликовать пару в чате De-Stress Studio ↗
-      </button>
+      <div class="creation-actions" id="creationActions" aria-label="Действия с авторской работой">
+        <button class="gold-button" type="button" data-creation-action="atelier">На футболку</button>
+        <button class="outline-button" type="button" data-creation-action="telegram">Telegram</button>
+        <button class="outline-button" type="button" data-creation-action="friend">Другу</button>
+        <button class="outline-button" type="button" data-creation-action="archive">Личный архив</button>
+        <button class="outline-button" type="button" data-creation-action="chat">Клубный чат</button>
+        <button class="outline-button" type="button" data-creation-action="news">GY-GY NEWS</button>
+      </div>
 
     </div>
 
@@ -1277,6 +1270,7 @@ import { init as initLocalization, getCurrentLang, onLanguageChange } from './co
 import { init as initPassport } from './modules/passport.js';
 import { supabase } from './core/supabase-init.js';
 import { playEffect } from './modules/soundscape.js';
+import { initCreationActions } from './modules/creation-actions.js';
 
 initLocalization(document.body);
 const passportContainer = document.getElementById('passport-badge-container');
@@ -1313,7 +1307,7 @@ const FALLBACK_POOL = [
 
 let pool = FALLBACK_POOL.slice();
 let extraRaw = [];   // одобренные случаи посетителей из коллекции
-const state = { situationIndex: null, customSituation: '', mode: 'random', phrase: null, customRecipe: '', mixNumber: 0, sentSituationText: '', sentPhraseText: '', situationConfirmed: false, phraseConfirmed: false };
+const state = { situationIndex: null, customSituation: '', mode: 'random', phrase: null, customRecipe: '', mixNumber: 0, situationConfirmed: false, phraseConfirmed: false };
 
 // случаи: встроенные + коллекция
 const extraList = () => extraRaw.map(r => ['💬', (r.translations && r.translations[getCurrentLang()]) || r.text]);
@@ -1368,7 +1362,8 @@ function currentSituationText() {
 const currentText = () => {
     const situation = currentSituationText().trim();
     const phrase = currentPhraseText().trim();
-    return situation && phrase ? situation + '\n\n' + phrase : (phrase || situation);
+    if (situation && phrase) return 'СЛУЧАЙ\n' + situation + '\n\nКРЕПКОЕ ВЫРАЖЕНИЕ\n' + phrase;
+    return situation || phrase;
 };
 
 function randomPhrase(avoid) {
@@ -1403,7 +1398,6 @@ function renderChip() {
     } else {
         el.textContent = '';
     }
-    $('chipAdd').hidden = !state.customSituation || state.customSituation === state.sentSituationText;
 }
 
 function render() {
@@ -1413,7 +1407,6 @@ function render() {
     title.textContent = p ? displayOf(p) : (my ? 'Твой ход, мастер абсурда!' : '');
     if (p && p.source === 'session') title.setAttribute('translate', 'no'); else title.removeAttribute('translate');
     $('mixCount').textContent = (p && p.items) ? 'Двойной замес' : (state.mixNumber ? 'Замес № ' + state.mixNumber : '');
-    $('addPhrase').hidden = !(p && p.source === 'session') || p.text === state.sentPhraseText;
 }
 
 function setModeButtons() {
@@ -1687,58 +1680,13 @@ $('copyRecipe').addEventListener('click', async () => {
 });
 
 $('openSheet').addEventListener('click', () => {
-    if (!currentText()) { say('Сначала выбери выражение.'); return; }
+    if (!currentSituationText().trim() || !currentPhraseText().trim()) { say('Сначала собери целую работу: случай + крепкое выражение.'); return; }
     openSheet();
 });
 $('sheetClose').addEventListener('click', closeSheet);
 
-// коллекция: свой случай и своё выражение уходят на проверку
-const SUBMIT_KEY = 'gygy-destress-last-submit';
-const tooSoon = () => Date.now() - Number(localStorage.getItem(SUBMIT_KEY) || 0) < 20000;
-const stamp = () => { try { localStorage.setItem(SUBMIT_KEY, String(Date.now())); } catch (e) { /* ок */ } };
-const SENT_TEXT = 'Отправлено на проверку. После одобрения появится в общей коллекции клуба.';
-
-$('chipAdd').addEventListener('click', async () => {
-    const text = state.customSituation.trim();
-    if (text.length < 3) return;
-    if (tooSoon()) { say('Подожди немного перед следующей отправкой.'); return; }
-    const { error } = await supabase.from('destress_situations').insert({ text, lang: getCurrentLang(), status: 'pending', translations: {} });
-    if (error) { say(error.code === '23505' ? 'Такой случай уже есть в коллекции.' : 'Не удалось отправить. Попробуй позже.'); return; }
-    stamp();
-    state.sentSituationText = state.customSituation;
-    $('chipAdd').hidden = true;
-    say(SENT_TEXT);
-});
-
-$('addPhrase').addEventListener('click', async () => {
-    const p = state.phrase;
-    if (!p || p.source !== 'session') return;
-    if (tooSoon()) { say('Подожди немного перед следующей отправкой.'); return; }
-    const { error } = await supabase.from('destress_phrases').insert({
-        text: p.text.trim(), lang: getCurrentLang(), source: 'user', status: 'pending', translations: {},
-        situation: state.situationIndex !== null && state.situationIndex < SITUATIONS.length ? 'sit_' + state.situationIndex : null
-    });
-    if (error) { say(error.code === '23505' ? 'Такая фраза уже есть в коллекции.' : 'Не удалось отправить. Попробуй позже.'); return; }
-    stamp();
-    state.sentPhraseText = p.text;
-    $('addPhrase').hidden = true;
-    say(SENT_TEXT);
-});
-
-// «Опубликовать в новостях»: та же проверка, но с пометкой «просит в новости»
-$('publishRecipe').addEventListener('click', async () => {
-    const situation = currentSituationText().trim();
-    const phrase = currentPhraseText().trim();
-    if (!situation || !phrase) {
-        say('Для публикации собери целую работу: случай + крепкое выражение.');
-        return;
-    }
-    if (!state.customSituation.trim() || !state.phrase || state.phrase.source !== 'session') {
-        say('В чат De-Stress Studio публикуется собственная авторская пара: твой случай + твоё крепкое выражение.');
-        return;
-    }
-    say('Авторская пара сформирована. Публикация в общем чате, учёт уникальных лайков и автоматические переходы требуют серверного модуля GY-GY NEWS. В этой версии они ещё не подключены.');
-});
+// Старые индивидуальные отправки в коллекции удалены из интерфейса.
+// Одобренные записи продолжают читаться ниже для совместимости.
 
 // картинки и файлы
 const FONT = '"Playfair Display", Georgia, serif';
@@ -1850,39 +1798,17 @@ function atelierLink(ai) {
     u.searchParams.set('from', 'studio');
     return u.href;
 }
-$('goToAtelier').addEventListener('click', () => {
-    if (!currentText()) { say('Сначала выбери выражение.'); return; }
-    window.location.href = atelierLink(false);
-});
-$('goToAi').addEventListener('click', () => {
-    if (!currentText()) { say('Сначала выбери выражение.'); return; }
-    window.location.href = atelierLink(true);
-});
 
-$('shareTelegram').addEventListener('click', async () => {
-    const text = currentText();
-    if (!text) { say('Сначала выбери выражение.'); return; }
-    const link = atelierLink(false);
-    const message = text + '\n— GY-GY Club';
-    try {
-        if (navigator.canShare && navigator.share) {
-            const card = await phraseCard(text);
-            const file = new File([card], 'gygy-phrase.png', { type: 'image/png' });
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], text: message + '\n' + link });
-                bump('share');
-                say('Отправлено.');
-                closeSheet();
-                return;
-            }
-        }
-    } catch (err) {
-        if (err && err.name === 'AbortError') return;
-    }
-    window.open('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(message), '_blank', 'noopener');
-    bump('share');
-    say('Открываю Telegram…');
-    closeSheet();
+const creationActions = initCreationActions({
+    root: $('creationActions'),
+    getWork: () => ({ situation: currentSituationText().trim(), phrase: currentPhraseText().trim() }),
+    getAtelierUrl: () => atelierLink(false),
+    onStatus: say
+});
+window.addEventListener('pagehide', () => creationActions.destroy(), { once: true });
+$('goToAi').addEventListener('click', () => {
+    if (!currentSituationText().trim() || !currentPhraseText().trim()) { say('Сначала собери целую работу: случай + крепкое выражение.'); return; }
+    window.location.href = atelierLink(true);
 });
 
 // навигация: стрелка поднимает на слой выше
