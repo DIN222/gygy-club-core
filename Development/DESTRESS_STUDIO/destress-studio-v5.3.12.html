@@ -1949,7 +1949,7 @@ serveCharlieButton.addEventListener('click', async () => {
     serveCharlieButton.querySelector('span').textContent = 'Чарли угощает…';
 
     try {
-        await playEffect('whisky');
+        await playEffect('whisky', '../../charlie_bar_fx.mp3');
     } catch (error) {
         console.warn('[Studio] Whisky effect could not complete.', error);
     }
