@@ -47,12 +47,6 @@ export function get(key, fallback = null) {
 }
 
 /**
- * Записать значение (строка, число, объект, массив — что угодно сериализуемое).
- * Эмитит 'storage:changed' с {key, value} — подписчики могут обновить UI.
- * @param {string} key
- * @param {*} value
- */
-/**
  * Прочитать значение из старой схемы хранения, где ключи не имели namespace.
  * Используется только для точечной миграции; обычное чтение выполняется через get().
  * @param {string} key
@@ -68,6 +62,12 @@ export function getLegacy(key, fallback = null) {
     }
 }
 
+/**
+ * Записать значение (строка, число, объект, массив — что угодно сериализуемое).
+ * Эмитит 'storage:changed' с {key, value} — подписчики могут обновить UI.
+ * @param {string} key
+ * @param {*} value
+ */
 export function set(key, value) {
     try {
         localStorage.setItem(fullKey(key), JSON.stringify(value));
