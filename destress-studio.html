@@ -857,9 +857,7 @@ a:focus-visible {
   transform: none;
   margin: 0 0 20px;
 }
-.studio-controls > *,
-.studio-controls .top-choice,
-.studio-controls /* Скрываем верхний блок клубных вариантов, сохраняя связанные элементы для логики студии. */
+/* Клубные заготовки остаются вне пользовательского сценария. */
 .studio-controls > .choice-group:first-child { display: none !important; }
 
 .choice-group {
@@ -945,13 +943,23 @@ a:focus-visible {
   gap: 10px;
 }
 .charlie-launch img {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  object-fit: cover;
+  width: 112px;
+  height: 112px;
+  flex: 0 0 112px;
+  border-radius: 9px;
+  object-fit: contain;
   border: 1px solid var(--gold);
   background: #17120c;
 }
+.charlie-launch { justify-content: center; flex-wrap: wrap; }
+.ta-version-panel { width:100%; margin-top:10px; }
+.ta-version-title { margin:8px 0 12px; color:var(--light); text-align:center; font:600 22px/1.25 "Playfair Display",Georgia,serif; }
+.ta-version-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.ta-version-actions button { min-height:50px; }
+.entry-field[hidden], .ta-version-panel[hidden] { display:none !important; }
+#customSituationForm .entry-field { margin-top:12px; }
+#customSituationForm .situation-input, #customSituationForm .author-phrase-input { display:block; width:100%; }
+#submitMyVersion[hidden] { display:none !important; }
 .author-tools {
   display: flex;
   flex-wrap: wrap;
@@ -988,7 +996,8 @@ a:focus-visible {
   .studio-controls .gold-button,
   .studio-controls .outline-button,
   .studio-controls .charlie-button { min-height:54px; }
-  .charlie-launch img { width:48px; height:48px; flex:0 0 48px; }
+  .charlie-launch img { width:100px; height:100px; flex:0 0 100px; }
+  .ta-version-actions { grid-template-columns:1fr; }
 }
 
 </style>
@@ -1028,7 +1037,7 @@ a:focus-visible {
   <main class="container">
 
     <div class="title-with-charlie">
-      <img src="././OIGБФ1d.png" alt="Чарли" class="title-charlie">
+      <img src="./bar_horse.jpg" alt="Чарли за барной стойкой" class="title-charlie">
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
@@ -1058,12 +1067,16 @@ a:focus-visible {
 
       <section class="choice-group personal-choice-group" aria-label="Твой вариант">
         <button class="charlie-button charlie-launch" id="serveCharlie" type="button">
-          <img src="././OIGБФ1d.png" alt="Чарли">
-          <span class="charlie-button-text">Чарли угощает</span>
+          <img src="./bar_horse.jpg" alt="Чарли за барной стойкой с бокалом">
+          <span class="charlie-button-text">Угощаю за счёт заведения!</span>
         </button>
-        <h2 class="choice-group-title">Твой вариант</h2>
-        <button class="outline-button" id="openMyCase" type="button">Мой случай</button>
-        <button class="outline-button" id="openMyWords" type="button">Крепкие слова</button>
+        <div class="ta-version-panel" id="taVersionPanel" hidden>
+          <h2 class="ta-version-title">Ta version</h2>
+          <div class="ta-version-actions">
+            <button class="outline-button" id="chooseCase" type="button">Случай</button>
+            <button class="outline-button" id="choosePhrase" type="button">Крепкое слово</button>
+          </div>
+        </div>
       </section>
     </div>
 
@@ -1082,27 +1095,22 @@ a:focus-visible {
 
         <div>
 
-          <h2 class="layer-title" id="sitTitle">
-            Что случилось?
-          </h2>
-
-          <div class="charlie-prompt" id="charliePrompt" hidden>Расскажи что-нибудь в тему…</div>
           <form class="custom-form" id="customSituationForm" hidden>
-            <label class="author-field-label" for="customSituationInput">Мой случай</label>
-            <textarea class="text-input situation-input"
-                      id="customSituationInput"
-                      rows="5"
-                      maxlength="1200"
-                      placeholder="Расскажи, что произошло…"
-                      aria-label="Мой случай"></textarea>
-            <label class="author-field-label" for="customRecipeInput">Моё крепкое выражение</label>
-            <textarea class="text-input author-phrase-input"
-                      id="customRecipeInput"
-                      rows="3"
-                      maxlength="500"
-                      placeholder="Какое крепкое выражение пришло тебе на ум?"
-                      aria-label="Моё крепкое выражение"></textarea>
-            <button class="charlie-button" type="submit">
+            <div class="entry-field" id="caseEntry" hidden>
+              <textarea class="text-input situation-input"
+                        id="customSituationInput"
+                        rows="5"
+                        maxlength="1200"
+                        aria-label="Случай"></textarea>
+            </div>
+            <div class="entry-field" id="phraseEntry" hidden>
+              <textarea class="text-input author-phrase-input"
+                        id="customRecipeInput"
+                        rows="3"
+                        maxlength="500"
+                        aria-label="Крепкое слово"></textarea>
+            </div>
+            <button class="charlie-button" id="submitMyVersion" type="submit" hidden>
               <span class="charlie-button-text">Готово — собрать мою работу →</span>
             </button>
           </form>
@@ -1587,8 +1595,11 @@ $('serveCharlie').addEventListener('click', async () => {
     if (button.disabled) return;
 
     $('phrasePickerPanel').hidden = true;
-    $('charliePrompt').hidden = true;
+    $('taVersionPanel').hidden = true;
     $('customSituationForm').hidden = true;
+    $('caseEntry').hidden = true;
+    $('phraseEntry').hidden = true;
+    $('submitMyVersion').hidden = true;
     button.disabled = true;
     const caption = button.querySelector('.charlie-button-text');
     const previousCaption = caption ? caption.textContent : '';
@@ -1599,15 +1610,33 @@ $('serveCharlie').addEventListener('click', async () => {
     } catch (error) {
         console.warn('[De-Stress Studio] Не удалось воспроизвести эффект Чарли:', error);
     } finally {
-        $('charliePrompt').hidden = false;
-        $('customSituationForm').hidden = false;
-        if (caption) caption.textContent = previousCaption || 'Чарли угощает';
+        $('taVersionPanel').hidden = false;
+        if (caption) caption.textContent = previousCaption || 'Угощаю за счёт заведения!';
+        button.hidden = true;
         button.disabled = false;
-        $('customSituationInput').focus();
     }
 });
-$('openMyCase').addEventListener('click', () => $('serveCharlie').click());
-$('openMyWords').addEventListener('click', () => $('serveCharlie').click());
+const showEntryField = kind => {
+    $('customSituationForm').hidden = false;
+    if (kind === 'case') {
+        $('caseEntry').hidden = false;
+        $('customSituationInput').focus();
+    } else {
+        $('phraseEntry').hidden = false;
+        $('customRecipeInput').focus();
+    }
+    updateSubmitVisibility();
+};
+const updateSubmitVisibility = () => {
+    $('submitMyVersion').hidden = !(
+        $('customSituationInput').value.trim() &&
+        $('customRecipeInput').value.trim()
+    );
+};
+$('chooseCase').addEventListener('click', () => showEntryField('case'));
+$('choosePhrase').addEventListener('click', () => showEntryField('phrase'));
+$('customSituationInput').addEventListener('input', updateSubmitVisibility);
+$('customRecipeInput').addEventListener('input', updateSubmitVisibility);
 $('showPhrasePicker').addEventListener('click', () => {
     renderPhrasePicker();
     $('phrasePickerPanel').hidden = !$('phrasePickerPanel').hidden;
@@ -1655,7 +1684,11 @@ $('customSituationForm').addEventListener('submit', e => {
     $('customSituationInput').value = '';
     $('customRecipeInput').value = '';
     $('customSituationForm').hidden = true;
-    $('charliePrompt').hidden = true;
+    $('taVersionPanel').hidden = true;
+    $('caseEntry').hidden = true;
+    $('phraseEntry').hidden = true;
+    $('submitMyVersion').hidden = true;
+    $('serveCharlie').hidden = false;
     renderChoices();
     renderTopPhraseChoices();
     renderChip();
