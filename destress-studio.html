@@ -1649,7 +1649,6 @@ $('serveCharlie').addEventListener('click', async () => {
     $('customSituationForm').hidden = true;
     $('caseEntry').hidden = true;
     $('phraseEntry').hidden = true;
-    $('submitMyVersion').hidden = true;
     button.disabled = true;
     const caption = button.querySelector('.charlie-button-text');
     const previousCaption = caption ? caption.textContent : '';
@@ -1759,7 +1758,6 @@ $('customSituationForm').addEventListener('submit', e => {
     $('taVersionPanel').hidden = true;
     $('caseEntry').hidden = true;
     $('phraseEntry').hidden = true;
-    $('submitMyVersion').hidden = true;
     $('serveCharlie').hidden = false;
     renderChoices();
     renderTopPhraseChoices();
