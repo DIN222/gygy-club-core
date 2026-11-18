@@ -992,6 +992,8 @@ a:focus-visible {
 .work-actions-back { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; margin:0 auto 18px; border:1px solid var(--gold); border-radius:50%; color:var(--gold); background:rgba(8,7,5,.75); font-size:23px; cursor:pointer; }
 .work-actions-screen .creation-actions { justify-content:center; margin-top:0; }
 .work-actions-screen .creation-actions button { min-height:48px; }
+.creation-atelier-choice { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; width:100%; margin-top:12px; padding:12px; border:1px solid var(--line); border-radius:8px; background:rgba(0,0,0,.3); }
+.creation-atelier-choice button { flex:1 1 220px; min-height:44px; }
 .charlie-prompt { margin: 14px 0 10px; color: var(--light); font-family: "Playfair Display", Georgia, serif; font-size: clamp(19px, 2.2vw, 25px); text-align: center; }
 .author-field-label { display:block; margin:12px 0 6px; color:var(--light); font-weight:700; }
 .author-phrase-input { width:100%; min-height:88px; }
@@ -1943,7 +1945,7 @@ function atelierLink(ai) {
 const creationActions = initCreationActions({
     root: $('creationActions'),
     getWork: () => ({ situation: currentSituationText().trim(), phrase: currentPhraseText().trim() }),
-    getAtelierUrl: () => atelierLink(false),
+    getAtelierUrl: (work, ai) => atelierLink(!!ai),
     onStatus: say
 });
 window.addEventListener('pagehide', () => creationActions.destroy(), { once: true });
