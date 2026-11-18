@@ -984,12 +984,17 @@ a:focus-visible {
 #customSituationForm .entry-field[hidden] { display:block !important; }
 #customSituationForm .author-field-label { margin-top:16px; }
 #customSituationForm textarea { height:132px; min-height:132px; resize:vertical; }
-.work-next-wrap { display:flex; justify-content:center; margin:16px auto 0; }
-.work-next { width:42px; height:42px; border:1px solid var(--gold); border-radius:50%; color:var(--gold); background:rgba(8,7,5,.75); font-size:25px; line-height:1; cursor:pointer; box-shadow:0 0 16px rgba(216,179,106,.15); }
+.phrase-input-shell { position:relative; }
+#customSituationForm .author-phrase-input { padding-right:62px; }
+.phrase-input-arrows { position:absolute; top:50%; right:8px; display:flex; flex-direction:column; gap:6px; transform:translateY(-50%); }
+.work-next { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border:1px solid var(--gold); border-radius:50%; color:var(--gold); background:rgba(8,7,5,.88); font-size:23px; line-height:1; cursor:pointer; box-shadow:0 0 16px rgba(216,179,106,.15); }
 .work-next:hover { background:rgba(216,179,106,.14); }
-.work-actions-screen { width:100%; max-width:760px; margin:0 auto; padding:18px 0 8px; text-align:center; }
+.work-actions-screen { position:relative; width:100%; max-width:760px; margin:0 auto; padding:18px 0 8px; text-align:center; }
 .work-actions-question { margin:0 0 22px; color:var(--light); font:600 clamp(21px,3vw,30px)/1.3 "Playfair Display",Georgia,serif; }
-.work-actions-back { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; margin:0 auto 18px; border:1px solid var(--gold); border-radius:50%; color:var(--gold); background:rgba(8,7,5,.75); font-size:23px; cursor:pointer; }
+.work-actions-back { position:absolute; top:18px; right:8px; display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; margin:0; border:1px solid var(--gold); border-radius:50%; color:var(--gold); background:rgba(8,7,5,.88); font-size:23px; cursor:pointer; }
+.charlie-story { max-width:760px; margin:0 auto 18px; color:#e5d7bd; text-align:left; }
+.charlie-story p { margin:0 0 10px; }
+.charlie-story .charlie-hint { margin:0; color:var(--light); font-weight:700; text-align:center; }
 .work-actions-screen .creation-actions { justify-content:center; margin-top:0; }
 .work-actions-screen .creation-actions button { min-height:48px; }
 .creation-atelier-choice { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; width:100%; margin-top:12px; padding:12px; border:1px solid var(--line); border-radius:8px; background:rgba(0,0,0,.3); }
@@ -1099,6 +1104,10 @@ a:focus-visible {
     </div>
 
     <div class="charlie-feature">
+      <div class="studio-intro charlie-story">
+        <p>Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке.</p>
+        <p class="charlie-hint">Например, поругался с начальником или опрокинул бокал с пивом!</p>
+      </div>
       <section class="choice-group personal-choice-group" aria-label="Твой вариант">
         <button class="charlie-button charlie-launch" id="serveCharlie" type="button">
           <img src="./OIG4.jpg" alt="Чарли за барной стойкой с бокалом">
@@ -1142,17 +1151,20 @@ a:focus-visible {
             </div>
             <div class="entry-field" id="phraseEntry">
               <label class="author-field-label" for="customRecipeInput">Крепкое выражение</label>
-              <textarea class="text-input author-phrase-input"
-                        id="customRecipeInput"
-                        rows="3"
-                        maxlength="500"
-                        placeholder="А теперь найди для этого случая своё крепкое выражение…"
-                        aria-label="Крепкое выражение"></textarea>
+              <div class="phrase-input-shell">
+                <textarea class="text-input author-phrase-input"
+                          id="customRecipeInput"
+                          rows="3"
+                          maxlength="500"
+                          placeholder="А теперь найди для этого случая своё крепкое выражение…"
+                          aria-label="Крепкое выражение"></textarea>
+                <div class="phrase-input-arrows" aria-label="Действия с записью">
+                  <button class="work-next work-edit" id="editCaseArrow" type="button" aria-label="Вернуться к редактированию" title="Изменить запись" hidden>↑</button>
+                  <button class="work-next" id="continueToActions" type="button" aria-label="Подтвердить запись и перейти дальше" title="И что будем с этим делать?" hidden>↓</button>
+                </div>
+              </div>
             </div>
           </form>
-          <div class="work-next-wrap">
-            <button class="work-next" id="continueToActions" type="button" aria-label="Перейти к действиям" hidden>↓</button>
-          </div>
 
         </div>
 
@@ -1678,15 +1690,21 @@ const showEntryField = kind => {
     updateSubmitVisibility();
 };
 const updateSubmitVisibility = () => {
-    $('continueToActions').hidden = !(
+    const complete = !!(
         $('customSituationInput').value.trim() &&
         $('customRecipeInput').value.trim()
     );
+    $('continueToActions').hidden = !complete;
+    $('editCaseArrow').hidden = !complete;
 };
 $('chooseCase').addEventListener('click', () => showEntryField('case'));
 $('choosePhrase').addEventListener('click', () => showEntryField('phrase'));
 $('customSituationInput').addEventListener('input', updateSubmitVisibility);
 $('customRecipeInput').addEventListener('input', updateSubmitVisibility);
+$('editCaseArrow').addEventListener('click', () => {
+    $('customSituationInput').focus();
+    $('customSituationInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
 $('continueToActions').addEventListener('click', () => {
     const situation = $('customSituationInput').value.trim();
     const phrase = $('customRecipeInput').value.trim();
