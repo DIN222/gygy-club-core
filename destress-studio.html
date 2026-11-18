@@ -13,7 +13,7 @@
   v5.3.13: после полного звукового эпизода Чарли показываются приглашение и объединённая форма авторской работы «случай + крепкое выражение».
   Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
 -->
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -966,10 +966,10 @@ a:focus-visible {
 .ta-version-panel { width:100%; margin-top:10px; }
 .ta-version-title { margin:8px 0 12px; color:var(--light); text-align:center; font:600 22px/1.25 "Playfair Display",Georgia,serif; }
 .ta-version-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-.ta-version-actions button { min-height:50px; }
+.ta-version-actions button { min-height:40px; padding:5px 8px; font-size:15px; }
 .entry-field[hidden], .ta-version-panel[hidden] { display:none !important; }
 #customSituationForm .entry-field { margin-top:12px; }
-#customSituationForm .situation-input, #customSituationForm .author-phrase-input { display:block; width:100%; }
+#customSituationForm .situation-input, #customSituationForm .author-phrase-input { display:block; width:100%; height:132px; min-height:132px; resize:none; }
 #submitMyVersion[hidden] { display:none !important; }
 .author-tools {
   display: flex;
@@ -1308,12 +1308,15 @@ a:focus-visible {
 </div>
 
 <script type="module">
-import { init as initLocalization, getCurrentLang, onLanguageChange } from '././core/localization.js';
+import { init as initLocalization, getCurrentLang, onLanguageChange, setScope, selectLanguage } from '././core/localization.js';
 import { init as initPassport } from '././modules/passport.js';
 import { supabase } from '././core/supabase-init.js';
 import { playEffect } from '././modules/soundscape.js';
 import { initCreationActions } from '././modules/creation-actions.js';
 
+// Временно фиксируем русский язык только для этой страницы.
+setScope('admin');
+selectLanguage('ru');
 initLocalization(document.body);
 const passportContainer = document.getElementById('passport-badge-container');
 initPassport(passportContainer);
