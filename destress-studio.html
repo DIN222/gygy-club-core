@@ -85,7 +85,7 @@ a:focus-visible {
     linear-gradient(rgba(0,0,0,.10), rgba(0,0,0,.10)),
     linear-gradient(90deg, rgba(10,9,7,.25), rgba(10,9,7,.15) 50%, rgba(10,9,7,.25)),
     linear-gradient(0deg, rgba(10,9,7,.30), rgba(10,9,7,.02) 55%, rgba(10,9,7,.18)),
-    url("../../destress_bg.jpg");
+    url("././destress_bg.jpg");
 
   background-size: cover;
   background-position: center;
@@ -1011,7 +1011,7 @@ a:focus-visible {
 
     <div class="brand-group">
 
-      <a class="club-brand" href="../../hall.html" translate="no">
+      <a class="club-brand" href="././hall.html" translate="no">
         <div class="club-logo">GY-GY</div>
       </a>
 
@@ -1024,7 +1024,7 @@ a:focus-visible {
   <main class="container">
 
     <div class="title-with-charlie">
-      <img src="../../OIGБФ1d.png" alt="Чарли" class="title-charlie">
+      <img src="././OIGБФ1d.png" alt="Чарли" class="title-charlie">
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
@@ -1055,7 +1055,7 @@ a:focus-visible {
 
       <section class="choice-group personal-choice-group" aria-label="Твой вариант">
         <button class="charlie-button charlie-launch" id="serveCharlie" type="button">
-          <img src="../../OIGБФ1d.png" alt="Чарли">
+          <img src="././OIGБФ1d.png" alt="Чарли">
           <span class="charlie-button-text">Чарли угощает</span>
         </button>
         <h2 class="choice-group-title">Твой вариант</h2>
@@ -1283,11 +1283,11 @@ a:focus-visible {
 </div>
 
 <script type="module">
-import { init as initLocalization, getCurrentLang, onLanguageChange } from '../../core/localization.js';
-import { init as initPassport } from '../../modules/passport.js';
-import { supabase } from '../../core/supabase-init.js';
-import { playEffect } from '../../modules/soundscape.js';
-import { initCreationActions } from '../../modules/creation-actions.js';
+import { init as initLocalization, getCurrentLang, onLanguageChange } from '././core/localization.js';
+import { init as initPassport } from '././modules/passport.js';
+import { supabase } from '././core/supabase-init.js';
+import { playEffect } from '././modules/soundscape.js';
+import { initCreationActions } from '././modules/creation-actions.js';
 
 initLocalization(document.body);
 const passportContainer = document.getElementById('passport-badge-container');
@@ -1592,7 +1592,7 @@ $('serveCharlie').addEventListener('click', async () => {
     if (caption) caption.textContent = 'Чарли угощает…';
 
     try {
-        await playEffect('whisky', '../../charlie_bar_fx.mp3');
+        await playEffect('whisky', '././charlie_bar_fx.mp3');
     } catch (error) {
         console.warn('[De-Stress Studio] Не удалось воспроизвести эффект Чарли:', error);
     } finally {
@@ -1831,7 +1831,7 @@ $('saveTxt').addEventListener('click', () => {
 
 // Ателье и Telegram
 function atelierLink(ai) {
-    const u = new URL('../../atelier.html', location.href);
+    const u = new URL('././atelier.html', location.href);
     u.searchParams.set('phrase', currentText());
     if (ai) u.searchParams.set('ai', '1');
     if (state.phrase && state.phrase.id) u.searchParams.set('pid', state.phrase.id);
@@ -1855,9 +1855,9 @@ $('goToAi').addEventListener('click', () => {
 $('btn-back').addEventListener('click', () => {
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
     if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
-    window.location.href = '../../bar.html';
+    window.location.href = '././bar.html';
 });
-$('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+$('btn-home').addEventListener('click', () => { window.location.href = '././index.html'; });
 document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if ($('sheet').classList.contains('open')) closeSheet();
