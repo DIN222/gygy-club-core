@@ -1,6 +1,7 @@
 /**
  * modules/passport.js
- * v1.3.0 — 2026-08-26
+ * v1.4.0 — 2026-08-26
+ * Изменения: автоматический перенос старого Passport из отдельных ключей localStorage.
  * Изменения: паспорт теперь подписан на 'language:changed' — при смене языка
  * флаг в уже сохранённом паспорте обновляется сразу, без похода в
  * identity.html. Раньше флаг паспорта был "снимком" на момент последнего
@@ -21,7 +22,7 @@
  */
 
 import { on, off, emit } from '../core/eventBus.js';
-import { get, set } from '../core/storage.js';
+import { get, getLegacy, set } from '../core/storage.js';
 import { applyTranslations } from '../core/localization.js';
 
 const CLUB_NICKNAMES = [
@@ -33,12 +34,48 @@ const CLUB_NICKNAMES = [
 let boundContainer = null;
 let unsubscribers = [];
 
+function firstLegacyValue(keys) {
+    for (const key of keys) {
+        const value = getLegacy(key, '');
+        if (typeof value === 'string' && value.trim()) return value;
+    }
+    return '';
+}
+
+function migrateLegacyPassport() {
+    // Порядок ключей совпадает с приоритетом, который ранее использовал BAR.
+    const id = firstLegacyValue(['gygy_id', 'gy_user_id', 'gy_trace']);
+    if (!id) return null;
+
+    const nickname = firstLegacyValue(['gygy_nickname']);
+    const clubNickname = firstLegacyValue(['gygy_club_nick']);
+    const avatar = firstLegacyValue(['gygy_avatar', 'gy_user_img', 'gy_user_avatar']);
+
+    const passport = {
+        id,
+        nickname,
+        nicknameType: nickname ? 'own' : 'club',
+        clubNickname,
+        avatar,
+        avatarSource: 'photo',
+        flagCountry: get('flagCountry', 'gb'),
+        createdAt: Date.now()
+    };
+
+    // Старые ключи намеренно не удаляем: исходные данные остаются резервной копией.
+    // Если запись нового объекта не удастся, возвращаем собранный объект для текущего сеанса.
+    set('passport', passport);
+    return passport;
+}
+
 export function hasPassport() {
-    return !!get('passport');
+    return !!getPassport();
 }
 
 export function getPassport() {
-    return get('passport', null);
+    const current = get('passport', null);
+    if (current) return current;
+    return migrateLegacyPassport();
 }
 
 function generateId() {
