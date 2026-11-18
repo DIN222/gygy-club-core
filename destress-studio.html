@@ -1005,6 +1005,8 @@ a:focus-visible {
 .charlie-story p { margin:0 0 10px; }
 .charlie-story p:first-child { text-indent: 5ch; }
 .charlie-story .charlie-offer { margin:12px 0 0; color:var(--light); font-weight:700; }
+.charlie-feature { max-width:760px; margin:0 auto 18px; text-align:center; }
+.charlie-feature .personal-choice-group { margin:0; }
 .situation-input { min-height:132px; resize:vertical; line-height:1.5; }
 .phrase-author-form { grid-template-columns:minmax(0,1fr) auto; }
 .phrase-author-form label { grid-column:1 / -1; margin:0 0 2px; font-size:clamp(18px,2.4vw,24px); }
@@ -1094,6 +1096,9 @@ a:focus-visible {
         </div>
       </section>
 
+    </div>
+
+    <div class="charlie-feature">
       <section class="choice-group personal-choice-group" aria-label="Твой вариант">
         <button class="charlie-button charlie-launch" id="serveCharlie" type="button">
           <img src="./OIG4.jpg" alt="Чарли за барной стойкой с бокалом">
