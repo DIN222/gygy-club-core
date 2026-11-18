@@ -978,6 +978,20 @@ a:focus-visible {
   margin-top: 12px;
 }
 #customSituationForm[hidden], #customRecipeForm[hidden] { display:none !important; }
+.studio-controls, #phrasePickerPanel, #layer-phrase { display:none !important; }
+#customSituationForm { display:block; max-width:760px; margin:18px auto 0; }
+#customSituationForm .entry-field { display:block; }
+#customSituationForm .entry-field[hidden] { display:block !important; }
+#customSituationForm .author-field-label { margin-top:16px; }
+#customSituationForm textarea { height:132px; min-height:132px; resize:vertical; }
+.work-next-wrap { display:flex; justify-content:center; margin:16px auto 0; }
+.work-next { width:42px; height:42px; border:1px solid var(--gold); border-radius:50%; color:var(--gold); background:rgba(8,7,5,.75); font-size:25px; line-height:1; cursor:pointer; box-shadow:0 0 16px rgba(216,179,106,.15); }
+.work-next:hover { background:rgba(216,179,106,.14); }
+.work-actions-screen { width:100%; max-width:760px; margin:0 auto; padding:18px 0 8px; text-align:center; }
+.work-actions-question { margin:0 0 22px; color:var(--light); font:600 clamp(21px,3vw,30px)/1.3 "Playfair Display",Georgia,serif; }
+.work-actions-back { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; margin:0 auto 18px; border:1px solid var(--gold); border-radius:50%; color:var(--gold); background:rgba(8,7,5,.75); font-size:23px; cursor:pointer; }
+.work-actions-screen .creation-actions { justify-content:center; margin-top:0; }
+.work-actions-screen .creation-actions button { min-height:48px; }
 .charlie-prompt { margin: 14px 0 10px; color: var(--light); font-family: "Playfair Display", Georgia, serif; font-size: clamp(19px, 2.2vw, 25px); text-align: center; }
 .author-field-label { display:block; margin:12px 0 6px; color:var(--light); font-weight:700; }
 .author-phrase-input { width:100%; min-height:88px; }
@@ -1109,25 +1123,29 @@ a:focus-visible {
 
         <div>
 
-          <form class="custom-form" id="customSituationForm" hidden>
-            <div class="entry-field" id="caseEntry" hidden>
+          <form class="custom-form" id="customSituationForm">
+            <div class="entry-field" id="caseEntry">
+              <label class="author-field-label" for="customSituationInput">Случай</label>
               <textarea class="text-input situation-input"
                         id="customSituationInput"
                         rows="5"
                         maxlength="1200"
+                        placeholder="Расскажи, что произошло…"
                         aria-label="Случай"></textarea>
             </div>
-            <div class="entry-field" id="phraseEntry" hidden>
+            <div class="entry-field" id="phraseEntry">
+              <label class="author-field-label" for="customRecipeInput">Крепкое выражение</label>
               <textarea class="text-input author-phrase-input"
                         id="customRecipeInput"
                         rows="3"
                         maxlength="500"
-                        aria-label="Крепкое слово"></textarea>
+                        placeholder="А теперь найди для этого случая своё крепкое выражение…"
+                        aria-label="Крепкое выражение"></textarea>
             </div>
-            <button class="charlie-button" id="submitMyVersion" type="submit" hidden>
-              <span class="charlie-button-text">Готово — собрать мою работу →</span>
-            </button>
           </form>
+          <div class="work-next-wrap">
+            <button class="work-next" id="continueToActions" type="button" aria-label="Перейти к действиям" hidden>↓</button>
+          </div>
 
         </div>
 
@@ -1239,6 +1257,18 @@ a:focus-visible {
 
       </section>
 
+      <section class="layer ahead work-actions-screen" id="work-actions-screen" aria-labelledby="workActionsQuestion">
+        <button class="work-actions-back" id="backToWork" type="button" aria-label="Вернуться к редактированию">↑</button>
+        <h2 class="work-actions-question" id="workActionsQuestion">И что теперь будем с этим делать?</h2>
+        <div class="creation-actions" id="creationActions" aria-label="Действия с авторской работой">
+          <button class="gold-button" type="button" data-creation-action="atelier">На футболку</button>
+          <button class="outline-button" type="button" data-creation-action="telegram">Telegram</button>
+          <button class="outline-button" type="button" data-creation-action="friend">Другу</button>
+          <button class="outline-button" type="button" data-creation-action="archive">Личный архив</button>
+          <button class="outline-button" type="button" data-creation-action="chat">Чат De-Stress Studio</button>
+        </div>
+      </section>
+
     </div>
 
   </main>
@@ -1292,14 +1322,7 @@ a:focus-visible {
         TXT ⬇
       </button>
 
-      <div class="creation-actions" id="creationActions" aria-label="Действия с авторской работой">
-        <button class="gold-button" type="button" data-creation-action="atelier">На футболку</button>
-        <button class="outline-button" type="button" data-creation-action="telegram">Telegram</button>
-        <button class="outline-button" type="button" data-creation-action="friend">Другу</button>
-        <button class="outline-button" type="button" data-creation-action="archive">Личный архив</button>
-        <button class="outline-button" type="button" data-creation-action="chat">Клубный чат</button>
-        <button class="outline-button" type="button" data-creation-action="news">GY-GY NEWS</button>
-      </div>
+
 
     </div>
 
@@ -1396,8 +1419,10 @@ function displayOf(p) {
     if (p.items) return p.items.map(displayOf).join(' ');
     return (p.translations && p.translations[getCurrentLang()]) || p.text;
 }
-const currentPhraseText = () => displayOf(state.phrase);
+const currentPhraseText = () => $('customRecipeInput')?.value.trim() || displayOf(state.phrase);
 function currentSituationText() {
+    const authoredSituation = $('customSituationInput')?.value.trim();
+    if (authoredSituation) return authoredSituation;
     if (state.situationIndex !== null) {
         const item = allSituations()[state.situationIndex];
         return item ? item[1] : '';
@@ -1647,7 +1672,7 @@ const showEntryField = kind => {
     updateSubmitVisibility();
 };
 const updateSubmitVisibility = () => {
-    $('submitMyVersion').hidden = !(
+    $('continueToActions').hidden = !(
         $('customSituationInput').value.trim() &&
         $('customRecipeInput').value.trim()
     );
@@ -1656,6 +1681,27 @@ $('chooseCase').addEventListener('click', () => showEntryField('case'));
 $('choosePhrase').addEventListener('click', () => showEntryField('phrase'));
 $('customSituationInput').addEventListener('input', updateSubmitVisibility);
 $('customRecipeInput').addEventListener('input', updateSubmitVisibility);
+$('continueToActions').addEventListener('click', () => {
+    const situation = $('customSituationInput').value.trim();
+    const phrase = $('customRecipeInput').value.trim();
+    if (!situation || !phrase) { updateSubmitVisibility(); return; }
+    state.customSituation = situation;
+    state.situationIndex = null;
+    state.situationConfirmed = true;
+    state.customRecipe = phrase;
+    state.mode = 'my';
+    state.phrase = { id: null, text: phrase, translations: {}, source: 'session' };
+    state.phraseConfirmed = true;
+    showWorkActions(true);
+});
+$('backToWork').addEventListener('click', () => showWorkActions(false));
+function showWorkActions(show) {
+    $('layer-sit').classList.toggle('front', !show);
+    $('layer-sit').classList.toggle('back', show);
+    $('work-actions-screen').classList.toggle('front', show);
+    $('work-actions-screen').classList.toggle('ahead', !show);
+    if (show) closeSheet();
+}
 $('showPhrasePicker').addEventListener('click', () => {
     renderPhrasePicker();
     $('phrasePickerPanel').hidden = !$('phrasePickerPanel').hidden;
@@ -1887,7 +1933,7 @@ $('saveTxt').addEventListener('click', () => {
 // Ателье и Telegram
 function atelierLink(ai) {
     const u = new URL('././atelier.html', location.href);
-    u.searchParams.set('phrase', currentText());
+    u.searchParams.set('phrase', currentPhraseText().trim());
     if (ai) u.searchParams.set('ai', '1');
     if (state.phrase && state.phrase.id) u.searchParams.set('pid', state.phrase.id);
     u.searchParams.set('from', 'studio');
@@ -1909,6 +1955,7 @@ $('goToAi').addEventListener('click', () => {
 // навигация: стрелка поднимает на слой выше
 $('btn-back').addEventListener('click', () => {
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
+    if ($('work-actions-screen').classList.contains('front')) { showWorkActions(false); return; }
     if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
     window.location.href = '././bar.html';
 });
@@ -1916,6 +1963,7 @@ $('btn-home').addEventListener('click', () => { window.location.href = '././inde
 document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if ($('sheet').classList.contains('open')) closeSheet();
+    else if ($('work-actions-screen').classList.contains('front')) showWorkActions(false);
     else if ($('layer-phrase').classList.contains('front')) showPhraseLayer(false);
 });
 onLanguageChange(() => { renderChoices(); renderTopPhraseChoices(); renderPhrasePicker(); renderChip(); render(); });
