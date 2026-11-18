@@ -1,8 +1,8 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.12
-  De-Stress Studio v5.3.12
+  destress-studio.html — De-Stress Studio — v5.3.13
+  De-Stress Studio v5.3.13
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
@@ -10,7 +10,7 @@
   Исправлено: сохранение позиции прокрутки списков при перерисовке; фиксированная высота строк 44px; прокрутка не подтверждает выбор, а перетаскивание не вызывает случайный выбор строки.
   Кнопка Чарли подписана «Чарли угощает»; по нажатию звучит только эффект кашля, открывания и наливания — без голосовой реплики.
   Исправлено: колесо мыши перемещает списки случаев и выражений ровно на одну строку за жест.
-  v5.3.12: после полного звукового эпизода Чарли показываются приглашение и объединённая форма авторской работы «случай + крепкое выражение».
+  v5.3.13: после полного звукового эпизода Чарли показываются приглашение и объединённая форма авторской работы «случай + крепкое выражение».
   Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
 -->
 <html lang="en">
@@ -161,7 +161,7 @@ a:focus-visible {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 42px;
+  min-height: 46px;
 }
 #passport-badge-container .gy-user-badge {
   position: relative;
@@ -170,30 +170,38 @@ a:focus-visible {
   bottom: auto;
   left: auto;
   transform: none;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
+  display: none; /* видимость включает сам passport.js после проверки паспорта */
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  overflow: visible;
   border: 2px solid var(--gold);
   border-radius: 50%;
-  color: var(--gold);
   background: rgba(0,0,0,.88);
   box-shadow: 0 0 8px rgba(216,179,106,.25);
   z-index: 1000000;
   cursor: pointer;
 }
-#passport-badge-container .gy-user-badge::before {
-  content: "▤";
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font: 25px/1 'Share Tech Mono', monospace;
+#passport-badge-container .gy-user-badge::before { content: none; }
+#passport-badge-container .gy-user-badge .badge-img {
+  display: block !important;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #111;
 }
-#passport-badge-container .gy-user-badge .badge-img,
 #passport-badge-container .gy-user-badge .badge-flag {
-  display: none !important;
+  display: block !important;
+  position: absolute;
+  right: -5px;
+  bottom: -3px;
+  width: 17px;
+  height: 12px;
+  object-fit: cover;
+  border: 1px solid var(--gold);
+  border-radius: 2px;
+  z-index: 2;
 }
 #passport-badge-container .gy-user-badge:hover {
   background: #292116;
@@ -1016,7 +1024,7 @@ a:focus-visible {
   <main class="container">
 
     <div class="title-with-charlie">
-      <img src="../../bar_horse_desktop.png" alt="Чарли" class="title-charlie">
+      <img src="../../OIGБФ1d.png" alt="Чарли" class="title-charlie">
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
@@ -1047,7 +1055,7 @@ a:focus-visible {
 
       <section class="choice-group personal-choice-group" aria-label="Твой вариант">
         <button class="charlie-button charlie-launch" id="serveCharlie" type="button">
-          <img src="../../bar_horse_desktop.png" alt="Чарли">
+          <img src="../../OIGБФ1d.png" alt="Чарли">
           <span class="charlie-button-text">Чарли угощает</span>
         </button>
         <h2 class="choice-group-title">Твой вариант</h2>
