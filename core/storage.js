@@ -1,6 +1,7 @@
 /**
  * core/storage.js
- * v1.0.0 — 2026-08-26
+ * v1.0.1 — 2026-08-26
+ * Изменения: добавлено безопасное чтение старых ключей без namespace для миграций.
  *
  * Единый источник правды для персистентных данных проекта.
  * Прямые вызовы localStorage в других модулях и на страницах ЗАПРЕЩЕНЫ —
@@ -51,6 +52,22 @@ export function get(key, fallback = null) {
  * @param {string} key
  * @param {*} value
  */
+/**
+ * Прочитать значение из старой схемы хранения, где ключи не имели namespace.
+ * Используется только для точечной миграции; обычное чтение выполняется через get().
+ * @param {string} key
+ * @param {*} [fallback]
+ */
+export function getLegacy(key, fallback = null) {
+    try {
+        const raw = localStorage.getItem(key);
+        return raw === null ? fallback : raw;
+    } catch (err) {
+        console.warn(`[Storage] getLegacy('${key}') недоступен:`, err);
+        return fallback;
+    }
+}
+
 export function set(key, value) {
     try {
         localStorage.setItem(fullKey(key), JSON.stringify(value));
@@ -106,5 +123,5 @@ export function clear() {
  */
 export const SCHEMA_VERSION_KEY = 'schemaVersion';
 
-export const Storage = { get, set, remove, clear, SCHEMA_VERSION, SCHEMA_VERSION_KEY };
+export const Storage = { get, getLegacy, set, remove, clear, SCHEMA_VERSION, SCHEMA_VERSION_KEY };
 export default Storage;
