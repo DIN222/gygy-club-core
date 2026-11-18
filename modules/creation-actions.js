@@ -211,7 +211,7 @@ export function initCreationActions({
       }
 
       case 'chat':
-        status('Клубный чат пока не подключён к серверу. Работа подготовлена, но никому не отправлена.');
+        status('Чат De-Stress Studio ещё строится. Работа пока не опубликована и не отправлена.');
         return;
 
       case 'news': {
