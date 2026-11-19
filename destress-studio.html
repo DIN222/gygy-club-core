@@ -1978,7 +1978,7 @@ $('goToAi').addEventListener('click', () => {
 // навигация: стрелка поднимает на слой выше
 $('btn-back').addEventListener('click', () => {
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
-    if ($('work-actions-screen').classList.contains('front')) { showWorkActions(false); return; }
+    if (!$('work-actions-screen').hidden) { showWorkActions(false); return; }
     if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
     window.location.href = '././bar.html';
 });
@@ -1986,7 +1986,7 @@ $('btn-home').addEventListener('click', () => { window.location.href = '././inde
 document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if ($('sheet').classList.contains('open')) closeSheet();
-    else if ($('work-actions-screen').classList.contains('front')) showWorkActions(false);
+    else if (!$('work-actions-screen').hidden) showWorkActions(false);
     else if ($('layer-phrase').classList.contains('front')) showPhraseLayer(false);
 });
 onLanguageChange(() => { renderChoices(); renderTopPhraseChoices(); renderPhrasePicker(); renderChip(); render(); });
