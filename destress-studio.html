@@ -1,8 +1,8 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.14
-  De-Stress Studio v5.3.14
+  destress-studio.html — De-Stress Studio — v5.3.15
+  De-Stress Studio v5.3.15
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
@@ -12,6 +12,7 @@
   Исправлено: колесо мыши перемещает списки случаев и выражений ровно на одну строку за жест.
   v5.3.13: после полного звукового эпизода Чарли показываются приглашение и объединённая форма авторской работы «случай + крепкое выражение».
   v5.3.14: восстановлен рассказ Чарли с подсказкой; стрелки редактирования и подтверждения размещены у правого края поля крепкого выражения.
+  v5.3.15: удалён дублирующий старый рассказ; поля «Случай» и «Крепкое выражение» скрыты до выбора соответствующей кнопки; заголовок переведён на русский.
   Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
 -->
 <html lang="ru">
@@ -1078,9 +1079,7 @@ a:focus-visible {
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
-    <div class="studio-intro charlie-story">
-      <p>Был у меня такой случай. Везу, значит, я в телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, и тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом аж вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке. Бывало у тебя что-то подобное? Например, поругался с начальником или опрокинул бокал с пивом!</p>
-    </div>
+
 
     <div class="studio-controls" aria-label="Основные действия студии">
       <section class="choice-group" aria-label="Варианты клуба">
@@ -1116,7 +1115,7 @@ a:focus-visible {
         </button>
         <p class="charlie-repeat-note" id="charlieRepeatNote" hidden>Можно повторить, но за дополнительный случай.</p>
         <div class="ta-version-panel" id="taVersionPanel" hidden>
-          <h2 class="ta-version-title" translate="no">Ta version</h2>
+          <h2 class="ta-version-title" translate="no">ТВОЙ ВАРИАНТ</h2>
           <div class="ta-version-actions">
             <button class="outline-button" id="chooseCase" type="button">Случай</button>
             <button class="outline-button" id="choosePhrase" type="button">Крепкое слово</button>
@@ -1141,7 +1140,7 @@ a:focus-visible {
         <div>
 
           <form class="custom-form" id="customSituationForm">
-            <div class="entry-field" id="caseEntry">
+            <div class="entry-field" id="caseEntry" hidden>
               <label class="author-field-label" for="customSituationInput">Случай</label>
               <textarea class="text-input situation-input"
                         id="customSituationInput"
@@ -1150,7 +1149,7 @@ a:focus-visible {
                         placeholder="Расскажи, что произошло…"
                         aria-label="Случай"></textarea>
             </div>
-            <div class="entry-field" id="phraseEntry">
+            <div class="entry-field" id="phraseEntry" hidden>
               <label class="author-field-label" for="customRecipeInput">Крепкое выражение</label>
               <div class="phrase-input-shell">
                 <textarea class="text-input author-phrase-input"
