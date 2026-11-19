@@ -1,6 +1,6 @@
 /**
  * GY-GY Club — reusable actions for a completed creative work.
- * v1.0.2
+ * v1.0.3
  *
  * Usage:
  *   const actions = initCreationActions({
@@ -27,86 +27,6 @@ function formatWork(work) {
   return `СЛУЧАЙ\n${work.situation}\n\nКРЕПКОЕ ВЫРАЖЕНИЕ\n${work.phrase}`;
 }
 
-
-function createArchiveChoice(root, onCopy, onSave, onCancel) {
-  root.querySelector('.creation-archive-choice')?.remove();
-
-  const panel = document.createElement('div');
-  panel.className = 'creation-news-choice creation-archive-choice';
-  panel.setAttribute('role', 'group');
-  panel.setAttribute('aria-label', 'Способ сохранения личной работы');
-
-  const label = document.createElement('p');
-  label.textContent = 'Как сохранить твою работу?';
-
-  const copy = document.createElement('button');
-  copy.type = 'button';
-  copy.className = 'gold-button';
-  copy.textContent = 'Скопировать текст';
-  copy.addEventListener('click', onCopy);
-
-  const save = document.createElement('button');
-  save.type = 'button';
-  save.className = 'outline-button';
-  save.textContent = 'Сохранить файлом';
-  save.addEventListener('click', onSave);
-
-  const cancel = document.createElement('button');
-  cancel.type = 'button';
-  cancel.className = 'outline-button';
-  cancel.textContent = 'Отмена';
-  cancel.addEventListener('click', () => {
-    panel.remove();
-    onCancel?.();
-  });
-
-  panel.append(label, copy, save, cancel);
-  root.append(panel);
-  copy.focus();
-
-  return panel;
-}
-
-async function copyText(text) {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return true;
-  }
-
-  const field = document.createElement('textarea');
-  field.value = text;
-  field.setAttribute('readonly', '');
-  field.style.position = 'fixed';
-  field.style.opacity = '0';
-  document.body.append(field);
-  field.select();
-
-  let copied = false;
-  try {
-    copied = document.execCommand('copy');
-  } finally {
-    field.remove();
-  }
-
-  if (!copied) throw new Error('Clipboard is unavailable');
-  return true;
-}
-
-function saveTextFile(text) {
-  const blob = new Blob([text + '\\n— GY-GY Club\\n'], {
-    type: 'text/plain;charset=utf-8'
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  const date = new Date().toISOString().slice(0, 10);
-
-  link.href = url;
-  link.download = `gygy-destress-work-${date}.txt`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 30000);
-}
 
 function createNewsChoice(root, onSubmit, onCancel) {
   const old = root.querySelector('.creation-news-choice');
@@ -257,32 +177,26 @@ export function initCreationActions({
       }
 
       case 'archive': {
-        root.querySelector('.creation-archive-choice')?.remove();
+        try {
+          const blob = new Blob([text + '\\n— GY-GY Club\\n'], {
+            type: 'text/plain;charset=utf-8'
+          });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const date = new Date().toISOString().slice(0, 10);
 
-        createArchiveChoice(
-          root,
-          async () => {
-            try {
-              await copyText(text);
-              root.querySelector('.creation-archive-choice')?.remove();
-              status('Случай и крепкое выражение скопированы. Теперь их можно сохранить в любом удобном месте.');
-            } catch {
-              status('Не удалось скопировать автоматически. Попробуй сохранить работу файлом.');
-            }
-          },
-          () => {
-            try {
-              saveTextFile(text);
-              root.querySelector('.creation-archive-choice')?.remove();
-              status('Файл с твоей работой подготовлен. Место сохранения зависит от настроек браузера.');
-            } catch {
-              status('Не удалось подготовить файл для сохранения.');
-            }
-          },
-          () => status('Сохранение отменено.')
-        );
+          link.href = url;
+          link.download = `gygy-destress-work-${date}.txt`;
+          document.body.append(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 30000);
 
-        status('Выбери способ сохранения своей работы.');
+          status('Подготовлен файл со случаем и крепким выражением. Дальнейшее сохранение зависит от устройства и браузера.');
+        } catch {
+          status('Не удалось подготовить файл для загрузки.');
+        }
+
         return;
       }
 
