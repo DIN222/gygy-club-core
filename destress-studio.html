@@ -1,8 +1,8 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.15
-  De-Stress Studio v5.3.15
+  destress-studio.html — De-Stress Studio — v5.3.16
+  De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
   кнопки Чарли / Мой случай / Крепкие слова, формирование пары
@@ -13,6 +13,7 @@
   v5.3.13: после полного звукового эпизода Чарли показываются приглашение и объединённая форма авторской работы «случай + крепкое выражение».
   v5.3.14: восстановлен рассказ Чарли с подсказкой; стрелки редактирования и подтверждения размещены у правого края поля крепкого выражения.
   v5.3.15: удалён дублирующий старый рассказ; поля «Случай» и «Крепкое выражение» скрыты до выбора соответствующей кнопки; заголовок переведён на русский.
+  v5.3.16: после нажатия ↓ вопрос и пять действий появляются под двумя заполненными полями; поля остаются видимыми. Стрелка ↑ возвращает к редактированию без потери текста.
   Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
 -->
 <html lang="ru">
@@ -1165,6 +1166,18 @@ a:focus-visible {
 
         </div>
 
+          <section class="work-actions-screen" id="work-actions-screen" aria-labelledby="workActionsQuestion" hidden>
+            <button class="work-actions-back" id="backToWork" type="button" aria-label="Вернуться к редактированию">↑</button>
+            <h2 class="work-actions-question" id="workActionsQuestion">И что теперь будем с этим делать?</h2>
+            <div class="creation-actions" id="creationActions" aria-label="Действия с авторской работой">
+              <button class="gold-button" type="button" data-creation-action="atelier">Крепкое слово на футболку</button>
+              <button class="outline-button" type="button" data-creation-action="telegram">Telegram</button>
+              <button class="outline-button" type="button" data-creation-action="friend">Другу</button>
+              <button class="outline-button" type="button" data-creation-action="archive">Личный архив</button>
+              <button class="outline-button" type="button" data-creation-action="chat">Чат De-Stress Studio</button>
+            </div>
+          </section>
+
       </section>
 
       <!-- КРЕПКОЕ СЛОВО -->
@@ -1271,18 +1284,6 @@ a:focus-visible {
 
         </div>
 
-      </section>
-
-      <section class="layer ahead work-actions-screen" id="work-actions-screen" aria-labelledby="workActionsQuestion">
-        <button class="work-actions-back" id="backToWork" type="button" aria-label="Вернуться к редактированию">↑</button>
-        <h2 class="work-actions-question" id="workActionsQuestion">И что теперь будем с этим делать?</h2>
-        <div class="creation-actions" id="creationActions" aria-label="Действия с авторской работой">
-          <button class="gold-button" type="button" data-creation-action="atelier">Крепкое слово на футболку</button>
-          <button class="outline-button" type="button" data-creation-action="telegram">Telegram</button>
-          <button class="outline-button" type="button" data-creation-action="friend">Другу</button>
-          <button class="outline-button" type="button" data-creation-action="archive">Личный архив</button>
-          <button class="outline-button" type="button" data-creation-action="chat">Чат De-Stress Studio</button>
-        </div>
       </section>
 
     </div>
@@ -1717,11 +1718,13 @@ $('continueToActions').addEventListener('click', () => {
 });
 $('backToWork').addEventListener('click', () => showWorkActions(false));
 function showWorkActions(show) {
-    $('layer-sit').classList.toggle('front', !show);
-    $('layer-sit').classList.toggle('back', show);
-    $('work-actions-screen').classList.toggle('front', show);
-    $('work-actions-screen').classList.toggle('ahead', !show);
-    if (show) closeSheet();
+    $('work-actions-screen').hidden = !show;
+    if (show) {
+        closeSheet();
+        $('work-actions-screen').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+        $('customSituationInput').focus({ preventScroll: true });
+    }
 }
 $('showPhrasePicker').addEventListener('click', () => {
     renderPhrasePicker();
