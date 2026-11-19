@@ -1,6 +1,6 @@
 /**
  * GY-GY Club — reusable actions for a completed creative work.
- * v1.0.0
+ * v1.0.1
  *
  * Usage:
  *   const actions = initCreationActions({
@@ -147,36 +147,13 @@ export function initCreationActions({
           return;
         }
 
-        root.querySelector('.creation-atelier-choice')?.remove();
-        const panel = document.createElement('div');
-        panel.className = 'creation-atelier-choice';
-        panel.setAttribute('role', 'group');
-        panel.setAttribute('aria-label', 'Способ продолжения в Ателье');
+        const url = getAtelierUrl(work, false);
+        if (!url) {
+          status('Не удалось подготовить ссылку на Ателье.');
+          return;
+        }
 
-        const direct = document.createElement('button');
-        direct.type = 'button';
-        direct.className = 'gold-button';
-        direct.textContent = 'Передать в Ателье крепкое слово';
-
-        const withAi = document.createElement('button');
-        withAi.type = 'button';
-        withAi.className = 'outline-button';
-        withAi.textContent = 'Продолжить с ИИ';
-
-        const openAtelier = ai => {
-          const url = getAtelierUrl(work, ai);
-          if (!url) {
-            status('Не удалось подготовить ссылку на Ателье.');
-            return;
-          }
-          window.location.href = url;
-        };
-
-        direct.addEventListener('click', () => openAtelier(false));
-        withAi.addEventListener('click', () => openAtelier(true));
-        panel.append(direct, withAi);
-        root.append(panel);
-        status('Выбери, как продолжить работу в Ателье.');
+        window.location.href = url;
         return;
       }
 
