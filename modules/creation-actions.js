@@ -1,6 +1,6 @@
 /**
  * GY-GY Club — reusable actions for a completed creative work.
- * v1.0.1
+ * v1.0.2
  *
  * Usage:
  *   const actions = initCreationActions({
@@ -17,8 +17,6 @@
  * reported as unavailable until a real endpoint is provided.
  */
 
-const ARCHIVE_KEY = 'gygy-club-personal-creation-archive-v1';
-
 function normalizeWork(value) {
   const situation = String(value?.situation ?? '').trim();
   const phrase = String(value?.phrase ?? '').trim();
@@ -29,13 +27,85 @@ function formatWork(work) {
   return `СЛУЧАЙ\n${work.situation}\n\nКРЕПКОЕ ВЫРАЖЕНИЕ\n${work.phrase}`;
 }
 
-function readArchive() {
-  try {
-    const value = JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]');
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
+
+function createArchiveChoice(root, onCopy, onSave, onCancel) {
+  root.querySelector('.creation-archive-choice')?.remove();
+
+  const panel = document.createElement('div');
+  panel.className = 'creation-news-choice creation-archive-choice';
+  panel.setAttribute('role', 'group');
+  panel.setAttribute('aria-label', 'Способ сохранения личной работы');
+
+  const label = document.createElement('p');
+  label.textContent = 'Как сохранить твою работу?';
+
+  const copy = document.createElement('button');
+  copy.type = 'button';
+  copy.className = 'gold-button';
+  copy.textContent = 'Скопировать текст';
+  copy.addEventListener('click', onCopy);
+
+  const save = document.createElement('button');
+  save.type = 'button';
+  save.className = 'outline-button';
+  save.textContent = 'Сохранить файлом';
+  save.addEventListener('click', onSave);
+
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'outline-button';
+  cancel.textContent = 'Отмена';
+  cancel.addEventListener('click', () => {
+    panel.remove();
+    onCancel?.();
+  });
+
+  panel.append(label, copy, save, cancel);
+  root.append(panel);
+  copy.focus();
+
+  return panel;
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return true;
   }
+
+  const field = document.createElement('textarea');
+  field.value = text;
+  field.setAttribute('readonly', '');
+  field.style.position = 'fixed';
+  field.style.opacity = '0';
+  document.body.append(field);
+  field.select();
+
+  let copied = false;
+  try {
+    copied = document.execCommand('copy');
+  } finally {
+    field.remove();
+  }
+
+  if (!copied) throw new Error('Clipboard is unavailable');
+  return true;
+}
+
+function saveTextFile(text) {
+  const blob = new Blob([text + '\\n— GY-GY Club\\n'], {
+    type: 'text/plain;charset=utf-8'
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+
+  link.href = url;
+  link.download = `gygy-destress-work-${date}.txt`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 function createNewsChoice(root, onSubmit, onCancel) {
@@ -187,25 +257,32 @@ export function initCreationActions({
       }
 
       case 'archive': {
-        try {
-          const archive = readArchive();
+        root.querySelector('.creation-archive-choice')?.remove();
 
-          archive.unshift({
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            createdAt: new Date().toISOString(),
-            ...work
-          });
+        createArchiveChoice(
+          root,
+          async () => {
+            try {
+              await copyText(text);
+              root.querySelector('.creation-archive-choice')?.remove();
+              status('Случай и крепкое выражение скопированы. Теперь их можно сохранить в любом удобном месте.');
+            } catch {
+              status('Не удалось скопировать автоматически. Попробуй сохранить работу файлом.');
+            }
+          },
+          () => {
+            try {
+              saveTextFile(text);
+              root.querySelector('.creation-archive-choice')?.remove();
+              status('Файл с твоей работой подготовлен. Место сохранения зависит от настроек браузера.');
+            } catch {
+              status('Не удалось подготовить файл для сохранения.');
+            }
+          },
+          () => status('Сохранение отменено.')
+        );
 
-          localStorage.setItem(
-            ARCHIVE_KEY,
-            JSON.stringify(archive.slice(0, 200))
-          );
-
-          status('Сохранено в личный архив этого браузера. Синхронизации с другими устройствами пока нет.');
-        } catch {
-          status('Браузер не разрешил сохранить работу в локальный архив.');
-        }
-
+        status('Выбери способ сохранения своей работы.');
         return;
       }
 
