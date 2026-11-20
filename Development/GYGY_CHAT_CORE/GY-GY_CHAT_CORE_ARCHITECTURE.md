@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.41  
+**Version:** 0.1.42  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -342,6 +342,7 @@ These are the currently identified functional directions. Their detailed behavio
 - The detailed moderation decision procedure, the criteria and limits for hiding or deleting content, and the operational controls for AI execution of an explicitly authorized OFFICE decision.
 - The detailed authorization workflow, scope and access controls for retrospective AI reviews of closed case records; access auditing; retention periods; and the governed process for reviewing accumulated case experience and incorporating approved improvements.
 - How disputed cases are submitted to and reviewed by OFFICE, including responsibility for final decisions.
+- Participant notification and explanation after a moderation decision affecting their message or account: whether the participant must be notified, what reasons or details may be disclosed, and when. This is a prospective policy question; defer detailed discussion until the relevant moderation and participant-notice design becomes timely.
 - What participants are told when AI or moderation processes affect their content or account.
 - Whether participants can challenge or appeal a moderation decision, and how that process works.
 - What moderation evidence is retained, who may access it and for how long.
@@ -545,5 +546,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.41 records the OFFICE collaboration model — including OFFICE CHAT, live meetings and other working sessions — as an open question deliberately deferred until all three Launch Complex 1 locations are ready for integration and the broader integration discussion.  
+**Latest update:** Version 0.1.42 records participant notification and explanation after moderation decisions as a prospective policy question, to be revisited when the relevant moderation and participant-notice design becomes timely.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
