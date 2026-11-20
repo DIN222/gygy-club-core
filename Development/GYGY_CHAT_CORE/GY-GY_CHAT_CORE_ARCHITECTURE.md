@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.19  
+**Version:** 0.1.20  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -178,6 +178,11 @@ Partial upload requirements:
 - Media automatically determines and reports the technical status of each attachment, including whether upload and required checks have completed successfully. This technical status is not a substitute for the author's confirmation.
 - The author of the message alone confirms the final set of attachments to be included in publication. No other participant, moderator or OFFICE employee may confirm that set on the author's behalf.
 - Messages must not publish the message with its attachments until the author has confirmed the final attachment set. If some uploads failed, the author may review the outcomes and confirm the final set to be published; the system must not silently treat failed or omitted files as accepted.
+- If the connection is interrupted before the server confirms publication, the system checks the actual state of the message and its attachments after reconnection. It must not assume that an upload or publication succeeded merely because the author previously confirmed the set.
+- Attachments that are still successfully stored and available are retained; they are not uploaded again unnecessarily.
+- If one or more attachments are missing, unavailable or could not be recovered, the system explicitly informs the author which items are affected and that they are not currently available. The system must not silently omit them or claim that the full confirmed set is intact.
+- The author restores or re-uploads the missing attachments and repeats the confirmation/publication operation for the corrected final set.
+- Before offering a retry, Messages checks whether the server has already accepted the message. If publication was already accepted, the message must not be published again; the existing send-operation identifier and duplicate-prevention rules apply.
 - A message with an incomplete attachment set is not published without the participant's confirmation.
 - Text and attached images are protected against loss caused by connection interruption.
 
@@ -503,5 +508,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.19 clarifies automatic technical attachment-readiness reporting by Media and the author's exclusive confirmation of the final attachment set before publication.  
+**Latest update:** Version 0.1.20 clarifies attachment-state verification after connection loss, retention of successfully stored files, author-led recovery of missing files and duplicate-safe publication retry.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
