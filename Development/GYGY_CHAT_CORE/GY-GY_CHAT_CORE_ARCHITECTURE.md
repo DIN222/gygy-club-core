@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.40  
+**Version:** 0.1.41  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -536,6 +536,7 @@ The following items remain open in the currently consolidated record and must no
 - Detailed AI & Moderation policy, thresholds, notices, appeals, evidence retention and authority boundaries for automated actions.
 - The persistence boundary for collapsed unfinished operations and their relationship to Personal Space drafts, which are saved only by explicit participant command.
 - Detailed test cases and acceptance thresholds for each component and their integrated operation.
+- OFFICE collaboration architecture: the structure and relationship of OFFICE CHAT, live meetings and other organized working sessions, including whether chat spaces are shared or divided by departments and functions. This question is deliberately deferred until all three Launch Complex 1 locations — De-Stress Studio, Atelier «Horse in a Coat» and Lunar Base — are ready for integration; it will then be revisited as part of the broader discussion of their объединение and the corresponding OFFICE arrangements.
 
 These open items should be resolved in the relevant component or Launch Complex design stage, then reflected in a revised version of this document.
 
@@ -544,5 +545,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.40 requires relevant OFFICE conclusions, lessons and approved improvements to feed the Club's shared body of practical operating experience, while keeping underlying case records and private information protected by need-to-know access boundaries.  
+**Latest update:** Version 0.1.41 records the OFFICE collaboration model — including OFFICE CHAT, live meetings and other working sessions — as an open question deliberately deferred until all three Launch Complex 1 locations are ready for integration and the broader integration discussion.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
