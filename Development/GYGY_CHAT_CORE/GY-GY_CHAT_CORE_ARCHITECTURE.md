@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.3  
+**Version:** 0.1.4  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -139,8 +139,19 @@ Approved requirements:
 - A quotation preserves the text selected by the participant at the time of quoting.
 - Editing the original message does not break the history or links of replies and quotations.
 - Message relationships must remain intact after recovery from a technical failure.
+- If a participant cancels a reply before sending it, that reply is not published and is not retained in the conversation history.
+- When another participant replies to a message, its author receives a visual notification.
+- Notifications about new replies can be disabled in the participant's settings.
 
-The detailed rules for nesting depth, display, editing or deleting replies, and any additional quotation controls are not established in the currently consolidated source material and must not be invented during implementation.
+The notification preference controls whether the participant receives this reply notification; it does not change the reply itself or its relationship to the original message.
+
+**Details not yet finalized in the consolidated record:**
+- The permitted nesting depth and exact presentation of replies.
+- Whether and how published replies may be edited or deleted.
+- Additional quotation controls and the behavior of quotations when the original message is deleted.
+- The detailed navigation behavior between a reply or quotation and its original message.
+
+These items remain open for explicit design decisions and must not be inferred during implementation.
 
 ### 3.5. Component 5 — Media
 
