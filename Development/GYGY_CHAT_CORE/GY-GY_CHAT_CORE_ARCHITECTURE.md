@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.10  
+**Version:** 0.1.11  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -344,6 +344,7 @@ Core Services follows the full hierarchy:
 - Queue Management: persistence of tasks during temporary unavailability, ordering and priorities, retries, duplicate prevention and tracking of unprocessed tasks.
 - Scheduler for periodic checks, cleanup, maintenance, synchronization and other background tasks.
 - Notification Management: unified notification delivery, delivery monitoring, retries and duplicate prevention.
+- Connection Management: management of chat connection state, connection loss and restoration, coordinated with the relevant component operations.
 - Component Lifecycle Management: startup, initialization, registration, suspension, shutdown and restart, respecting dependencies and readiness.
 - Dependency Management and assessment of update impact.
 - Compatibility Management for component versions, interfaces and data-exchange formats.
