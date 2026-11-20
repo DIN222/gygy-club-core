@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.8  
+**Version:** 0.1.9  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -252,7 +252,21 @@ The approved draft rules above must not be weakened by later implementation choi
 - Search covers message text and author nicknames.
 - There is no general search across all topics in the current approved scope.
 
-The interface includes unread indicators and notification access. The detailed notification event catalog, delivery channels, participant preferences, retention and batching rules require further specification. Shared notification delivery infrastructure is provided by Core Services.
+**Approved push-notification behavior:**
+- A push notification contains only the author's nickname and the topic title. It must not contain the message text.
+- When the participant opens the push notification, the chat opens the corresponding topic and navigates to the message that triggered the notification.
+- GY-GY CHAT CORE does not maintain a separate internal notification history.
+
+The interface includes unread indicators and access to notifications. Shared notification delivery infrastructure is provided by Core Services.
+
+**Details still requiring explicit decisions:**
+- The complete catalog of events that generate notifications.
+- Whether and how participants can subscribe to topics or notification categories.
+- The participant controls for enabling, disabling or configuring notifications.
+- Delivery channels beyond the approved push behavior, and their respective rules.
+- Retention, batching and delivery-failure behavior outside the prohibition on a separate internal notification history.
+
+The approved push-content restriction and navigation behavior must be preserved by implementation. Unresolved notification preferences and event rules must not be inferred.
 
 ### 3.9. Component 9 — AI & Moderation
 
