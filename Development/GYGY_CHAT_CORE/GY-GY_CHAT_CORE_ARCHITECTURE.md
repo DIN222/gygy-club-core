@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.20  
+**Version:** 0.1.21  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -79,6 +79,13 @@ The interface is a presentation and interaction component. Business rules, persi
 Known approved decisions:
 
 **Topic creation**
+**Creation and first-message publication contract:**
+- A topic is considered created and becomes available as a published topic only when its required first message has been successfully accepted by the server.
+- Creating the topic and accepting its first message must behave as one logical publication operation: the system must not expose a fully created topic with a missing or unaccepted first message.
+- If the first-message publication fails or its outcome is uncertain because of a connection interruption, the topic must not be presented as successfully created. The author can resume the operation after reconnection.
+- On recovery, the system checks whether the first message was already accepted before offering a retry. An accepted first message must not be published again; the existing send-operation identity and duplicate-prevention requirements apply.
+- The exact technical transaction or coordination mechanism is an implementation detail to be defined through the Topics, Messages and Core Services interfaces. The logical all-or-nothing creation rule is the architectural requirement.
+
 - Any participant may create a topic.
 - A topic title is mandatory.
 - The first message starts the discussion.
@@ -508,5 +515,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.20 clarifies attachment-state verification after connection loss, retention of successfully stored files, author-led recovery of missing files and duplicate-safe publication retry.  
+**Latest update:** Version 0.1.21 clarifies the Topics–Messages creation contract: a topic becomes published only with successful server acceptance of its required first message, with recovery and duplicate-safe retry.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
