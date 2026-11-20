@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.24  
+**Version:** 0.1.25  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -309,7 +309,9 @@ These are the currently identified functional directions. Their detailed behavio
 **Approved boundary for disputed moderation cases:**
 - AI may detect and flag a potentially disputed situation and refer it to OFFICE for human review.
 - AI does not independently take moderation measures affecting the message or the participant before that review. Detection and referral are support functions, not a moderation decision.
-- The case is passed to OFFICE for consideration by authorized staff. The specific decision-making procedure and the measures, if any, that may follow the review remain subject to separate definition.
+- The case is passed to OFFICE for consideration by authorized staff. The AI and the assigned staff member may discuss the case: AI may analyze the available information, explain relevant considerations and recommend possible responses.
+- The authorized OFFICE staff member retains sole responsibility and final authority for the moderation decision, including whether a message should be hidden or deleted.
+- AI may carry out an action such as hiding or deleting a message only when explicitly instructed by the responsible OFFICE staff member. AI must not independently choose or initiate such an action.
 - The AI flag and referral to OFFICE are internal workflow events. The participant is not notified merely because AI has flagged a message or referred the case for review.
 - Whether and how a participant is informed of an outcome or a subsequent decision that affects their message or account remains a separate open policy question.
 
@@ -323,7 +325,7 @@ These are the currently identified functional directions. Their detailed behavio
 **Details still requiring explicit decisions:**
 - The moderation taxonomy and what qualifies as suspicious activity.
 - Detection methods, confidence thresholds and handling of uncertain results.
-- The detailed moderation decision procedure and the authority and permitted measures of human reviewers after OFFICE review. AI's role before review is limited to detection, flagging and referral; it does not independently impose moderation measures.
+- The detailed moderation decision procedure, the criteria and limits for hiding or deleting content, and the operational controls for AI execution of an explicitly authorized OFFICE decision.
 - How disputed cases are submitted to and reviewed by OFFICE, including responsibility for final decisions.
 - What participants are told when AI or moderation processes affect their content or account.
 - Whether participants can challenge or appeal a moderation decision, and how that process works.
@@ -527,5 +529,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.24 clarifies that AI flags and referrals to OFFICE are internal events and do not themselves trigger participant notification; communication of any subsequent review outcome remains open.  
+**Latest update:** Version 0.1.25 establishes that OFFICE staff retain final moderation decision authority; AI may discuss and advise, and may execute a hide/delete action only on explicit staff instruction.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
