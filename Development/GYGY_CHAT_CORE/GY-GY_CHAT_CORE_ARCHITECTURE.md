@@ -536,6 +536,7 @@ The following items remain open in the currently consolidated record and must no
 - Notification event catalog, delivery channels and participant preferences.
 - Detailed AI & Moderation policy, thresholds, notices, evidence retention and authority boundaries for automated actions.
 - Participant appeal or review process for OFFICE moderation decisions, including eligibility, submission route, review responsibility, timing, and possible outcomes. This is a prospective question and will be addressed when the moderation and participant-notice framework is designed.
+- Whether and how the history of OFFICE decisions must preserve the full sequence of decisions, reviews, revisions and changes, so that the development of a case can be reconstructed. This is a prospective question to be addressed when the relevant decision-history and case-record requirements are designed.
 - The persistence boundary for collapsed unfinished operations and their relationship to Personal Space drafts, which are saved only by explicit participant command.
 - Detailed test cases and acceptance thresholds for each component and their integrated operation.
 - OFFICE collaboration architecture: the structure and relationship of OFFICE CHAT, live meetings and other organized working sessions, including whether chat spaces are shared or divided by departments and functions. This question is deliberately deferred until all three Launch Complex 1 locations — De-Stress Studio, Atelier «Horse in a Coat» and Lunar Base — are ready for integration; it will then be revisited as part of the broader discussion of their объединение and the corresponding OFFICE arrangements.
@@ -547,5 +548,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.43 records the participant's ability to appeal or request review of an OFFICE moderation decision as a prospective policy question, to be addressed when the moderation and participant-notice framework is designed.  
+**Latest update:** Version 0.1.44 records the history of OFFICE decisions, including the possible need to reconstruct the sequence of reviews and changes, as an additional prospective question.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
