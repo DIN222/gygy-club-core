@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.32  
+**Version:** 0.1.33  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -319,6 +319,7 @@ These are the currently identified functional directions. Their detailed behavio
 - A separately authorized retrospective analysis may compare multiple closed cases to identify recurring situations, patterns and broader correlations. The authorization must define the purpose and scope of the comparison, and the designated AI may access only the records and information necessary for that task. Permission to compare selected cases does not grant general or standing access to the archive.
 - The designated AI may provide OFFICE staff with evidence-based recommendations arising from retrospective analysis, including suggested improvements to workflows, safeguards or AI-assisted support. Recommendations must explain their supporting observations, reasoning, expected benefits and relevant uncertainties or risks. They are advisory only: they do not change club rules, moderation policy, permissions, procedures or AI operating boundaries unless separately reviewed and approved through the Club's established human-governed process.
 - Recommendations arising from retrospective analysis must be submitted to a dedicated OFFICE review queue or equivalent tracked review workflow so they can be considered without being lost among active casework. Their submission does not constitute approval or authorize implementation; an authorized human reviewer must assess and decide whether to accept, reject, defer or request further analysis.
+- When a recommendation is approved for implementation, its subsequent lifecycle must be tracked in the OFFICE workflow. The record must identify the human staff member or responsible role accountable for implementation, the decision and agreed scope, the implementation status and relevant dates, whether implementation was completed, and the observed result or evaluation when available. AI may assist with monitoring, analysis and reporting, but accountability for implementation and approval of any resulting operational or policy change remain with authorized people.
 - These records form practical operating experience for AI-assisted analysis and improvement: they can be reviewed to identify patterns, assess prior recommendations and outcomes, and improve future support to OFFICE staff.
 - Accumulated case experience does not authorize AI to change club rules, moderation policy, permissions, decision authority or its own operating boundaries. Any such changes remain subject to the Club's established human-governed approval process.
 - The AI flag and referral to OFFICE are internal workflow events. The participant is not notified merely because AI has flagged a message or referred the case for review.
@@ -539,5 +540,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.32 requires AI recommendations from retrospective analysis to enter a dedicated, tracked OFFICE review queue; submission is advisory and does not authorize implementation.  
+**Latest update:** Version 0.1.33 requires approved AI recommendations to have a tracked implementation lifecycle in OFFICE, including a human owner, status, dates and observed outcome; implementation accountability remains human.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
