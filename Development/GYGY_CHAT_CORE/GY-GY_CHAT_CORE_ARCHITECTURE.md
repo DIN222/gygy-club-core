@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.22  
+**Version:** 0.1.23  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -306,6 +306,11 @@ The working scope identified for this component includes:
 
 These are the currently identified functional directions. Their detailed behavior and operational policies have not been fully specified in the consolidated component record.
 
+**Approved boundary for disputed moderation cases:**
+- AI may detect and flag a potentially disputed situation and refer it to OFFICE for human review.
+- AI does not independently take moderation measures affecting the message or the participant before that review. Detection and referral are support functions, not a moderation decision.
+- The case is passed to OFFICE for consideration by authorized staff. The specific decision-making procedure and the measures, if any, that may follow the review remain subject to separate definition.
+
 **Architectural separation:**
 - AI & Moderation covers AI-assisted functions and moderation support within GY-GY CHAT CORE.
 - It is distinct from the broader Club-wide architectural subject «Клуб — ИИ».
@@ -316,7 +321,7 @@ These are the currently identified functional directions. Their detailed behavio
 **Details still requiring explicit decisions:**
 - The moderation taxonomy and what qualifies as suspicious activity.
 - Detection methods, confidence thresholds and handling of uncertain results.
-- Which actions AI may take independently, which actions are recommendations only, and which require a human decision.
+- The detailed moderation decision procedure and the authority and permitted measures of human reviewers after OFFICE review. AI's role before review is limited to detection, flagging and referral; it does not independently impose moderation measures.
 - How disputed cases are submitted to and reviewed by OFFICE, including responsibility for final decisions.
 - What participants are told when AI or moderation processes affect their content or account.
 - Whether participants can challenge or appeal a moderation decision, and how that process works.
@@ -520,5 +525,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.22 clarifies notification delivery failure: Core Services performs bounded retries; an undelivered push does not erase the underlying event or unread state, and no separate internal notification history is introduced.  
+**Latest update:** Version 0.1.23 clarifies the AI & Moderation–OFFICE boundary: AI detects, flags and refers disputed cases for human review, without independently imposing moderation measures before that review.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
