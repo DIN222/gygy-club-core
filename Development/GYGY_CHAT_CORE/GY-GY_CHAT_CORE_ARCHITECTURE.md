@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.9  
+**Version:** 0.1.10  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -272,14 +272,30 @@ The approved push-content restriction and navigation behavior must be preserved 
 
 **Responsibility:** AI-assisted capabilities and moderation support within the chat.
 
-The approved component scope includes:
+The working scope identified for this component includes:
 - translation support;
 - detection of suspicious activity;
 - routing disputed cases to OFFICE for review.
 
-This component must remain distinct from the broader Club-wide architectural subject «Клуб — ИИ». The latter is a Club-level subject and is not being designed or replaced by this chat component.
+These are the currently identified functional directions. Their detailed behavior and operational policies have not been fully specified in the consolidated component record.
 
-The detailed moderation taxonomy, confidence thresholds, participant notices, appeal process, retention of moderation evidence, and exact authority boundaries for automated actions are not finalized in the currently consolidated component record. They must be specified separately before enabling consequential automated moderation actions.
+**Architectural separation:**
+- AI & Moderation covers AI-assisted functions and moderation support within GY-GY CHAT CORE.
+- It is distinct from the broader Club-wide architectural subject «Клуб — ИИ».
+- The Club-wide «Клуб — ИИ» architecture addresses the relationship and coexistence of AI and the GY-GY Club as a whole. It is not reducible to chat moderation, translation or a chat assistant, and must be designed separately at Club level.
+- The chat component must not be treated as the specification or source of authority for the Club-wide AI architecture.
+
+**Details still requiring explicit decisions:**
+- The moderation taxonomy and what qualifies as suspicious activity.
+- Detection methods, confidence thresholds and handling of uncertain results.
+- Which actions AI may take independently, which actions are recommendations only, and which require a human decision.
+- How disputed cases are submitted to and reviewed by OFFICE, including responsibility for final decisions.
+- What participants are told when AI or moderation processes affect their content or account.
+- Whether participants can challenge or appeal a moderation decision, and how that process works.
+- What moderation evidence is retained, who may access it and for how long.
+- The exact behavior, availability and participant controls for translation support.
+
+No specific automated moderation powers, sanctions or appeal procedures are established by this baseline. They must not be inferred during implementation.
 
 ### 3.10. Component 10 — Core Services
 
