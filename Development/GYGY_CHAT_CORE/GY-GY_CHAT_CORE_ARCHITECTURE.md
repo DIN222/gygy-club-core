@@ -1,8 +1,8 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.43  
-**Status:** Consolidated architecture baseline — cross-component consistency review in progress  
+**Version:** 0.1.47  
+**Status:** Final consolidated architecture baseline for the current theoretical design stage  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
 **Location:** `Development/GYGY_CHAT_CORE/`
@@ -15,7 +15,7 @@ GY-GY CHAT CORE is a universal chat architecture intended for use by different G
 
 The architecture is divided into ten components. Each component has a distinct responsibility, while shared infrastructure is provided through Core Services. Components must cooperate through defined interfaces and shared mechanisms rather than independently duplicating foundational services.
 
-This document consolidates the architectural decisions currently available from the design discussions and the existing De-Stress Studio readiness record. It is an architectural baseline, not a claim that implementation is complete or certified.
+This document is the consolidated outcome of the current theoretical design stage. It brings together the architectural decisions established in the design discussions and the existing De-Stress Studio readiness record. It is the approved architectural baseline for practical implementation, not a claim that every component is fully specified at code level, that implementation is complete, or that the system has been tested or certified. Questions deliberately left open are to be resolved when implementation and integration make them concrete; practical findings may justify controlled revisions to this architecture.
 
 ## 2. Architectural hierarchy and deployment
 
@@ -540,14 +540,28 @@ The following items remain open in the currently consolidated record and must no
 - Whether and how the history of OFFICE decisions must preserve the full sequence of decisions, reviews, revisions and changes, so that the development of a case can be reconstructed. This is a prospective question to be addressed when the relevant decision-history and case-record requirements are designed.
 - The persistence boundary for collapsed unfinished operations and their relationship to Personal Space drafts, which are saved only by explicit participant command.
 - Detailed test cases and acceptance thresholds for each component and their integrated operation.
-- OFFICE collaboration architecture: the structure and relationship of OFFICE CHAT, live meetings and other organized working sessions, including whether chat spaces are shared or divided by departments and functions. This question is deliberately deferred until all three Launch Complex 1 locations — De-Stress Studio, Atelier «Horse in a Coat» and Lunar Base — are ready for integration; it will then be revisited as part of the broader discussion of their объединение and the corresponding OFFICE arrangements.
+- OFFICE collaboration architecture: the structure and relationship of OFFICE CHAT, live meetings and other organized working sessions, including whether chat spaces are shared or divided by departments and functions. This question is deliberately deferred until all three Launch Complex 1 locations — De-Stress Studio, Atelier «Horse in a Coat» and Lunar Base — are ready for integration; it will then be revisited as part of the broader discussion of their integration and the corresponding OFFICE arrangements.
 
 These open items should be resolved in the relevant component or Launch Complex design stage, then reflected in a revised version of this document.
 
 ## 9. Document status
 
-This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
+This document is the final consolidated architectural baseline for the current theoretical design stage. It records the approved decisions and explicitly separates them from unresolved questions. The maturity of the ten components is not uniform; this is intentional and must remain visible during implementation.
 
-**Status:** The current theoretical architecture-design stage is considered complete for now and is ready for final document consolidation and transition toward practical implementation. This does not mean that every open item has been resolved or that every component is fully specified at implementation detail. Remaining questions are deliberately retained and should be revisited when practical coding, integration and operating experience make them concrete and allow theoretical requirements to be tested and refined.  
-**Latest update:** Version 0.1.46 records the decision to conclude the current architecture-design stage for now, prepare the consolidated final document, and defer unresolved questions to the practical implementation stage where appropriate.  
-**Next step:** Prepare and verify the consolidated GY-GY CHAT CORE architecture document as the baseline for practical implementation; then use implementation and integration experience to resolve deferred questions and refine the architecture.
+**Current architecture maturity by component:**
+- **Chat Interface:** Core interaction and responsive behavior are defined. Persistence behavior for collapsed unfinished operations remains open.
+- **Topics:** Creation, first-message publication, title and history principles are defined. Topic deletion policy remains open.
+- **Messages:** Server acceptance, ordering, identity, retry and version-history principles are defined. Editing rights, deletion, drafts and delivery/read semantics remain open.
+- **Replies & Quotes:** Stable relationships, quotation preservation and basic reply-notification behavior are defined. Nesting, editing/deletion and detailed navigation remain open.
+- **Media:** Launch Complex 1's minimal image/video scope, author confirmation and partial-upload recovery principles are defined. Detailed storage design and media parameters remain open for the Common Mechanisms stage and implementation.
+- **Reactions:** The preliminary scope is identified; detailed reaction behavior remains open.
+- **Personal Space:** Its working scope, explicit-command-only draft saving and key privacy boundaries are defined. Detailed behavior and retention rules remain open.
+- **Search & Notifications:** Topic-scoped search and key push-content, navigation and delivery-recovery rules are defined. The full event catalog, channels and preference details remain open.
+- **AI & Moderation:** Human decision authority, AI support boundaries, case-scoped access, retrospective review, evidence-based recommendations and the controlled learning/improvement cycle are defined. Detailed moderation policy, thresholds, evidence rules and participant-facing procedures remain open.
+- **Core Services:** The shared infrastructure responsibilities and continuous post-launch review principle are defined. Detailed technical designs and operational thresholds will be validated during implementation and operation.
+
+**Status:** The theoretical architecture-design stage is complete for now. This document is the baseline for practical implementation. It does not imply that every open item has been resolved or that every component is fully specified at code level. Open questions must remain explicit and must not be silently converted into assumed requirements. They should be revisited when coding, testing, integration and operating experience make them concrete. Any resulting architectural change must be reviewed and recorded in a subsequent document version.
+
+**Latest update:** Version 0.1.47 consolidates the current-stage architecture as the baseline for practical implementation, corrects document metadata, clarifies component maturity and preserves unresolved matters as explicit open items.
+
+**Next step:** Use this document as the architectural reference for practical implementation of GY-GY CHAT CORE. Validate component contracts through code and tests, resolve deferred questions at the appropriate stage, and then proceed to the organization and integration of the three Launch Complex 1 locations.
