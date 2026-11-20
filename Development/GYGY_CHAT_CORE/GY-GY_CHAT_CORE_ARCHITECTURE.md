@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.5  
+**Version:** 0.1.6  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -177,7 +177,18 @@ Partial upload requirements:
 
 A full media library, advanced editing and comprehensive media management are outside the initial Launch Complex 1 scope.
 
-A shared GY-GY Club storage system is recognized as necessary. Its detailed architecture is deferred to the separate **Common Mechanisms of the Launch Complex** design stage. This document therefore does not prescribe its storage provider or implementation.
+**Centralized Media storage architecture:**
+- Media files use a shared, centralized GY-GY Club storage system.
+- Supabase Storage is accepted as the initial storage foundation.
+- The Media architecture must remain independent of the storage provider so that the provider can be replaced or the storage system expanded without redesigning chat functionality.
+- Files must retain their associations with the relevant messages and topics.
+- Access control and protection of stored media are mandatory.
+
+The detailed storage architecture and operational mechanisms are deferred to the separate **Common Mechanisms of the Launch Complex** design stage. The initial use of Supabase Storage does not make the chat architecture dependent on Supabase-specific storage behavior.
+
+**Open storage-structure decision:** Whether images, videos and service thumbnails should be separated into distinct logical storage areas has not yet been decided.
+
+Other detailed Media parameters not established in the consolidated decision record — including exact supported formats, file-size limits and thumbnail-generation rules — must remain open rather than being invented during implementation.
 
 ### 3.6. Component 6 — Reactions
 
