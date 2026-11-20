@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.34  
+**Version:** 0.1.35  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -316,6 +316,7 @@ These are the currently identified functional directions. Their detailed behavio
 - Access to a case record and its supporting materials is restricted to the OFFICE staff member or staff members assigned to that case, and the AI participating in its review. Other club employees and administrators receive no automatic access. Access is case-scoped and limited to what is necessary for the assigned review.
 - After a case is closed, the AI may be granted access to its retained record for a separately authorized retrospective analysis of accumulated case experience. Closure does not create permanent or unrestricted AI access: each such review must have an explicit authorized purpose, remain within the approved scope, and expose only the case information necessary for that analysis.
 - Authorization for retrospective access to closed case records must be granted by an authorized OFFICE staff member; AI must not authorize its own access or expand the scope of its own review. The authorization must identify the purpose, scope and records permitted for the task.
+- The authorization record must preserve who granted the permission, when it was granted, its defined purpose and scope, the case records or information made accessible, and the period for which access is permitted. Any renewal, change or revocation of the authorization must also be recorded.
 - Retrospective analysis involving multiple cases or broader cross-case comparisons requires an explicitly defined authorization scope appropriate to that wider analysis. The authorizing OFFICE staff member or designated OFFICE authority must approve the selected case set and permitted information before the analysis begins.
 - A retrospective review may be assigned not only to the AI that participated in the original case, but also to a different AI instance or service specifically designated for that review. Such an AI receives only separately authorized, case-scoped access to the information necessary for the defined retrospective task; designation does not grant general access to the case archive.
 - A separately authorized retrospective analysis may compare multiple closed cases to identify recurring situations, patterns and broader correlations. The authorization must define the purpose and scope of the comparison, and the designated AI may access only the records and information necessary for that task. Permission to compare selected cases does not grant general or standing access to the archive.
@@ -542,5 +543,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.34 establishes that OFFICE personnel authorize AI access to closed case records and that broader multi-case analysis requires an explicitly approved scope; AI cannot authorize or expand its own access.  
+**Latest update:** Version 0.1.35 requires an auditable record of retrospective AI access authorization, including the authorizing person, date, purpose, scope, permitted records, access period and any renewal, change or revocation.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
