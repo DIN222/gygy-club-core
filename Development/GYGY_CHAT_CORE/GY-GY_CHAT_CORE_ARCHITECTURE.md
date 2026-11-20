@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.2  
+**Version:** 0.1.3  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -119,6 +119,16 @@ Editing and history:
 - Each revision receives a version number and edit date.
 - Version history remains accessible.
 - Editing must not break references from replies and quotations.
+
+**Details not yet finalized in the consolidated record:**
+- Which message types and content formats are supported beyond the separately specified Media attachments.
+- Who may edit a published message and whether editing is subject to a time limit or other conditions.
+- Whether and under what conditions a published message may be deleted.
+- The exact lifecycle and persistence rules for unsent drafts.
+- The participant-facing presentation of pending, accepted and failed send states.
+- Whether delivery, receipt and read confirmations beyond server acceptance are required, and their exact semantics.
+
+These items remain open for explicit design decisions. They must not be inferred from the server-acceptance and duplicate-prevention rules above.
 
 ### 3.4. Component 4 — Replies & Quotes
 
