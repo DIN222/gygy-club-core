@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.27  
+**Version:** 0.1.28  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -314,6 +314,7 @@ These are the currently identified functional directions. Their detailed behavio
 - AI may carry out an action such as hiding or deleting a message only when explicitly instructed by the responsible OFFICE staff member. AI must not independently choose or initiate such an action.
 - The review record must preserve the case history, including the relevant information considered, the AI–staff discussion and analysis, recommendations, the staff member's final decision, any actions carried out (including actions delegated to AI), and the known outcome.
 - Access to a case record and its supporting materials is restricted to the OFFICE staff member or staff members assigned to that case, and the AI participating in its review. Other club employees and administrators receive no automatic access. Access is case-scoped and limited to what is necessary for the assigned review.
+- After a case is closed, the AI may be granted access to its retained record for a separately authorized retrospective analysis of accumulated case experience. Closure does not create permanent or unrestricted AI access: each such review must have an explicit authorized purpose, remain within the approved scope, and expose only the case information necessary for that analysis.
 - These records form practical operating experience for AI-assisted analysis and improvement: they can be reviewed to identify patterns, assess prior recommendations and outcomes, and improve future support to OFFICE staff.
 - Accumulated case experience does not authorize AI to change club rules, moderation policy, permissions, decision authority or its own operating boundaries. Any such changes remain subject to the Club's established human-governed approval process.
 - The AI flag and referral to OFFICE are internal workflow events. The participant is not notified merely because AI has flagged a message or referred the case for review.
@@ -330,7 +331,7 @@ These are the currently identified functional directions. Their detailed behavio
 - The moderation taxonomy and what qualifies as suspicious activity.
 - Detection methods, confidence thresholds and handling of uncertain results.
 - The detailed moderation decision procedure, the criteria and limits for hiding or deleting content, and the operational controls for AI execution of an explicitly authorized OFFICE decision.
-- Detailed case-record access permissions and access auditing, retention periods, and the governed process for reviewing accumulated case experience and incorporating approved improvements.
+- The detailed authorization workflow, scope and access controls for retrospective AI reviews of closed case records; access auditing; retention periods; and the governed process for reviewing accumulated case experience and incorporating approved improvements.
 - How disputed cases are submitted to and reviewed by OFFICE, including responsibility for final decisions.
 - What participants are told when AI or moderation processes affect their content or account.
 - Whether participants can challenge or appeal a moderation decision, and how that process works.
@@ -534,5 +535,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.27 restricts each OFFICE case record to the staff assigned to that case and the AI participating in its review; other club employees and administrators receive no automatic access.  
+**Latest update:** Version 0.1.28 clarifies that AI may revisit closed case records for separately authorized retrospective analysis of accumulated experience, without permanent or unrestricted archive access.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
