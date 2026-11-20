@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.29  
+**Version:** 0.1.30  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -316,6 +316,7 @@ These are the currently identified functional directions. Their detailed behavio
 - Access to a case record and its supporting materials is restricted to the OFFICE staff member or staff members assigned to that case, and the AI participating in its review. Other club employees and administrators receive no automatic access. Access is case-scoped and limited to what is necessary for the assigned review.
 - After a case is closed, the AI may be granted access to its retained record for a separately authorized retrospective analysis of accumulated case experience. Closure does not create permanent or unrestricted AI access: each such review must have an explicit authorized purpose, remain within the approved scope, and expose only the case information necessary for that analysis.
 - A retrospective review may be assigned not only to the AI that participated in the original case, but also to a different AI instance or service specifically designated for that review. Such an AI receives only separately authorized, case-scoped access to the information necessary for the defined retrospective task; designation does not grant general access to the case archive.
+- A separately authorized retrospective analysis may compare multiple closed cases to identify recurring situations, patterns and broader correlations. The authorization must define the purpose and scope of the comparison, and the designated AI may access only the records and information necessary for that task. Permission to compare selected cases does not grant general or standing access to the archive.
 - These records form practical operating experience for AI-assisted analysis and improvement: they can be reviewed to identify patterns, assess prior recommendations and outcomes, and improve future support to OFFICE staff.
 - Accumulated case experience does not authorize AI to change club rules, moderation policy, permissions, decision authority or its own operating boundaries. Any such changes remain subject to the Club's established human-governed approval process.
 - The AI flag and referral to OFFICE are internal workflow events. The participant is not notified merely because AI has flagged a message or referred the case for review.
@@ -536,5 +537,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.29 clarifies that retrospective analysis of closed cases may be assigned to the original AI or to another specifically designated AI, with separate authorization and case-scoped access.  
+**Latest update:** Version 0.1.30 allows separately authorized retrospective analysis to compare selected closed cases for recurring patterns and correlations, with access limited to the defined task and necessary records.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
