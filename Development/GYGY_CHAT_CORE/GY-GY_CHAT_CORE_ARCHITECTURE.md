@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.17  
+**Version:** 0.1.18  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -398,6 +398,33 @@ Experiment & Testing Management is included as a future architectural capability
 
 **Core Services architectural analogy:** It serves as a common protective and sustaining system for the chat, somewhat like an immune system: it detects faults and threats, isolates problems, initiates protective responses, supports recovery and reports system condition. This analogy does not mean that Core Services replaces the specialized responsibilities of the other components.
 
+### 3.11. Cross-component responsibility boundaries
+
+The following responsibility boundaries are an explicit architectural contract between components. They define ownership at the level of responsibility; they do not silently settle unresolved policies or prescribe a specific technical implementation.
+
+**Messages**
+- Owns the message lifecycle and message-level semantics: composition, publication, server acceptance state, ordering requirements, editing and version history, and the message's association with its topic.
+- Coordinates publication of a message that contains attachments, but does not own the technical upload, storage, processing or delivery mechanisms for media files.
+
+**Media**
+- Owns the technical lifecycle of media attachments: upload, storage, processing, media access and presentation.
+- Maintains the technical association between each media object and the relevant message or topic.
+- Makes attachment readiness and upload outcomes available to the message-publication flow. The exact interface, states and identifiers remain to be specified in the detailed Media/implementation design.
+- Does not independently publish or define the content semantics of a chat message.
+
+**Core Services**
+- Provides shared infrastructure and generic mechanisms used by the components, including reliability, queues, transactions, recovery, security, storage-related foundations, event coordination and notification delivery.
+- Does not take ownership of component-specific business rules, message semantics, media policies or moderation judgments.
+- Supplies mechanisms; the component that owns a function remains responsible for defining what that function means and when it should be invoked.
+
+**OFFICE**
+- Is the staff-only environment in which authorized personnel may review matters referred for human consideration, including disputed cases routed from AI & Moderation.
+- Acts only within the access restrictions and authority granted by the applicable OFFICE architecture and procedures.
+- Does not receive blanket access to participant communications or Personal Space. Access to private information is limited to personnel who need the relevant information to review an assigned matter; draft contents remain inaccessible to OFFICE.
+- The exact referral payload, evidence and attachment access, review workflow, decision authority and resulting actions remain open for explicit definition.
+
+These boundaries are complementary: Messages owns the message, Media owns the technical media lifecycle, Core Services supplies shared infrastructure, and OFFICE performs authorized staff review. Where a workflow crosses these boundaries, the components must cooperate through defined interfaces without transferring ownership of one another's responsibilities.
+
 ## 4. Cross-component data and reliability rules
 
 The following requirements apply across the components:
@@ -470,5 +497,6 @@ These open items should be resolved in the relevant component or Launch Complex 
 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
-**Status:** Consolidated baseline prepared for user review.  
-**Next step:** Perform an integrated cross-check of the complete document against the component discussions, resolve the listed open items where required, and then mark the unified architecture as approved for implementation planning.
+**Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
+**Latest update:** Version 0.1.18 records the explicit responsibility boundaries between Messages, Media, Core Services and OFFICE.  
+**Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
