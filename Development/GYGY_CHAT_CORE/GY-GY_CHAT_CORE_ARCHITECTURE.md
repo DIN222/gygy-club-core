@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.16  
+**Version:** 0.1.17  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -291,6 +291,7 @@ These are the currently identified functional directions. Their detailed behavio
 - It is distinct from the broader Club-wide architectural subject «Клуб — ИИ».
 - The Club-wide «Клуб — ИИ» architecture addresses the relationship and coexistence of AI and the GY-GY Club as a whole. It is not reducible to chat moderation, translation or a chat assistant, and must be designed separately at Club level.
 - The chat component must not be treated as the specification or source of authority for the Club-wide AI architecture.
+- OFFICE is a staff-only environment with a separate authentication entry. OFFICE authorization is not participant authentication and must not be required for club visitors.
 
 **Details still requiring explicit decisions:**
 - The moderation taxonomy and what qualifies as suspicious activity.
