@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.14  
+**Version:** 0.1.15  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -233,6 +233,7 @@ The inclusion of these areas defines the working scope of Personal Space; their 
 - A saved draft can be reopened and continued later.
 - Drafts belong to the participant's Personal Space.
 - OFFICE has no access to the contents of a participant's drafts.
+- Access by OFFICE personnel to other private communications or personal data is limited to employees who need the relevant information to review an assigned matter; private communications and personal data are not available through blanket administration-wide access.
 
 Personal Space is private to its participant. Its contents must not be exposed to other participants unless a separately approved feature explicitly provides for it.
 
@@ -297,6 +298,7 @@ These are the currently identified functional directions. Their detailed behavio
 - What participants are told when AI or moderation processes affect their content or account.
 - Whether participants can challenge or appeal a moderation decision, and how that process works.
 - What moderation evidence is retained, who may access it and for how long.
+- The exact information and attachments that may be made available to OFFICE when a disputed case is referred for review; access must follow the need-to-review restriction stated in Personal Space.
 - Translation must not replace the original message text; the original remains available alongside translation support.
 - The exact behavior, availability and participant controls for translation support.
 
