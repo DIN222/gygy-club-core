@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.13  
+**Version:** 0.1.14  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -256,7 +256,7 @@ The approved draft rules above must not be weakened by later implementation choi
 
 **Approved notification control and push behavior:**
 - Notification management uses a general participant control; separate switches for each notification type are not required.
-- Notifications about new replies can be disabled in the participant's settings, as specified in Replies & Quotes.
+- Notifications about new replies are subject to the general notification control and can be disabled through it; no separate reply-only switch is required.
 - A push notification contains only the author's nickname and the topic title. It must not contain the message text.
 - When the participant opens the push notification, the chat opens the corresponding topic and navigates to the message that triggered the notification.
 - GY-GY CHAT CORE does not maintain a separate internal notification history.
