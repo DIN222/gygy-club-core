@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.7  
+**Version:** 0.1.8  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -217,9 +217,31 @@ No answer to these questions is assumed by this architecture baseline. The compo
 
 **Responsibility:** A participant's personal area within the chat.
 
-The preliminary component scope discussed includes personal drafts, favorites, notes, reading history and personal settings. These items are recorded as the working scope, not as a fully finalized specification.
+The working component scope includes:
+- personal drafts;
+- favorites;
+- notes;
+- reading history;
+- personal settings.
 
-The exact contents, privacy boundaries, retention rules, synchronization behavior and participant controls require confirmation before implementation. Personal Space data must not be exposed to other participants unless a separately approved feature explicitly provides for it.
+The inclusion of these areas defines the working scope of Personal Space; their complete detailed specifications are not all finalized.
+
+**Approved draft rules and privacy boundary:**
+- A draft is saved only when the participant explicitly commands its saving. Automatic draft saving is not used.
+- A saved draft can be reopened and continued later.
+- Drafts belong to the participant's Personal Space.
+- OFFICE has no access to the contents of a participant's drafts.
+
+Personal Space is private to its participant. Its contents must not be exposed to other participants unless a separately approved feature explicitly provides for it.
+
+**Details still requiring explicit decisions:**
+- The detailed behavior and controls for favorites, notes and reading history.
+- The exact scope and behavior of personal settings within this component.
+- Retention and deletion rules for each type of Personal Space data.
+- Synchronization behavior across devices and sessions.
+- Whether any specific Personal Space data, other than draft contents, may be accessed by authorized club systems, and under what strictly defined conditions.
+
+The approved draft rules above must not be weakened by later implementation choices. Unresolved details must not be inferred during implementation.
 
 ### 3.8. Component 8 — Search & Notifications
 
