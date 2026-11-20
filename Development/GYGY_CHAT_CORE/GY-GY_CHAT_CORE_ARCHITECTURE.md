@@ -1,8 +1,8 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.0  
-**Status:** Consolidated architecture baseline — review required  
+**Version:** 0.1.1  
+**Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
 **Location:** `Development/GYGY_CHAT_CORE/`
@@ -60,7 +60,13 @@ Architectural requirements:
 - The interface brings together topic navigation, the selected topic's messages, message composition, media viewing, replies and quotations, unread indicators, Personal Space access, notifications and connection status.
 - Pagination/history loading must be supported without breaking the participant's position and context.
 
-**Approved interaction rule:** If a participant collapses an unfinished operation, that operation is not cancelled. The participant may continue reading, but cannot start another operation until the current one is completed or explicitly cancelled.
+**Approved interaction rules for unfinished operations:**
+- An unfinished operation can be collapsed without being cancelled.
+- Collapsing the operation preserves its current stage and entered progress.
+- The participant can continue reading the chat while the operation is collapsed.
+- The participant can reopen the operation and continue from the preserved stage.
+- No separate indicator is displayed to signal that a collapsed unfinished operation exists.
+- The participant cannot start another operation while the previous one remains unfinished. A new operation becomes available only after the current operation is completed or explicitly cancelled.
 
 The interface is a presentation and interaction component. Business rules, persistence, delivery guarantees and shared infrastructure belong to their responsible components and Core Services.
 
