@@ -1,8 +1,8 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.12  
-**Status:** Consolidated architecture baseline — all ten components reviewed; integrated cross-check remains  
+**Version:** 0.1.13  
+**Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
 **Location:** `Development/GYGY_CHAT_CORE/`
@@ -82,6 +82,7 @@ Known approved decisions:
 - The first message starts the discussion.
 - There is no separate "Short description" field.
 - An optional introductory explanation may be displayed above the first message. This does not reinstate a separate short-description field.
+- Once the topic is published, its author cannot edit the introductory explanation.
 
 **Topic title**
 - Once published, the topic title cannot be changed through ordinary participant editing.
@@ -189,6 +190,7 @@ The detailed storage architecture and operational mechanisms are deferred to the
 **Open storage-structure decision:** Whether images, videos and service thumbnails should be separated into distinct logical storage areas has not yet been decided.
 
 Other detailed Media parameters not established in the consolidated decision record — including exact supported formats, file-size limits and thumbnail-generation rules — must remain open rather than being invented during implementation.
+- Whether the image-upload recovery guarantees also apply to video uploads, including partial failure and reconnection recovery, remains to be explicitly decided.
 
 ### 3.6. Component 6 — Reactions
 
@@ -252,7 +254,9 @@ The approved draft rules above must not be weakened by later implementation choi
 - Search covers message text and author nicknames.
 - There is no general search across all topics in the current approved scope.
 
-**Approved push-notification behavior:**
+**Approved notification control and push behavior:**
+- Notification management uses a general participant control; separate switches for each notification type are not required.
+- Notifications about new replies can be disabled in the participant's settings, as specified in Replies & Quotes.
 - A push notification contains only the author's nickname and the topic title. It must not contain the message text.
 - When the participant opens the push notification, the chat opens the corresponding topic and navigates to the message that triggered the notification.
 - GY-GY CHAT CORE does not maintain a separate internal notification history.
@@ -262,7 +266,7 @@ The interface includes unread indicators and access to notifications. Shared not
 **Details still requiring explicit decisions:**
 - The complete catalog of events that generate notifications.
 - Whether and how participants can subscribe to topics or notification categories.
-- The participant controls for enabling, disabling or configuring notifications.
+- The detailed interface and behavior of the general notification control.
 - Delivery channels beyond the approved push behavior, and their respective rules.
 - Retention, batching and delivery-failure behavior outside the prohibition on a separate internal notification history.
 
@@ -293,6 +297,7 @@ These are the currently identified functional directions. Their detailed behavio
 - What participants are told when AI or moderation processes affect their content or account.
 - Whether participants can challenge or appeal a moderation decision, and how that process works.
 - What moderation evidence is retained, who may access it and for how long.
+- Translation must not replace the original message text; the original remains available alongside translation support.
 - The exact behavior, availability and participant controls for translation support.
 
 No specific automated moderation powers, sanctions or appeal procedures are established by this baseline. They must not be inferred during implementation.
