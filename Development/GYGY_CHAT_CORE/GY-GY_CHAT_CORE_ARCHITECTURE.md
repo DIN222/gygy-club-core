@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.15  
+**Version:** 0.1.16  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -67,6 +67,8 @@ Architectural requirements:
 - The participant can reopen the operation and continue from the preserved stage.
 - No separate indicator is displayed to signal that a collapsed unfinished operation exists.
 - The participant cannot start another operation while the previous one remains unfinished. A new operation becomes available only after the current operation is completed or explicitly cancelled.
+
+**Cross-component clarification still required:** The approved preservation of progress when an unfinished operation is collapsed must be reconciled with Personal Space's explicit-command-only draft saving rule. The exact persistence boundary — including behavior after navigation, reload or reconnection, and whether the preserved operation is considered a draft — has not been established.
 
 The interface is a presentation and interaction component. Business rules, persistence, delivery guarantees and shared infrastructure belong to their responsible components and Core Services.
 
@@ -458,6 +460,7 @@ The following items remain open in the currently consolidated record and must no
 - Exact Personal Space contents, privacy controls and retention behavior.
 - Notification event catalog, delivery channels and participant preferences.
 - Detailed AI & Moderation policy, thresholds, notices, appeals, evidence retention and authority boundaries for automated actions.
+- The persistence boundary for collapsed unfinished operations and their relationship to Personal Space drafts, which are saved only by explicit participant command.
 - Detailed test cases and acceptance thresholds for each component and their integrated operation.
 
 These open items should be resolved in the relevant component or Launch Complex design stage, then reflected in a revised version of this document.
