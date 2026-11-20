@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.6  
+**Version:** 0.1.7  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -194,12 +194,24 @@ Other detailed Media parameters not established in the consolidated decision rec
 
 **Responsibility:** Participant reactions to chat content.
 
-The component's approved scope includes:
+**Preliminary component scope identified in the earlier discussion:**
 - likes;
 - dislikes;
 - reactions to individual images.
 
-The detailed reaction catalog, multiplicity rules, change/removal behavior, visibility, counting and anti-abuse limits are not established in the consolidated source material. These are recorded as design details to resolve before implementation; no additional reaction types or policies are assumed here.
+This list identifies the reaction areas proposed for the component; it is not a finalized approval of their detailed behavior or complete implementation scope.
+
+**Decisions still required before implementation:**
+- Whether likes and dislikes are the only reactions for messages, or whether other reaction types are intended.
+- Whether a participant may apply one reaction or multiple reactions to the same message or image.
+- Whether a participant may change or remove an existing reaction, and how that action works.
+- Whether reactions apply to the whole message, individual images, or both, and how those targets are distinguished.
+- How reaction identities and totals are displayed to participants.
+- How reaction totals are counted and updated.
+- Whether reaction activity generates notifications.
+- What limits or safeguards are needed to prevent abuse.
+
+No answer to these questions is assumed by this architecture baseline. The component's final scope and behavior remain open for explicit decisions.
 
 ### 3.7. Component 7 — Personal Space
 
