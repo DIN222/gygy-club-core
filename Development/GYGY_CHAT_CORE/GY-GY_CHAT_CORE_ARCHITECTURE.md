@@ -1,8 +1,8 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.11  
-**Status:** Consolidated architecture baseline — component-by-component review in progress  
+**Version:** 0.1.12  
+**Status:** Consolidated architecture baseline — all ten components reviewed; integrated cross-check remains  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
 **Location:** `Development/GYGY_CHAT_CORE/`
@@ -429,7 +429,7 @@ These are architectural requirements. They do not certify that an implementation
 
 Core Services is not considered permanently closed after this initial design.
 
-**After the launch of each subsequent Launch Complex, the project returns to the Core Services architecture and reviews it against actual operating experience.**
+**After each Launch Complex is launched and operating experience becomes available, the project must return to the Core Services architecture and review it against actual operating experience.** This applies to every Launch Complex, not only when preparing the next one. The review includes practical validation of the shared mechanisms in operation.
 
 Each review checks:
 - whether existing infrastructure mechanisms are sufficient;
@@ -460,4 +460,4 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated baseline prepared for user review.  
-**Next step:** Review this document against the full component discussions, resolve the listed open items where required, and then mark the unified architecture as approved for implementation planning.
+**Next step:** Perform an integrated cross-check of the complete document against the component discussions, resolve the listed open items where required, and then mark the unified architecture as approved for implementation planning.
