@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.1  
+**Version:** 0.1.2  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -75,9 +75,23 @@ The interface is a presentation and interaction component. Business rules, persi
 **Responsibility:** Creation, organization, navigation and lifecycle of discussion topics.
 
 Known approved decisions:
-- A topic does not have a separate short-description field.
-- The topic title and its first message provide the topic's introduction.
-- Topic change history is required.
+
+**Topic creation**
+- Any participant may create a topic.
+- A topic title is mandatory.
+- The first message starts the discussion.
+- There is no separate "Short description" field.
+- An optional introductory explanation may be displayed above the first message. This does not reinstate a separate short-description field.
+
+**Topic title**
+- Once published, the topic title cannot be changed through ordinary participant editing.
+- An exceptional title-change procedure through OFFICE is permitted. Its detailed authorization and execution workflow belongs to the relevant OFFICE specification.
+
+**Topic history, cover and tags**
+- A topic change history is mandatory.
+- The history must record changes to the topic cover, including adding, replacing and removing a cover.
+- Actions involving topic tags must also be reflected in the topic history.
+- Tag functionality was treated as architecturally worked through in the component discussion. This consolidated baseline records the history requirement without inventing tag rules that are not reproduced in the available decision record.
 
 **Open decision:** The policy and exact behavior for deleting a topic have not been finalized. This document does not assume that topic deletion is allowed or define its consequences.
 
