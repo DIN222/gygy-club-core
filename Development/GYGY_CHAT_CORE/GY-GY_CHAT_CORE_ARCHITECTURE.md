@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.18  
+**Version:** 0.1.19  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -175,6 +175,9 @@ Partial upload requirements:
 - Only failed uploads are retried.
 - The participant does not have to restart the entire upload.
 - Before publication, the participant confirms the final set of attachments.
+- Media automatically determines and reports the technical status of each attachment, including whether upload and required checks have completed successfully. This technical status is not a substitute for the author's confirmation.
+- The author of the message alone confirms the final set of attachments to be included in publication. No other participant, moderator or OFFICE employee may confirm that set on the author's behalf.
+- Messages must not publish the message with its attachments until the author has confirmed the final attachment set. If some uploads failed, the author may review the outcomes and confirm the final set to be published; the system must not silently treat failed or omitted files as accepted.
 - A message with an incomplete attachment set is not published without the participant's confirmation.
 - Text and attached images are protected against loss caused by connection interruption.
 
@@ -410,6 +413,8 @@ The following responsibility boundaries are an explicit architectural contract b
 - Owns the technical lifecycle of media attachments: upload, storage, processing, media access and presentation.
 - Maintains the technical association between each media object and the relevant message or topic.
 - Makes attachment readiness and upload outcomes available to the message-publication flow. The exact interface, states and identifiers remain to be specified in the detailed Media/implementation design.
+- Media reports technical attachment readiness and upload outcomes to the message-publication flow. The author alone makes the publication-level confirmation of the final attachment set; automated technical readiness checks do not constitute that confirmation, and no other person may confirm on the author's behalf.
+- Messages enforces the publication gate: a message containing attachments is not published until the author's confirmation of the final attachment set has been received. The exact technical interface and state model remain part of detailed design.
 - Does not independently publish or define the content semantics of a chat message.
 
 **Core Services**
@@ -498,5 +503,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.18 records the explicit responsibility boundaries between Messages, Media, Core Services and OFFICE.  
+**Latest update:** Version 0.1.19 clarifies automatic technical attachment-readiness reporting by Media and the author's exclusive confirmation of the final attachment set before publication.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
