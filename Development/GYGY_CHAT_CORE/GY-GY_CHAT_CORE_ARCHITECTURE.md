@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.4  
+**Version:** 0.1.5  
 **Status:** Consolidated architecture baseline — component-by-component review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -146,6 +146,7 @@ Approved requirements:
 The notification preference controls whether the participant receives this reply notification; it does not change the reply itself or its relationship to the original message.
 
 **Details not yet finalized in the consolidated record:**
+- Whether a cancelled reply leaves any local draft text, and the exact lifecycle of that text.
 - The permitted nesting depth and exact presentation of replies.
 - Whether and how published replies may be edited or deleted.
 - Additional quotation controls and the behavior of quotations when the original message is deleted.
