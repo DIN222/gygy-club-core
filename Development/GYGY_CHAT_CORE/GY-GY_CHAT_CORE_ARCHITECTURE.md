@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.21  
+**Version:** 0.1.22  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -278,6 +278,11 @@ The approved draft rules above must not be weakened by later implementation choi
 - A push notification contains only the author's nickname and the topic title. It must not contain the message text.
 - When the participant opens the push notification, the chat opens the corresponding topic and navigates to the message that triggered the notification.
 - GY-GY CHAT CORE does not maintain a separate internal notification history.
+- Search & Notifications defines the notification event, its intended recipient and the permitted content; Core Services provides the shared technical delivery mechanism.
+- Core Services may retry a push delivery after a temporary failure. Retries must be bounded; delivery must not be attempted indefinitely.
+- If the push cannot be delivered after the permitted retries, it is treated as undelivered. Failure to deliver the push does not remove or invalidate the underlying chat event or message.
+- The underlying unread state remains available independently of push delivery, so the participant can see the unread message when they next visit the chat. This does not create a separate internal notification history.
+- Delivery retries and recovery must avoid generating duplicate notifications where the delivery mechanism can determine that a prior attempt was already accepted.
 
 The interface includes unread indicators and access to notifications. Shared notification delivery infrastructure is provided by Core Services.
 
@@ -286,9 +291,9 @@ The interface includes unread indicators and access to notifications. Shared not
 - Whether and how participants can subscribe to topics or notification categories.
 - The detailed interface and behavior of the general notification control.
 - Delivery channels beyond the approved push behavior, and their respective rules.
-- Retention, batching and delivery-failure behavior outside the prohibition on a separate internal notification history.
+- Exact retry limits, retry intervals, batching and technical delivery acknowledgements.
 
-The approved push-content restriction and navigation behavior must be preserved by implementation. Unresolved notification preferences and event rules must not be inferred.
+The approved push-content restriction, navigation behavior, bounded retry rule and independence of unread state from push delivery must be preserved by implementation. Unresolved notification preferences and event rules must not be inferred.
 
 ### 3.9. Component 9 — AI & Moderation
 
@@ -515,5 +520,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.21 clarifies the Topics–Messages creation contract: a topic becomes published only with successful server acceptance of its required first message, with recovery and duplicate-safe retry.  
+**Latest update:** Version 0.1.22 clarifies notification delivery failure: Core Services performs bounded retries; an undelivered push does not erase the underlying event or unread state, and no separate internal notification history is introduced.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
