@@ -1,7 +1,7 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.23  
+**Version:** 0.1.24  
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
@@ -310,6 +310,8 @@ These are the currently identified functional directions. Their detailed behavio
 - AI may detect and flag a potentially disputed situation and refer it to OFFICE for human review.
 - AI does not independently take moderation measures affecting the message or the participant before that review. Detection and referral are support functions, not a moderation decision.
 - The case is passed to OFFICE for consideration by authorized staff. The specific decision-making procedure and the measures, if any, that may follow the review remain subject to separate definition.
+- The AI flag and referral to OFFICE are internal workflow events. The participant is not notified merely because AI has flagged a message or referred the case for review.
+- Whether and how a participant is informed of an outcome or a subsequent decision that affects their message or account remains a separate open policy question.
 
 **Architectural separation:**
 - AI & Moderation covers AI-assisted functions and moderation support within GY-GY CHAT CORE.
@@ -525,5 +527,5 @@ These open items should be resolved in the relevant component or Launch Complex 
 This file consolidates the architecture currently recoverable from the approved discussions and the existing De-Stress Studio readiness record. Components 1–5 and Core Services have a number of explicit operational requirements recorded above. For components 6–9, only the scope and decisions explicitly available in the source record are stated; missing detail is deliberately marked open rather than fabricated.
 
 **Status:** Consolidated architecture baseline — cross-component consistency review in progress.  
-**Latest update:** Version 0.1.23 clarifies the AI & Moderation–OFFICE boundary: AI detects, flags and refers disputed cases for human review, without independently imposing moderation measures before that review.  
+**Latest update:** Version 0.1.24 clarifies that AI flags and referrals to OFFICE are internal events and do not themselves trigger participant notification; communication of any subsequent review outcome remains open.  
 **Next step:** Continue the integrated cross-check, resolve remaining open contracts and decisions where required, and only then consider approval for implementation planning.
