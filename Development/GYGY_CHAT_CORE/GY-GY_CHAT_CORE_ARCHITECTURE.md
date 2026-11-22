@@ -1,8 +1,8 @@
 # GY-GY CHAT CORE
 ## Unified Technical Architecture
 **Document:** GY-GY_CHAT_CORE_ARCHITECTURE.md  
-**Version:** 0.1.47  
-**Status:** Final consolidated architecture baseline for the current theoretical design stage  
+**Version:** 0.1.48  
+**Status:** Consolidated architecture baseline with approved decisions through 2026-11-22  
 **Scope:** Universal chat architecture for GY-GY Club locations  
 **Repository:** `DIN222/gygy-club-core`  
 **Location:** `Development/GYGY_CHAT_CORE/`
@@ -15,7 +15,7 @@ GY-GY CHAT CORE is a universal chat architecture intended for use by different G
 
 The architecture is divided into ten components. Each component has a distinct responsibility, while shared infrastructure is provided through Core Services. Components must cooperate through defined interfaces and shared mechanisms rather than independently duplicating foundational services.
 
-This document is the consolidated outcome of the current theoretical design stage. It brings together the architectural decisions established in the design discussions and the existing De-Stress Studio readiness record. It is the approved architectural baseline for practical implementation, not a claim that every component is fully specified at code level, that implementation is complete, or that the system has been tested or certified. Questions deliberately left open are to be resolved when implementation and integration make them concrete; practical findings may justify controlled revisions to this architecture.
+This document is the consolidated outcome of the current theoretical design stage. Version 0.1.48 incorporates the additional approved decisions recorded in Section 10. Where Section 10 explicitly updates or supersedes an earlier open item or formulation, Section 10 takes precedence. It brings together the architectural decisions established in the design discussions and the existing De-Stress Studio readiness record. It is the approved architectural baseline for practical implementation, not a claim that every component is fully specified at code level, that implementation is complete, or that the system has been tested or certified. Questions deliberately left open are to be resolved when implementation and integration make them concrete; practical findings may justify controlled revisions to this architecture.
 
 ## 2. Architectural hierarchy and deployment
 
@@ -562,6 +562,375 @@ This document is the final consolidated architectural baseline for the current t
 
 **Status:** The theoretical architecture-design stage is complete for now. This document is the baseline for practical implementation. It does not imply that every open item has been resolved or that every component is fully specified at code level. Open questions must remain explicit and must not be silently converted into assumed requirements. They should be revisited when coding, testing, integration and operating experience make them concrete. Any resulting architectural change must be reviewed and recorded in a subsequent document version.
 
-**Latest update:** Version 0.1.47 consolidates the current-stage architecture as the baseline for practical implementation, corrects document metadata, clarifies component maturity and preserves unresolved matters as explicit open items.
+**Latest update:** Version 0.1.48 incorporates the approved decisions through 2026-11-22. The original ten-component structure and the approved Launch Complex 1 staging remain unchanged. Section 10 records later decisions and takes precedence over earlier conflicting or superseded open-item formulations.
 
 **Next step:** Use this document as the architectural reference for practical implementation of GY-GY CHAT CORE. Validate component contracts through code and tests, resolve deferred questions at the appropriate stage, and then proceed to the organization and integration of the three Launch Complex 1 locations.
+
+
+---
+
+## 10. Approved architectural decisions incorporated after version 0.1.47
+
+**Precedence and interpretation**
+
+This section records decisions approved in the subsequent CHAT CORE architecture discussions through 2026-11-22. It is a normative part of this document, not an informal proposal list. Where it updates an earlier open item or conflicts with an earlier preliminary formulation, the approved decision in this section takes precedence. Earlier provisions that do not conflict remain valid.
+
+The expanded capabilities below describe the agreed CHAT CORE architecture. Their implementation may be staged. They do not mean that every advanced capability must be included in the first De-Stress Studio deployment or that the deliberately minimal Launch Complex 1 Media scope has been silently expanded.
+
+### 10.1. Topics — additional approved details
+
+- The topic list uses the following columns: **Topics, Replies, Author, Views, Last message**.
+- The first message remains mandatory and starts the discussion.
+- The optional introductory explanation is displayed above the first message. It is not a separate short-description field.
+- After publication, the author cannot edit the introductory explanation.
+- The topic title cannot be changed through ordinary participant editing after publication. An exceptional change through OFFICE remains subject to the relevant OFFICE procedure.
+- Topic creation and acceptance of its first message form one logical publication operation. A topic is not exposed as successfully created until the first message is accepted by the server.
+- If publication fails or its result is uncertain, the participant can resume the operation after reconnection. The system checks whether the first message was already accepted before retrying and prevents duplicate publication.
+- Topic history records cover changes and tag-related actions.
+- Topic deletion policy remains open unless separately decided in the applicable architecture.
+
+### 10.2. Messages — editing, deletion and personal archiving
+
+The later approved decisions resolve the earlier open questions about participant editing and deletion as follows.
+
+**Editing**
+- A participant may edit their own published messages without a time limit.
+- The original version and every subsequent revision are retained.
+- Each revision has its date and exact time.
+- The “Edited” indicator opens the revision history.
+- Two versions can be compared, with added, removed and changed content highlighted.
+- Any earlier version can be restored. Restoration creates a new revision and does not erase later history.
+- The participant can copy the full text or a selected fragment from any historical version.
+- Attachments can be added, removed or replaced. Earlier files and attachment compositions remain in history.
+- The general message text and individual attachment comments can be edited independently; their histories and associations are preserved.
+- Attachment order can be changed. Historical order is retained and comments remain associated with their files.
+- ALT text can be added, edited or removed after publication. Its history and language versions remain associated with the image.
+- A displayed filename can be changed without changing the original filename or file contents.
+- Before saving, the participant can compare the prepared revision with the published version, inspect a preview and cancel without publishing.
+- Intermediate editing states are automatically preserved as unpublished temporary states, recoverable after closing the interface or losing connection. They are visible only to the author.
+- Several intermediate states can be reviewed, compared and restored. Restoring an earlier state does not delete later states.
+- Conflicts between devices must never silently overwrite changes. Compatible changes may be merged, followed by a review before publication.
+- The author is notified if the message changes on another device while it is being edited. Optional locking can prevent editing on the author's other devices during the current editing session; the lock is released when the session ends or is cancelled, including appropriate handling of connection loss.
+
+**Deletion and trash**
+- A participant may delete their own published messages.
+- Deletion removes the message from the ordinary conversation view but does not silently destroy its revision history or associated data; the technical relationship is retained.
+- Deleted messages enter a personal trash.
+- The trash supports viewing, individual and bulk restoration, and permanent deletion with confirmation.
+- Restoration preserves revision history, attachments, comments and ALT.
+- Trash is synchronized between devices.
+- Automatic permanent deletion occurs 30 days after the message enters the trash. The remaining period is displayed; earlier permanent deletion is available with confirmation.
+- Bulk actions support selecting multiple or all items for restoration or permanent deletion.
+
+**Personal archive of sent messages**
+- A participant may archive their own sent messages. Archiving hides them only from that participant's main list; other participants continue to see the messages normally.
+- The personal archive has its own view, search, filtering, sorting and restoration.
+- Archived messages retain revisions, reactions, attachments and their links.
+- The archive supports nested folders, manual organization, favorites, tags and color labels.
+- One archived message may be referenced from more than one folder without creating duplicate message objects.
+- Export and import support individual messages, groups, folders or the full archive, with selectable content and preservation of message text, explanations, attachment comments, files, dates, revision history, folder structure, tags and favorites.
+- Import includes preview, selective restoration, integrity and compatibility checks, and duplicate handling: skip, replace or create a copy. Existing data is not changed without an explicit choice.
+- Export/import activity is recorded in the shared CHAT CORE operation log, including date/time, operation type, result, counts and errors, with a link to the archive file where available. The log does not store the content of private messages.
+
+### 10.3. Replies & Quotes — expanded relationship and chain model
+
+- A participant can reply to a specific message using the “Reply” action.
+- The reply shows a compact quotation of the original, the author's nickname and a text excerpt.
+- Selecting the quotation opens and highlights the original message.
+- The link remains stable when the original message is edited.
+- A participant can quote a selected text fragment. The quoted text, source link and relationship to the original message history are preserved.
+- A participant can quote an individual attachment. The quotation identifies its author and shows a thumbnail or the file name/type; it retains the relationship to the original message and attachment, including historical state if the attachment is replaced or removed.
+- Multiple attachments can be quoted.
+- Replies to replies are supported. Each reply retains its direct parent relationship and its position in the complete chain.
+- The conversation view shows the immediate context; the full chain remains accessible.
+- A dedicated chain view displays the source message and all related replies in chronological order and by nesting level, with links, highlighting, attachments and revision history.
+- Branches can be collapsed and expanded individually or as a whole. The interface shows the number of hidden messages; the display state is synchronized.
+- Chain navigation supports previous/next and first/last items, accounts for collapsed branches and expands a branch when necessary to reach the target.
+- Search within a chain supports text, author, dates, quoted fragments, attachment content where available and file names. Results preserve chain structure and respect access rights.
+- Participants can save entire chains, selected branches or multiple branches to favorites.
+- Favorite chains support personal names and notes, folders with unlimited nesting, multiple-folder references without duplication, tags and color labels.
+- Personal notes on a favorite chain are private, searchable, editable and deletable, with date/time and revision history.
+- Export/import of favorite chains preserves messages, replies, chronology, nesting, attachments, quotations, links, personal names, notes, folders, tags and colors. It uses the common CHAT CORE export/import mechanism and shared operation log; “Favorite chains” is a separate operation category.
+
+### 10.4. Media — expanded attachment and document capabilities
+
+The Launch Complex 1 initial deployment remains deliberately minimal as specified in Section 3.5. The following are approved capabilities for the broader CHAT CORE Media architecture and may be implemented in stages.
+
+**Grouped file preparation and upload**
+- Multiple files can be selected or added by drag-and-drop.
+- Each file has its own pre-publication card and can be removed independently.
+- The interface shows file name, format and size, a group-level upload indicator and each file's individual status.
+- Individual uploads can be cancelled.
+- A shared explanatory text can accompany the group and appears before the file cards; it is optional.
+- Each file can have its own optional comment, independently editable or removable before publication.
+- File order can be changed by drag-and-drop and is preserved after publication; comments remain bound to their files.
+
+**Group attachment drafts**
+- A group can be saved as a draft with its files, order, shared text and individual comments.
+- Drafts can be reopened, continued, modified, have files added/removed, or be deleted. They are not visible to other participants before publication.
+- Autosaving occurs when text, composition, comments or order changes.
+- The latest state is restored after closing and reopening; the interface indicates saving status.
+- Drafts synchronize between devices. Reconnection triggers synchronization; conflicts must not silently discard changes.
+- Draft version history supports viewing, restoring and comparing versions. Restoring an earlier version does not delete later versions.
+- Drafts support names, search across name/text/file comments, sorting, nested folders, favorites, user tags, colors and bulk operations.
+- A draft can be archived. Archived drafts remain searchable and recoverable and preserve text, files, comments, tags and versions.
+- Draft trash supports individual and bulk restoration, permanent deletion with confirmation and automatic cleanup after 30 days. The remaining retention period is displayed.
+- After successful publication, the draft is removed from active drafts while the published message remains. A new independent draft may be created from the sent message. If publication fails or is interrupted, the draft remains.
+
+**Preview, thumbnails and accessibility**
+- The system detects file format and compares the actual format with the extension; it identifies damaged or malformed files where possible.
+- Preview is supported for images, PDF and supported text documents. The original file is not changed.
+- If preview is unavailable, the participant receives a clear notice and may download the file when permitted.
+- Image thumbnails and first-page document/PDF thumbnails are generated where supported; otherwise a file-type icon is shown.
+- Thumbnails adapt to device and display size while preserving proportions and readability. Caching is supported.
+- Lazy loading begins as a message approaches the visible area. Text takes priority on slow connections.
+- Placeholders reserve layout space; failed thumbnail loading does not break the message list or neighboring items.
+- Automatic retry follows a network error, followed by a manual retry option. Successfully loaded thumbnails are not unnecessarily reloaded.
+- ALT text is supported for images and thumbnails. Author-provided ALT takes precedence; AI may suggest ALT when absent, and a neutral file-type description is used if no meaningful ALT is available.
+- Authors can add or edit ALT without re-uploading the image.
+- ALT supports multiple language versions, author translations, AI-assisted translation when an author version is unavailable, interface-language selection and fallback to the source version. Translation does not alter the original ALT.
+- ALT quality checks may identify empty, generic, malformed or duplicate descriptions. AI suggestions require author acceptance; there is no automatic replacement.
+- ALT language can be detected automatically, with manual selection for ambiguous cases.
+
+**Text extraction and OCR**
+- Text can be extracted from PDFs and supported documents for search and screen-reader access where technically possible, preserving logical structure where available. The original file remains unchanged.
+- OCR is available for scans and images embedded in PDFs.
+- OCR detects languages automatically and supports multilingual documents and language changes within a document. The language of recognized fragments is retained for search and reading.
+- Recognized fragments retain page numbers and coordinates where available; search can open the corresponding page and highlight the fragment. If highlighting is unavailable, the page is still opened.
+- Recognized text can be copied by fragment or in full. Logical order, columns and tables are preserved where possible.
+- OCR confidence is retained by word or fragment; uncertain regions are marked and considered in search and display.
+- Low-confidence regions may be processed again using alternative parameters without re-uploading the file. Results can be compared; both evaluations and their history are retained.
+- Authorized OFFICE staff may manually correct OCR text. Corrections are stored separately from the original OCR, with author, date/time and revision history.
+- The verified text is used for search, copying and reading; manually corrected portions are visibly marked, and the original and corrected text can be compared.
+- A manual correction can be cancelled, returning to the original OCR while retaining the corrected version in history. A new correction can then be made.
+- OCR versions can be compared with added, removed and changed content highlighted.
+- Verified text can be exported separately from the source PDF, preserving structure and indicating manual corrections.
+
+File quarantine, antivirus infrastructure, shared storage design and other cross-club security mechanisms remain in the relevant common Launch Complex architecture, not duplicated as local CHAT CORE infrastructure.
+
+### 10.5. Reactions — approved interaction model
+
+- Reactions are displayed chronologically.
+- A participant cannot react to their own message or to an OFFICE message that has been deleted.
+- When an OFFICE message is deleted, its displayed reactions disappear while the event history is retained.
+- Participants may react to other participants' reactions.
+- Reaction-to-reaction interaction has a maximum of two levels; second-level reactions are displayed on a separate line.
+- Multiple different reactions may be attached to one reaction. Chronology is preserved at both levels.
+- The nickname of the author of the original reaction is displayed beside it.
+- A participant may react to their own reaction.
+- If an original reaction disappears, its second-level reactions also disappear from the visible interface; the event history is retained.
+- Reaction lists are collapsed by default: the first three are shown, followed by “Show more”. Expanded lists offer “Collapse”. If there are three or fewer reactions, all are shown.
+- Selecting a reaction opens a profile pop-up for its author. It shows the same public information as the profile of a message author.
+- Reaction events do not generate the topic-subscription notifications defined in Search & Notifications.
+
+### 10.6. Personal Space — approved personal tools
+
+Personal Space is the participant's private workspace. Its objects do not alter the original messages. Personal information is private and synchronized across the participant's devices where the feature specifies synchronization. The earlier rule that saved drafts are created only by explicit participant command remains in force for ordinary message drafts; the separately approved autosaving of in-progress attachment-group drafts and message-editing temporary states is limited to those explicitly defined workflows and does not establish universal automatic draft saving.
+
+#### 10.6.1. Personal message collection
+
+- A participant can save any message available to them, individually or in groups.
+- The original remains unchanged. The saved item retains author, date, text, original link and available relationships, including attachments, quotations and replies.
+- Participants can open the original. Removing an item from the personal collection does not delete the original.
+- The collection is private to its owner.
+- Entire reply chains, selected branches and multiple branches can be saved with chronology, authors and relationships. They can be viewed as a whole and linked back to their originals.
+- A chain or branch can be removed from the collection independently.
+- Personal folders support unlimited nesting. One item may be referenced in multiple folders without duplication; removing one folder reference does not remove the item from other folders.
+- Deleting a folder does not delete its materials; items remain in the general list or can be moved to another location.
+- The collection supports favorites, personal tags and color labels. Several tags may be assigned to one item; tags can be shared across items, edited and deleted, and filtered in combination.
+- Several personal notes may be attached to one item. Notes do not change the original and support search, creation/editing/deletion, date/time, revision history, comparison and restoration. Restoring a previous note version creates a new revision.
+- Export/import supports all or selected messages, chains, branches and folders. It preserves text, authors, dates, quotations, files, links, folder structure, favorites, tags, colors, notes and note history. Import includes preview, selective restoration, integrity/compatibility checks and duplicate handling: skip, replace or copy.
+- The shared CHAT CORE export/import mechanism and operation log are used; “Personal collection” is a distinct operation category. The log records date/time, type, result, counts, errors/compatibility and file reference, but not private message or note content.
+- Deleted collection items enter a trash. Individual and bulk restoration preserve folders, favorites, tags, colors, notes and history. Permanent deletion requires confirmation. Automatic cleanup occurs 30 days after deletion; the remaining period is displayed and earlier deletion is possible.
+- The collection has a separate archive. Archiving does not trigger the 30-day trash cleanup. It supports search, view, restore, sorting, filters, nested archive folders, multiple-folder references without duplication, independent favorites, tags, colors and bulk operations.
+- Archive export/import uses the shared mechanism, separately or together with the active collection. Pre-import checking covers structure, messages, chains, attachments, relationships, folders, tags, favorites, colors, metadata, duplicates, incompatibilities and corruption.
+- Previously imported archives can be rechecked wholly or selectively. Results are compared with earlier reports; history records date/time, resolved, persistent and new problems and provides navigation to affected items.
+- Structural relationships and missing attachments may be restored only through controlled procedures: locate likely source by identifiers, checksums and metadata; show a preview; require owner confirmation; leave ambiguous cases for manual decision; retain original state and history; allow restoration to be cancelled. No uncertain substitute is silently inserted.
+- Archive integrity statuses are: **Check passed; Check passed with remarks; Recovery required; Recovery impossible.** Status is assigned to the archive and individual items, recalculated after recovery or recheck, and prior results remain in history.
+
+#### 10.6.2. Personal collection reminders
+
+- Multiple independent reminders may be attached to one message, chain or branch.
+- Each reminder has its own date, exact time and explanatory text; it can be edited, cancelled or marked complete.
+- Notifications provide a link to the associated material. Reminders synchronize between devices.
+- Reminders support daily, weekly and monthly recurrence, selected days/times, an end date or occurrence count, pause/resume, changes to future occurrences, and cancellation of one occurrence or the whole schedule.
+- A calendar supports day, week and month views, status display, filters and search. Reminders can be created, edited, cancelled or moved from the calendar. For recurring reminders, the participant chooses whether a change affects one occurrence, future occurrences or the whole schedule.
+- Reminders can be grouped by folders, tags or personal categories; multiple categories may apply to one reminder. Overdue reminders are separately accessible.
+- Bulk operations support moving, categorizing, tagging, completing and cancelling selected reminders, with confirmation where needed and a recorded result.
+- Reminders can be exported/imported alone or with the collection through the common mechanism, preserving dates, schedules, explanatory text, categories, tags and links.
+- If the linked material becomes unavailable, the reminder remains active and retains its schedule and original information. The link state and reason are shown. When possible, the link can be restored or reassigned to another material without erasing the original association or history.
+- A separate list identifies reminders with problematic links and supports filtering, search and controlled restoration/reassignment. Resolved items leave this list; history is retained.
+
+#### 10.6.3. Personal thematic collections
+
+Personal thematic collections are independent named groupings of saved messages and chains. They are not substitutes for folders in the personal collection or its archive.
+
+- A participant can create named collections and add individual messages, whole chains, selected branches or several materials at once.
+- One material may belong to several collections without copies. Links to originals are retained.
+- Removing a material from a collection does not remove it from the personal message collection. Deleting a collection does not delete its materials.
+- Collections are private to their owner and synchronize across devices.
+- Each collection has its own manual material order, including drag-and-drop. Automatic ordering may use save date, author or material type; the participant can switch between manual and automatic order. Settings synchronize.
+- Each material may have an individual comment in the context of that collection. Such comments are separate from general collection notes and support editing, deletion, search, dates and revision history.
+- A collection may have its own description, separate from its cover, notes and material comments. Description supports editing, deletion, search, revision history and dates.
+- A collection may have an optional cover selected from available files or uploaded, previewed, replaced or removed. The original image is not modified.
+- Collections have their own tags and color labels, independent of tags on materials. Tags can be shared across collections, edited, deleted and filtered in combination; bulk assignment/removal is supported.
+- Collections support unlimited nesting and restructuring. A child collection may belong to multiple parent collections without duplication. It remains one shared object; removing one parent relationship does not delete it. Cycles are prohibited.
+- Deleting a parent collection preserves child collections and their materials and offers a new location. Collections may also exist outside the hierarchy.
+- Collections have a separate favorites list, independent of hierarchy and material favorites.
+- Multiple private notes may be attached directly to a collection. They are separate from its description and comments on individual materials. Notes support creation, editing, deletion, search, date/time, revision history, comparison and restoration.
+- Export/import supports all or selected collections and their nested structure, preserving links without duplication, covers, descriptions, materials, order, comments, tags, colors, favorites, notes and note history. Export allows selection of data. Import supports preview, selective restoration, integrity/compatibility checks and duplicate handling: skip, replace or copy.
+- The common CHAT CORE export/import infrastructure and operation log are used, with a separate “Personal thematic collections” category.
+- Deleted collections enter a separate trash. Their hierarchy, materials, order, comments, descriptions, covers, tags, colors, favorites, notes and histories are preserved. Individual and bulk restoration are supported. Permanent deletion requires confirmation. Automatic cleanup occurs 30 days after deletion, with remaining time shown and earlier permanent deletion available.
+- A separate archive supports individual/group archiving, search, restoration and bulk operations. Archiving does not trigger the trash retention period.
+- The archive has independent nested folders. One archived collection may be referenced from multiple folders without copies; removing one folder reference does not delete the collection.
+- The archive has its own favorites, tags and color labels, independent of active collections.
+- Archived collections support bulk move, tag assignment/removal, favorite changes, restoration to the active structure and deletion to trash.
+- Archive export/import uses the common CHAT CORE mechanism and preserves archive folders, hierarchy, links, favorites, tags, colors and collection data. The separate operation category is “Personal thematic collection archive”.
+- Imported archives can be rechecked. Verification covers structure, collections, materials, files, comments, notes, relationships and metadata; results are compared with previous checks and retain history.
+- Structural links and missing files are restored only after matching, preview and owner confirmation. Ambiguous cases require manual decision; no substitution is made without verified correspondence.
+- The same four integrity statuses apply: **Check passed; Check passed with remarks; Recovery required; Recovery impossible.**
+
+### 10.7. Search & Notifications — expanded search and subscription model
+
+**Search**
+- Search is available across all topics accessible to the participant and, separately, within the currently open topic.
+- Search is distinct from topic and nickname navigation.
+- Search supports message text, author nicknames and quoted fragments linked to the source message. Results distinguish a match in the author field from a match in message content.
+- Search can include extracted text from documents when available; otherwise it searches the file name.
+- Indexing and search respect access rights; rights are checked again when a result is opened.
+- Opening a result highlights the matching phrase, scrolls to the message and briefly highlights it.
+- Filters include author and time period: today, last 7 days, last 30 days or a custom range.
+- Results can be sorted newest-to-oldest or oldest-to-newest.
+- Search history is retained for 90 days and synchronized. Clearing it on one device synchronizes the deletion.
+- A previous query can be repeated with its original filters and search mode; permissions are checked again.
+- Favorite searches support custom names and folders, manual sorting and library search. Folder and query names are limited to 60 characters; these folders are not nested. Deleting a folder with confirmation moves its saved searches to the general list.
+- Search export/import uses JSON and preserves folder structure, names, filters, modes and sorting. Import supports preview, selective import, renewed permission checks and duplicate handling: skip, replace or copy.
+- The search-operation log records date/time, result and counts of added, replaced and skipped entries, but does not store the search query content. It is private to the owner, synchronized and retained for 90 days.
+
+**Topic subscriptions and in-club notifications**
+- Participants subscribe to topics manually. Creating a topic or publishing a message does not create an automatic subscription.
+- Participants can manually subscribe or unsubscribe.
+- A notification is created for each new message in a subscribed topic, except the participant's own messages.
+- Reactions do not generate subscription notifications.
+- An in-club notification appears next to the relevant message. A separate global unread-notification indicator is not required.
+- The notification contains the author's nickname and a short message excerpt. Selecting it opens the topic and message and briefly highlights the message.
+- Unopened notifications remain until opened. Each notification is removed 30 days after its creation.
+- Opening a notification marks it as read. A “Mark all as read” action is not provided.
+- Notifications show the date and exact time.
+- A participant can pause a subscription for 1 hour, 8 hours, 24 hours, 7 days or until manually resumed. Its status and end time are visible. A subscription can be deleted while paused.
+- Subscription and notification state synchronize between devices.
+
+**Compatibility with the earlier push-notification rule**
+- The previously approved push-notification privacy rule remains applicable to push delivery: a push contains only the author's nickname and topic title, not message text.
+- The richer nickname-plus-excerpt notification described above is the in-club notification opened from within the chat. The two presentation channels must not be conflated.
+- Search & Notifications defines the event, recipient and permitted content. Core Services provides shared delivery, bounded retries and duplicate prevention.
+- Failure of push delivery does not remove the underlying message or unread state.
+
+### 10.8. AI & Moderation — expanded common CHAT CORE requirements
+
+The previously approved human-authority and case-scoped access rules in Section 3.9 remain in force. The following requirements expand the component's detection, participant-reporting, file-safety coordination and quality-control scope.
+
+**AI authority**
+- AI autonomously performs only explicitly pre-authorized, safe and bounded actions.
+- AI may detect, analyze, explain, forecast and recommend.
+- Decisions affecting participant access, sanctions or disputed cases remain with authorized people in OFFICE.
+- Suspicion is not proof of a violation.
+- AI recommendations identify their grounds and confidence. OFFICE may change a priority; the history is retained.
+- Priorities are low, normal, high and critical. A priority is a handling level, not a finding of guilt.
+
+**Detection and warnings**
+- Detection covers mass spam/advertising, suspicious publication frequency, repeated patterns or possible coordinated accounts, manipulation of reactions or subscriptions, serial account creation, circumvention of restrictions and unwanted mass private messages where that feature exists.
+- AI may identify phishing, fraud and attempts to obtain money, passwords, verification codes or personal data.
+- Where technically possible, a warning is shown before a participant follows a dangerous link.
+- Such warnings are preliminary. Participants can indicate that a warning was useful or mistaken; OFFICE reviews relevant cases.
+
+**Participant reports**
+- A participant can report a suspicious message, link or behavior.
+- A report may contain an explanation, link to the message or profile, screenshots and files.
+- A report submitted from chat retains a link to the original content.
+- Submitted files undergo the applicable security checks.
+- Report statuses are: **Accepted; Under review; Additional information required; Reviewed.**
+- The participant receives status updates and can see the report history.
+- After review, the participant receives a short outcome and explanation. Confidential information, internal investigation material and OFFICE service information are not disclosed.
+- Detailed appeal and general administrative procedures are not specified here; they belong to the separate **“USER AGREEMENT — GENERAL RULES AND PROCEDURES”** block.
+
+**Suspicious files and quarantine**
+- File safety checking is a shared Club mechanism, not a duplicate local CHAT CORE antivirus implementation.
+- Suspicious files are isolated in quarantine; the original is retained in isolated storage with reasons, dates and results.
+- File-check states include: **Check completed — safe; Check not completed; Awaiting recheck.**
+- After a protection service is restored, a new check may be scheduled automatically.
+- Retry intervals and attempt limits are controlled; OFFICE receives a queue item with the reason, time, last attempt and state of the protection service.
+- Technical failures and retries are diagnosable and recorded in the relevant technical event log.
+- Quarantine, antivirus infrastructure and common file-protection procedures are specified in the shared Launch Complex architecture.
+
+**OFFICE review and escalation**
+- AI detection/referral is an internal workflow event; a participant is not notified merely because AI flagged a message or referred a case.
+- Critical notices are subject to deadline control and escalation through the OFFICE governance architecture.
+- A missed deadline at the highest authority level results in the status **“Requires decision of the highest governing body”**. Such a notice cannot be closed without a recorded decision of that body and a reasoned justification.
+- Original case records remain immutable. Corrections are separate entries with author, time and reason.
+- Access is limited to authorized personnel with a need to review the assigned matter. Access attempts, including unsuccessful attempts, are logged; repeated failures may trigger an OFFICE security notification. Exact thresholds belong to the common OFFICE security design.
+- Detailed review deadlines, assignment and escalation workflow are governed by OFFICE architecture, not duplicated as local chat policy.
+
+**AI quality and learning**
+- Quality control includes false positives, false negatives and model improvement.
+- Retrospective AI access to closed case records remains explicitly authorized, purpose-bound, time-bounded and case-scoped as specified in Section 3.9.
+- AI may recommend workflow or safeguard improvements, but recommendations are advisory. Human approval is required for changes to rules, permissions, procedures, policy or AI authority.
+- Approved improvements and implementation outcomes are tracked through OFFICE and contribute to shared Club operating experience, without exposing underlying case records beyond authorized access.
+
+**Architectural separation**
+- CHAT CORE AI & Moderation is not the Club-wide “Клуб — ИИ” architecture.
+- The Club-wide relationship between AI and GY-GY Club remains a separate architecture topic.
+- Translation support must not replace original message text; the original remains available alongside any translation.
+- General multilingual infrastructure belongs to **GY-GY MULTILINGUAL INTELLIGENCE CORE**, not a duplicated local CHAT CORE translation engine.
+
+### 10.9. Common mechanisms and matters deliberately outside CHAT CORE
+
+The following mechanisms are centralized and must not be independently reimplemented by each component:
+- synchronization and conflict handling;
+- export/import, preview, integrity/compatibility checking and duplicate handling;
+- shared operation logging with component-specific categories;
+- shared scheduling and recurring-operation mechanisms;
+- file storage, upload, integrity, antivirus and quarantine infrastructure;
+- notification delivery, retry and duplicate prevention;
+- access control, audit and technical diagnostics.
+
+The following matters are deliberately transferred to broader architecture or governance documents:
+- shared GY-GY Club storage, Supabase Storage deployment details, storage-area separation, backup strategy, disaster recovery, and operational thresholds;
+- shared file security, antivirus, quarantine and protection-service architecture;
+- shared preview/thumbnail infrastructure;
+- GY-GY MULTILINGUAL INTELLIGENCE CORE;
+- Club-wide “Клуб — ИИ” architecture and AI/Club coexistence;
+- OFFICE structure, authority, deadlines, escalation and staff workflows;
+- general participant appeals and administrative procedures, which belong to **“USER AGREEMENT — GENERAL RULES AND PROCEDURES”**;
+- integration of De-Stress Studio, Atelier «Horse in a Coat» and Lunar Base and the associated OFFICE collaboration architecture.
+
+These transfers do not mean that the requirements are abandoned. They mean that their common implementation or governance must be designed once in the appropriate wider document and referenced by CHAT CORE.
+
+### 10.10. Updated maturity and superseded open items
+
+The following items that appeared as open in version 0.1.47 have since received approved decisions and must no longer be treated as wholly unresolved:
+- participant editing of their own messages and message revision history;
+- participant deletion, trash and personal archiving of sent messages;
+- detailed chain, branch, quotation and favorite-chain behavior;
+- reaction interaction rules;
+- personal collection, reminders, thematic collections, their archives and recovery mechanisms;
+- all-topic and current-topic search modes, search history and saved searches;
+- manual topic subscriptions and in-club notification behavior;
+- participant reporting and its status/outcome communication;
+- the expanded AI detection, review-support and quality-control boundaries.
+
+The following remain open or deferred because they belong to broader architecture or require a separate decision:
+- topic deletion policy;
+- implementation-level interfaces and data models between components;
+- exact supported media formats, size limits and technical storage layout;
+- which video-upload recovery guarantees can be provided in the first deployment;
+- exact implementation thresholds, retry intervals and resource quotas;
+- detailed OFFICE workflow, staff authority and deadline values;
+- general participant appeals and administrative procedures under the User Agreement;
+- shared file storage, antivirus, quarantine, backup and disaster recovery architecture;
+- detailed acceptance tests and measurable thresholds;
+- the persistence boundary for a collapsed unfinished interface operation versus explicit-command-only ordinary message drafts. The specific autosaving rules approved for message-editing temporary states and attachment-group drafts do not resolve this separate cross-component question.
+
+The earlier maturity statements and open-item list in this document must be read subject to these updates. No item is considered approved beyond the exact scope stated above.
+
+**Version 0.1.48 update:** Incorporates the subsequent approved CHAT CORE decisions through 2026-11-22, preserves the original ten-component architecture and Launch Complex 1 staging, updates previously open component details, and transfers common or governance-level matters to their appropriate wider architecture documents.
