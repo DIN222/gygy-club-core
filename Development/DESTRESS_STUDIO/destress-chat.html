@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#100e0b">
+<title>GY-GY Club — De-Stress CHAT</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#100e0b;--panel:rgba(35,29,22,.94);--panel2:rgba(12,10,8,.82);--gold:#d8b36a;--light:#f0d69d;--text:#f0e8d8;--muted:#b0a38d;--line:rgba(216,179,106,.27);--soft:rgba(216,179,106,.09)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(ellipse at 50% 0%,#302416 0,#17120d 48%,#0c0b09 100%);font:15px/1.5 Inter,"Segoe UI",Arial,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--light);outline-offset:2px}
+.shell{width:min(1480px,calc(100% - 28px));min-height:100vh;margin:auto;padding:18px 0 30px;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:4px 5px 16px;border-bottom:1px solid var(--line)}
+.back{border:0;background:none;color:var(--gold);font:900 27px/1 'Share Tech Mono',monospace;padding:8px 10px 8px 0}.brand{color:var(--light);font:700 25px/1 'Playfair Display',Georgia,serif;letter-spacing:5px;text-decoration:none}.head-left{display:flex;align-items:center;gap:14px}.head-note{color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+h1{margin:25px 0 6px;text-align:center;color:var(--light);font:700 clamp(27px,4vw,40px)/1.15 'Playfair Display',Georgia,serif;letter-spacing:.06em}
+.subtitle{text-align:center;color:var(--muted);margin:0 0 24px;font-size:13px}
+.panel{border:1px solid var(--line);border-radius:13px;background:var(--panel);box-shadow:0 18px 45px #0005;overflow:hidden}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.17);flex-wrap:wrap}
+.section-label{color:var(--light);font:600 16px 'Playfair Display',Georgia,serif;letter-spacing:.04em}
+.tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.search{width:min(260px,58vw);min-height:38px;padding:8px 12px;border:1px solid var(--line);border-radius:7px;color:var(--text);background:#0c0a08}
+.btn{min-height:38px;padding:8px 14px;border:1px solid var(--gold);border-radius:7px;color:#191208;background:var(--gold);font-size:12px;font-weight:750;letter-spacing:.02em}.btn:hover{background:var(--light)}
+.btn.secondary{color:var(--light);background:transparent;border-color:var(--line)}.btn.secondary:hover{background:var(--soft);border-color:var(--gold)}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:700px}th{padding:12px 14px;color:var(--gold);background:rgba(0,0,0,.27);font-size:10px;font-weight:700;letter-spacing:.12em;text-align:left;text-transform:uppercase;border-bottom:1px solid var(--line)}td{padding:15px 14px;border-bottom:1px solid rgba(216,179,106,.13);vertical-align:middle;font-size:13px}tbody tr{cursor:pointer;transition:background .15s}tbody tr:hover{background:var(--soft)}tbody tr:last-child td{border-bottom:0}.topic-title{color:var(--light);font:600 16px 'Playfair Display',Georgia,serif}.topic-excerpt{display:block;margin-top:3px;color:var(--muted);font-size:11px}.count{text-align:center;color:#e8d6b5;font-variant-numeric:tabular-nums}.author{white-space:nowrap}.author-mini{display:flex;align-items:center;gap:9px}.avatar{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border:1px solid var(--gold);border-radius:50%;color:var(--light);background:linear-gradient(145deg,#584226,#17120d);font:700 13px 'Playfair Display',serif}.nick{color:var(--text);font-weight:650}.flag{font-size:12px;margin-left:4px}.muted{color:var(--muted)}.last{white-space:nowrap;color:var(--muted);font-size:11px}
+.view{display:none}.view.active{display:block}.topic-head{padding:17px 19px 15px;border-bottom:1px solid var(--line)}.topic-head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.topic-name{margin:0;color:var(--light);font:700 clamp(21px,3vw,29px)/1.2 'Playfair Display',Georgia,serif}.topic-meta{display:flex;gap:15px;flex-wrap:wrap;margin-top:9px;color:var(--muted);font-size:11px}.topic-actions{display:flex;gap:8px;flex-wrap:wrap}.messages-table{min-width:0}.messages-table th:first-child,.messages-table td:first-child{width:205px}.messages-table td{padding:18px 16px;vertical-align:top}.message-author{display:flex;align-items:center;gap:10px}.message-author .avatar{width:42px;height:42px;flex-basis:42px}.author-info{min-width:0}.author-info .nick{display:block}.author-date{display:block;margin-top:3px;color:var(--muted);font-size:10px}.message-body{font-size:14px;line-height:1.7;overflow-wrap:anywhere}.message-body p{margin:0 0 10px}.message-body p:last-child{margin-bottom:0}.message-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:13px}.text-action{padding:3px 0;border:0;color:var(--gold);background:none;font-size:11px}.text-action:hover{text-decoration:underline}.reaction{padding:4px 9px;border:1px solid var(--line);border-radius:20px;color:var(--light);background:var(--soft);font-size:11px}.reply{margin:14px 0 0 22px;padding:12px 14px;border-left:2px solid rgba(216,179,106,.55);background:rgba(0,0,0,.17);border-radius:0 8px 8px 0}.reply .avatar{width:29px;height:29px;flex-basis:29px;font-size:11px}.reply .message-body{margin:8px 0 0 39px;font-size:13px}.composer{padding:16px;border-top:1px solid var(--line);background:rgba(0,0,0,.18)}.composer-title{margin:0 0 9px;color:var(--light);font:600 16px 'Playfair Display',Georgia,serif}.composer textarea,.field{width:100%;min-height:104px;padding:12px;border:1px solid var(--line);border-radius:7px;color:var(--text);background:#0c0a08;resize:vertical}.composer-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}.composer-hint{color:var(--muted);font-size:10px}.new-topic-form{padding:20px}.form-label{display:block;margin:0 0 7px;color:var(--light);font-size:12px;font-weight:700}.field{min-height:42px;margin-bottom:16px}.new-topic-form textarea.field{min-height:170px}.form-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}.empty{padding:42px 20px;text-align:center;color:var(--muted)}.demo-note{margin:14px 4px 0;color:#94866f;font-size:10px;text-align:center;letter-spacing:.04em}
+@media(max-width:650px){.shell{width:calc(100% - 14px);padding-top:8px}.head-note{display:none}h1{margin-top:18px}.toolbar{align-items:stretch}.tools{width:100%}.search{flex:1;width:auto}.messages-table,.messages-table tbody,.messages-table tr,.messages-table td{display:block;width:100%}.messages-table{min-width:0}.messages-table thead{display:none}.messages-table tr{padding:14px 12px;border-bottom:1px solid var(--line)}.messages-table td{padding:5px 0;border:0}.messages-table td:first-child{width:auto}.message-author{margin-bottom:5px}.reply{margin-left:8px}.reply .message-body{margin-left:0}.topic-head-top{display:block}.topic-actions{margin-top:12px}.topic-meta{gap:8px 12px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+  <div class="head-left"><button class="back" id="back" aria-label="Назад в De-Stress Studio">←</button><span class="head-note">DE-STRESS STUDIO / COMMUNITY</span></div>
+  <a class="brand" href="#" aria-label="GY-GY Club">GY-GY</a>
+</header>
+<h1>DE-STRESS CHAT</h1>
+<p class="subtitle">Обсуждения участников GY-GY Club</p>
+
+<section class="panel view active" id="topicsView">
+  <div class="toolbar">
+    <span class="section-label">Темы обсуждений</span>
+    <div class="tools"><input class="search" id="search" type="search" placeholder="Найти тему…" aria-label="Найти тему"><button class="btn" id="newTopic">＋ Новая тема</button></div>
+  </div>
+  <div class="table-wrap">
+    <table aria-label="Список тем">
+      <thead><tr><th>Темы</th><th class="count">Ответов</th><th>Автор</th><th class="count">Просмотров</th><th>Посл. сообщение</th></tr></thead>
+      <tbody id="topicsBody"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="emptyTopics" hidden>Пока нет тем по этому запросу.</div>
+</section>
+
+<section class="panel view" id="discussionView">
+  <div class="topic-head">
+    <div class="topic-head-top">
+      <div><h2 class="topic-name" id="discussionTitle"></h2><div class="topic-meta" id="discussionMeta"></div></div>
+      <div class="topic-actions"><button class="btn secondary" id="backTopics">← Все темы</button><button class="btn secondary" id="subscribe">☆ Подписаться</button></div>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="messages-table" aria-label="Сообщения темы">
+      <thead><tr><th>Автор</th><th>Сообщение</th></tr></thead>
+      <tbody id="messagesBody"></tbody>
+    </table>
+  </div>
+  <div class="composer">
+    <h3 class="composer-title" id="composerTitle">Ваше сообщение</h3>
+    <textarea id="messageInput" placeholder="Напишите сообщение…" rows="4"></textarea>
+    <div class="composer-row"><span class="composer-hint">Демо-интерфейс · публикация пока локальная</span><button class="btn" id="sendMessage">Опубликовать</button></div>
+  </div>
+</section>
+
+<section class="panel view" id="newTopicView">
+  <div class="toolbar"><span class="section-label">Создать новую тему</span><button class="btn secondary" id="cancelTopic">← К списку тем</button></div>
+  <form class="new-topic-form" id="topicForm">
+    <label class="form-label" for="topicTitle">Название темы *</label>
+    <input class="field" id="topicTitle" maxlength="120" required placeholder="Коротко обозначьте тему обсуждения">
+    <label class="form-label" for="firstMessage">Первое сообщение *</label>
+    <textarea class="field" id="firstMessage" required placeholder="С чего начнём обсуждение?"></textarea>
+    <div class="form-actions"><button class="btn secondary" type="button" id="cancelTopic2">Отмена</button><button class="btn" type="submit">Создать тему и опубликовать</button></div>
+  </form>
+</section>
+<p class="demo-note">ПЕРВАЯ ВИЗУАЛЬНАЯ ВЕРСИЯ · ДАННЫЕ ПРИМЕРОВЫЕ · СЕРВЕРНАЯ ЧАСТЬ НЕ ПОДКЛЮЧЕНА</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const now=()=>new Date().toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+const me={name:'Вы',initial:'В',flag:'🇫🇷'};
+let nextId=4,activeId=null,replyTo=null;
+let topics=[
+{id:1,title:'Как вы обычно сбрасываете напряжение?',author:'Марсель',initial:'М',flag:'🇫🇷',date:'Сегодня, 18:42',views:128,messages:[{author:'Марсель',initial:'М',flag:'🇫🇷',date:'18:42',text:'Иногда достаточно просто выйти на улицу и пройтись без телефона. А иногда хочется рассказать кому-нибудь, что произошло.',replies:[{author:'Анна',initial:'А',flag:'🇬🇧',date:'19:06',text:'Мне помогает сменить обстановку. И хорошая чашка кофе.'},{author:'Жан',initial:'Ж',flag:'🇫🇷',date:'19:24',text:'А я предпочитаю сначала выговориться, а потом уже думать.'}]}]},
+{id:2,title:'Истории, которые теперь смешно вспоминать',author:'Анна',initial:'А',flag:'🇬🇧',date:'Сегодня, 17:15',views:86,messages:[{author:'Анна',initial:'А',flag:'🇬🇧',date:'17:15',text:'Предлагаю собирать здесь истории, которые в момент события казались катастрофой, а теперь вызывают улыбку.',replies:[{author:'Пьер',initial:'П',flag:'🇫🇷',date:'17:48',text:'Однажды я пришёл на важную встречу в разных ботинках. Заметил только в лифте.'}]}]},
+{id:3,title:'Крепкие слова: где проходит граница юмора?',author:'Жан',initial:'Ж',flag:'🇫🇷',date:'Вчера, 21:08',views:204,messages:[{author:'Жан',initial:'Ж',flag:'🇫🇷',date:'Вчера, 21:08',text:'Интересно, какие выражения кажутся вам смешными, а какие уже переходят границу? Давайте обсудим без взаимных обид.',replies:[]}]}
+];
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function initials(name){return (name||'?').trim().slice(0,1).toUpperCase();}
+function countReplies(t){return t.messages.reduce((n,m)=>n+(m.replies?.length||0),0);}
+function avatar(name,initial,flag){return '<span class="avatar">'+esc(initial||initials(name))+'</span>';}
+function authorCell(name,initial,flag){return '<div class="author-mini">'+avatar(name,initial,flag)+'<span class="author"><span class="nick">'+esc(name)+'</span><span class="flag">'+(flag||'')+'</span></span></div>';}
+function renderTopics(){
+ const q=$('search').value.trim().toLowerCase();
+ const list=topics.filter(t=>(t.title+' '+t.author).toLowerCase().includes(q));
+ $('topicsBody').innerHTML=list.map(t=>'<tr data-id="'+t.id+'"><td><span class="topic-title">'+esc(t.title)+'</span><span class="topic-excerpt">'+esc(t.messages[0]?.text||'')+'</span></td><td class="count">'+countReplies(t)+'</td><td>'+authorCell(t.author,t.initial,t.flag)+'</td><td class="count">'+t.views+'</td><td class="last">'+esc(t.date)+'</td></tr>').join('');
+ $('emptyTopics').hidden=list.length!==0;
+}
+function showView(id){['topicsView','discussionView','newTopicView'].forEach(v=>$(v).classList.toggle('active',v===id));}
+function openTopic(id){activeId=id;const t=topics.find(x=>x.id===id);if(!t)return;t.views++;$('discussionTitle').textContent=t.title;$('discussionMeta').innerHTML=authorCell(t.author,t.initial,t.flag)+'<span>Создано: '+esc(t.date)+'</span><span>Ответов: '+countReplies(t)+'</span><span>Просмотров: '+t.views+'</span>';$('subscribe').textContent=t.subscribed?'★ Вы подписаны':'☆ Подписаться';renderMessages();showView('discussionView');}
+function renderMessages(){
+ const t=topics.find(x=>x.id===activeId);if(!t)return;
+ $('messagesBody').innerHTML=t.messages.map((m,i)=>'<tr><td><div class="message-author">'+avatar(m.author,m.initial,m.flag)+'<span class="author-info"><span class="nick">'+esc(m.author)+'</span><span class="flag">'+(m.flag||'')+'</span><span class="author-date">'+esc(m.date)+'</span></span></div></td><td><div class="message-body">'+esc(m.text).replace(/\n/g,'<br>')+'</div><div class="message-tools"><button class="text-action" data-reply="'+i+'">↳ Ответить</button><button class="reaction" data-like="'+i+'">♡ '+(m.likes||0)+'</button></div>'+(m.replies||[]).map((r,j)=>'<div class="reply"><div class="message-author">'+avatar(r.author,r.initial,r.flag)+'<span class="author-info"><span class="nick">'+esc(r.author)+' <span class="flag">'+(r.flag||'')+'</span></span><span class="author-date">'+esc(r.date)+'</span></span></div><div class="message-body">'+esc(r.text).replace(/\n/g,'<br>')+'</div><div class="message-tools"><button class="text-action" data-reply="'+i+'" data-child="'+j+'">↳ Ответить</button></div></div>').join('')+'</td></tr>').join('');
+ $('discussionMeta').innerHTML=authorCell(t.author,t.initial,t.flag)+'<span>Создано: '+esc(t.date)+'</span><span>Ответов: '+countReplies(t)+'</span><span>Просмотров: '+t.views+'</span>';
+}
+function goBack(){if($('discussionView').classList.contains('active')){activeId=null;showView('topicsView');renderTopics();}else if($('newTopicView').classList.contains('active'))showView('topicsView');else window.parent.postMessage({type:'GYGY_CHAT_CLOSE'},location.origin);}
+$('back').addEventListener('click',goBack);$('backTopics').addEventListener('click',goBack);$('cancelTopic').addEventListener('click',goBack);$('cancelTopic2').addEventListener('click',goBack);
+$('newTopic').addEventListener('click',()=>{ $('topicTitle').value='';$('firstMessage').value='';showView('newTopicView');$('topicTitle').focus();});
+$('search').addEventListener('input',renderTopics);
+$('topicsBody').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(tr)openTopic(Number(tr.dataset.id));});
+$('topicForm').addEventListener('submit',e=>{e.preventDefault();const title=$('topicTitle').value.trim(),text=$('firstMessage').value.trim();if(!title||!text)return;const t={id:nextId++,title,author:me.name,initial:me.initial,flag:me.flag,date:now(),views:0,messages:[{author:me.name,initial:me.initial,flag:me.flag,date:now(),text,replies:[]}]};topics.unshift(t);renderTopics();openTopic(t.id);});
+$('messagesBody').addEventListener('click',e=>{const r=e.target.closest('[data-reply]');if(r){replyTo={message:Number(r.dataset.reply),child:r.dataset.child==null?null:Number(r.dataset.child)};$('composerTitle').textContent='Ответ на сообщение';$('messageInput').placeholder='Напишите ответ…';$('messageInput').focus();return;}const l=e.target.closest('[data-like]');if(l){const t=topics.find(x=>x.id===activeId);t.messages[Number(l.dataset.like)].likes=(t.messages[Number(l.dataset.like)].likes||0)+1;renderMessages();}});
+$('sendMessage').addEventListener('click',()=>{const text=$('messageInput').value.trim();if(!text)return;const t=topics.find(x=>x.id===activeId);if(replyTo){const m=t.messages[replyTo.message];m.replies.push({author:me.name,initial:me.initial,flag:me.flag,date:now(),text});replyTo=null;}else t.messages.push({author:me.name,initial:me.initial,flag:me.flag,date:now(),text,replies:[]});$('messageInput').value='';$('composerTitle').textContent='Ваше сообщение';$('messageInput').placeholder='Напишите сообщение…';renderMessages();});
+$('subscribe').addEventListener('click',()=>{const t=topics.find(x=>x.id===activeId);t.subscribed=!t.subscribed;$('subscribe').textContent=t.subscribed?'★ Вы подписаны':'☆ Подписаться';});
+renderTopics();
+</script>
+</body>
+</html>
