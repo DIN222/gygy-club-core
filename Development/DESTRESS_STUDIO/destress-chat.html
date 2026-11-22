@@ -11,7 +11,7 @@
 *{box-sizing:border-box}body{position:relative;margin:0;min-height:100vh;color:var(--text);background:#100e0b;font:15px/1.5 Inter,"Segoe UI",Arial,sans-serif}body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,.10),rgba(0,0,0,.10)),linear-gradient(90deg,rgba(10,9,7,.25),rgba(10,9,7,.15) 50%,rgba(10,9,7,.25)),linear-gradient(0deg,rgba(10,9,7,.30),rgba(10,9,7,.02) 55%,rgba(10,9,7,.18)),url('../../destress_bg.jpg');background-size:cover;background-position:center;background-repeat:no-repeat}button,input,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--light);outline-offset:2px}
 .shell{position:relative;z-index:1;width:min(1480px,calc(100% - 28px));min-height:100vh;margin:auto;padding:18px 0 30px;display:flex;flex-direction:column}
 header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:4px 5px 16px;border-bottom:1px solid var(--line)}
-.back{border:0;background:transparent;color:var(--gold);font:900 26px/1 'Share Tech Mono',monospace;padding:0 10px 0 0;cursor:pointer;user-select:none;transition:opacity .2s,transform .2s}.back:hover{opacity:.8;transform:scale(1.1)}.brand{color:var(--light);font:700 25px/1 'Playfair Display',Georgia,serif;letter-spacing:5px;text-decoration:none}.head-left{display:flex;align-items:center;gap:14px}
+.back{border:0;background:transparent;color:var(--light);font:900 26px/1 'Share Tech Mono',monospace;padding:0 4px 0 0;cursor:pointer;user-select:none;transition:opacity .2s,transform .2s}.back:hover{opacity:.8;transform:scale(1.1)}.back.home{padding-right:10px}.brand{color:var(--light);font:700 25px/1 'Playfair Display',Georgia,serif;letter-spacing:5px;text-decoration:none}.head-left{display:flex;align-items:center;gap:14px}
 h1{margin:25px 0 24px;text-align:center;color:var(--light);font:700 clamp(27px,4vw,40px)/1.15 'Playfair Display',Georgia,serif;letter-spacing:.06em}
 .subtitle{text-align:center;color:var(--muted);margin:0 0 24px;font-size:13px}
 .panel{border:1px solid var(--line);border-radius:13px;background:var(--panel);box-shadow:0 12px 32px rgba(0,0,0,.18);overflow:hidden}
@@ -29,7 +29,7 @@ h1{margin:25px 0 24px;text-align:center;color:var(--light);font:700 clamp(27px,4
 <body>
 <div class="shell">
 <header>
-  <div class="head-left"><button class="back" id="back" aria-label="Назад в De-Stress Studio">&lt;</button></div>
+  <div class="head-left"><button class="back" id="back" aria-label="Назад">&lt;</button><button class="back home" id="home" aria-label="На главную">&lt;&lt;</button></div>
   <a class="brand" href="#" aria-label="GY-GY Club">GY-GY</a>
 </header>
 <h1>DE-STRESS CHAT</h1>
@@ -118,7 +118,7 @@ function renderMessages(){
  $('discussionMeta').innerHTML=authorCell(t.author,t.initial,t.flag)+'<span>Создано: '+esc(t.date)+'</span><span>Ответов: '+countReplies(t)+'</span><span>Просмотров: '+t.views+'</span>';
 }
 function goBack(){if($('discussionView').classList.contains('active')){activeId=null;showView('topicsView');renderTopics();}else if($('newTopicView').classList.contains('active'))showView('topicsView');else window.parent.postMessage({type:'GYGY_CHAT_CLOSE'},location.origin);}
-$('back').addEventListener('click',goBack);$('backTopics').addEventListener('click',goBack);$('cancelTopic').addEventListener('click',goBack);$('cancelTopic2').addEventListener('click',goBack);
+$('back').addEventListener('click',goBack);$('home').addEventListener('click',()=>window.parent.postMessage({type:'GYGY_CHAT_CLOSE'},location.origin));$('backTopics').addEventListener('click',goBack);$('cancelTopic').addEventListener('click',goBack);$('cancelTopic2').addEventListener('click',goBack);
 $('newTopic').addEventListener('click',()=>{ $('topicTitle').value='';$('firstMessage').value='';showView('newTopicView');$('topicTitle').focus();});
 $('search').addEventListener('input',renderTopics);
 $('topicsBody').addEventListener('click',e=>{const tr=e.target.closest('tr[data-id]');if(tr)openTopic(Number(tr.dataset.id));});
