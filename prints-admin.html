@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  prints-admin.html — v2.0.0 — 2026-10-15
+  prints-admin.html — v2.1.0 — 2026-11-23
   Принты клуба (только сотрудники): просмотр, фон под принтом (его увидят клиенты
   в Ателье), проверка на пустые, удаление.
   Фон: light / dark / check (Grid = по умолчанию, в базе null).
@@ -59,8 +59,9 @@
             <select id="cat-filter">
                 <option value="all">Все</option>
                 <option value="dtf">Принты</option>
-                            <option value="embroidery">Вышивка</option>
+                <option value="embroidery">Вышивка</option>
                 <option value="space">Космос</option>
+                <option value="destress">De-Stress</option>
             </select>
                   <div class="addbox">
             <div class="add-title">Добавить принты в базу клуба</div>
@@ -68,8 +69,9 @@
             <div class="add-row">
                 <select id="add-category">
                     <option value="dtf">Принт (DTF)</option>
-                                     <option value="embroidery">Эскиз вышивки</option>
+                    <option value="embroidery">Эскиз вышивки</option>
                     <option value="space">Космос</option>
+                    <option value="destress">De-Stress Studio</option>
                 </select>
                 <select id="add-bg">
                     <option value="check">Фон: Grid</option>
@@ -116,7 +118,7 @@
     function visibleRows() {
         const f = document.getElementById('cat-filter').value;
         return rows.filter(r => {
-                     const cat = r.category === 'embroidery' ? 'embroidery' : (r.category === 'space' ? 'space' : 'dtf');
+                     const cat = r.category === 'embroidery' ? 'embroidery' : (r.category === 'space' ? 'space' : (r.category === 'destress' ? 'destress' : 'dtf'));
             return f === 'all' || cat === f;
         });
     }
@@ -125,7 +127,7 @@
         const shown = visibleRows();
         document.getElementById('grid').innerHTML = shown.map(r => {
             const flag = flags.get(r.id);
-                       const cat = r.category === 'embroidery' ? 'Вышивка' : (r.category === 'space' ? 'Космос' : 'Принт');
+                       const cat = r.category === 'embroidery' ? 'Вышивка' : (r.category === 'space' ? 'Космос' : (r.category === 'destress' ? 'De-Stress' : 'Принт'));
             const cur = r.bg || 'check';
             const bgClass = r.bg === 'light' ? ' bg-light' : (r.bg === 'dark' ? ' bg-dark' : '');
             return `<div class="pc${flag ? ' flagged' : ''}" data-id="${esc(r.id)}">
