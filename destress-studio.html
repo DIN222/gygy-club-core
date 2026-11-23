@@ -1039,6 +1039,25 @@ a:focus-visible {
   .ta-version-actions { grid-template-columns:1fr; }
 }
 
+
+/* ЛИЧНОЕ ПРОСТРАНСТВО — архив и закладки доступны на первой странице */
+.personal-space-tools { max-width:760px; margin:18px auto 4px; padding:15px; border:1px solid var(--line); border-radius:10px; background:rgba(8,7,5,.34); }
+.personal-space-tools > h2 { margin:0 0 12px; color:var(--gold); font:600 13px/1.4 'Share Tech Mono',monospace; letter-spacing:.16em; text-align:center; }
+.personal-space-shortcuts { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
+.personal-space-shortcuts button { flex:1 1 220px; min-height:46px; }
+.personal-space-panel { margin-top:14px; padding:13px; border:1px solid rgba(216,179,106,.24); border-radius:8px; background:rgba(0,0,0,.32); }
+.personal-space-panel[hidden] { display:none !important; }
+.personal-space-panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.personal-space-panel-head h3 { margin:0; color:var(--light); font:600 14px/1.3 'Share Tech Mono',monospace; letter-spacing:.1em; }
+.personal-space-close { border:0; color:var(--light); background:transparent; font-size:25px; cursor:pointer; }
+.personal-space-empty { margin:8px 0; color:var(--muted); text-align:center; }
+.personal-space-item { margin:9px 0; padding:12px; border:1px solid rgba(216,179,106,.20); border-radius:7px; background:rgba(12,10,8,.52); text-align:left; }
+.personal-space-item-date { color:var(--muted); font-size:11px; }
+.personal-space-item h3 { margin:5px 0; color:var(--light); font:600 16px/1.35 Georgia,serif; }
+.personal-space-item p { margin:0 0 8px; color:var(--text); overflow-wrap:anywhere; }
+.personal-space-remove { padding:4px 0; border:0; color:var(--muted); background:transparent; font-size:11px; text-decoration:underline; cursor:pointer; }
+@media (max-width:560px) { .personal-space-tools { padding:11px; } .personal-space-shortcuts button { flex-basis:100%; } }
+
 </style>
 </head>
 
@@ -1173,7 +1192,8 @@ a:focus-visible {
               <button class="outline-button" type="button" data-creation-action="atelier">Крепкое слово на футболку</button>
               <button class="outline-button" type="button" data-creation-action="telegram">Telegram</button>
               <button class="outline-button" type="button" data-creation-action="friend">Другу</button>
-              <button class="outline-button" type="button" data-creation-action="archive">Личный архив</button>
+              <button class="outline-button" type="button" data-personal-action="archive">Мой архив — сохранить работу</button>
+              <button class="outline-button" type="button" data-personal-action="bookmarks">Добавить в закладки</button>
               <button class="outline-button" type="button" data-creation-action="chat">Чат De-Stress Studio</button>
             </div>
           </section>
@@ -1288,6 +1308,21 @@ a:focus-visible {
 
     </div>
 
+    <section class="personal-space-tools" aria-label="Личное пространство De-Stress Studio">
+      <h2>МОЁ ПРОСТРАНСТВО</h2>
+      <div class="personal-space-shortcuts">
+        <button class="outline-button" type="button" data-personal-open="archive"><span aria-hidden="true">▤</span> Мой архив</button>
+        <button class="outline-button" type="button" data-personal-open="bookmarks"><span aria-hidden="true">◆</span> Закладки</button>
+      </div>
+      <section class="personal-space-panel" id="personalSpacePanel" hidden aria-live="polite">
+        <div class="personal-space-panel-head">
+          <h3 id="personalSpacePanelTitle">МОЙ АРХИВ</h3>
+          <button class="personal-space-close" type="button" data-personal-close aria-label="Закрыть">×</button>
+        </div>
+        <div id="personalSpaceList"></div>
+      </section>
+    </section>
+
   </main>
 
 </div>
@@ -1353,6 +1388,7 @@ import { init as initPassport } from '././modules/passport.js';
 import { supabase } from '././core/supabase-init.js';
 import { playEffect } from '././modules/soundscape.js';
 import { initCreationActions } from './modules/creation-actions.js?v=1.0.3';
+import { initDestressPersonalSpace } from './modules/destress-personal-space.js?v=1.0.0';
 
 // Временно фиксируем русский язык только для этой страницы.
 setScope('admin');
@@ -1962,6 +1998,13 @@ function atelierLink(ai) {
     u.searchParams.set('from', 'studio');
     return u.href;
 }
+
+const personalSpace = initDestressPersonalSpace({
+    root: document.body,
+    getWork: () => ({ situation: currentSituationText().trim(), phrase: currentPhraseText().trim() }),
+    onStatus: say
+});
+window.addEventListener('pagehide', () => personalSpace.destroy(), { once: true });
 
 const creationActions = initCreationActions({
     root: $('creationActions'),
