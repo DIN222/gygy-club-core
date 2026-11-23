@@ -13,7 +13,10 @@ const readItems = key => {
     return Array.isArray(value) ? value : [];
   } catch { return []; }
 };
-const writeItems = (key, items) => localStorage.setItem(key, JSON.stringify(items));
+const writeItems = (key, items) => {
+  try { localStorage.setItem(key, JSON.stringify(items)); return true; }
+  catch { return false; }
+};
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 }[char]));
@@ -49,7 +52,10 @@ export function initDestressPersonalSpace({ root = document.body, getWork, onSta
       createdAt: new Date().toISOString(),
       source: location.href
     });
-    writeItems(key, items);
+    if (!writeItems(key, items)) {
+      showStatus('Браузер не разрешил локальное сохранение. Проверь настройки хранения сайта.');
+      return;
+    }
     showStatus(collection === 'archive' ? 'Работа сохранена в «Мой архив» на этом устройстве.' : 'Работа добавлена в «Закладки» на этом устройстве.');
     if (!panel.hidden && activeCollection === collection) render();
   };
