@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.16
+  destress-studio.html — De-Stress Studio — v5.3.17
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -14,7 +14,7 @@
   v5.3.14: восстановлен рассказ Чарли с подсказкой; стрелки редактирования и подтверждения размещены у правого края поля крепкого выражения.
   v5.3.15: удалён дублирующий старый рассказ; поля «Случай» и «Крепкое выражение» скрыты до выбора соответствующей кнопки; заголовок переведён на русский.
   v5.3.16: после нажатия ↓ вопрос и пять действий появляются под двумя заполненными полями; поля остаются видимыми. Стрелка ↑ возвращает к редактированию без потери текста.
-  Серверная публикация, лайки и синхронизация архива не подключены; личный архив хранится в браузере.
+  v5.3.17: добавлены самостоятельные инструменты «Мой архив» и «Закладки» на первой странице; сохранение пока локальное, без синхронизации с Passport.
 -->
 <html lang="ru">
 <head>
@@ -1045,6 +1045,7 @@ a:focus-visible {
 .personal-space-tools > h2 { margin:0 0 12px; color:var(--gold); font:600 13px/1.4 'Share Tech Mono',monospace; letter-spacing:.16em; text-align:center; }
 .personal-space-shortcuts { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
 .personal-space-shortcuts button { flex:1 1 220px; min-height:46px; }
+.personal-space-note { margin:9px 0 0; color:var(--muted); font-size:11px; line-height:1.45; text-align:center; }
 .personal-space-panel { margin-top:14px; padding:13px; border:1px solid rgba(216,179,106,.24); border-radius:8px; background:rgba(0,0,0,.32); }
 .personal-space-panel[hidden] { display:none !important; }
 .personal-space-panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
@@ -1314,6 +1315,7 @@ a:focus-visible {
         <button class="outline-button" type="button" data-personal-open="archive"><span aria-hidden="true">▤</span> Мой архив</button>
         <button class="outline-button" type="button" data-personal-open="bookmarks"><span aria-hidden="true">◆</span> Закладки</button>
       </div>
+      <p class="personal-space-note">Сейчас данные хранятся в браузере на этом устройстве. Общая синхронизация через GY-GY Personal Space будет подключена отдельно.</p>
       <section class="personal-space-panel" id="personalSpacePanel" hidden aria-live="polite">
         <div class="personal-space-panel-head">
           <h3 id="personalSpacePanelTitle">МОЙ АРХИВ</h3>
