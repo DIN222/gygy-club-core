@@ -1019,6 +1019,7 @@ a:focus-visible {
 .creation-atelier-choice button { flex:1 1 220px; min-height:44px; }
 .charlie-prompt { margin: 14px 0 10px; color: var(--light); font-family: "Playfair Display", Georgia, serif; font-size: clamp(19px, 2.2vw, 25px); text-align: center; }
 .author-field-label { display:block; margin:12px 0 6px; color:var(--light); font-weight:700; }
+.case-copy-hint { margin:8px 2px 0; color:var(--muted); font-size:12px; line-height:1.5; }
 .author-phrase-input { width:100%; min-height:88px; }
 #openMyCase, #openMyWords { display:none !important; }
 .title-with-charlie { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:clamp(14px,2.4vw,24px); }
@@ -1186,7 +1187,7 @@ a:focus-visible {
           <h2 class="ta-version-title" translate="no">ТВОЙ ВАРИАНТ</h2>
           <div class="ta-version-actions">
             <button class="outline-button" id="chooseCase" type="button">Случай</button>
-            <button class="outline-button" id="choosePhrase" type="button">Крепкое слово</button>
+            <button class="outline-button" id="choosePhrase" type="button">Библиотека крепких слов</button>
           </div>
         </div>
       </section>
@@ -1214,16 +1215,18 @@ a:focus-visible {
                         rows="5"
                         maxlength="1200"
                         aria-label="Случай"
-                        placeholder="Расскажи, что произошло…"></textarea>
+                        placeholder="Расскажи, что произошло, вместе с крепкими словами, которые пришли тебе в голову…"></textarea>
+              <p class="case-copy-hint">Просьба: крепкие слова и выражения из рассказа скопируй и перенеси в библиотеку крепких слов.</p>
             </div>
             <div class="entry-field" id="phraseEntry" hidden>
+              <label class="author-field-label" for="customRecipeInput">Библиотека крепких слов — вставь сюда скопированное выражение</label>
               <div class="phrase-input-shell">
                 <textarea class="text-input author-phrase-input"
                           id="customRecipeInput"
                           rows="3"
                           maxlength="500"
                           aria-label="Крепкое выражение"
-                          placeholder="А теперь найди для этого случая своё крепкое выражение…"></textarea>
+                          placeholder="Вставь сюда скопированное крепкое слово или выражение…"></textarea>
                 <div class="phrase-input-arrows" aria-label="Действия с записью">
                   <button class="work-next work-edit" id="editCaseArrow" type="button" aria-label="Вернуться к редактированию" title="Изменить запись" hidden>↑</button>
                   <button class="work-next" id="continueToActions" type="button" aria-label="Подтвердить запись и перейти дальше" title="И что будем с этим делать?" hidden>↓</button>
