@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.3.19
+  destress-studio.html — De-Stress Studio — v5.4.0
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -15,7 +15,7 @@
   v5.3.15: удалён дублирующий старый рассказ; поля «Случай» и «Крепкое выражение» скрыты до выбора соответствующей кнопки; заголовок переведён на русский.
   v5.3.16: после нажатия ↓ вопрос и пять действий появляются под двумя заполненными полями; поля остаются видимыми. Стрелка ↑ возвращает к редактированию без потери текста.
   v5.3.18: уточнены подписи действий сохранения; добавлены самостоятельные инструменты «Мой архив» и «Закладки» на первой странице; сохранение пока локальное, без синхронизации с Passport.
-  v5.3.19: действие добавления текущей работы в закладки переименовано в «Сохранить в закладки», чтобы отличать его от открытия раздела «Закладки».
+  v5.3.19: действие добавления текущей работы в закладки переименовано в «Сохранить в закладки», чтобы отличать его от открытия раздела «Закладки».\n  v5.4.0: добавлена отдельная публичная лента DE-STRESS PRINTS, читающая опубликованные принты категории destress из общей базы club_prints; просмотр увеличенного изображения.
 -->
 <html lang="ru">
 <head>
@@ -1060,6 +1060,28 @@ a:focus-visible {
 .personal-space-remove { padding:4px 0; border:0; color:var(--muted); background:transparent; font-size:11px; text-decoration:underline; cursor:pointer; }
 @media (max-width:560px) { .personal-space-tools { padding:11px; } .personal-space-shortcuts button { flex-basis:100%; } }
 
+
+/* DE-STRESS PRINTS — отдельная тематическая лента клуба */
+.destress-prints { margin:18px 0 4px; padding:clamp(14px,2.5vw,22px); border:1px solid rgba(216,179,106,.38); border-radius:13px; background:rgba(12,10,8,.76); box-shadow:0 10px 28px rgba(0,0,0,.22); }
+.destress-prints-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.destress-prints-title { margin:0; color:var(--light); font:700 clamp(19px,2.8vw,27px)/1.15 'Playfair Display',Georgia,serif; letter-spacing:.06em; }
+.destress-prints-note { margin:5px 0 0; color:var(--muted); font-size:12px; }
+.destress-prints-nav { display:flex; gap:6px; flex-shrink:0; }
+.destress-prints-nav button { width:34px; height:34px; border:1px solid var(--gold); border-radius:7px; color:var(--light); background:rgba(0,0,0,.45); font-size:20px; }
+.destress-prints-track { display:flex; gap:12px; overflow-x:auto; padding:3px 2px 10px; scroll-snap-type:x proximity; scrollbar-width:thin; scrollbar-color:var(--dark) transparent; }
+.destress-print-card { flex:0 0 clamp(130px,20vw,190px); scroll-snap-align:start; border:1px solid rgba(216,179,106,.32); border-radius:9px; padding:7px; background:rgba(35,29,22,.72); cursor:pointer; text-align:center; color:var(--text); }
+.destress-print-thumb { display:grid; place-items:center; width:100%; aspect-ratio:1; overflow:hidden; border-radius:5px; background:repeating-conic-gradient(#555 0% 25%,#777 0% 50%) 50%/14px 14px; }
+.destress-print-thumb.bg-light { background:#ececec; }
+.destress-print-thumb.bg-dark { background:#151515; }
+.destress-print-thumb img { width:100%; height:100%; object-fit:contain; }
+.destress-print-author { display:block; margin-top:6px; color:var(--muted); font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.destress-print-empty { padding:18px 8px; color:var(--muted); text-align:center; font:14px Georgia,serif; }
+.destress-print-lightbox { position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.9); }
+.destress-print-lightbox.open { display:flex; }
+.destress-print-lightbox img { max-width:min(92vw,900px); max-height:84vh; object-fit:contain; border:1px solid rgba(216,179,106,.5); border-radius:8px; background:#111; }
+.destress-print-lightbox button { position:absolute; top:18px; right:22px; border:1px solid var(--gold); border-radius:50%; width:42px; height:42px; color:var(--light); background:#100e0b; font-size:25px; }
+@media(max-width:520px) { .destress-prints-head { align-items:flex-start; } .destress-prints-note { max-width:240px; } }
+
 </style>
 </head>
 
@@ -1308,6 +1330,25 @@ a:focus-visible {
 
       </section>
 
+    </div>
+
+
+    <section class="destress-prints" id="destressPrints" aria-label="Лента антистресс-принтов">
+      <div class="destress-prints-head">
+        <div>
+          <h2 class="destress-prints-title">DE-STRESS PRINTS</h2>
+          <p class="destress-prints-note">Юмор, настроение и идеи, которым место на футболке.</p>
+        </div>
+        <div class="destress-prints-nav" aria-label="Прокрутка ленты">
+          <button type="button" id="destressPrintPrev" aria-label="Назад">‹</button>
+          <button type="button" id="destressPrintNext" aria-label="Вперёд">›</button>
+        </div>
+      </div>
+      <div class="destress-prints-track" id="destressPrintTrack"><div class="destress-print-empty">Загружаем принты…</div></div>
+    </section>
+    <div class="destress-print-lightbox" id="destressPrintLightbox" role="dialog" aria-modal="true" aria-label="Просмотр принта">
+      <button type="button" id="destressPrintClose" aria-label="Закрыть">×</button>
+      <img id="destressPrintLarge" alt="Антистресс-принт">
     </div>
 
     <section class="personal-space-tools" aria-label="Личное пространство De-Stress Studio">
@@ -2021,6 +2062,54 @@ $('goToAi').addEventListener('click', () => {
     window.location.href = atelierLink(true);
 });
 
+
+ // ---------- DE-STRESS PRINTS: публичная лента опубликованных работ ----------
+const destressPrintTrack = $('destressPrintTrack');
+const destressPrintLightbox = $('destressPrintLightbox');
+const safePrintUrl = value => /^https:\/\/\S+$/i.test(String(value || '').trim()) ? String(value).trim() : '';
+async function loadDestressPrints() {
+    if (!destressPrintTrack) return;
+    try {
+        const { data, error } = await supabase.from('club_prints')
+            .select('id, image_url, bg, from_user_name, added_at')
+            .eq('category', 'destress').eq('published', true)
+            .order('added_at', { ascending: false }).limit(80);
+        if (error) throw error;
+        const prints = (data || []).filter(item => safePrintUrl(item.image_url));
+        if (!prints.length) {
+            destressPrintTrack.innerHTML = '<div class="destress-print-empty">Лента готовится. Скоро здесь появятся первые антистресс-принты.</div>';
+            return;
+        }
+        destressPrintTrack.innerHTML = prints.map(item => {
+            const bgClass = item.bg === 'light' ? ' bg-light' : (item.bg === 'dark' ? ' bg-dark' : '');
+            return `<button class="destress-print-card" type="button" data-print-url="${esc(safePrintUrl(item.image_url))}" aria-label="Открыть принт">
+              <span class="destress-print-thumb${bgClass}"><img src="${esc(safePrintUrl(item.image_url))}" alt="" loading="lazy"></span>
+              <span class="destress-print-author">${esc(item.from_user_name || 'GY-GY Club')}</span>
+            </button>`;
+        }).join('');
+    } catch (error) {
+        console.error('[DeStress Prints] Не удалось загрузить ленту', error);
+        destressPrintTrack.innerHTML = '<div class="destress-print-empty">Лента временно недоступна. Попробуй зайти позже.</div>';
+    }
+}
+destressPrintTrack?.addEventListener('click', event => {
+    const card = event.target.closest('[data-print-url]');
+    if (!card) return;
+    const url = safePrintUrl(card.dataset.printUrl);
+    if (!url) return;
+    $('destressPrintLarge').src = url;
+    destressPrintLightbox.classList.add('open');
+});
+function closeDestressPrintLightbox() {
+    destressPrintLightbox?.classList.remove('open');
+    if ($('destressPrintLarge')) $('destressPrintLarge').removeAttribute('src');
+}
+$('destressPrintClose')?.addEventListener('click', closeDestressPrintLightbox);
+destressPrintLightbox?.addEventListener('click', event => { if (event.target === destressPrintLightbox) closeDestressPrintLightbox(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeDestressPrintLightbox(); });
+$('destressPrintPrev')?.addEventListener('click', () => destressPrintTrack.scrollBy({ left:-220, behavior:'smooth' }));
+$('destressPrintNext')?.addEventListener('click', () => destressPrintTrack.scrollBy({ left:220, behavior:'smooth' }));
+
 // навигация: стрелка поднимает на слой выше
 $('btn-back').addEventListener('click', () => {
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
@@ -2040,6 +2129,7 @@ onLanguageChange(() => { renderChoices(); renderTopPhraseChoices(); renderPhrase
 // Клубные коллекции на этом этапе не загружаются с сервера.
 
 setModeButtons();
+loadDestressPrints();
 renderPhrasePicker();
 renderTopPhraseChoices();
 </script>
