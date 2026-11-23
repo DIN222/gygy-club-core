@@ -15,7 +15,7 @@
   v5.3.15: удалён дублирующий старый рассказ; поля «Случай» и «Крепкое выражение» скрыты до выбора соответствующей кнопки; заголовок переведён на русский.
   v5.3.16: после нажатия ↓ вопрос и пять действий появляются под двумя заполненными полями; поля остаются видимыми. Стрелка ↑ возвращает к редактированию без потери текста.
   v5.3.18: уточнены подписи действий сохранения; добавлены самостоятельные инструменты «Мой архив» и «Закладки» на первой странице; сохранение пока локальное, без синхронизации с Passport.
-  v5.3.19: действие добавления текущей работы в закладки переименовано в «Сохранить в закладки», чтобы отличать его от открытия раздела «Закладки».\n  v5.4.0: добавлена отдельная публичная лента DE-STRESS PRINTS, читающая опубликованные принты категории destress из общей базы club_prints; просмотр увеличенного изображения.
+  v5.3.19: действие добавления текущей работы в закладки переименовано в «Сохранить в закладки», чтобы отличать его от открытия раздела «Закладки».\n  v5.4.0: добавлена отдельная публичная лента DE-STRESS PRINTS, читающая опубликованные принты категории destress из общей базы club_prints; просмотр увеличенного изображения.\n  v5.4.1: кнопки выбора полей «Случай» и «Библиотека крепких слов» заменены постоянными подписями; оба поля открываются одновременно после угощения Чарли.
 -->
 <html lang="ru">
 <head>
@@ -1185,10 +1185,6 @@ a:focus-visible {
         <p class="charlie-repeat-note" id="charlieRepeatNote" hidden>Можно повторить, но за дополнительный случай.</p>
         <div class="ta-version-panel" id="taVersionPanel" hidden>
           <h2 class="ta-version-title" translate="no">ТВОЙ ВАРИАНТ</h2>
-          <div class="ta-version-actions">
-            <button class="outline-button" id="chooseCase" type="button">Случай</button>
-            <button class="outline-button" id="choosePhrase" type="button">Библиотека крепких слов</button>
-          </div>
         </div>
       </section>
     </div>
@@ -1210,6 +1206,7 @@ a:focus-visible {
 
           <form class="custom-form" id="customSituationForm">
             <div class="entry-field" id="caseEntry" hidden>
+              <label class="author-field-label" for="customSituationInput">Случай</label>
               <textarea class="text-input situation-input"
                         id="customSituationInput"
                         rows="5"
@@ -1777,24 +1774,17 @@ $('serveCharlie').addEventListener('click', async () => {
     } catch (error) {
         console.warn('[De-Stress Studio] Не удалось воспроизвести эффект Чарли:', error);
     } finally {
-        $('taVersionPanel').hidden = false;
+        $('taVersionPanel').hidden = true;
+        $('customSituationForm').hidden = false;
+        $('caseEntry').hidden = false;
+        $('phraseEntry').hidden = false;
+        $('customSituationInput').focus();
         $('charlieRepeatNote').hidden = false;
         if (caption) caption.textContent = previousCaption || 'Угощаю за счёт заведения!';
         button.hidden = false;
         button.disabled = false;
     }
 });
-const showEntryField = kind => {
-    $('customSituationForm').hidden = false;
-    if (kind === 'case') {
-        $('caseEntry').hidden = false;
-        $('customSituationInput').focus();
-    } else {
-        $('phraseEntry').hidden = false;
-        $('customRecipeInput').focus();
-    }
-    updateSubmitVisibility();
-};
 const updateSubmitVisibility = () => {
     const complete = !!(
         $('customSituationInput').value.trim() &&
@@ -1803,8 +1793,6 @@ const updateSubmitVisibility = () => {
     $('continueToActions').hidden = !complete;
     $('editCaseArrow').hidden = !complete;
 };
-$('chooseCase').addEventListener('click', () => showEntryField('case'));
-$('choosePhrase').addEventListener('click', () => showEntryField('phrase'));
 $('customSituationInput').addEventListener('input', updateSubmitVisibility);
 $('customRecipeInput').addEventListener('input', updateSubmitVisibility);
 $('editCaseArrow').addEventListener('click', () => {
