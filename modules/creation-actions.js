@@ -33,17 +33,35 @@ export function initCreationActions({root,getWork,getAtelierUrl,onStatus=()=>{}}
   let destroyed=false,newsPanel=null,chatFrame=null,chatMessageHandler=null;
   const status=message=>{if(!destroyed)onStatus(message);};
   const getCompleteWork=()=>{const work=normalizeWork(getWork());if(!work.situation||!work.phrase){status('Сначала собери целую авторскую работу: случай + крепкое выражение.');return null;}return work;};
-  const closeChat=()=>{if(!chatFrame)return;window.removeEventListener('message',chatMessageHandler);chatMessageHandler=null;chatFrame.remove();chatFrame=null;document.documentElement.style.overflow='';};
+  // Hide the chat on return to Studio, but keep its live document mounted.
+  // This preserves the participant's topic, scroll position and unfinished composer state.
+  const hideChat=()=>{
+    if(!chatFrame)return;
+    chatFrame.style.display='none';
+    document.documentElement.style.overflow='';
+  };
+  const destroyChat=()=>{
+    if(!chatFrame)return;
+    window.removeEventListener('message',chatMessageHandler);
+    chatMessageHandler=null;
+    chatFrame.remove();
+    chatFrame=null;
+    document.documentElement.style.overflow='';
+  };
   const openChat=()=>{
-    if(chatFrame)return;
+    if(chatFrame){
+      chatFrame.style.display='block';
+      document.documentElement.style.overflow='hidden';
+      return;
+    }
     chatFrame=document.createElement('iframe');
-    chatFrame.title='GY-GY Club — De-Stress CHAT';
+    chatFrame.title='GY-GY Club — THE CHAT ROOM';
     chatFrame.src=new URL('./Development/DESTRESS_STUDIO/destress-chat.html',document.baseURI).href;
     chatFrame.setAttribute('allow','clipboard-read; clipboard-write');
     chatFrame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483000;background:#100e0b;';
     chatMessageHandler=event=>{
       if(event.source!==chatFrame?.contentWindow||event.origin!==location.origin)return;
-      if(event.data?.type==='GYGY_CHAT_CLOSE')closeChat();
+      if(event.data?.type==='GYGY_CHAT_CLOSE')hideChat();
     };
     window.addEventListener('message',chatMessageHandler);
     document.documentElement.style.overflow='hidden';
@@ -100,7 +118,7 @@ export function initCreationActions({root,getWork,getAtelierUrl,onStatus=()=>{}}
   return {
     destroy(){
       if(destroyed)return;destroyed=true;root.removeEventListener('click',onClick);
-      newsPanel?.remove();newsPanel=null;closeChat();
+      newsPanel?.remove();newsPanel=null;destroyChat();
     }
   };
 }
