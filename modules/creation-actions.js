@@ -1,6 +1,6 @@
 /**
  * GY-GY Club — reusable actions for a completed creative work.
- * v1.0.4 — De-Stress CHAT opens as an in-page full-screen view.
+ * v1.0.5 — THE CHAT ROOM stays mounted when hidden so Studio returns preserve chat state.
  */
 
 function normalizeWork(value) {
