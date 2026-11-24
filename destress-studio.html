@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.5.0
+  destress-studio.html — De-Stress Studio — v5.6.0
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -17,6 +17,7 @@
   v5.3.18: уточнены подписи действий сохранения; добавлены самостоятельные инструменты «Мой архив» и «Закладки» на первой странице; сохранение пока локальное, без синхронизации с Passport.
   v5.3.19: действие добавления текущей работы в закладки переименовано в «Сохранить в закладки», чтобы отличать его от открытия раздела «Закладки».\n  v5.4.0: добавлена отдельная публичная лента DE-STRESS PRINTS, читающая опубликованные принты категории destress из общей базы club_prints; просмотр увеличенного изображения.\n  v5.4.1: кнопки выбора полей «Случай» и «Библиотека крепких слов» заменены постоянными подписями; оба поля открываются одновременно после угощения Чарли.
   v5.5.0: Studio преобразована во входную площадку с четырьмя аттракционами; добавлены отдельные пространства Лаборатории абсурда и THE PRINT PARLOUR, сохранение прокрутки между площадками и рулетка из четырёх независимых окон. AI не имитируется; подключение настоящего сервиса отложено до готовности endpoint.
+  v5.6.0: в Тяжёлом случае продолжение возможно после заполнения только рассказа; библиотека крепких слов необязательна. Перенос в Atelier требует выражение; отправка другу/Telegram и локальное сохранение поддерживают рассказ без выражения. Устранена старая конфликтующая проверка отправки формы.
 -->
 <html lang="ru">
 <head>
@@ -1267,6 +1268,21 @@ a:focus-visible {
 .absurd-status { min-height:24px; color:var(--muted); font-size:13px; }
 @media(max-width:760px) { .absurd-slots { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:420px) { .absurd-slots { gap:7px; } .absurd-slot { padding:8px; } .absurd-word { min-height:58px; font-size:17px; } }
+
+.heavy-case-action-hint {
+  max-width:680px;
+  margin:-10px auto 18px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+  text-align:center;
+}
+.work-actions-screen .creation-actions button:disabled {
+  cursor:not-allowed;
+  opacity:.38;
+  transform:none;
+  filter:grayscale(.35);
+}
 </style>
 </head>
 
@@ -1475,8 +1491,9 @@ a:focus-visible {
           <section class="work-actions-screen" id="work-actions-screen" aria-labelledby="workActionsQuestion" hidden>
             <button class="work-actions-back" id="backToWork" type="button" aria-label="Вернуться к редактированию">↑</button>
             <h2 class="work-actions-question" id="workActionsQuestion">И что теперь будем с этим делать?</h2>
+            <p class="heavy-case-action-hint" id="heavyCaseActionHint">Можно продолжить только с рассказом. Крепкое выражение добавляется по желанию; для переноса в Atelier оно понадобится.</p>
             <div class="creation-actions" id="creationActions" aria-label="Действия с авторской работой">
-              <button class="outline-button" type="button" data-creation-action="atelier">Крепкое слово на футболку</button>
+              <button class="outline-button" type="button" data-creation-action="atelier" id="atelierWorkAction" disabled title="Для переноса в Atelier нужно заполнить библиотеку крепких слов">Крепкое слово на футболку</button>
               <button class="outline-button" type="button" data-creation-action="telegram">Telegram</button>
               <button class="outline-button" type="button" data-creation-action="friend">Другу</button>
               <button class="outline-button" type="button" data-personal-action="archive">Сохранить работу</button>
@@ -1681,8 +1698,8 @@ import { init as initLocalization, getCurrentLang, onLanguageChange, setScope, s
 import { init as initPassport } from '././modules/passport.js';
 import { supabase } from '././core/supabase-init.js';
 import { playEffect } from '././modules/soundscape.js';
-import { initCreationActions } from './modules/creation-actions.js?v=1.0.3';
-import { initDestressPersonalSpace } from './modules/destress-personal-space.js?v=1.0.0';
+import { initCreationActions } from './modules/creation-actions.js?v=1.1.0';
+import { initDestressPersonalSpace } from './modules/destress-personal-space.js?v=1.1.0';
 
 // Временно фиксируем русский язык только для этой страницы.
 setScope('admin');
@@ -1766,7 +1783,11 @@ function displayOf(p) {
     if (p.items) return p.items.map(displayOf).join(' ');
     return (p.translations && p.translations[getCurrentLang()]) || p.text;
 }
-const currentPhraseText = () => $('customRecipeInput')?.value.trim() || displayOf(state.phrase);
+const currentPhraseText = () => {
+    const input = $('customRecipeInput');
+    if (input && !input.closest('[hidden]')) return input.value.trim();
+    return displayOf(state.phrase);
+};
 function currentSituationText() {
     const authoredSituation = $('customSituationInput')?.value.trim();
     if (authoredSituation) return authoredSituation;
@@ -2011,31 +2032,44 @@ $('serveCharlie').addEventListener('click', async () => {
     }
 });
 const updateSubmitVisibility = () => {
-    const complete = !!(
-        $('customSituationInput').value.trim() &&
-        $('customRecipeInput').value.trim()
-    );
-    $('continueToActions').hidden = !complete;
-    $('editCaseArrow').hidden = !complete;
+    const hasSituation = !!$('customSituationInput').value.trim();
+    const hasPhrase = !!$('customRecipeInput').value.trim();
+    $('continueToActions').hidden = !hasSituation;
+    $('editCaseArrow').hidden = !hasSituation;
+    const atelierButton = $('atelierWorkAction');
+    if (atelierButton) {
+        atelierButton.disabled = !hasPhrase;
+        atelierButton.title = hasPhrase ? 'Передать выражение в Atelier' : 'Для переноса в Atelier нужно заполнить библиотеку крепких слов';
+    }
 };
 $('customSituationInput').addEventListener('input', updateSubmitVisibility);
-$('customRecipeInput').addEventListener('input', updateSubmitVisibility);
-$('editCaseArrow').addEventListener('click', () => {
-    $('customSituationInput').focus();
-    $('customSituationInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+$('customRecipeInput').addEventListener('input', () => {
+    state.phrase = null;
+    state.phraseConfirmed = false;
+    updateSubmitVisibility();
 });
-$('continueToActions').addEventListener('click', () => {
+function commitHeavyCase() {
     const situation = $('customSituationInput').value.trim();
     const phrase = $('customRecipeInput').value.trim();
-    if (!situation || !phrase) { updateSubmitVisibility(); return; }
+    if (!situation) { updateSubmitVisibility(); $('customSituationInput').focus(); return; }
     state.customSituation = situation;
     state.situationIndex = null;
     state.situationConfirmed = true;
     state.customRecipe = phrase;
-    state.mode = 'my';
-    state.phrase = { id: null, text: phrase, translations: {}, source: 'session' };
-    state.phraseConfirmed = true;
+    state.mode = phrase ? 'my' : 'random';
+    state.phrase = phrase ? { id: null, text: phrase, translations: {}, source: 'session' } : null;
+    state.phraseConfirmed = !!phrase;
+    updateSubmitVisibility();
     showWorkActions(true);
+}
+$('editCaseArrow').addEventListener('click', () => {
+    $('customSituationInput').focus();
+    $('customSituationInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+$('continueToActions').addEventListener('click', commitHeavyCase);
+$('customSituationForm').addEventListener('submit', event => {
+    event.preventDefault();
+    commitHeavyCase();
 });
 $('backToWork').addEventListener('click', () => showWorkActions(false));
 function showWorkActions(show) {
@@ -2075,37 +2109,8 @@ function afterSituation() {
     }
 }
 
-$('customSituationForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const situation = $('customSituationInput').value.trim();
-    const recipe = $('customRecipeInput').value.trim();
-    if (!situation) { $('customSituationInput').focus(); return; }
-    if (!recipe) { $('customRecipeInput').focus(); return; }
+// The current Heavy Case flow is committed by commitHeavyCase above; legacy form submission uses the same path.
 
-    state.customSituation = situation;
-    state.situationIndex = null;
-    state.situationConfirmed = true;
-    state.customRecipe = recipe;
-    state.mode = 'my';
-    state.phrase = { id: null, text: recipe, translations: {}, source: 'session' };
-    state.phraseConfirmed = true;
-    state.mixNumber++;
-
-    $('customSituationInput').value = '';
-    $('customRecipeInput').value = '';
-    $('customSituationForm').hidden = true;
-    $('taVersionPanel').hidden = true;
-    $('caseEntry').hidden = true;
-    $('phraseEntry').hidden = true;
-    $('serveCharlie').hidden = false;
-    renderChoices();
-    renderTopPhraseChoices();
-    renderChip();
-    setModeButtons();
-    say('Твоя работа собрана.');
-    render();
-    showPhraseLayer(true);
-});
 
 $('chip').addEventListener('click', () => showPhraseLayer(false));
 
@@ -2299,7 +2304,8 @@ const creationActions = initCreationActions({
 });
 window.addEventListener('pagehide', () => creationActions.destroy(), { once: true });
 $('goToAi').addEventListener('click', () => {
-    if (!currentSituationText().trim() || !currentPhraseText().trim()) { say('Сначала собери целую работу: случай + крепкое выражение.'); return; }
+    if (!currentSituationText().trim()) { say('Сначала расскажи, что произошло.'); return; }
+    if (!currentPhraseText().trim()) { say('Для переноса в Atelier нужно заполнить «Библиотеку крепких слов».'); return; }
     window.location.href = atelierLink(true);
 });
 
