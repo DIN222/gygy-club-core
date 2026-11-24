@@ -2270,7 +2270,10 @@ $('destressPrintNext')?.addEventListener('click', () => destressPrintTrack.scrol
 
  // ---------- De-Stress Studio route shell ----------
 let activeStudioRoute = 'home';
+const studioScrollPositions = { home:0, lab:0, heavy:0, prints:0 };
 function showStudioRoute(route) {
+    if (!(route in studioScrollPositions)) return;
+    if (route !== activeStudioRoute) studioScrollPositions[activeStudioRoute] = window.scrollY;
     activeStudioRoute = route;
     const home = $('studioHome');
     const lab = $('labAbsurdView');
@@ -2278,11 +2281,7 @@ function showStudioRoute(route) {
     if (lab) lab.hidden = route !== 'lab';
     document.querySelectorAll('[data-studio-heavy]').forEach(node => { node.hidden = route !== 'heavy'; });
     document.querySelectorAll('[data-studio-prints]').forEach(node => { node.hidden = route !== 'prints'; });
-    if (route === 'prints') {
-        $('destressPrints')?.scrollIntoView({ block:'start', behavior:'instant' });
-    } else {
-        $('studioHome')?.scrollIntoView({ block:'start', behavior:'instant' });
-    }
+    window.scrollTo(0, studioScrollPositions[route] || 0);
 }
 document.addEventListener('click', event => {
     const routeButton = event.target.closest('[data-studio-go]');
