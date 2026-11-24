@@ -1108,6 +1108,107 @@ a:focus-visible {
 .destress-print-lightbox button { position:absolute; top:18px; right:22px; border:1px solid var(--gold); border-radius:50%; width:42px; height:42px; color:var(--light); background:#100e0b; font-size:25px; }
 @media(max-width:520px) { .destress-prints-head { align-items:flex-start; } .destress-prints-note { max-width:240px; } }
 
+
+/* DE-STRESS STUDIO — входная площадка и самостоятельные пространства */
+.studio-home { width:100%; }
+.studio-attractions-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:clamp(12px,2vw,22px);
+  margin:8px 0 20px;
+}
+.studio-attraction-card {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-width:0;
+  min-height:clamp(210px,25vw,310px);
+  padding:0;
+  overflow:hidden;
+  border:1px solid rgba(216,179,106,.34);
+  border-radius:12px;
+  color:var(--text);
+  background:linear-gradient(145deg,rgba(42,35,27,.88),rgba(8,7,5,.88));
+  text-align:left;
+  box-shadow:0 10px 28px rgba(0,0,0,.22);
+  transition:border-color .18s,transform .18s,box-shadow .18s;
+}
+.studio-attraction-card:hover {
+  border-color:rgba(240,214,157,.82);
+  transform:translateY(-2px);
+  box-shadow:0 14px 34px rgba(0,0,0,.32);
+}
+.studio-attraction-art {
+  display:grid;
+  flex:1 1 auto;
+  min-height:135px;
+  place-items:center;
+  color:rgba(240,214,157,.88);
+  font:normal clamp(76px,12vw,148px)/1 Georgia,serif;
+  text-shadow:0 0 34px rgba(216,179,106,.22);
+  background:
+    radial-gradient(circle at 50% 48%,rgba(216,179,106,.16),transparent 48%),
+    linear-gradient(135deg,rgba(8,7,5,.04),rgba(0,0,0,.38));
+}
+.studio-art-lab { background-image:radial-gradient(circle at 50% 48%,rgba(190,139,74,.24),transparent 48%),linear-gradient(135deg,rgba(8,7,5,.04),rgba(0,0,0,.38)); }
+.studio-art-heavy { background-image:radial-gradient(circle at 50% 48%,rgba(133,78,46,.30),transparent 48%),linear-gradient(135deg,rgba(8,7,5,.04),rgba(0,0,0,.38)); }
+.studio-art-prints { background-image:radial-gradient(circle at 50% 48%,rgba(106,132,118,.20),transparent 48%),linear-gradient(135deg,rgba(8,7,5,.04),rgba(0,0,0,.38)); }
+.studio-art-chat { background-image:radial-gradient(circle at 50% 48%,rgba(105,122,147,.20),transparent 48%),linear-gradient(135deg,rgba(8,7,5,.04),rgba(0,0,0,.38)); }
+.studio-attraction-copy {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  min-height:88px;
+  padding:15px 17px 17px;
+  border-top:1px solid rgba(216,179,106,.24);
+  background:rgba(8,7,5,.76);
+}
+.studio-attraction-copy strong {
+  color:var(--light);
+  font:700 clamp(15px,1.8vw,21px)/1.2 'Playfair Display',Georgia,serif;
+  letter-spacing:.055em;
+}
+.studio-attraction-copy > span {
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.4;
+}
+.studio-unread-count {
+  position:absolute;
+  top:12px;
+  right:12px;
+  min-width:24px;
+  height:24px;
+  padding:2px 7px;
+  border:1px solid var(--gold);
+  border-radius:20px;
+  color:#100e0b;
+  background:var(--light);
+  font:700 12px/18px 'Share Tech Mono',monospace;
+  text-align:center;
+}
+.studio-coming-soon {
+  min-height:300px;
+  padding:clamp(24px,5vw,56px);
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(8,7,5,.72);
+  text-align:center;
+}
+.studio-coming-soon h2 {
+  margin:0 0 18px;
+  color:var(--light);
+  font:700 clamp(22px,3vw,34px)/1.2 'Playfair Display',Georgia,serif;
+  letter-spacing:.06em;
+}
+.studio-coming-soon p { max-width:680px; margin:10px auto; color:var(--text); }
+.studio-coming-soon .studio-coming-note { margin-top:24px; color:var(--muted); font-size:13px; }
+@media(max-width:680px) {
+  .studio-attractions-grid { grid-template-columns:1fr; }
+  .studio-attraction-card { min-height:210px; }
+  .studio-attraction-art { min-height:125px; }
+}
 </style>
 </head>
 
@@ -1149,9 +1250,62 @@ a:focus-visible {
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
+    <section class="studio-home" id="studioHome" aria-label="Площадки De-Stress Studio">
+      <div class="studio-attractions-grid">
+        <button class="studio-attraction-card" type="button" data-studio-go="lab">
+          <span class="studio-attraction-art studio-art-lab" aria-hidden="true">✳</span>
+          <span class="studio-attraction-copy">
+            <strong>ЛАБОРАТОРИЯ АБСУРДА</strong>
+            <span>Слова, случайные сочетания и творческая игра</span>
+          </span>
+        </button>
+        <button class="studio-attraction-card" type="button" data-studio-go="heavy">
+          <span class="studio-attraction-art studio-art-heavy" aria-hidden="true">♨</span>
+          <span class="studio-attraction-copy">
+            <strong>ТЯЖЁЛЫЙ СЛУЧАЙ</strong>
+            <span>Расскажи, что произошло, и дай напряжению выйти</span>
+          </span>
+        </button>
+        <button class="studio-attraction-card" type="button" data-studio-go="prints">
+          <span class="studio-attraction-art studio-art-prints" aria-hidden="true">✎</span>
+          <span class="studio-attraction-copy">
+            <strong>THE PRINT PARLOUR</strong>
+            <span>Галерея клубных принтов и идей</span>
+          </span>
+        </button>
+        <button class="studio-attraction-card" type="button" data-creation-action="chat">
+          <span class="studio-attraction-art studio-art-chat" aria-hidden="true">☕</span>
+          <span class="studio-attraction-copy">
+            <strong>THE CHAT ROOM</strong>
+            <span>Общение и обсуждения участников</span>
+          </span>
+          <span class="studio-unread-count" id="destressChatUnread" hidden aria-label="Непрочитанные сообщения"></span>
+        </button>
+      </div>
+          <section class="personal-space-tools" aria-label="Личное пространство De-Stress Studio">
+      <h2>МОЁ ПРОСТРАНСТВО</h2>
+      <div class="personal-space-shortcuts">
+        <button class="outline-button" type="button" data-personal-open="archive"><span aria-hidden="true">▤</span> Мой архив</button>
+        <button class="outline-button" type="button" data-personal-open="bookmarks"><span aria-hidden="true">◆</span> Закладки</button>
+      </div>
+      <p class="personal-space-note">Сейчас данные хранятся в браузере на этом устройстве. Общая синхронизация через GY-GY Personal Space будет подключена отдельно.</p>
+      <section class="personal-space-panel" id="personalSpacePanel" hidden aria-live="polite">
+        <div class="personal-space-panel-head">
+          <h3 id="personalSpacePanelTitle">МОЙ АРХИВ</h3>
+          <button class="personal-space-close" type="button" data-personal-close aria-label="Закрыть">×</button>
+        </div>
+        <div id="personalSpaceList"></div>
+      </section>
+    </section>
 
+    <section class="studio-coming-soon" id="labAbsurdView" hidden aria-labelledby="labAbsurdTitle">
+      <h2 id="labAbsurdTitle">ЛАБОРАТОРИЯ АБСУРДА</h2>
+      <p>Творческое пространство готовится к запуску.</p>
+      <p>Здесь появятся рулетка из четырёх независимых окон, словесные эксперименты и живое сотворчество с AI.</p>
+      <p class="studio-coming-note">AI-функции будут включены после подключения настоящего AI-сервиса. Сейчас они не имитируются.</p>
+    </section>
 
-    <div class="studio-controls" aria-label="Основные действия студии">
+    <div class="studio-controls" data-studio-heavy aria-label="Основные действия студии">
       <section class="choice-group" aria-label="Варианты клуба">
         <h2 class="choice-group-title">Варианты клуба</h2>
         <div class="top-choice">
@@ -1173,7 +1327,7 @@ a:focus-visible {
 
     </div>
 
-    <div class="charlie-feature">
+    <div class="charlie-feature" data-studio-heavy>
       <div class="studio-intro charlie-story">
         <p>Был у меня такой случай. Качу, значит, я на телеге новый диван для клуба, недавно прошёл дождь. Вдруг из-за поворота на встречу машина, а я только добрался до середины лужи — и она окатила меня и диван с головы до ног грязной водой. Я не успел опомниться, как тут вдруг внутренний голос: «Запедаль банан в расческу!» Я потом даже вслух повторил. И ты знаешь, полегчало сразу. Самому пришлось помыться, а с диваном повезло — был ещё в заводской упаковке. Бывало у тебя что-то подобное? Например, поругался с начальником или опрокинул бокал с пивом!</p>
       </div>
@@ -1194,7 +1348,7 @@ a:focus-visible {
       <div class="phrase-picker" id="phrasePicker"></div>
     </div>
 
-    <div class="stage">
+    <div class="stage" data-studio-heavy>
 
       <!-- СЛУЧАЙ -->
 
@@ -1358,11 +1512,11 @@ a:focus-visible {
     </div>
 
 
-    <section class="destress-prints" id="destressPrints" aria-label="Лента антистресс-принтов">
+    <section class="destress-prints" id="destressPrints" data-studio-prints aria-label="Лента антистресс-принтов">
       <div class="destress-prints-head">
         <div>
-          <h2 class="destress-prints-title">DE-STRESS PRINTS</h2>
-          <p class="destress-prints-note">Юмор, настроение и идеи, которым место на футболке.</p>
+          <h2 class="destress-prints-title">THE PRINT PARLOUR</h2>
+          <p class="destress-prints-note">Галерея опубликованных клубных принтов GY-GY.</p>
         </div>
         <div class="destress-prints-nav" aria-label="Прокрутка ленты">
           <button type="button" id="destressPrintPrev" aria-label="Назад">‹</button>
@@ -1371,25 +1525,12 @@ a:focus-visible {
       </div>
       <div class="destress-prints-track" id="destressPrintTrack"><div class="destress-print-empty">Загружаем принты…</div></div>
     </section>
-    <div class="destress-print-lightbox" id="destressPrintLightbox" role="dialog" aria-modal="true" aria-label="Просмотр принта">
+    <div class="destress-print-lightbox" id="destressPrintLightbox" data-studio-prints role="dialog" aria-modal="true" aria-label="Просмотр принта">
       <button type="button" id="destressPrintClose" aria-label="Закрыть">×</button>
       <img id="destressPrintLarge" alt="Антистресс-принт">
     </div>
 
-    <section class="personal-space-tools" aria-label="Личное пространство De-Stress Studio">
-      <h2>МОЁ ПРОСТРАНСТВО</h2>
-      <div class="personal-space-shortcuts">
-        <button class="outline-button" type="button" data-personal-open="archive"><span aria-hidden="true">▤</span> Мой архив</button>
-        <button class="outline-button" type="button" data-personal-open="bookmarks"><span aria-hidden="true">◆</span> Закладки</button>
-      </div>
-      <p class="personal-space-note">Сейчас данные хранятся в браузере на этом устройстве. Общая синхронизация через GY-GY Personal Space будет подключена отдельно.</p>
-      <section class="personal-space-panel" id="personalSpacePanel" hidden aria-live="polite">
-        <div class="personal-space-panel-head">
-          <h3 id="personalSpacePanelTitle">МОЙ АРХИВ</h3>
-          <button class="personal-space-close" type="button" data-personal-close aria-label="Закрыть">×</button>
-        </div>
-        <div id="personalSpaceList"></div>
-      </section>
+
     </section>
 
   </main>
@@ -2067,7 +2208,7 @@ const personalSpace = initDestressPersonalSpace({
 window.addEventListener('pagehide', () => personalSpace.destroy(), { once: true });
 
 const creationActions = initCreationActions({
-    root: $('creationActions'),
+    root: document.body,
     getWork: () => ({ situation: currentSituationText().trim(), phrase: currentPhraseText().trim() }),
     getAtelierUrl: (work, ai) => atelierLink(!!ai),
     onStatus: say
@@ -2126,14 +2267,42 @@ document.addEventListener('keydown', event => { if (event.key === 'Escape') clos
 $('destressPrintPrev')?.addEventListener('click', () => destressPrintTrack.scrollBy({ left:-220, behavior:'smooth' }));
 $('destressPrintNext')?.addEventListener('click', () => destressPrintTrack.scrollBy({ left:220, behavior:'smooth' }));
 
+
+ // ---------- De-Stress Studio route shell ----------
+let activeStudioRoute = 'home';
+function showStudioRoute(route) {
+    activeStudioRoute = route;
+    const home = $('studioHome');
+    const lab = $('labAbsurdView');
+    if (home) home.hidden = route !== 'home';
+    if (lab) lab.hidden = route !== 'lab';
+    document.querySelectorAll('[data-studio-heavy]').forEach(node => { node.hidden = route !== 'heavy'; });
+    document.querySelectorAll('[data-studio-prints]').forEach(node => { node.hidden = route !== 'prints'; });
+    if (route === 'prints') {
+        $('destressPrints')?.scrollIntoView({ block:'start', behavior:'instant' });
+    } else {
+        $('studioHome')?.scrollIntoView({ block:'start', behavior:'instant' });
+    }
+}
+document.addEventListener('click', event => {
+    const routeButton = event.target.closest('[data-studio-go]');
+    if (!routeButton) return;
+    const route = routeButton.dataset.studioGo;
+    if (['lab','heavy','prints'].includes(route)) showStudioRoute(route);
+});
+showStudioRoute('home');
+
 // навигация: стрелка поднимает на слой выше
 $('btn-back').addEventListener('click', () => {
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
-    if (!$('work-actions-screen').hidden) { showWorkActions(false); return; }
-    if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
+    if (activeStudioRoute === 'heavy') {
+        if (!$('work-actions-screen').hidden) { showWorkActions(false); return; }
+        if ($('layer-phrase').classList.contains('front')) { showPhraseLayer(false); return; }
+    }
+    if (activeStudioRoute !== 'home') { showStudioRoute('home'); return; }
     window.location.href = '././bar.html';
 });
-$('btn-home').addEventListener('click', () => { window.location.href = '././index.html'; });
+$('btn-home').addEventListener('click', () => { showStudioRoute('home'); });
 document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if ($('sheet').classList.contains('open')) closeSheet();
