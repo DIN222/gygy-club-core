@@ -1209,6 +1209,63 @@ a:focus-visible {
   .studio-attraction-card { min-height:210px; }
   .studio-attraction-art { min-height:125px; }
 }
+
+.absurd-slots {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  max-width:1040px;
+  margin:28px auto 18px;
+}
+.absurd-slot {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-width:0;
+  padding:12px;
+  border:1px solid rgba(216,179,106,.38);
+  border-radius:9px;
+  background:rgba(0,0,0,.42);
+}
+.absurd-slot label {
+  color:var(--gold);
+  font:12px/1.3 'Share Tech Mono',monospace;
+  letter-spacing:.12em;
+}
+.absurd-word {
+  width:100%;
+  min-width:0;
+  min-height:66px;
+  padding:8px 5px;
+  border:1px solid rgba(216,179,106,.22);
+  border-radius:6px;
+  color:var(--light);
+  background:rgba(8,7,5,.88);
+  font:700 clamp(17px,2vw,25px)/1.2 'Playfair Display',Georgia,serif;
+  text-align:center;
+}
+.absurd-slot.is-spinning .absurd-word { animation:absurd-roll .16s ease-in-out infinite alternate; }
+@keyframes absurd-roll {
+  from { transform:translateY(-2px); filter:blur(1px); opacity:.72; }
+  to { transform:translateY(2px); filter:blur(0); opacity:1; }
+}
+.absurd-freeze {
+  min-height:36px;
+  padding:6px 8px;
+  border:1px solid rgba(216,179,106,.36);
+  border-radius:6px;
+  color:var(--light);
+  background:transparent;
+  font:12px/1.2 'Share Tech Mono',monospace;
+  letter-spacing:.06em;
+}
+.absurd-slot.is-frozen { border-color:rgba(240,214,157,.72); background:rgba(68,49,25,.30); }
+.absurd-slot.is-frozen .absurd-freeze { color:#100e0b; background:var(--light); border-color:var(--light); }
+.absurd-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin:16px auto 8px; }
+.absurd-actions button { min-width:190px; min-height:46px; }
+.absurd-status { min-height:24px; color:var(--muted); font-size:13px; }
+@media(max-width:760px) { .absurd-slots { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:420px) { .absurd-slots { gap:7px; } .absurd-slot { padding:8px; } .absurd-word { min-height:58px; font-size:17px; } }
 </style>
 </head>
 
@@ -1300,9 +1357,35 @@ a:focus-visible {
 
     <section class="studio-coming-soon" id="labAbsurdView" hidden aria-labelledby="labAbsurdTitle">
       <h2 id="labAbsurdTitle">ЛАБОРАТОРИЯ АБСУРДА</h2>
-      <p>Творческое пространство готовится к запуску.</p>
-      <p>Здесь появятся рулетка из четырёх независимых окон, словесные эксперименты и живое сотворчество с AI.</p>
-      <p class="studio-coming-note">AI-функции будут включены после подключения настоящего AI-сервиса. Сейчас они не имитируются.</p>
+      <p>Четыре случайных слова. Одна неожиданная комбинация. Дальше — твоя фантазия.</p>
+      <div class="absurd-slots" id="absurdSlots" aria-label="Четыре окна случайных слов">
+        <div class="absurd-slot" data-absurd-slot="0">
+          <label for="absurdWord0">ОКНО 1</label>
+          <input id="absurdWord0" class="absurd-word" value="вчера" maxlength="80" aria-label="Слово в окне 1">
+          <button type="button" class="absurd-freeze" aria-pressed="false">ЗАМРИ</button>
+        </div>
+        <div class="absurd-slot" data-absurd-slot="1">
+          <label for="absurdWord1">ОКНО 2</label>
+          <input id="absurdWord1" class="absurd-word" value="депутат" maxlength="80" aria-label="Слово в окне 2">
+          <button type="button" class="absurd-freeze" aria-pressed="false">ЗАМРИ</button>
+        </div>
+        <div class="absurd-slot" data-absurd-slot="2">
+          <label for="absurdWord2">ОКНО 3</label>
+          <input id="absurdWord2" class="absurd-word" value="шуруп" maxlength="80" aria-label="Слово в окне 3">
+          <button type="button" class="absurd-freeze" aria-pressed="false">ЗАМРИ</button>
+        </div>
+        <div class="absurd-slot" data-absurd-slot="3">
+          <label for="absurdWord3">ОКНО 4</label>
+          <input id="absurdWord3" class="absurd-word" value="облака" maxlength="80" aria-label="Слово в окне 4">
+          <button type="button" class="absurd-freeze" aria-pressed="false">ЗАМРИ</button>
+        </div>
+      </div>
+      <div class="absurd-actions">
+        <button type="button" class="gold-button" id="absurdSpin">ПУСК</button>
+        <button type="button" class="outline-button" id="absurdCopy">Копировать комбинацию</button>
+      </div>
+      <p class="absurd-status" id="absurdStatus" role="status" aria-live="polite">Измени слова вручную или нажми «ПУСК». Любое окно можно заморозить отдельно.</p>
+      <p class="studio-coming-note">Живое сотворчество с AI подключим отдельно через настоящий AI-сервис. Сейчас AI-ответы не имитируются.</p>
     </section>
 
     <div class="studio-controls" data-studio-heavy aria-label="Основные действия студии">
@@ -2268,7 +2351,73 @@ $('destressPrintPrev')?.addEventListener('click', () => destressPrintTrack.scrol
 $('destressPrintNext')?.addEventListener('click', () => destressPrintTrack.scrollBy({ left:220, behavior:'smooth' }));
 
 
- // ---------- De-Stress Studio route shell ----------
+ // ---------- Лаборатория абсурда: четыре независимых окна ----------
+const absurdVocabulary = [
+ 'вчера','сегодня','завтра','смеркалось','рассвет','полночь','понедельник','праздник',
+ 'депутат','директор','почтальон','пингвин','маркиз','сосед','генерал','космонавт',
+ 'газета','шуруп','ракета','диван','самовар','кактус','чемодан','пельмень',
+ 'облака','картошка','галстук','трамвай','носорог','будильник','компот','пылесос',
+ 'убежал','забыл','прилетел','заснул','танцует','размышляет','потерялся','победил',
+ 'торжественно','случайно','великолепно','подозрительно','молча','наоборот','внезапно','невероятно',
+ 'результат ноль','великая тайна','последний шанс','без лишних слов','всё наоборот','почти гениально'
+];
+const absurdTimers = new Map();
+const absurdSlots = [...document.querySelectorAll('[data-absurd-slot]')];
+const absurdWord = slot => slot.querySelector('.absurd-word');
+const absurdStatus = message => { if ($('absurdStatus')) $('absurdStatus').textContent=message; };
+function randomAbsurdWord() {
+    return absurdVocabulary[Math.floor(Math.random()*absurdVocabulary.length)];
+}
+function stopAbsurdSlot(slot) {
+    const timer=absurdTimers.get(slot);
+    if (!timer) return;
+    clearInterval(timer.interval);
+    clearTimeout(timer.timeout);
+    absurdTimers.delete(slot);
+    slot.classList.remove('is-spinning');
+}
+function spinAbsurdSlot(slot) {
+    stopAbsurdSlot(slot);
+    slot.classList.add('is-spinning');
+    const input=absurdWord(slot);
+    const interval=setInterval(()=>{ input.value=randomAbsurdWord(); },75);
+    const timeout=setTimeout(()=>{
+        clearInterval(interval);
+        input.value=randomAbsurdWord();
+        slot.classList.remove('is-spinning');
+        absurdTimers.delete(slot);
+    },650+Math.floor(Math.random()*450));
+    absurdTimers.set(slot,{interval,timeout});
+}
+absurdSlots.forEach(slot=>{
+    const freeze=slot.querySelector('.absurd-freeze');
+    freeze.addEventListener('click',()=>{
+        const frozen=freeze.getAttribute('aria-pressed')==='true';
+        const nextFrozen=!frozen;
+        if(nextFrozen) stopAbsurdSlot(slot);
+        freeze.setAttribute('aria-pressed',String(nextFrozen));
+        freeze.textContent=nextFrozen?'ОТОМРИ':'ЗАМРИ';
+        slot.classList.toggle('is-frozen',nextFrozen);
+        absurdStatus(nextFrozen?'Окно заморожено. Его слово сохранится при следующем запуске.':'Окно снова участвует в запуске.');
+    });
+});
+$('absurdSpin')?.addEventListener('click',()=>{
+    const active=absurdSlots.filter(slot=>slot.querySelector('.absurd-freeze').getAttribute('aria-pressed')!=='true');
+    if(!active.length){absurdStatus('Все четыре окна заморожены. Отомри хотя бы одно.');return;}
+    active.forEach(spinAbsurdSlot);
+    absurdStatus('Крутим незамороженные окна…');
+});
+$('absurdCopy')?.addEventListener('click',async()=>{
+    const text=absurdSlots.map(absurdWord).map(input=>input.value.trim()).join(' · ');
+    try {
+        await navigator.clipboard.writeText(text);
+        absurdStatus('Комбинация скопирована.');
+    } catch {
+        absurdStatus('Не удалось скопировать автоматически. Выдели слова и скопируй их вручную.');
+    }
+});
+
+// ---------- De-Stress Studio route shell ----------
 let activeStudioRoute = 'home';
 const studioScrollPositions = { home:0, lab:0, heavy:0, prints:0 };
 function showStudioRoute(route) {
