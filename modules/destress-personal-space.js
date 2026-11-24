@@ -1,6 +1,6 @@
 /**
  * GY-GY Club — De-Stress Studio Personal Space
- * v1.0.0 — local browser prototype for the separate Archive and Bookmarks tools.
+ * v1.1.0 — local prototype accepts a case-only story; shared Personal Space integration remains pending.
  * Server sync / Passport identity is intentionally not simulated.
  */
 const KEYS = {
@@ -31,8 +31,8 @@ export function initDestressPersonalSpace({ root = document.body, getWork, onSta
     const work = getWork() || {};
     const situation = String(work.situation || '').trim();
     const phrase = String(work.phrase || '').trim();
-    if (!situation || !phrase) {
-      showStatus('Сначала собери целую работу: случай + крепкое выражение.');
+    if (!situation) {
+      showStatus('Сначала расскажи, что произошло.');
       return null;
     }
     return { situation, phrase };
@@ -77,7 +77,7 @@ export function initDestressPersonalSpace({ root = document.body, getWork, onSta
       return '<article class="personal-space-item">' +
         '<div class="personal-space-item-date">' + escapeHtml(date) + '</div>' +
         '<h3>' + escapeHtml(item.situation) + '</h3>' +
-        '<p>' + escapeHtml(item.phrase) + '</p>' +
+        (item.phrase ? '<p>' + escapeHtml(item.phrase) + '</p>' : '') +
         '<button type="button" class="personal-space-remove" data-personal-remove="' + escapeHtml(item.id) + '" data-personal-collection="' + activeCollection + '">Удалить</button>' +
         '</article>';
     }).join('');
