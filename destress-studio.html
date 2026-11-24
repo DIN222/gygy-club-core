@@ -1789,8 +1789,8 @@ const currentPhraseText = () => {
     return displayOf(state.phrase);
 };
 function currentSituationText() {
-    const authoredSituation = $('customSituationInput')?.value.trim();
-    if (authoredSituation) return authoredSituation;
+    const input = $('customSituationInput');
+    if (input && !input.closest('[hidden]')) return input.value.trim();
     if (state.situationIndex !== null) {
         const item = allSituations()[state.situationIndex];
         return item ? item[1] : '';
