@@ -102,7 +102,7 @@ export function initCreationActions({root,getWork,getAtelierUrl,onStatus=()=>{}}
           const blob=new Blob([text+'\n— GY-GY Club\n'],{type:'text/plain;charset=utf-8'});
           const url=URL.createObjectURL(blob),link=document.createElement('a'),date=new Date().toISOString().slice(0,10);
           link.href=url;link.download=`gygy-destress-work-${date}.txt`;document.body.append(link);link.click();link.remove();window.setTimeout(()=>URL.revokeObjectURL(url),30000);
-          status('Подготовлен файл со случаем и крепким выражением. Дальнейшее сохранение зависит от устройства и браузера.');
+          status('Подготовлен файл с авторским рассказом и добавленным выражением, если оно есть. Дальнейшее сохранение зависит от устройства и браузера.');
         }catch{status('Не удалось подготовить файл для загрузки.');}
         return;
       case 'news':
