@@ -1,13 +1,14 @@
 /**
  * GY-GY Club — reusable actions for a completed creative work.
- * v1.0.5 — THE CHAT ROOM stays mounted when hidden so Studio returns preserve chat state.
+ * v1.1.0 — Sharing accepts a case-only story; phrase-dependent Atelier actions still require a phrase.
  */
 
 function normalizeWork(value) {
   return { situation: String(value?.situation ?? '').trim(), phrase: String(value?.phrase ?? '').trim() };
 }
 function formatWork(work) {
-  return `СЛУЧАЙ\n${work.situation}\n\nКРЕПКОЕ ВЫРАЖЕНИЕ\n${work.phrase}`;
+  const phrase = work.phrase ? `\n\nКРЕПКОЕ ВЫРАЖЕНИЕ\n${work.phrase}` : '';
+  return `СЛУЧАЙ\n${work.situation}${phrase}`;
 }
 function createNewsChoice(root, onSubmit, onCancel) {
   const old = root.querySelector('.creation-news-choice');
@@ -32,7 +33,7 @@ export function initCreationActions({root,getWork,getAtelierUrl,onStatus=()=>{}}
   if(!root||typeof getWork!=='function') throw new TypeError('[creation-actions] root and getWork are required.');
   let destroyed=false,newsPanel=null,chatFrame=null,chatMessageHandler=null;
   const status=message=>{if(!destroyed)onStatus(message);};
-  const getCompleteWork=()=>{const work=normalizeWork(getWork());if(!work.situation||!work.phrase){status('Сначала собери целую авторскую работу: случай + крепкое выражение.');return null;}return work;};
+  const getShareableWork=()=>{const work=normalizeWork(getWork());if(!work.situation){status('Сначала расскажи, что произошло.');return null;}return work;};
   // Hide the chat on return to Studio, but keep its live document mounted.
   // This preserves the participant's topic, scroll position and unfinished composer state.
   const hideChat=()=>{
@@ -79,10 +80,11 @@ export function initCreationActions({root,getWork,getAtelierUrl,onStatus=()=>{}}
     const action=button.dataset.creationAction;
     // CHAT — самостоятельное пространство клуба: ему не требуется готовая работа.
     if(action==='chat'){openChat();return;}
-    const work=getCompleteWork(); if(!work)return;
+    const work=getShareableWork(); if(!work)return;
     const text=formatWork(work);
     switch(action){
       case 'atelier': {
+        if(!work.phrase){status('Для переноса в Atelier нужно заполнить «Библиотеку крепких слов».');return;}
         if(typeof getAtelierUrl!=='function'){status('Переход в Ателье пока не настроен для этого раздела.');return;}
         const url=getAtelierUrl(work,false);if(!url){status('Не удалось подготовить ссылку на Ателье.');return;}
         window.location.href=url;return;
