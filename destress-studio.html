@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.6.4
+  destress-studio.html — De-Stress Studio — v5.6.5
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -19,7 +19,7 @@
   v5.5.0: Studio преобразована во входную площадку с четырьмя аттракционами; добавлены отдельные пространства Лаборатории абсурда и THE PRINT PARLOUR, сохранение прокрутки между площадками и рулетка из четырёх независимых окон. AI не имитируется; подключение настоящего сервиса отложено до готовности endpoint.
   v5.6.0: в Тяжёлом случае продолжение возможно после заполнения только рассказа; библиотека крепких слов необязательна. Перенос в Atelier требует выражение; отправка другу/Telegram и локальное сохранение поддерживают рассказ без выражения. Устранена старая конфликтующая проверка отправки формы.
   v5.6.1: убраны повторные заголовки внутренних площадок — название каждой площадки показывается один раз в общей шапке; кнопки приведены к контурному стилю без сплошной золотой заливки.
-  v5.6.2: стрелки листания ленты THE PRINT PARLOUR перенесены на левую и правую стороны ленты. v5.6.3: боковые стрелки сделаны более заметными, круглыми и визуально отделёнными от карточек; увеличена зона нажатия. v5.6.4: ширина ленты рассчитана на четыре полностью видимые карточки на широких экранах; боковые стрелки и промежутки компактнее; на планшетах и телефонах число видимых карточек адаптируется.
+  v5.6.2: стрелки листания ленты THE PRINT PARLOUR перенесены на левую и правую стороны ленты. v5.6.3: боковые стрелки сделаны более заметными, круглыми и визуально отделёнными от карточек; увеличена зона нажатия. v5.6.4: ширина ленты рассчитана на четыре полностью видимые карточки на широких экранах; боковые стрелки и промежутки компактнее; на планшетах и телефонах число видимых карточек адаптируется. v5.6.5: фактическая ширина боковых стрелок и их колонок согласована; уменьшены боковые зоны и промежутки, чтобы увеличить полезную ширину ленты принтов.
 -->
 <html lang="ru">
 <head>
@@ -1089,8 +1089,8 @@ a:focus-visible {
 .destress-prints-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .destress-prints-title { margin:0; color:var(--light); font:700 clamp(19px,2.8vw,27px)/1.15 'Playfair Display',Georgia,serif; letter-spacing:.06em; }
 .destress-prints-note { margin:5px 0 0; color:var(--muted); font-size:12px; }
-.destress-prints-carousel { display:grid; grid-template-columns:40px minmax(0,1fr) 40px; align-items:center; gap:8px; }
-.destress-prints-arrow { display:grid; place-items:center; width:46px; height:46px; padding:0 0 3px; border:1px solid rgba(216,179,106,.78); border-radius:50%; color:var(--light); background:rgba(8,7,5,.88); box-shadow:0 3px 14px rgba(0,0,0,.34),inset 0 0 0 1px rgba(216,179,106,.12); font:400 36px/1 Georgia,serif; transition:background .18s,border-color .18s,transform .18s,box-shadow .18s; }
+.destress-prints-carousel { display:grid; grid-template-columns:34px minmax(0,1fr) 34px; align-items:center; gap:6px; }
+.destress-prints-arrow { display:grid; place-items:center; width:34px; height:34px; padding:0 0 2px; border:1px solid rgba(216,179,106,.78); border-radius:50%; color:var(--light); background:rgba(8,7,5,.88); box-shadow:0 3px 14px rgba(0,0,0,.34),inset 0 0 0 1px rgba(216,179,106,.12); font:400 28px/1 Georgia,serif; transition:background .18s,border-color .18s,transform .18s,box-shadow .18s; }
 .destress-prints-arrow:hover { border-color:var(--light); background:rgba(216,179,106,.18); box-shadow:0 4px 18px rgba(0,0,0,.42),0 0 12px rgba(216,179,106,.16); transform:scale(1.07); }
 .destress-prints-arrow:active { transform:scale(.97); }
 .destress-prints-track { display:flex; min-width:0; gap:12px; overflow-x:auto; padding:3px 2px 10px; scroll-snap-type:x proximity; scrollbar-width:thin; scrollbar-color:var(--dark) transparent; scroll-behavior:smooth; }
@@ -1118,7 +1118,7 @@ a:focus-visible {
 .destress-print-lightbox.open { display:flex; }
 .destress-print-lightbox img { max-width:min(92vw,900px); max-height:84vh; object-fit:contain; border:1px solid rgba(216,179,106,.5); border-radius:8px; background:#111; }
 .destress-print-lightbox button { position:absolute; top:18px; right:22px; border:1px solid var(--gold); border-radius:50%; width:42px; height:42px; color:var(--light); background:#100e0b; font-size:25px; }
-@media(max-width:520px) { .destress-prints-head { align-items:flex-start; } .destress-prints-note { max-width:240px; } .destress-prints-carousel { grid-template-columns:34px minmax(0,1fr) 34px; gap:5px; } .destress-prints-arrow { width:32px; height:32px; font-size:27px; } .destress-print-card { flex-basis:calc((100% - 12px)/2); } }
+@media(max-width:520px) { .destress-prints-head { align-items:flex-start; } .destress-prints-note { max-width:240px; } .destress-prints-carousel { grid-template-columns:30px minmax(0,1fr) 30px; gap:4px; } .destress-prints-arrow { width:30px; height:30px; font-size:25px; } .destress-print-card { flex-basis:calc((100% - 12px)/2); } }
 
 
 /* DE-STRESS STUDIO — входная площадка и самостоятельные пространства */
