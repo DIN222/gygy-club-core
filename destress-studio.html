@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.6.0
+  destress-studio.html — De-Stress Studio — v5.6.2
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -19,6 +19,7 @@
   v5.5.0: Studio преобразована во входную площадку с четырьмя аттракционами; добавлены отдельные пространства Лаборатории абсурда и THE PRINT PARLOUR, сохранение прокрутки между площадками и рулетка из четырёх независимых окон. AI не имитируется; подключение настоящего сервиса отложено до готовности endpoint.
   v5.6.0: в Тяжёлом случае продолжение возможно после заполнения только рассказа; библиотека крепких слов необязательна. Перенос в Atelier требует выражение; отправка другу/Telegram и локальное сохранение поддерживают рассказ без выражения. Устранена старая конфликтующая проверка отправки формы.
   v5.6.1: убраны повторные заголовки внутренних площадок — название каждой площадки показывается один раз в общей шапке; кнопки приведены к контурному стилю без сплошной золотой заливки.
+  v5.6.2: стрелки листания ленты THE PRINT PARLOUR перенесены с верхней панели на левую и правую стороны ленты; шаг листания увеличен до удобного просмотра галереи.
 -->
 <html lang="ru">
 <head>
@@ -1088,9 +1089,11 @@ a:focus-visible {
 .destress-prints-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .destress-prints-title { margin:0; color:var(--light); font:700 clamp(19px,2.8vw,27px)/1.15 'Playfair Display',Georgia,serif; letter-spacing:.06em; }
 .destress-prints-note { margin:5px 0 0; color:var(--muted); font-size:12px; }
-.destress-prints-nav { display:flex; gap:6px; flex-shrink:0; }
-.destress-prints-nav button { width:34px; height:34px; border:1px solid var(--gold); border-radius:7px; color:var(--light); background:rgba(0,0,0,.45); font-size:20px; }
-.destress-prints-track { display:flex; gap:12px; overflow-x:auto; padding:3px 2px 10px; scroll-snap-type:x proximity; scrollbar-width:thin; scrollbar-color:var(--dark) transparent; }
+.destress-prints-carousel { display:grid; grid-template-columns:42px minmax(0,1fr) 42px; align-items:center; gap:9px; }
+.destress-prints-arrow { display:grid; place-items:center; width:42px; height:54px; padding:0; border:1px solid rgba(216,179,106,.62); border-radius:8px; color:var(--light); background:rgba(0,0,0,.48); font:400 34px/1 Georgia,serif; transition:background .18s,border-color .18s,transform .18s; }
+.destress-prints-arrow:hover { border-color:var(--light); background:rgba(216,179,106,.12); transform:scale(1.04); }
+.destress-prints-arrow:active { transform:scale(.97); }
+.destress-prints-track { display:flex; min-width:0; gap:12px; overflow-x:auto; padding:3px 2px 10px; scroll-snap-type:x proximity; scrollbar-width:thin; scrollbar-color:var(--dark) transparent; scroll-behavior:smooth; }
 .destress-print-card { flex:0 0 clamp(130px,20vw,190px); scroll-snap-align:start; border:1px solid rgba(216,179,106,.32); border-radius:9px; padding:7px; background:rgba(35,29,22,.72); cursor:pointer; text-align:center; color:var(--text); }
 .destress-print-thumb { display:grid; place-items:center; width:100%; aspect-ratio:1; overflow:hidden; border-radius:5px; background:repeating-conic-gradient(#555 0% 25%,#777 0% 50%) 50%/14px 14px; }
 .destress-print-thumb.bg-light { background:#ececec; }
@@ -1622,12 +1625,12 @@ a:focus-visible {
         <div>
           <p class="destress-prints-note">Галерея опубликованных клубных принтов GY-GY.</p>
         </div>
-        <div class="destress-prints-nav" aria-label="Прокрутка ленты">
-          <button type="button" id="destressPrintPrev" aria-label="Назад">‹</button>
-          <button type="button" id="destressPrintNext" aria-label="Вперёд">›</button>
-        </div>
       </div>
-      <div class="destress-prints-track" id="destressPrintTrack"><div class="destress-print-empty">Загружаем принты…</div></div>
+      <div class="destress-prints-carousel">
+        <button class="destress-prints-arrow" type="button" id="destressPrintPrev" aria-label="Предыдущие принты" title="Предыдущие принты">‹</button>
+        <div class="destress-prints-track" id="destressPrintTrack"><div class="destress-print-empty">Загружаем принты…</div></div>
+        <button class="destress-prints-arrow" type="button" id="destressPrintNext" aria-label="Следующие принты" title="Следующие принты">›</button>
+      </div>
     </section>
     <div class="destress-print-lightbox" id="destressPrintLightbox" data-studio-prints role="dialog" aria-modal="true" aria-label="Просмотр принта">
       <button type="button" id="destressPrintClose" aria-label="Закрыть">×</button>
@@ -2354,8 +2357,15 @@ function closeDestressPrintLightbox() {
 $('destressPrintClose')?.addEventListener('click', closeDestressPrintLightbox);
 destressPrintLightbox?.addEventListener('click', event => { if (event.target === destressPrintLightbox) closeDestressPrintLightbox(); });
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeDestressPrintLightbox(); });
-$('destressPrintPrev')?.addEventListener('click', () => destressPrintTrack.scrollBy({ left:-220, behavior:'smooth' }));
-$('destressPrintNext')?.addEventListener('click', () => destressPrintTrack.scrollBy({ left:220, behavior:'smooth' }));
+function scrollDestressPrints(direction) {
+    if (!destressPrintTrack) return;
+    const firstCard = destressPrintTrack.querySelector('.destress-print-card');
+    const gap = firstCard ? parseFloat(getComputedStyle(destressPrintTrack).columnGap) || 12 : 12;
+    const step = firstCard ? firstCard.getBoundingClientRect().width + gap : destressPrintTrack.clientWidth * 0.8;
+    destressPrintTrack.scrollBy({ left: direction * step, behavior: 'smooth' });
+}
+$('destressPrintPrev')?.addEventListener('click', () => scrollDestressPrints(-1));
+$('destressPrintNext')?.addEventListener('click', () => scrollDestressPrints(1));
 
 
  // ---------- Лаборатория абсурда: четыре независимых окна ----------
