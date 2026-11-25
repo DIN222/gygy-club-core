@@ -1320,7 +1320,7 @@ a:focus-visible {
   <main class="container">
 
     <div class="title-with-charlie">
-      <img src="./bar_horse.jpg" alt="Чарли за барной стойкой" class="title-charlie">
+      <img src="./bar_horse.jpg" alt="Чарли за барной стойкой" class="title-charlie" id="studioTitleCharlie">
       <h1 class="studio-title" translate="no">DE-STRESS STUDIO</h1>
     </div>
 
@@ -1329,7 +1329,7 @@ a:focus-visible {
         <button class="studio-attraction-card" type="button" data-studio-go="lab">
           <span class="studio-attraction-art studio-art-lab" aria-hidden="true">✳</span>
           <span class="studio-attraction-copy">
-            <strong>ЛАБОРАТОРИЯ АБСУРДА</strong>
+            <strong>THE ABSURDITY LAB</strong>
             <span>Слова, случайные сочетания и творческая игра</span>
           </span>
         </button>
@@ -1374,7 +1374,7 @@ a:focus-visible {
     </section>
 
     <section class="studio-coming-soon" id="labAbsurdView" hidden aria-labelledby="labAbsurdTitle">
-      <h2 id="labAbsurdTitle">ЛАБОРАТОРИЯ АБСУРДА</h2>
+      <h2 id="labAbsurdTitle">THE ABSURDITY LAB</h2>
       <p>Четыре случайных слова. Одна неожиданная комбинация. Дальше — твоя фантазия.</p>
       <div class="absurd-slots" id="absurdSlots" aria-label="Четыре окна случайных слов">
         <div class="absurd-slot" data-absurd-slot="0">
@@ -2430,10 +2430,12 @@ function showStudioRoute(route) {
     if (route !== activeStudioRoute) studioScrollPositions[activeStudioRoute] = window.scrollY;
     activeStudioRoute = route;
     const studioTitle = document.querySelector('.studio-title');
+    const titleCharlie = $('studioTitleCharlie');
+    if (titleCharlie) titleCharlie.hidden = route !== 'home';
     if (studioTitle) {
         const routeTitles = {
             home: 'DE-STRESS STUDIO',
-            lab: 'ЛАБОРАТОРИЯ АБСУРДА',
+            lab: 'THE ABSURDITY LAB',
             heavy: 'A TOUGH CASE',
             prints: 'THE PRINT PARLOUR'
         };
