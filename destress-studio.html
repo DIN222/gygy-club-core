@@ -2429,6 +2429,8 @@ function showStudioRoute(route) {
     if (!(route in studioScrollPositions)) return;
     if (route !== activeStudioRoute) studioScrollPositions[activeStudioRoute] = window.scrollY;
     activeStudioRoute = route;
+    const studioTitle = document.querySelector('.studio-title');
+    if (studioTitle) studioTitle.textContent = route === 'heavy' ? 'A TOUGH CASE' : 'DE-STRESS STUDIO';
     const home = $('studioHome');
     const lab = $('labAbsurdView');
     if (home) home.hidden = route !== 'home';
