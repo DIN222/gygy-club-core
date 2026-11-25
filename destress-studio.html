@@ -2430,7 +2430,15 @@ function showStudioRoute(route) {
     if (route !== activeStudioRoute) studioScrollPositions[activeStudioRoute] = window.scrollY;
     activeStudioRoute = route;
     const studioTitle = document.querySelector('.studio-title');
-    if (studioTitle) studioTitle.textContent = route === 'heavy' ? 'A TOUGH CASE' : 'DE-STRESS STUDIO';
+    if (studioTitle) {
+        const routeTitles = {
+            home: 'DE-STRESS STUDIO',
+            lab: 'ЛАБОРАТОРИЯ АБСУРДА',
+            heavy: 'A TOUGH CASE',
+            prints: 'THE PRINT PARLOUR'
+        };
+        studioTitle.textContent = routeTitles[route] || routeTitles.home;
+    }
     const home = $('studioHome');
     const lab = $('labAbsurdView');
     if (home) home.hidden = route !== 'home';
