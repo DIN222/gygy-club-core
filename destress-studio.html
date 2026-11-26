@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.6.5
+  destress-studio.html — De-Stress Studio — v5.7.0
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -1114,10 +1114,23 @@ a:focus-visible {
 }
 .destress-print-author { display:block; margin-top:6px; color:var(--muted); font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .destress-print-empty { padding:18px 8px; color:var(--muted); text-align:center; font:14px Georgia,serif; }
-.destress-print-lightbox { position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.9); }
+.destress-print-lightbox { position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; padding:clamp(10px,3vw,28px); background:rgba(0,0,0,.84); backdrop-filter:blur(5px); }
 .destress-print-lightbox.open { display:flex; }
-.destress-print-lightbox img { max-width:min(92vw,900px); max-height:84vh; object-fit:contain; border:1px solid rgba(216,179,106,.5); border-radius:8px; background:#111; }
-.destress-print-lightbox button { position:absolute; top:18px; right:22px; border:1px solid var(--gold); border-radius:50%; width:42px; height:42px; color:var(--light); background:#100e0b; font-size:25px; }
+.destress-print-detail { position:relative; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr); gap:clamp(18px,3vw,34px); width:min(1120px,96vw); max-height:min(88vh,900px); padding:clamp(18px,3vw,34px); overflow:auto; border:1px solid rgba(216,179,106,.58); border-radius:13px; background:linear-gradient(145deg,rgba(35,29,22,.99),rgba(12,10,8,.99)); box-shadow:0 24px 80px rgba(0,0,0,.58),inset 0 0 0 1px rgba(216,179,106,.08); }
+.destress-print-detail-image { display:grid; place-items:center; min-width:0; min-height:280px; padding:12px; border:1px solid rgba(216,179,106,.22); border-radius:9px; background:rgba(0,0,0,.34); }
+.destress-print-detail-image img { display:block; max-width:100%; max-height:70vh; object-fit:contain; border:0; border-radius:4px; background:transparent; }
+.destress-print-detail-info { display:flex; flex-direction:column; justify-content:center; min-width:0; padding:8px 2px; }
+.destress-print-detail-kicker { margin:0 0 8px; color:var(--gold); font:12px 'Share Tech Mono',monospace; letter-spacing:.14em; }
+.destress-print-detail-title { margin:0 0 10px; color:var(--light); font:700 clamp(23px,3vw,34px)/1.15 'Playfair Display',Georgia,serif; }
+.destress-print-detail-author { margin:0 0 24px; color:var(--muted); font-size:13px; }
+.destress-print-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.destress-print-actions button { min-height:43px; padding:9px 11px; border:1px solid rgba(216,179,106,.48); border-radius:7px; color:var(--light); background:rgba(0,0,0,.22); font-size:12px; font-weight:700; transition:background .16s,border-color .16s; }
+.destress-print-actions button:hover { border-color:var(--light); background:rgba(216,179,106,.11); }
+.destress-print-actions button.primary { border-color:var(--gold); background:rgba(216,179,106,.13); }
+.destress-print-detail-status { min-height:38px; margin:15px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
+.destress-print-close { position:absolute; top:12px; right:12px; z-index:2; display:grid; place-items:center; width:40px; height:40px; border:1px solid var(--gold); border-radius:50%; color:var(--light); background:#100e0b; font-size:24px; }
+@media(max-width:700px) { .destress-print-detail { grid-template-columns:1fr; gap:14px; max-height:92vh; padding:15px; } .destress-print-detail-image { min-height:180px; } .destress-print-detail-image img { max-height:42vh; } .destress-print-detail-info { padding:4px 2px; } .destress-print-detail-author { margin-bottom:15px; } .destress-print-close { top:8px; right:8px; } }
+@media(max-width:420px) { .destress-print-actions { grid-template-columns:1fr 1fr; gap:7px; } .destress-print-actions button { padding:8px 6px; font-size:11px; } }
 @media(max-width:520px) { .destress-prints-head { align-items:flex-start; } .destress-prints-note { max-width:240px; } .destress-prints-carousel { grid-template-columns:30px minmax(0,1fr) 30px; gap:4px; } .destress-prints-arrow { width:30px; height:30px; font-size:25px; } .destress-print-card { flex-basis:calc((100% - 12px)/2); } }
 
 
@@ -1845,9 +1858,27 @@ a:focus-visible {
         <button class="destress-prints-arrow" type="button" id="destressPrintNext" aria-label="Следующие принты" title="Следующие принты">›</button>
       </div>
     </section>
-    <div class="destress-print-lightbox" id="destressPrintLightbox" data-studio-prints role="dialog" aria-modal="true" aria-label="Просмотр принта">
-      <button type="button" id="destressPrintClose" aria-label="Закрыть">×</button>
-      <img id="destressPrintLarge" alt="Антистресс-принт">
+    <div class="destress-print-lightbox" id="destressPrintLightbox" data-studio-prints role="dialog" aria-modal="true" aria-label="Выбранный принт" aria-hidden="true">
+      <section class="destress-print-detail" role="document">
+        <button class="destress-print-close" type="button" id="destressPrintClose" aria-label="Закрыть">×</button>
+        <div class="destress-print-detail-image">
+          <img id="destressPrintLarge" alt="Выбранный клубный принт">
+        </div>
+        <div class="destress-print-detail-info">
+          <p class="destress-print-detail-kicker">THE PRINT PARLOUR</p>
+          <h2 class="destress-print-detail-title">Выбранная работа</h2>
+          <p class="destress-print-detail-author" id="destressPrintAuthor">Автор: GY-GY Club</p>
+          <div class="destress-print-actions" aria-label="Действия с принтом">
+            <button class="primary" type="button" data-print-action="try">ПРИМЕРИТЬ</button>
+            <button class="primary" type="button" data-print-action="remix">МОДИФИЦИРОВАТЬ ПО-СВОЕМУ</button>
+            <button type="button" data-print-action="edit">РЕДАКТИРОВАТЬ</button>
+            <button type="button" data-print-action="bookmark">В ЗАКЛАДКИ</button>
+            <button type="button" data-print-action="share">ПОДЕЛИТЬСЯ</button>
+            <button type="button" data-print-action="order">ЗАКАЗАТЬ</button>
+          </div>
+          <p class="destress-print-detail-status" id="destressPrintActionStatus" role="status" aria-live="polite"></p>
+        </div>
+      </section>
     </div>
 
   </main>
@@ -2545,7 +2576,7 @@ async function loadDestressPrints() {
         }
         destressPrintTrack.innerHTML = prints.map(item => {
             const bgClass = item.bg === 'light' ? ' bg-light' : (item.bg === 'dark' ? ' bg-dark' : '');
-            return `<button class="destress-print-card" type="button" data-print-url="${esc(safePrintUrl(item.image_url))}" aria-label="Открыть принт">
+            return `<button class="destress-print-card" type="button" data-print-url="${esc(safePrintUrl(item.image_url))}" data-print-author="${esc(item.from_user_name || 'GY-GY Club')}" aria-label="Открыть принт">
               <span class="destress-print-thumb${bgClass}"><img src="${esc(safePrintUrl(item.image_url))}" alt="" loading="lazy"></span>
               <span class="destress-print-author">${esc(item.from_user_name || 'GY-GY Club')}</span>
             </button>`;
@@ -2555,21 +2586,72 @@ async function loadDestressPrints() {
         destressPrintTrack.innerHTML = '<div class="destress-print-empty">Лента временно недоступна. Попробуй зайти позже.</div>';
     }
 }
+let selectedDestressPrintUrl = '';
+let printModalPreviousFocus = null;
 destressPrintTrack?.addEventListener('click', event => {
     const card = event.target.closest('[data-print-url]');
     if (!card) return;
     const url = safePrintUrl(card.dataset.printUrl);
     if (!url) return;
+    selectedDestressPrintUrl = url;
+    printModalPreviousFocus = document.activeElement;
     $('destressPrintLarge').src = url;
+    $('destressPrintAuthor').textContent = 'Автор: ' + (card.dataset.printAuthor || 'GY-GY Club');
+    $('destressPrintActionStatus').textContent = '';
     destressPrintLightbox.classList.add('open');
+    destressPrintLightbox.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    $('destressPrintClose').focus();
 });
 function closeDestressPrintLightbox() {
-    destressPrintLightbox?.classList.remove('open');
+    if (!destressPrintLightbox?.classList.contains('open')) return;
+    destressPrintLightbox.classList.remove('open');
+    destressPrintLightbox.setAttribute('aria-hidden', 'true');
     if ($('destressPrintLarge')) $('destressPrintLarge').removeAttribute('src');
+    document.body.style.overflow = '';
+    if (printModalPreviousFocus && typeof printModalPreviousFocus.focus === 'function') printModalPreviousFocus.focus();
 }
 $('destressPrintClose')?.addEventListener('click', closeDestressPrintLightbox);
 destressPrintLightbox?.addEventListener('click', event => { if (event.target === destressPrintLightbox) closeDestressPrintLightbox(); });
-document.addEventListener('keydown', event => { if (event.key === 'Escape') closeDestressPrintLightbox(); });
+destressPrintLightbox?.addEventListener('click', async event => {
+    const action = event.target.closest('[data-print-action]');
+    if (!action) return;
+    const status = $('destressPrintActionStatus');
+    const messages = {
+        try: 'Примерка на изделии будет подключена на следующем этапе.',
+        remix: 'Создание собственной версии через PRINT CORE будет подключено на следующем этапе.',
+        edit: 'EDITOR будет подключён сюда после завершения его разработки.',
+        bookmark: 'Подключение к общеклубным «Закладкам» будет выполнено отдельным этапом.',
+        order: 'Оформление заказа выполняется через соответствующее Ателье; этот переход пока не подключён.'
+    };
+    if (action.dataset.printAction === 'share') {
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: 'GY-GY Club — THE PRINT PARLOUR', text: 'Посмотри этот принт в THE PRINT PARLOUR', url: selectedDestressPrintUrl });
+                status.textContent = 'Ссылка передана в меню общего доступа.';
+            } else if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(selectedDestressPrintUrl);
+                status.textContent = 'Ссылка на принт скопирована.';
+            } else {
+                status.textContent = 'В этом браузере автоматическая отправка недоступна.';
+            }
+        } catch (error) {
+            if (error?.name !== 'AbortError') status.textContent = 'Не удалось поделиться ссылкой. Попробуй ещё раз.';
+        }
+        return;
+    }
+    status.textContent = messages[action.dataset.printAction] || '';
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && destressPrintLightbox?.classList.contains('open')) closeDestressPrintLightbox();
+    if (event.key === 'Tab' && destressPrintLightbox?.classList.contains('open')) {
+        const focusable = [...destressPrintLightbox.querySelectorAll('button:not([disabled])')];
+        if (!focusable.length) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+});
 function scrollDestressPrints(direction) {
     if (!destressPrintTrack) return;
     const firstCard = destressPrintTrack.querySelector('.destress-print-card');
