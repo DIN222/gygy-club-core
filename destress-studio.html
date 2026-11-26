@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.7.1
+  destress-studio.html — De-Stress Studio — v5.7.2
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -20,6 +20,7 @@
   v5.6.0: в Тяжёлом случае продолжение возможно после заполнения только рассказа; библиотека крепких слов необязательна. Перенос в Atelier требует выражение; отправка другу/Telegram и локальное сохранение поддерживают рассказ без выражения. Устранена старая конфликтующая проверка отправки формы.
   v5.6.1: убраны повторные заголовки внутренних площадок — название каждой площадки показывается один раз в общей шапке; кнопки приведены к контурному стилю без сплошной золотой заливки.
   v5.6.2: стрелки листания ленты THE PRINT PARLOUR перенесены на левую и правую стороны ленты. v5.6.3: боковые стрелки сделаны более заметными, круглыми и визуально отделёнными от карточек; увеличена зона нажатия. v5.6.4: ширина ленты рассчитана на четыре полностью видимые карточки на широких экранах; боковые стрелки и промежутки компактнее; на планшетах и телефонах число видимых карточек адаптируется. v5.6.5: фактическая ширина боковых стрелок и их колонок согласована; уменьшены боковые зоны и промежутки, чтобы увеличить полезную ширину ленты принтов.
+  v5.7.2: добавлена загрузка собственного изображения с компьютера как седьмое действие; «Редактировать» открывает выбор MANUAL CREATION / AI CREATION; крестик заменён общеклубными стрелками навигации. Загруженный файл пока отображается локально в текущей вкладке и не отправляется в облачное хранилище.
 -->
 <html lang="ru">
 <head>
@@ -114,6 +115,8 @@ a:focus-visible {
 /* ШАПКА */
 
 .topbar {
+  position: relative;
+  z-index: 3101;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -1130,8 +1133,17 @@ a:focus-visible {
 .destress-print-actions button:hover { border-color:var(--light); background:rgba(216,179,106,.11); }
 .destress-print-actions button.primary { border-color:var(--gold); background:rgba(216,179,106,.13); }
 .destress-print-detail-status { min-height:38px; margin:15px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
-.destress-print-close { position:absolute; top:12px; right:12px; z-index:2; display:grid; place-items:center; width:40px; height:40px; border:1px solid var(--gold); border-radius:50%; color:var(--light); background:#100e0b; font-size:24px; }
-@media(max-width:700px) { .destress-print-detail { grid-template-columns:1fr; gap:14px; max-height:92vh; padding:15px; } .destress-print-detail-image { min-height:180px; } .destress-print-detail-image img { max-height:42vh; } .destress-print-detail-info { padding:4px 2px; } .destress-print-detail-author { margin-bottom:15px; } .destress-print-close { top:8px; right:8px; } }
+ .destress-print-detail.is-choosing { grid-template-columns:minmax(0,1fr); }
+ .destress-print-mode-choice { grid-column:1 / -1; align-self:center; max-width:720px; width:100%; margin:auto; padding:clamp(12px,3vw,28px); text-align:center; }
+ .destress-print-mode-choice h3 { margin:0 0 8px; color:var(--light); font:700 clamp(22px,3vw,32px)/1.2 'Playfair Display',Georgia,serif; }
+ .destress-print-mode-choice p { margin:0 auto 22px; max-width:560px; color:var(--muted); font-size:14px; }
+ .destress-print-mode-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+ .destress-print-mode-options button { min-height:110px; padding:18px; border:1px solid rgba(216,179,106,.55); border-radius:9px; color:var(--light); background:rgba(0,0,0,.24); text-align:left; }
+ .destress-print-mode-options button:hover { border-color:var(--light); background:rgba(216,179,106,.10); }
+ .destress-print-mode-options strong { display:block; margin-bottom:7px; font:700 16px 'Playfair Display',Georgia,serif; }
+ .destress-print-mode-options span { display:block; color:var(--muted); font-size:12px; line-height:1.45; }
+ @media(max-width:520px) { .destress-print-mode-options { grid-template-columns:1fr; } .destress-print-mode-options button { min-height:82px; } }
+@media(max-width:700px) { .destress-print-detail { grid-template-columns:1fr; gap:14px; max-height:92vh; padding:15px; } .destress-print-detail-image { min-height:180px; } .destress-print-detail-image img { max-height:42vh; } .destress-print-detail-info { padding:4px 2px; } .destress-print-detail-author { margin-bottom:15px; } }
 @media(max-width:420px) { .destress-print-actions { grid-template-columns:1fr 1fr; gap:7px; } .destress-print-actions button { padding:8px 6px; font-size:11px; } }
 @media(max-width:520px) { .destress-prints-head { align-items:flex-start; } .destress-prints-note { max-width:240px; } .destress-prints-carousel { grid-template-columns:30px minmax(0,1fr) 30px; gap:4px; } .destress-prints-arrow { width:30px; height:30px; font-size:25px; } .destress-print-card { flex-basis:calc((100% - 12px)/2); } }
 
@@ -1862,27 +1874,35 @@ a:focus-visible {
         <button class="destress-prints-arrow" type="button" id="destressPrintNext" aria-label="Следующие принты" title="Следующие принты">›</button>
       </div>
     </section>
-    <div class="destress-print-lightbox" id="destressPrintLightbox" data-studio-prints role="dialog" aria-modal="true" aria-label="Выбранный принт" aria-hidden="true">
-      <section class="destress-print-detail" role="document">
-        <button class="destress-print-close" type="button" id="destressPrintClose" aria-label="Закрыть">×</button>
-        <div class="destress-print-detail-image">
-          <img id="destressPrintLarge" alt="Выбранный клубный принт">
-        </div>
-        <div class="destress-print-detail-info">
+    <div class="destress-print-lightbox" id="destressPrintLightbox" data-studio-prints role="dialog" aria-modal="true" aria-label="Выбранная работа" aria-hidden="true">
+      <section class="destress-print-detail" id="destressPrintDetail" role="document">
+        <div class="destress-print-detail-image" id="destressPrintDetailImage"><img id="destressPrintLarge" alt="Выбранная работа"></div>
+        <div class="destress-print-detail-info" id="destressPrintDetailInfo">
           <p class="destress-print-detail-kicker">THE PRINT PARLOUR</p>
           <h2 class="destress-print-detail-title">Выбранная работа</h2>
           <p class="destress-print-detail-author" id="destressPrintAuthor">Автор: GY-GY Club</p>
-          <div class="destress-print-actions" aria-label="Действия с принтом">
+          <div class="destress-print-actions" aria-label="Действия с работой">
             <button class="primary" type="button" data-print-action="try">ПРИМЕРИТЬ</button>
             <button class="primary" type="button" data-print-action="remix">МОДИФИЦИРОВАТЬ ПО-СВОЕМУ</button>
             <button type="button" data-print-action="edit">РЕДАКТИРОВАТЬ</button>
             <button type="button" data-print-action="bookmark">В ЗАКЛАДКИ</button>
             <button type="button" data-print-action="share">ПОДЕЛИТЬСЯ</button>
             <button type="button" data-print-action="order">ЗАКАЗАТЬ</button>
+            <button type="button" data-print-action="upload">ЗАГРУЗИТЬ СВОЙ</button>
           </div>
           <p class="destress-print-detail-status" id="destressPrintActionStatus" role="status" aria-live="polite"></p>
         </div>
+        <div class="destress-print-mode-choice" id="destressPrintModeChoice" hidden>
+          <p class="destress-print-detail-kicker">CREATE YOUR OWN PRINT</p>
+          <h3>ВЫБЕРИ СПОСОБ СОЗДАНИЯ</h3>
+          <p>Оба способа ведут в единую среду EDITOR. AI не обязателен: ты можешь создать работу самостоятельно.</p>
+          <div class="destress-print-mode-options">
+            <button type="button" data-print-mode="manual"><strong>MANUAL CREATION</strong><span>Самостоятельное создание без AI</span></button>
+            <button type="button" data-print-mode="ai"><strong>AI CREATION</strong><span>Создание с помощью AI</span></button>
+          </div>
+        </div>
       </section>
+      <input type="file" id="destressPrintUploadInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
     </div>
 
   </main>
@@ -2591,44 +2611,76 @@ async function loadDestressPrints() {
     }
 }
 let selectedDestressPrintUrl = '';
+let selectedPrintIsUserUpload = false;
+let selectedUserPrintObjectUrl = '';
 let printModalPreviousFocus = null;
+
+function showPrintModeChooser(show) {
+    const choosing = !!show;
+    $('destressPrintDetail').classList.toggle('is-choosing', choosing);
+    $('destressPrintDetailImage').hidden = choosing;
+    $('destressPrintDetailInfo').hidden = choosing;
+    $('destressPrintModeChoice').hidden = !choosing;
+    if (choosing) $('destressPrintModeChoice').querySelector('[data-print-mode="manual"]').focus();
+    else $('destressPrintActionStatus').textContent = '';
+}
+
+function openDestressPrint(url, author, isUserUpload = false) {
+    selectedDestressPrintUrl = url;
+    selectedPrintIsUserUpload = isUserUpload;
+    $('destressPrintLarge').src = url;
+    $('destressPrintAuthor').textContent = 'Автор: ' + author;
+    $('destressPrintActionStatus').textContent = '';
+    showPrintModeChooser(false);
+    destressPrintLightbox.classList.add('open');
+    destressPrintLightbox.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    const firstAction = destressPrintLightbox.querySelector('[data-print-action]');
+    if (firstAction) firstAction.focus();
+}
+
 destressPrintTrack?.addEventListener('click', event => {
     const card = event.target.closest('[data-print-url]');
     if (!card) return;
     const url = safePrintUrl(card.dataset.printUrl);
     if (!url) return;
-    selectedDestressPrintUrl = url;
     printModalPreviousFocus = document.activeElement;
-    $('destressPrintLarge').src = url;
-    $('destressPrintAuthor').textContent = 'Автор: ' + (card.dataset.printAuthor || 'GY-GY Club');
-    $('destressPrintActionStatus').textContent = '';
-    destressPrintLightbox.classList.add('open');
-    destressPrintLightbox.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    $('destressPrintClose').focus();
+    openDestressPrint(url, card.dataset.printAuthor || 'GY-GY Club', false);
 });
+
 function closeDestressPrintLightbox() {
     if (!destressPrintLightbox?.classList.contains('open')) return;
     destressPrintLightbox.classList.remove('open');
     destressPrintLightbox.setAttribute('aria-hidden', 'true');
-    if ($('destressPrintLarge')) $('destressPrintLarge').removeAttribute('src');
+    showPrintModeChooser(false);
     document.body.style.overflow = '';
     if (printModalPreviousFocus && typeof printModalPreviousFocus.focus === 'function') printModalPreviousFocus.focus();
 }
-$('destressPrintClose')?.addEventListener('click', closeDestressPrintLightbox);
-destressPrintLightbox?.addEventListener('click', event => { if (event.target === destressPrintLightbox) closeDestressPrintLightbox(); });
+
 destressPrintLightbox?.addEventListener('click', async event => {
+    const mode = event.target.closest('[data-print-mode]');
+    if (mode) {
+        $('destressPrintActionStatus').textContent = mode.dataset.printMode === 'manual'
+            ? 'Выбран MANUAL CREATION. Подключение рабочего редактора — следующий этап.'
+            : 'Выбран AI CREATION. Подключение AI-инструмента и общего редактора — следующий этап.';
+        return;
+    }
     const action = event.target.closest('[data-print-action]');
     if (!action) return;
     const status = $('destressPrintActionStatus');
-    const messages = {
-        try: 'Примерка на изделии будет подключена на следующем этапе.',
-        remix: 'Создание собственной версии через PRINT CORE будет подключено на следующем этапе.',
-        edit: 'EDITOR будет подключён сюда после завершения его разработки.',
-        bookmark: 'Подключение к общеклубным «Закладкам» будет выполнено отдельным этапом.',
-        order: 'Оформление заказа выполняется через соответствующее Ателье; этот переход пока не подключён.'
-    };
+    if (action.dataset.printAction === 'upload') {
+        $('destressPrintUploadInput').click();
+        return;
+    }
+    if (action.dataset.printAction === 'edit') {
+        showPrintModeChooser(true);
+        return;
+    }
     if (action.dataset.printAction === 'share') {
+        if (selectedPrintIsUserUpload) {
+            status.textContent = 'Собственный файл пока доступен только в этой вкладке. Для публикации потребуется отдельная загрузка в клубное хранилище.';
+            return;
+        }
         try {
             if (navigator.share) {
                 await navigator.share({ title: 'GY-GY Club — THE PRINT PARLOUR', text: 'Посмотри этот принт в THE PRINT PARLOUR', url: selectedDestressPrintUrl });
@@ -2644,18 +2696,52 @@ destressPrintLightbox?.addEventListener('click', async event => {
         }
         return;
     }
+    const messages = {
+        try: 'Примерка на изделии будет подключена на следующем этапе.',
+        remix: 'Создание собственной версии через PRINT CORE будет подключено на следующем этапе.',
+        bookmark: 'Подключение к общеклубным «Закладкам» будет выполнено отдельным этапом.',
+        order: 'Оформление заказа выполняется через соответствующее Ателье; этот переход пока не подключён.'
+    };
     status.textContent = messages[action.dataset.printAction] || '';
 });
+
+$('destressPrintUploadInput')?.addEventListener('change', event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+        $('destressPrintActionStatus').textContent = 'Поддерживаются изображения PNG, JPG, WEBP и GIF.';
+        event.target.value = '';
+        return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+        $('destressPrintActionStatus').textContent = 'Файл слишком большой. Максимальный размер — 20 МБ.';
+        event.target.value = '';
+        return;
+    }
+    if (selectedUserPrintObjectUrl) URL.revokeObjectURL(selectedUserPrintObjectUrl);
+    selectedUserPrintObjectUrl = URL.createObjectURL(file);
+    selectedPrintIsUserUpload = true;
+    selectedDestressPrintUrl = selectedUserPrintObjectUrl;
+    $('destressPrintLarge').src = selectedUserPrintObjectUrl;
+    $('destressPrintAuthor').textContent = 'Автор: Ваша работа';
+    showPrintModeChooser(false);
+    $('destressPrintActionStatus').textContent = 'Собственная работа загружена для просмотра. Файл пока хранится только в этой вкладке.';
+    event.target.value = '';
+});
+
 document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && destressPrintLightbox?.classList.contains('open')) closeDestressPrintLightbox();
     if (event.key === 'Tab' && destressPrintLightbox?.classList.contains('open')) {
-        const focusable = [...destressPrintLightbox.querySelectorAll('button:not([disabled])')];
+        const focusable = [...destressPrintLightbox.querySelectorAll('button:not([disabled])')].filter(node => node.offsetParent !== null);
         if (!focusable.length) return;
         const first = focusable[0], last = focusable[focusable.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }
 });
+window.addEventListener('pagehide', () => {
+    if (selectedUserPrintObjectUrl) URL.revokeObjectURL(selectedUserPrintObjectUrl);
+}, { once: true });
 function scrollDestressPrints(direction) {
     if (!destressPrintTrack) return;
     const firstCard = destressPrintTrack.querySelector('.destress-print-card');
@@ -2770,6 +2856,11 @@ showStudioRoute('home');
 
 // навигация: стрелка поднимает на слой выше
 $('btn-back').addEventListener('click', () => {
+    if (destressPrintLightbox?.classList.contains('open')) {
+        if (!$('destressPrintModeChoice').hidden) showPrintModeChooser(false);
+        else closeDestressPrintLightbox();
+        return;
+    }
     if ($('sheet').classList.contains('open')) { closeSheet(); return; }
     if (activeStudioRoute === 'heavy') {
         if (!$('work-actions-screen').hidden) { showWorkActions(false); return; }
@@ -2778,7 +2869,10 @@ $('btn-back').addEventListener('click', () => {
     if (activeStudioRoute !== 'home') { showStudioRoute('home'); return; }
     window.location.href = '././bar.html';
 });
-$('btn-home').addEventListener('click', () => { showStudioRoute('home'); });
+$('btn-home').addEventListener('click', () => {
+    if (destressPrintLightbox?.classList.contains('open')) closeDestressPrintLightbox();
+    showStudioRoute('home');
+});
 document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if ($('sheet').classList.contains('open')) closeSheet();
