@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.7.0
+  destress-studio.html — De-Stress Studio — v5.7.1
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -1086,9 +1086,11 @@ a:focus-visible {
 
 /* DE-STRESS PRINTS — отдельная тематическая лента клуба */
 .destress-prints { margin:18px 0 4px; padding:clamp(14px,2.5vw,22px); border:1px solid rgba(216,179,106,.38); border-radius:13px; background:rgba(12,10,8,.76); box-shadow:0 10px 28px rgba(0,0,0,.22); }
-.destress-prints-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.destress-prints-head { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:14px; text-align:center; }
+.destress-prints-invitation { width:100%; }
 .destress-prints-title { margin:0; color:var(--light); font:700 clamp(19px,2.8vw,27px)/1.15 'Playfair Display',Georgia,serif; letter-spacing:.06em; }
-.destress-prints-note { margin:5px 0 0; color:var(--muted); font-size:12px; }
+.destress-prints-invitation-text { margin:5px 0 0; color:var(--text); font:400 clamp(13px,1.5vw,16px)/1.45 Georgia,serif; }
+.destress-prints-note { margin:5px 0 0; color:var(--muted); font-size:10px; letter-spacing:.16em; }
 .destress-prints-carousel { display:grid; grid-template-columns:34px minmax(0,1fr) 34px; align-items:center; gap:6px; }
 .destress-prints-arrow { display:grid; place-items:center; width:34px; height:34px; padding:0 0 2px; border:1px solid rgba(216,179,106,.78); border-radius:50%; color:var(--light); background:rgba(8,7,5,.88); box-shadow:0 3px 14px rgba(0,0,0,.34),inset 0 0 0 1px rgba(216,179,106,.12); font:400 28px/1 Georgia,serif; transition:background .18s,border-color .18s,transform .18s,box-shadow .18s; }
 .destress-prints-arrow:hover { border-color:var(--light); background:rgba(216,179,106,.18); box-shadow:0 4px 18px rgba(0,0,0,.42),0 0 12px rgba(216,179,106,.16); transform:scale(1.07); }
@@ -1848,8 +1850,10 @@ a:focus-visible {
 
     <section class="destress-prints" id="destressPrints" data-studio-prints aria-label="Лента антистресс-принтов">
       <div class="destress-prints-head">
-        <div>
-          <p class="destress-prints-note">Галерея опубликованных клубных принтов GY-GY.</p>
+        <div class="destress-prints-invitation">
+          <h2 class="destress-prints-title">НЕ ТОРОПИСЬ!</h2>
+          <p class="destress-prints-invitation-text">Выбирай. Кликни на то, что зацепило.</p>
+          <p class="destress-prints-note">THE PRINT PARLOUR</p>
         </div>
       </div>
       <div class="destress-prints-carousel">
