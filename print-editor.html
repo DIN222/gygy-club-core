@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GY-GY EDITOR — Visual Prototype 0.1</title>
+<style>
+:root{--bg:#11110f;--panel:#1b1b18;--panel2:#22221e;--line:#39372e;--gold:#c5a45d;--gold2:#e1c47e;--text:#eee9dc;--muted:#a9a18f;--active:#393321;--canvas:#d5d5d2}
+*{box-sizing:border-box}body{margin:0;background:#10100f;color:var(--text);font:13px/1.4 Inter,Segoe UI,Arial,sans-serif;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.app{height:100vh;min-height:620px;display:flex;flex-direction:column;background:var(--bg)}
+.top{background:#181815;border-bottom:1px solid var(--line);box-shadow:0 3px 14px #0005;z-index:5}
+.brandline{height:39px;display:flex;align-items:center;padding:0 14px;border-bottom:1px solid #302e27;gap:12px}
+.brand{font-family:Georgia,serif;letter-spacing:2px;color:var(--gold2);font-size:15px}.brand small{font:10px Arial;letter-spacing:1.5px;color:var(--muted);margin-left:8px}
+.project-name{margin-left:auto;color:var(--muted);font-size:12px}.save-state{color:#9eaf8c;font-size:11px}
+.menurow{height:42px;display:flex;align-items:stretch;padding:0 8px;gap:2px}
+.menu-wrap{position:relative;display:flex}.menu-btn{background:transparent;border:0;padding:0 12px;color:#d9d2c2;font-size:11px;letter-spacing:1px}.menu-btn:hover,.menu-btn.open{background:var(--active);color:var(--gold2)}
+.dropdown{display:none;position:absolute;top:40px;left:0;min-width:220px;background:#24231f;border:1px solid #655638;box-shadow:0 12px 28px #0009;padding:6px;z-index:20}
+.dropdown.show{display:block}.drop-item{width:100%;display:flex;justify-content:space-between;background:none;border:0;text-align:left;padding:8px 10px;border-radius:3px;color:#e8e0d0;font-size:12px}.drop-item:hover{background:#403923}.drop-item span:last-child{color:#928a78;font-size:10px}.drop-sep{height:1px;background:#454033;margin:5px 3px}
+.quickbar{height:43px;display:flex;align-items:center;padding:0 10px;gap:5px;border-top:1px solid #292820}
+.toolbtn{height:31px;min-width:32px;padding:0 8px;background:transparent;border:1px solid transparent;border-radius:4px;color:#d8d1c1;position:relative;font-size:16px}
+.toolbtn:hover{background:#302d24;border-color:#55482d;color:var(--gold2)}.toolbtn.active{background:#3a3322;border-color:#8b7442;color:#f0d48e}
+.toolbtn[data-tip]:hover:after{content:attr(data-tip);position:absolute;top:37px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#090909;color:#f1e7d2;border:1px solid #74603b;border-radius:3px;padding:6px 8px;font-size:11px;z-index:30;box-shadow:0 4px 12px #0008}
+.vsep{height:23px;width:1px;background:#464238;margin:0 5px}.spacer{flex:1}
+.mode-switch{display:flex;border:1px solid #665637;border-radius:4px;overflow:hidden}.mode-switch button{border:0;background:#22211c;padding:7px 12px;font-size:10px;letter-spacing:.8px;color:#bdb5a4}.mode-switch button.active{background:#57482a;color:#fff0c8}
+.workspace{display:grid;grid-template-columns:54px minmax(250px,1fr) 260px;min-height:0;flex:1}
+.leftbar{background:#191916;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:9px 5px;gap:5px}
+.lefttool{width:38px;height:37px;border:1px solid transparent;border-radius:4px;background:transparent;color:#d6cfbf;font-size:18px;position:relative}
+.lefttool:hover{background:#302d24}.lefttool.active{background:#443a25;border-color:#9b8048;color:#f3d994}
+.lefttool[data-tip]:hover:after{content:attr(data-tip);position:absolute;left:44px;top:5px;white-space:nowrap;background:#090909;border:1px solid #74603b;padding:6px 8px;border-radius:3px;z-index:30;font:11px Arial}
+.leftsep{height:1px;width:28px;background:#454033;margin:5px 0}
+.center{min-width:0;display:flex;flex-direction:column;background:#292925;position:relative}
+.docbar{height:34px;background:#22221e;border-bottom:1px solid #414036;display:flex;align-items:center;padding:0 12px;gap:10px;color:var(--muted);font-size:11px}
+.docdot{width:7px;height:7px;border-radius:50%;background:#c9a65c}
+.canvas-wrap{flex:1;min-height:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:34px;background-color:#30302c;background-image:radial-gradient(#484840 .7px,transparent .7px);background-size:16px 16px}
+.checker{width:min(650px,85%);aspect-ratio:4/3;position:relative;box-shadow:0 12px 35px #0008;background-color:#f5f5f2;background-image:linear-gradient(45deg,#d8d8d5 25%,transparent 25%),linear-gradient(-45deg,#d8d8d5 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#d8d8d5 75%),linear-gradient(-45deg,transparent 75%,#d8d8d5 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
+.art{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#24221e;transition:opacity .2s}
+.art-mark{font: bold clamp(35px,6vw,76px)/1 Georgia,serif;letter-spacing:5px}.art-rule{width:48%;height:2px;background:#b18e4e;margin:13px}.art-sub{font:italic 13px Georgia;letter-spacing:3px}
+.selection{position:absolute;width:62%;height:53%;left:19%;top:23%;border:1px dashed #3376c2;pointer-events:none}
+.selection:before,.selection:after{content:"";position:absolute;width:7px;height:7px;background:white;border:1px solid #3376c2}
+.selection:before{left:-4px;top:-4px;box-shadow:calc(100% + 1px) 0 #fff,0 calc(100% + 1px) #fff,calc(100% + 1px) calc(100% + 1px) #fff}
+.canvas-wrap.preview .checker{background:#f7f5ef}
+.canvas-wrap.preview .art{background:linear-gradient(145deg,#fff,#e7e2d7);inset:12% 27%;border-radius:8px;box-shadow:0 15px 25px #0003}
+.canvas-wrap.preview .selection{display:none}
+.shirt-label{display:none;position:absolute;bottom:7%;left:0;right:0;text-align:center;color:#8e826b;font-size:10px;letter-spacing:2px}
+.canvas-wrap.preview .shirt-label{display:block}
+.rightbar{background:#1b1b18;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.tabs{height:39px;display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;border:0;border-bottom:2px solid transparent;background:transparent;color:#a9a18f;font-size:10px;letter-spacing:.7px}.tab.active{color:var(--gold2);border-bottom-color:var(--gold)}
+.panel-content{padding:13px;overflow:auto;flex:1}.section-title{font-size:10px;letter-spacing:1.2px;color:var(--gold2);margin:2px 0 11px}
+.field{margin:10px 0}.field label{display:block;color:#a9a18f;font-size:11px;margin-bottom:5px}.field input,.field select{width:100%;background:#10100f;color:#eee6d6;border:1px solid #494538;border-radius:3px;padding:7px}
+.fieldrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.swatches{display:flex;gap:6px;flex-wrap:wrap}.swatch{width:21px;height:21px;border-radius:50%;border:2px solid #777;cursor:pointer}.swatch.selected{outline:2px solid var(--gold);outline-offset:2px}
+.layer{display:flex;align-items:center;gap:8px;padding:9px 7px;border:1px solid transparent;border-radius:3px;font-size:11px;color:#ddd5c5;cursor:pointer}.layer:hover{background:#292820}.layer.selected{background:#393321;border-color:#77633a}.layer .eye{color:#bca46f}.layer .kind{margin-left:auto;color:#8e8778;font-size:10px}
+.merge{width:100%;margin-top:12px;padding:8px;background:#302a1d;border:1px solid #675535;border-radius:3px;color:#e8d5a5;font-size:11px}
+.status{height:29px;background:#181815;border-top:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:0 12px;color:#a9a18f;font-size:10px}
+.status strong{color:#d8c28e;font-weight:500}.status .right{margin-left:auto}
+.notice{position:fixed;bottom:42px;left:50%;transform:translateX(-50%);background:#29251b;border:1px solid #8a7140;color:#f0dfb8;padding:9px 14px;border-radius:4px;box-shadow:0 8px 24px #0009;display:none;z-index:50;font-size:12px}.notice.show{display:block}
+@media(max-width:850px){.workspace{grid-template-columns:48px minmax(200px,1fr) 215px}.canvas-wrap{padding:16px}.menu-btn{padding:0 7px;font-size:10px}}
+@media(max-width:650px){.workspace{grid-template-columns:44px minmax(0,1fr)}.rightbar{display:none}.project-name{display:none}.menurow{overflow-x:auto}.canvas-wrap{padding:10px}.mode-switch button{padding:6px 7px}.status{gap:8px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brandline"><div class="brand">GY-GY <small>EDITOR</small></div><div class="save-state">● DEMO PROJECT</div><div class="project-name">Untitled Print Project</div></div>
+  <nav class="menurow" aria-label="Main menu">
+    <div class="menu-wrap"><button class="menu-btn" data-menu="FILE">FILE</button><div class="dropdown"><button class="drop-item" data-action="New project">Новый <span>Ctrl+N</span></button><button class="drop-item" data-action="Open project">Открыть <span>Ctrl+O</span></button><div class="drop-sep"></div><button class="drop-item" data-action="Save project">Сохранить <span>Ctrl+S</span></button><button class="drop-item" data-action="Save as">Сохранить как…</button><div class="drop-sep"></div><button class="drop-item" data-action="Import file">Импорт…</button><button class="drop-item" data-action="Export PNG">Экспорт PNG</button></div></div>
+    <div class="menu-wrap"><button class="menu-btn" data-menu="EDIT">EDIT</button><div class="dropdown"><button class="drop-item" data-action="Undo">Отменить <span>Ctrl+Z</span></button><button class="drop-item" data-action="Redo">Повторить <span>Ctrl+Y</span></button><div class="drop-sep"></div><button class="drop-item" data-action="Cut">Вырезать</button><button class="drop-item" data-action="Copy">Копировать</button><button class="drop-item" data-action="Paste">Вставить</button><button class="drop-item" data-action="Delete">Удалить</button></div></div>
+    <div class="menu-wrap"><button class="menu-btn" data-menu="IMAGE">IMAGE</button><div class="dropdown"><button class="drop-item" data-action="Image size">Размер изображения</button><button class="drop-item" data-action="Crop">Обрезка</button><button class="drop-item" data-action="Rotate image">Поворот</button><button class="drop-item" data-action="Flip image">Отражение</button><button class="drop-item" data-action="Color settings">Цветовые настройки</button></div></div>
+    <div class="menu-wrap"><button class="menu-btn" data-menu="TOOLS">TOOLS</button><div class="dropdown"><button class="drop-item" data-action="Selection">Выделение</button><button class="drop-item" data-action="Brush">Кисть</button><button class="drop-item" data-action="Magic eraser">Волшебный ластик</button><button class="drop-item" data-action="Eraser">Обычный ластик</button><button class="drop-item" data-action="Eyedropper">Пипетка</button></div></div>
+    <div class="menu-wrap"><button class="menu-btn" data-menu="LAYERS">LAYERS</button><div class="dropdown"><button class="drop-item" data-action="New layer">Новый слой</button><button class="drop-item" data-action="Duplicate layer">Дублировать слой</button><button class="drop-item" data-action="Merge layers">Объединить слои</button></div></div>
+    <div class="menu-wrap"><button class="menu-btn" data-menu="VIEW">VIEW</button><div class="dropdown"><button class="drop-item" data-action="Zoom in">Увеличить</button><button class="drop-item" data-action="Zoom out">Уменьшить</button><button class="drop-item" data-action="Grid">Сетка</button><button class="drop-item" data-action="Guides">Направляющие</button></div></div>
+    <div class="menu-wrap"><button class="menu-btn" data-menu="PROJECT">PROJECT</button><div class="dropdown"><button class="drop-item" data-action="Project settings">Параметры проекта</button><button class="drop-item" data-action="Project history">История версий</button></div></div>
+    <div class="menu-wrap"><button class="menu-btn" data-menu="PRINT">PRINT</button><div class="dropdown"><button class="drop-item" data-action="Print size">Размер принта</button><button class="drop-item" data-action="DPI check">Проверка разрешения</button><button class="drop-item" data-action="Transparency check">Проверка прозрачности</button><button class="drop-item" data-action="Print preview">Предпросмотр печати</button></div></div>
+  </nav>
+  <div class="quickbar">
+    <button class="toolbtn" data-tip="Новый проект" data-action="New project">＋</button><button class="toolbtn" data-tip="Открыть" data-action="Open project">▱</button><button class="toolbtn" data-tip="Сохранить" data-action="Save project">▣</button><span class="vsep"></span>
+    <button class="toolbtn" data-tip="Отменить" data-action="Undo">↶</button><button class="toolbtn" data-tip="Повторить" data-action="Redo">↷</button><span class="vsep"></span>
+    <button class="toolbtn" data-tip="Свободное преобразование" data-tool="transform">⛶</button><button class="toolbtn" data-tip="Поворот" data-tool="rotate">⤾</button><button class="toolbtn" data-tip="Отразить по горизонтали" data-tool="flip-h">⇋</button><button class="toolbtn" data-tip="Отразить по вертикали" data-tool="flip-v">⇅</button>
+    <div class="spacer"></div><div class="mode-switch"><button class="active" data-mode="design">DESIGN</button><button data-mode="preview">PRINT PREVIEW</button></div>
+  </div>
+</header>
+<main class="workspace">
+  <aside class="leftbar" aria-label="Tools">
+    <button class="lefttool active" data-tip="Перемещение / выделение" data-tool="move">↖</button>
+    <button class="lefttool" data-tip="Прямоугольное выделение" data-tool="rect-select">▧</button>
+    <button class="lefttool" data-tip="Выделение ломаной линией" data-tool="polygon">⬠</button>
+    <div class="leftsep"></div>
+    <button class="lefttool" data-tip="Кисть" data-tool="brush">✎</button>
+    <button class="lefttool" data-tip="Обычный ластик" data-tool="eraser">◩</button>
+    <button class="lefttool" data-tip="Волшебный ластик" data-tool="magic-eraser">✧</button>
+    <button class="lefttool" data-tip="Заливка" data-tool="fill">▰</button>
+    <button class="lefttool" data-tip="Пипетка" data-tool="eyedropper">◉</button>
+    <div class="leftsep"></div>
+    <button class="lefttool" data-tip="Текст" data-tool="text">T</button>
+    <button class="lefttool" data-tip="Фигуры" data-tool="shapes">◇</button>
+    <button class="lefttool" data-tip="Добавить изображение" data-tool="image">▧</button>
+    <div class="spacer"></div>
+    <div class="swatch" style="background:#222" title="Основной цвет"></div><div class="swatch" style="background:#c5a45d" title="Дополнительный цвет"></div>
+  </aside>
+  <section class="center">
+    <div class="docbar"><span class="docdot"></span><span>Untitled Print Project</span><span>•</span><span>1200 × 900 px</span><span>•</span><span>300 DPI</span></div>
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="checker" id="checker">
+        <div class="art"><div class="art-mark">GY-GY</div><div class="art-rule"></div><div class="art-sub">CREATE WITHOUT LIMITS</div></div>
+        <div class="selection" id="selection"></div>
+        <div class="shirt-label">PRINT PREVIEW · FRONT VIEW</div>
+      </div>
+    </div>
+  </section>
+  <aside class="rightbar">
+    <div class="tabs"><button class="tab active" data-tab="properties">PROPERTIES</button><button class="tab" data-tab="layers">LAYERS</button></div>
+    <div class="panel-content" id="propertiesPanel">
+      <div class="section-title">SELECTED OBJECT</div>
+      <div class="field"><label>Название</label><input value="GY-GY lettering" /></div>
+      <div class="fieldrow"><div class="field"><label>Ширина</label><input value="744 px"></div><div class="field"><label>Высота</label><input value="476 px"></div></div>
+      <div class="fieldrow"><div class="field"><label>Позиция X</label><input value="228"></div><div class="field"><label>Позиция Y</label><input value="212"></div></div>
+      <div class="field"><label>Поворот</label><input value="0°"></div>
+      <div class="field"><label>Цвет</label><div class="swatches"><button class="swatch selected" style="background:#24221e" aria-label="Dark"></button><button class="swatch" style="background:#b18e4e" aria-label="Gold"></button><button class="swatch" style="background:#9c3430" aria-label="Red"></button><button class="swatch" style="background:#f2eee3" aria-label="Ivory"></button><button class="swatch" style="background:#344a3c" aria-label="Green"></button></div></div>
+      <div class="field"><label>Непрозрачность</label><input type="range" min="0" max="100" value="100" style="width:100%;accent-color:#c5a45d"></div>
+      <div class="section-title" style="margin-top:22px">QUICK TRANSFORM</div>
+      <div class="fieldrow"><button class="merge" data-action="Rotate left">↶ Повернуть −90°</button><button class="merge" data-action="Rotate right">↷ Повернуть +90°</button></div>
+      <div class="fieldrow"><button class="merge" data-action="Flip horizontal">⇋ Отразить H</button><button class="merge" data-action="Flip vertical">⇅ Отразить V</button></div>
+    </div>
+    <div class="panel-content" id="layersPanel" hidden>
+      <div class="section-title">DOCUMENT LAYERS</div>
+      <div class="layer selected" data-layer="Typography"><span class="eye">◉</span><span>Typography</span><span class="kind">TEXT</span></div>
+      <div class="layer" data-layer="Gold divider"><span class="eye">◉</span><span>Gold divider</span><span class="kind">SHAPE</span></div>
+      <div class="layer" data-layer="Base artwork"><span class="eye">◉</span><span>Base artwork</span><span class="kind">IMAGE</span></div>
+      <div class="layer" data-layer="Background"><span class="eye">◉</span><span>Background</span><span class="kind">EMPTY</span></div>
+      <button class="merge" data-action="Merge selected layers">▣ Объединить выбранные слои</button>
+      <button class="merge" data-action="Add layer">＋ Добавить слой</button>
+    </div>
+  </aside>
+</main>
+<footer class="status"><span>TOOL: <strong id="activeTool">Перемещение / выделение</strong></span><span>ZOOM: <strong>100%</strong></span><span>CANVAS: <strong>1200 × 900 px</strong></span><span>DPI: <strong>300</strong></span><span class="right">PROJECT: <strong>DEMO · NOT SAVED</strong></span></footer>
+</div>
+<div class="notice" id="notice"></div>
+<script>
+const notice=document.getElementById('notice');let noticeTimer;
+function inform(message){notice.textContent=message+' — демонстрация прототипа';notice.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.classList.remove('show'),2300)}
+document.querySelectorAll('[data-menu]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();const was=btn.classList.contains('open');document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('show'));document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('open'));if(!was){btn.classList.add('open');btn.nextElementSibling.classList.add('show')}}));
+document.addEventListener('click',()=>{document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('show'));document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('open'))});
+document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();inform(btn.dataset.action);document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('show'));document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('open'))}));
+const names={'move':'Перемещение / выделение','rect-select':'Прямоугольное выделение','polygon':'Выделение ломаной линией','brush':'Кисть','eraser':'Обычный ластик','magic-eraser':'Волшебный ластик','fill':'Заливка','eyedropper':'Пипетка','text':'Текст','shapes':'Фигуры','image':'Добавить изображение','transform':'Свободное преобразование','rotate':'Поворот','flip-h':'Отражение по горизонтали','flip-v':'Отражение по вертикали'};
+document.querySelectorAll('[data-tool]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-tool]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('activeTool').textContent=names[btn.dataset.tool]||btn.dataset.tool;inform('Инструмент: '+(names[btn.dataset.tool]||btn.dataset.tool))}));
+document.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b===btn));document.getElementById('canvasWrap').classList.toggle('preview',btn.dataset.mode==='preview');inform(btn.dataset.mode==='preview'?'Режим PRINT PREVIEW':'Режим DESIGN')}));
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));const layers=btn.dataset.tab==='layers';document.getElementById('layersPanel').hidden=!layers;document.getElementById('propertiesPanel').hidden=layers}));
+document.querySelectorAll('.layer').forEach(row=>row.addEventListener('click',()=>{document.querySelectorAll('.layer').forEach(x=>x.classList.remove('selected'));row.classList.add('selected');inform('Выбран слой: '+row.dataset.layer)}));
+document.querySelectorAll('.swatch').forEach(s=>s.addEventListener('click',()=>{if(s.closest('.swatches')){s.parentElement.querySelectorAll('.swatch').forEach(x=>x.classList.remove('selected'));s.classList.add('selected');inform('Выбран цвет')}}));
+</script>
+</body></html>
