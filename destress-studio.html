@@ -22,6 +22,7 @@
   v5.6.2: стрелки листания ленты THE PRINT PARLOUR перенесены на левую и правую стороны ленты. v5.6.3: боковые стрелки сделаны более заметными, круглыми и визуально отделёнными от карточек; увеличена зона нажатия. v5.6.4: ширина ленты рассчитана на четыре полностью видимые карточки на широких экранах; боковые стрелки и промежутки компактнее; на планшетах и телефонах число видимых карточек адаптируется. v5.6.5: фактическая ширина боковых стрелок и их колонок согласована; уменьшены боковые зоны и промежутки, чтобы увеличить полезную ширину ленты принтов.
   v5.7.2: добавлена загрузка собственного изображения с компьютера как седьмое действие; «Редактировать» открывает выбор MANUAL CREATION / AI CREATION; крестик заменён общеклубными стрелками навигации. Загруженный файл пока отображается локально в текущей вкладке и не отправляется в облачное хранилище.
   v5.7.3: стрелки навигации выровнены по верхней линии логотипа; MANUAL CREATION и AI CREATION переводят в общий EDITOR с передачей выбранного режима.
+  v5.7.4: восстановлено исходное вертикальное выравнивание верхней панели; возвращён крупный аватар Чарли на desktop; переход к EDITOR продублирован независимым обработчиком выбора режима.
 -->
 <html lang="ru">
 <head>
@@ -120,10 +121,9 @@ a:focus-visible {
   z-index: 3101;
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: start;
-  min-height: 64px;
+  align-items: center;
   gap: 12px;
-  padding: 18px 4px 12px;
+  padding: 6px 4px 12px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -1532,6 +1532,14 @@ a:focus-visible {
   }
 }
 
+
+/* Возврат исходного размера аватара Чарли на desktop; компактность карточек сохраняется. */
+@media (min-width: 681px) {
+  .title-charlie {
+    width: clamp(58px, 8vw, 92px);
+    height: clamp(58px, 8vw, 92px);
+  }
+}
 </style>
 </head>
 
@@ -2891,6 +2899,19 @@ setModeButtons();
 loadDestressPrints();
 renderPhrasePicker();
 renderTopPhraseChoices();
+</script>
+<script>
+/* Независимый переход в общий EDITOR: работает и при сбое основного module script. */
+document.addEventListener('click', function (event) {
+  const button = event.target.closest('[data-print-mode]');
+  if (!button) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const target = new URL('./print-editor.html', document.baseURI);
+  target.searchParams.set('mode', button.dataset.printMode);
+  target.searchParams.set('source', 'destress');
+  window.location.assign(target.href);
+}, true);
 </script>
 </body>
 </html>
