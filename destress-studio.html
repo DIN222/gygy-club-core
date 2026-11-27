@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.7.2
+  destress-studio.html — De-Stress Studio — v5.7.3
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -21,6 +21,7 @@
   v5.6.1: убраны повторные заголовки внутренних площадок — название каждой площадки показывается один раз в общей шапке; кнопки приведены к контурному стилю без сплошной золотой заливки.
   v5.6.2: стрелки листания ленты THE PRINT PARLOUR перенесены на левую и правую стороны ленты. v5.6.3: боковые стрелки сделаны более заметными, круглыми и визуально отделёнными от карточек; увеличена зона нажатия. v5.6.4: ширина ленты рассчитана на четыре полностью видимые карточки на широких экранах; боковые стрелки и промежутки компактнее; на планшетах и телефонах число видимых карточек адаптируется. v5.6.5: фактическая ширина боковых стрелок и их колонок согласована; уменьшены боковые зоны и промежутки, чтобы увеличить полезную ширину ленты принтов.
   v5.7.2: добавлена загрузка собственного изображения с компьютера как седьмое действие; «Редактировать» открывает выбор MANUAL CREATION / AI CREATION; крестик заменён общеклубными стрелками навигации. Загруженный файл пока отображается локально в текущей вкладке и не отправляется в облачное хранилище.
+  v5.7.3: стрелки навигации выровнены по верхней линии логотипа; MANUAL CREATION и AI CREATION переводят в общий EDITOR с передачей выбранного режима.
 -->
 <html lang="ru">
 <head>
@@ -119,9 +120,10 @@ a:focus-visible {
   z-index: 3101;
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: center;
+  align-items: start;
+  min-height: 64px;
   gap: 12px;
-  padding: 6px 4px 12px;
+  padding: 18px 4px 12px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -2660,9 +2662,11 @@ function closeDestressPrintLightbox() {
 destressPrintLightbox?.addEventListener('click', async event => {
     const mode = event.target.closest('[data-print-mode]');
     if (mode) {
-        $('destressPrintActionStatus').textContent = mode.dataset.printMode === 'manual'
-            ? 'Выбран MANUAL CREATION. Подключение рабочего редактора — следующий этап.'
-            : 'Выбран AI CREATION. Подключение AI-инструмента и общего редактора — следующий этап.';
+        const selectedMode = mode.dataset.printMode;
+        const editorUrl = new URL('./print-editor.html', window.location.href);
+        editorUrl.searchParams.set('mode', selectedMode);
+        editorUrl.searchParams.set('source', 'destress');
+        window.location.href = editorUrl.href;
         return;
     }
     const action = event.target.closest('[data-print-action]');
