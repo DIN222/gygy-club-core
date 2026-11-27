@@ -31,7 +31,7 @@
 <meta name="theme-color" content="#100e0b">
 <meta name="google" content="notranslate">
 <title>De-Stress Studio — GY-GY Club</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@700&family=Playfair+Display:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
@@ -111,115 +111,126 @@ a:focus-visible {
   width: min(1600px, calc(100% - 20px));
   min-height: 100vh;
   margin: 0 auto;
-  padding: 10px 0 14px;
+  padding: 106px 0 14px;
 }
 
-/* ШАПКА */
+/* ЕДИНАЯ ВЕРХНЯЯ ШАПКА GY-GY */
 
-.topbar {
-  position: relative;
-  z-index: 3101;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  gap: 12px;
-  padding: 6px 4px 12px;
-  border-bottom: 1px solid var(--line);
-}
-
-.nav-area {
+.ui-nav-arrows {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  left: clamp(12px, 2.2vw, 25px);
+  z-index: 9999999;
   display: flex;
+  gap: clamp(12px, 1.6vw, 20px);
   align-items: center;
-  gap: 18px;
-  font: 900 26px/1 'Share Tech Mono', monospace;
-}
-
-.back-arrow {
-  color: var(--gold);
-  cursor: pointer;
   user-select: none;
-  transition: opacity .2s, transform .2s;
+  pointer-events: auto;
 }
 
-.back-arrow:hover {
-  opacity: .8;
-  transform: scale(1.1);
-}
-
-.brand-group {
-  position: relative;
-  top: auto;
-  right: auto;
-  justify-self: end;
-  transform: translateY(-6px);
-  display: flex;
-  flex-direction: column;
+.arrow-item {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  z-index: 1000;
+  padding: 0;
+  border: 0;
+  color: var(--gold);
+  background: transparent;
+  font: 900 26px/1 'Share Tech Mono', monospace;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  cursor: pointer;
+  transition: opacity .2s;
 }
 
-.club-brand {
-  justify-self: end;
+.arrow-item:hover {
+  opacity: .8;
+}
+
+.arrow-item span:nth-child(2) {
+  margin-left: -4px;
+}
+
+.header-cluster {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: clamp(12px, 2.2vw, 25px);
+  z-index: 1000001;
+  display: flex;
+  align-items: center;
+  gap: clamp(9px, 1.4vw, 18px);
+  max-width: calc(100vw - 24px);
+}
+
+.header-right {
+  position: static;
+  flex: 0 0 auto;
   color: var(--light);
-  text-decoration: none;
+  font: 700 clamp(18px, 2vw, 24px)/1 'Cinzel', serif;
+  letter-spacing: clamp(2px, .4vw, 5px);
+  white-space: nowrap;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  pointer-events: none;
 }
 
-.club-logo {
-  font: 700 24px/1 'Cinzel', serif;
-  letter-spacing: 5px;
-}
-
-/* Passport — компактная кнопка в группе логотипа.
-   Бейдж находится в обычном потоке brand-group и прокручивается вместе с ним. */
 #passport-badge-container {
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 46px;
 }
-#passport-badge-container .gy-user-badge {
+
+.gy-user-badge.gy-user-badge--header {
   position: relative;
   top: auto;
   right: auto;
-  bottom: auto;
   left: auto;
   transform: none;
-  display: none; /* видимость включает сам passport.js после проверки паспорта */
-  width: 46px;
-  height: 46px;
-  padding: 0;
-  overflow: visible;
-  border: 2px solid var(--gold);
-  border-radius: 50%;
-  background: rgba(0,0,0,.88);
-  box-shadow: 0 0 8px rgba(216,179,106,.25);
-  z-index: 1000000;
+  width: auto;
+  height: 38px;
+  min-width: 38px;
+  padding: 3px 8px 3px 3px;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--gold);
+  border-radius: 22px;
+  background: #111;
+  color: var(--gold);
+  z-index: 1000;
   cursor: pointer;
 }
-#passport-badge-container .gy-user-badge::before { content: none; }
-#passport-badge-container .gy-user-badge .badge-img {
-  display: block !important;
-  width: 100%;
-  height: 100%;
+
+.gy-user-badge.gy-user-badge--header .badge-img {
+  display: block;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  max-width: 30px;
   border-radius: 50%;
   object-fit: cover;
+  flex: 0 0 30px;
   background: #111;
 }
-#passport-badge-container .gy-user-badge .badge-flag {
-  display: block !important;
+
+.gy-user-badge.gy-user-badge--header .badge-nickname {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: clamp(48px, 10vw, 110px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gold);
+  font: 700 11px 'Montserrat', sans-serif;
+}
+
+.gy-user-badge.gy-user-badge--header .badge-flag {
   position: absolute;
-  right: -5px;
-  bottom: -3px;
-  width: 17px;
-  height: 12px;
+  bottom: 1px;
+  left: 25px;
+  right: auto;
+  width: 13px;
+  min-width: 13px;
+  height: 9px;
   object-fit: cover;
   border: 1px solid var(--gold);
-  border-radius: 2px;
-  z-index: 2;
-}
-#passport-badge-container .gy-user-badge:hover {
-  background: #292116;
 }
 
 /* ОСНОВНОЙ КОНТЕЙНЕР */
@@ -849,8 +860,13 @@ a:focus-visible {
     flex: 1 1 calc(50% - 8px);
   }
 
-  .brand-group {
-    right: 12px;
+  .header-right {
+    font-size: 20px;
+  }
+
+  .ui-nav-arrows {
+    left: 14px;
+    gap: 14px;
   }
 }
 
@@ -1550,31 +1566,15 @@ a:focus-visible {
 
 <div class="page">
 
-  <header class="topbar">
+  <div class="notranslate ui-nav-arrows" id="global-nav">
+    <button class="arrow-item" type="button" id="btn-back" title="Back" aria-label="Back">&lt;</button>
+    <button class="arrow-item" type="button" id="btn-home" title="Return to entrance" aria-label="Return to entrance"><span>&lt;</span><span>&lt;</span></button>
+  </div>
 
-    <nav class="nav-area" translate="no">
-      <a class="back-arrow"
-         id="btn-back"
-         title="Back"
-         data-translate-title="nav_back">&lt;</a>
-
-      <a class="back-arrow"
-         id="btn-home"
-         title="Home"
-         data-translate-title="nav_home">&lt;&lt;</a>
-    </nav>
-
-    <div class="brand-group">
-
-      <a class="club-brand" href="././hall.html" translate="no">
-        <div class="club-logo">GY-GY</div>
-      </a>
-
-      <div id="passport-badge-container"></div>
-
-    </div>
-
-  </header>
+  <div class="header-cluster notranslate" id="header-cluster">
+    <div class="header-right">GY-GY</div>
+    <div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+  </div>
 
   <main class="container">
 
@@ -1989,7 +1989,10 @@ setScope('admin');
 selectLanguage('ru');
 initLocalization(document.body);
 const passportContainer = document.getElementById('passport-badge-container');
-initPassport(passportContainer);
+initPassport(passportContainer, {
+    placement: 'header',
+    showNickname: true
+});
 // modules/passport.js самостоятельно назначает openModal на созданную кнопку.
 
 const $ = id => document.getElementById(id);
