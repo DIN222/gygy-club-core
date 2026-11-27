@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GY-GY EDITOR — Visual Prototype 0.3</title>
+<title>GY-GY EDITOR — Visual Prototype 0.4</title>
 <style>
 :root{--bg:#111318;--panel:#1b1e25;--panel2:#242832;--line:#3a414d;--gold:#c5a45d;--gold2:#e1c47e;--text:#eee9dc;--muted:#a9a18f;--active:#293c43;--canvas:#d5d5d2;--teal:#55aebe;--blue:#718cc1;--violet:#927dbb;--green:#83a98a;--amber:#d0a45b}
 *{box-sizing:border-box}body{margin:0;background:#101318;color:var(--text);font:13px/1.4 Inter,Segoe UI,Arial,sans-serif;min-height:100vh}
@@ -44,10 +44,10 @@ button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:2p
 .canvas-wrap.preview .selection{display:none}
 .shirt-label{display:none;position:absolute;bottom:7%;left:0;right:0;text-align:center;color:#8e826b;font-size:10px;letter-spacing:2px}
 .canvas-wrap.preview .shirt-label{display:block}
-.rightbar{background:#1b1f26;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.rightbar{background:#1b1f26;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden}
 .tabs{height:39px;display:flex;border-bottom:1px solid var(--line)}
 .tab{flex:1;border:0;border-bottom:2px solid transparent;background:transparent;color:#a9a18f;font-size:10px;letter-spacing:.7px}.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
-.panel-content{padding:13px;overflow:auto;flex:1}.section-title{font-size:10px;letter-spacing:1.2px;color:#83c5ce;margin:2px 0 11px}
+.panel-content{padding:13px;overflow-x:hidden;overflow-y:auto;flex:1 1 0;min-height:0;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#53636b #1b1f26}.section-title{font-size:10px;letter-spacing:1.2px;color:#83c5ce;margin:2px 0 11px}
 .field{margin:10px 0}.field label{display:block;color:#a9a18f;font-size:11px;margin-bottom:5px}.field input,.field select{width:100%;background:#13171e;color:#eee6d6;border:1px solid #46515f;border-radius:3px;padding:7px}
 .fieldrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.swatches{display:flex;gap:6px;flex-wrap:wrap}.swatch{width:21px;height:21px;border-radius:50%;border:2px solid #777;cursor:pointer}.swatch.selected{outline:2px solid var(--gold);outline-offset:2px}
 .layer{display:flex;align-items:center;gap:8px;padding:9px 7px;border:1px solid transparent;border-radius:3px;font-size:11px;color:#ddd5c5;cursor:pointer}.layer:hover{background:#29313b}.layer.selected{background:#293f48;border-color:#4f8993}.layer .eye{color:#83b9c1}.layer .kind{margin-left:auto;color:#8e8778;font-size:10px}
