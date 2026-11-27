@@ -38,39 +38,53 @@
             text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         }
 
-        /* Сквозной аватар: сохранён для совместимости, отдельно не показывается. */
-        .ui-user-badge {
-            position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
-            width: 42px; height: 42px; border-radius: 50%;
-            border: 2px solid var(--gold); background: #111;
-            box-shadow: 0 0 0 1px #000, inset 0 0 5px rgba(0,0,0,0.8);
-            z-index: 1000000; cursor: pointer; display: none;
+        /* Общий Passport: бейдж справа под логотипом GY-GY. */
+        #passport-badge-container {
+            position: fixed; top: 52px; right: 8px; z-index: 1000001;
+            display: flex; align-items: center; justify-content: center;
+            min-width: 42px; min-height: 42px;
         }
-        .ui-user-badge .badge-img {
-            width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-            display: block; background-color: #fff;
+        #passport-badge-container .gy-user-badge {
+            position: relative; top: auto; right: auto; bottom: auto; left: auto;
+            transform: none; width: 42px; height: 42px; padding: 0;
+            display: none; border: 2px solid var(--gold); border-radius: 50%;
+            background: rgba(0,0,0,.88); box-shadow: 0 0 8px rgba(212,175,55,.25);
+            overflow: visible; cursor: pointer;
         }
-        .ui-user-badge .badge-flag {
-            position: absolute; bottom: -2px; right: -4px;
-            width: 17px; height: 12px; object-fit: cover;
-            border: 1px solid var(--gold); box-shadow: 0 0 0 1px #000;
+        #passport-badge-container .gy-user-badge .badge-img {
+            display: block; width: 100%; height: 100%; border-radius: 50%;
+            object-fit: cover; background: #111;
         }
-
-        /* Паспорт */
-        .passport-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000000;
-            display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.3s ease;
+        #passport-badge-container .gy-user-badge .badge-flag {
+            position: absolute; bottom: -2px; right: -4px; width: 17px; height: 12px;
+            object-fit: cover; border: 1px solid var(--gold);
         }
-        .passport-card {
+        .gy-passport-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 2000000;
+            display: none; align-items: center; justify-content: center; opacity: 0;
+            transition: opacity .3s ease;
+        }
+        .gy-passport-card {
             background: #F5F5DC; border: 3px solid var(--gold); border-radius: 16px;
             padding: 25px; width: 280px; color: #000; text-align: center;
-            box-shadow: 0 0 25px rgba(0,0,0,0.5); position: relative;
+            box-shadow: 0 0 25px rgba(0,0,0,.5); position: relative;
+            font-family: 'Share Tech Mono', monospace;
         }
-        .passport-card .box-final { margin: 15px auto; border-color: #000; }
-        .passport-close-btn {
+        .gy-passport-close {
             position: absolute; top: 10px; right: 14px; font-size: 28px;
             font-weight: bold; color: #000; cursor: pointer; line-height: 1; user-select: none;
+        }
+        .gy-passport-title { font-weight: 900; font-size: 16px; letter-spacing: 1px; }
+        .gy-passport-id, .gy-passport-nick { font-weight: 700; font-size: 13px; margin-top: 5px; }
+        .gy-passport-avatar-box, .gy-passport-qr-box {
+            width: 100px; height: 100px; border: 2px solid var(--gold); background: #fff;
+            margin: 8px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .gy-passport-avatar { width: 100%; height: 100%; object-fit: cover; }
+        .gy-passport-edit {
+            margin-top: 14px; padding: 8px 20px; background: #000; border: 2px solid var(--gold);
+            color: var(--gold); cursor: pointer; text-transform: uppercase; font-weight: 700;
+            font-family: 'Share Tech Mono', monospace; font-size: 11px;
         }
 
         .block {
@@ -122,19 +136,6 @@
         #block-bar {
             background: radial-gradient(ellipse at center, #292116 0%, #17130e 48%, #090807 78%, #020202 100%) !important;
         }
-
-        /* Паспорт — справа непосредственно под логотипом GY-GY. */
-        .bar-passport-trigger {
-            position: fixed; top: 52px; right: 8px; left: auto;
-            transform: none; width: 42px; height: 42px;
-            display: none; align-items: center; justify-content: center;
-            border: 2px solid var(--gold); border-radius: 50%;
-            background: rgba(0,0,0,0.88); color: var(--gold);
-            font-family: 'Share Tech Mono', monospace; font-size: 25px; line-height: 1;
-            cursor: pointer; z-index: 1000001;
-            box-shadow: 0 0 8px rgba(212,175,55,0.25);
-        }
-        .bar-passport-trigger:hover { background: #292116; }
 
         /* Компьютерный Конь: +12% к прежним 101.2vw/101.2vh. */
         #block-bar img.bar-bg-horse {
@@ -188,7 +189,7 @@
     left: 50%;
     transform: translateX(-50%);
 }
-            .bar-passport-trigger { top: 48px; right: 14px; }
+            #passport-badge-container { top: 48px; right: 14px; }
 
             /* Мобильный bar_horse.jpg — масштаб оставлен без изменений. */
             #block-bar img.bar-bg-horse {
@@ -225,26 +226,8 @@
         </div>
     </div>
 
-    <button id="bar-passport-trigger" class="bar-passport-trigger notranslate"
-        type="button" onclick="openPassport()" title="GY-GY Passport"
-        aria-label="Open GY-GY Passport">
-        <span aria-hidden="true">▤</span>
-    </button>
-
-    <div id="modal-passport" class="passport-overlay" onclick="closePassport()">
-        <div class="passport-card" onclick="event.stopPropagation()">
-            <div class="passport-close-btn" onclick="closePassport()">&times;</div>
-            <div id="pass-id-title" style="font-weight:900; font-size:16px; letter-spacing:1px;">GY-GY PASSPORT</div>
-            <div id="pass-id-val" style="font-weight:700; font-size:13px; margin-top:5px; color:#555;">#ID</div>
-            <div class="box-final" style="width:100px; height:100px; border-radius:50%; border:2px solid var(--gold);">
-                <img id="pass-avatar-img" style="width:100%; height:100%; object-fit:cover; border-radius:50%; background-color:#fff;" alt="">
-            </div>
-            <div class="box-final" id="pass-qr-box" style="width:110px; height:110px; padding:5px;"></div>
-            <div style="font-size:10px; font-weight:900; color:#333; margin-top:5px; text-transform:uppercase;">Click &times; or outside to close</div>
-        </div>
-    </div>
-
     <div class="ui-header-right notranslate">GY-GY</div>
+    <div id="passport-badge-container" class="notranslate"></div>
     <audio id="snd-ambient" src="bar_ambient.mp3" loop preload="auto"></audio>
 
     <div id="block-bar" class="block">
@@ -263,52 +246,6 @@
     </div>
 
     <script>
-        let currentID = "";
-        let currentUserImage = "";
-
-        function safeStorageGet(key, fallback = "") {
-            try { return localStorage.getItem(key) || fallback; }
-            catch (e) { return fallback; }
-        }
-
-        // Паспорт использует актуальные данные пользователя из localStorage.
-        function syncUserBadge() {
-            currentUserImage =
-                safeStorageGet('gygy_avatar') ||
-                safeStorageGet('gy_user_img') ||
-                safeStorageGet('gy_user_avatar');
-
-            currentID =
-                safeStorageGet('gygy_id') ||
-                safeStorageGet('gy_user_id') ||
-                safeStorageGet('gy_trace');
-
-            const trigger = document.getElementById('bar-passport-trigger');
-            const passImg = document.getElementById('pass-avatar-img');
-
-            if (trigger) trigger.style.display = currentID ? 'flex' : 'none';
-
-            if (passImg) {
-                if (currentUserImage) {
-                    passImg.src = currentUserImage;
-                    passImg.style.display = 'block';
-                } else {
-                    passImg.removeAttribute('src');
-                    passImg.style.display = 'none';
-                }
-            }
-
-            if (currentID) {
-                const passIdVal = document.getElementById('pass-id-val');
-                const passQrBox = document.getElementById('pass-qr-box');
-                if (passIdVal) passIdVal.innerText = currentID;
-                if (passQrBox && typeof QRCode !== 'undefined') {
-                    passQrBox.innerHTML = "";
-                    new QRCode(passQrBox, { text: currentID, width: 100, height: 100 });
-                }
-            }
-        }
-
         function switchLocalBlock(blockId) {
             document.querySelectorAll('.block').forEach(b => {
                 b.classList.remove('active');
@@ -341,24 +278,7 @@
             setTimeout(() => { window.location.href = 'destress-studio.html'; }, 400);
         }
 
-        function openPassport() {
-            const modal = document.getElementById('modal-passport');
-            if (modal) {
-                modal.style.display = 'flex';
-                setTimeout(() => { modal.style.opacity = '1'; }, 10);
-            }
-        }
-
-        function closePassport() {
-            const modal = document.getElementById('modal-passport');
-            if (modal) {
-                modal.style.opacity = '0';
-                setTimeout(() => { modal.style.display = 'none'; }, 300);
-            }
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
-            syncUserBadge();
             switchLocalBlock('block-bar');
             document.body.classList.add('page-loaded');
         });
@@ -366,9 +286,11 @@
 
     <script type="module">
         import { init as initLocalization } from './core/localization.js';
+        import { init as initPassport } from './modules/passport.js';
         import { resumeAmbient } from './modules/ambient.js';
 
         initLocalization(document.body);
+        initPassport(document.getElementById('passport-badge-container'));
         resumeAmbient({ volume: 0.55 });
     </script>
     <script type="module" src="./bar-complexes.js"></script>
