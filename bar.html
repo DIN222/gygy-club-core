@@ -16,7 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="google" content="notranslate">
     <title>GY-GY Club - BAR (v1.73)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
@@ -31,32 +31,53 @@
             font-family: 'Share Tech Mono', monospace; overflow: hidden; position: fixed; margin: 0;
         }
 
-        .ui-header-right {
-            position: fixed; top: 18px; right: 25px; z-index: 1000000;
-          font-family: 'Cinzel', serif;
-            font-size: 24px; letter-spacing: 5px; font-weight: bold;
+        /* Единый верхний контейнер GY-GY: логотип и общий Passport. */
+        .header-cluster {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            right: clamp(12px, 2.2vw, 25px);
+            z-index: 1000001;
+            display: flex;
+            align-items: center;
+            gap: clamp(9px, 1.4vw, 18px);
+            max-width: calc(100vw - 24px);
+        }
+        .header-right {
+            position: static;
+            flex: 0 0 auto;
+            font-family: 'Cinzel', serif;
+            font-size: clamp(18px, 2vw, 24px);
+            letter-spacing: clamp(2px, 0.4vw, 5px);
+            font-weight: bold;
+            white-space: nowrap;
             text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            pointer-events: none;
         }
-
-        /* Общий Passport: бейдж справа под логотипом GY-GY. */
-        #passport-badge-container {
-            position: fixed; top: 52px; right: 8px; z-index: 1000001;
-            display: flex; align-items: center; justify-content: center;
-            min-width: 42px; min-height: 42px;
+        #passport-badge-container { display: flex; align-items: center; }
+        .gy-user-badge.gy-user-badge--header {
+            position: relative;
+            top: auto; right: auto; left: auto; transform: none;
+            width: auto; height: 38px; min-width: 38px;
+            padding: 3px 8px 3px 3px;
+            display: none; align-items: center; gap: 7px;
+            border: 1px solid var(--gold); border-radius: 22px;
+            background: #111; color: var(--gold);
+            z-index: 1000; cursor: pointer;
         }
-        #passport-badge-container .gy-user-badge {
-            position: relative; top: auto; right: auto; bottom: auto; left: auto;
-            transform: none; width: 42px; height: 42px; padding: 0;
-            display: none; border: 2px solid var(--gold); border-radius: 50%;
-            background: rgba(0,0,0,.88); box-shadow: 0 0 8px rgba(212,175,55,.25);
-            overflow: visible; cursor: pointer;
+        .gy-user-badge.gy-user-badge--header .badge-img {
+            display: block; width: 30px; height: 30px;
+            min-width: 30px; max-width: 30px; border-radius: 50%;
+            object-fit: cover; flex: 0 0 30px; background: #111;
         }
-        #passport-badge-container .gy-user-badge .badge-img {
-            display: block; width: 100%; height: 100%; border-radius: 50%;
-            object-fit: cover; background: #111;
+        .gy-user-badge.gy-user-badge--header .badge-nickname {
+            display: block; flex: 0 1 auto; min-width: 0;
+            max-width: clamp(48px, 10vw, 110px);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            color: var(--gold); font: 700 11px 'Montserrat', sans-serif;
         }
-        #passport-badge-container .gy-user-badge .badge-flag {
-            position: absolute; bottom: -2px; right: -4px; width: 17px; height: 12px;
+        .gy-user-badge.gy-user-badge--header .badge-flag {
+            position: absolute; bottom: 1px; left: 25px; right: auto;
+            width: 13px; min-width: 13px; height: 9px;
             object-fit: cover; border: 1px solid var(--gold);
         }
         .gy-passport-overlay {
@@ -189,7 +210,12 @@
     left: 50%;
     transform: translateX(-50%);
 }
-            #passport-badge-container { top: 48px; right: 14px; }
+            .header-cluster {
+                top: max(12px, env(safe-area-inset-top));
+                right: 14px;
+                gap: 8px;
+                max-width: calc(100vw - 28px);
+            }
 
             /* Мобильный bar_horse.jpg — масштаб оставлен без изменений. */
             #block-bar img.bar-bg-horse {
@@ -212,7 +238,7 @@
             #block-bar .btn-gy {
                 min-width: 0; padding: 9px 10px; font-size: 11px;
             }
-            .ui-header-right { right: 14px; font-size: 20px; }
+            .header-right { font-size: 20px; }
             .ui-nav-arrows { left: 14px; gap: 14px; }
         }
     </style>
@@ -226,8 +252,10 @@
         </div>
     </div>
 
-    <div class="ui-header-right notranslate">GY-GY</div>
-    <div id="passport-badge-container" class="notranslate"></div>
+    <div class="header-cluster notranslate" id="header-cluster">
+        <div class="header-right">GY-GY</div>
+        <div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+    </div>
     <audio id="snd-ambient" src="bar_ambient.mp3" loop preload="auto"></audio>
 
     <div id="block-bar" class="block">
@@ -290,7 +318,10 @@
         import { resumeAmbient } from './modules/ambient.js';
 
         initLocalization(document.body);
-        initPassport(document.getElementById('passport-badge-container'));
+        initPassport(document.getElementById('passport-badge-container'), {
+            placement: 'header',
+            showNickname: true
+        });
         resumeAmbient({ volume: 0.55 });
     </script>
     <script type="module" src="./bar-complexes.js"></script>
