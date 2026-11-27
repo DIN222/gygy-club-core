@@ -34,9 +34,49 @@
     body {
         display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
+    .header-cluster {
+        position: fixed;
+        top: max(12px, env(safe-area-inset-top));
+        right: clamp(12px, 2.2vw, 25px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: clamp(9px, 1.4vw, 18px);
+        max-width: calc(100vw - 24px);
+    }
     .header-right {
-        position: fixed; top: 18px; right: 25px; z-index: 1000;
-        font-size: 24px; letter-spacing: 5px; font-weight: bold; font-family: 'Cinzel', serif;
+        position: static;
+        flex: 0 0 auto;
+        font-size: clamp(18px, 2vw, 24px);
+        letter-spacing: clamp(2px, 0.4vw, 5px);
+        font-weight: bold;
+        font-family: 'Cinzel', serif;
+        white-space: nowrap;
+    }
+    #passport-badge-container { display: flex; align-items: center; }
+    .gy-user-badge.gy-user-badge--header {
+        position: relative;
+        top: auto; right: auto; left: auto; transform: none;
+        width: auto; height: 38px; min-width: 38px;
+        padding: 3px 8px 3px 3px;
+        display: none; align-items: center; gap: 7px;
+        border: 1px solid var(--gold); border-radius: 22px;
+        background: #111; color: var(--gold);
+        z-index: 1000; cursor: pointer;
+    }
+    .gy-user-badge--header .badge-img {
+        display: block; width: 30px; height: 30px;
+        border-radius: 50%; object-fit: cover; flex: 0 0 auto;
+    }
+    .gy-user-badge--header .badge-nickname {
+        display: block; max-width: clamp(48px, 10vw, 110px);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        color: var(--gold); font: 700 11px 'Montserrat', sans-serif;
+    }
+    .gy-user-badge--header .badge-flag {
+        position: absolute; bottom: 1px; left: 25px;
+        width: 13px; height: 9px; object-fit: cover;
+        border: 1px solid var(--gold);
     }
 
     .ui-nav-arrows {
@@ -143,13 +183,14 @@
 <body>
 
 <div id="identity-bg"></div>
-<div class="header-right">GY-GY</div>
+<div class="header-cluster" id="header-cluster">
+    <div class="header-right">GY-GY</div>
+    <div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
+</div>
 <div class="ui-nav-arrows">
         <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
     <a class="back-arrow" id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
 </div>
-<div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
-
 <div class="quote-text" data-translate="identity_quote">There is never too much champagne</div>
 
 <div class="identity-grid">
@@ -195,7 +236,10 @@
 
     initLocalization(document.body);
       resumeAmbient({ volume: 0.5 });
-    initPassport(document.getElementById('passport-badge-container'));
+    initPassport(document.getElementById('passport-badge-container'), {
+        placement: 'header',
+        showNickname: true
+    });
 
     const existing = getPassport();
     let selectedNickType = existing?.nicknameType || 'own';
