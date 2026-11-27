@@ -32,6 +32,7 @@ const CLUB_NICKNAMES = [
 ];
 
 let boundContainer = null;
+let boundOptions = {};
 let unsubscribers = [];
 
 function firstLegacyValue(keys) {
@@ -149,15 +150,23 @@ function renderBadge() {
         badge.className = 'gy-user-badge';
         badge.innerHTML = `
             <img class="badge-img" id="gy-badge-avatar">
+            <span class="badge-nickname" id="gy-badge-nickname"></span>
             <img class="badge-flag" id="gy-badge-flag">
         `;
         badge.addEventListener('click', openModal);
         boundContainer.appendChild(badge);
     }
 
+    badge.classList.toggle('gy-user-badge--header', boundOptions.placement === 'header');
+    const nickname = boundContainer.querySelector('#gy-badge-nickname');
+    nickname.style.display = boundOptions.showNickname ? '' : 'none';
+
     if (passport) {
-        badge.style.display = 'block';
+        badge.style.display = boundOptions.placement === 'header' ? 'inline-flex' : 'block';
         boundContainer.querySelector('#gy-badge-avatar').src = passport.avatar || '';
+        nickname.textContent = passport.nicknameType === 'club'
+            ? (passport.clubNickname || '')
+            : (passport.nickname || '');
         boundContainer.querySelector('#gy-badge-flag').src = `https://flagcdn.com/w20/${passport.flagCountry}.png`;
     } else {
         badge.style.display = 'none';
@@ -217,8 +226,12 @@ export function closeModal() {
 
 const MODULE_NAME = 'passport';
 
-export function init(container) {
+export function init(container, options = {}) {
     boundContainer = container;
+    boundOptions = {
+        placement: options.placement === 'header' ? 'header' : 'default',
+        showNickname: options.showNickname === true
+    };
     renderBadge();
 
     const handleSave = () => renderBadge();
@@ -247,6 +260,7 @@ export function destroy() {
     unsubscribers.forEach(({ event, handler }) => off(event, handler));
     unsubscribers = [];
     boundContainer = null;
+    boundOptions = {};
 
     emit('MODULE_DESTROY', { module: MODULE_NAME, at: Date.now() });
 }
