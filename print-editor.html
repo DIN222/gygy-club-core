@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GY-GY EDITOR — Visual Prototype 0.2</title>
+<title>GY-GY EDITOR — Visual Prototype 0.3</title>
 <style>
 :root{--bg:#111318;--panel:#1b1e25;--panel2:#242832;--line:#3a414d;--gold:#c5a45d;--gold2:#e1c47e;--text:#eee9dc;--muted:#a9a18f;--active:#293c43;--canvas:#d5d5d2;--teal:#55aebe;--blue:#718cc1;--violet:#927dbb;--green:#83a98a;--amber:#d0a45b}
 *{box-sizing:border-box}body{margin:0;background:#101318;color:var(--text);font:13px/1.4 Inter,Segoe UI,Arial,sans-serif;min-height:100vh}
@@ -57,6 +57,39 @@ button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:2p
 .notice{position:fixed;bottom:42px;left:50%;transform:translateX(-50%);background:#26363b;border:1px solid #5b929b;color:#d9f2f2;padding:9px 14px;border-radius:4px;box-shadow:0 8px 24px #0009;display:none;z-index:50;font-size:12px}.notice.show{display:block}
 @media(max-width:850px){.workspace{grid-template-columns:48px minmax(200px,1fr) 215px}.canvas-wrap{padding:16px}.menu-btn{padding:0 7px;font-size:10px}}
 @media(max-width:650px){.workspace{grid-template-columns:44px minmax(0,1fr)}.rightbar{display:none}.project-name{display:none}.menurow{overflow-x:auto}.canvas-wrap{padding:10px}.mode-switch button{padding:6px 7px}.status{gap:8px}}
+
+/* Responsive workspace: keep the complete editor inside the visible browser viewport */
+html,body{height:100%;overflow:hidden}
+.app{height:100vh;height:100dvh;min-height:0}
+.top,.status{flex-shrink:0}
+.workspace{min-height:0;overflow:hidden}
+.leftbar{min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#53636b #1b1f26}
+.canvas-wrap{padding:clamp(8px,2.2vh,34px)}
+.checker{max-height:100%}
+@media(max-height:760px){
+  .brandline{height:35px}
+  .menurow{height:37px}
+  .quickbar{height:38px}
+  .menu-btn{padding-left:9px;padding-right:9px}
+  .leftbar{padding:6px 4px;gap:3px}
+  .lefttool{width:34px;height:31px;font-size:16px}
+  .leftsep{height:1px;margin:2px 0}
+  .leftbar>.swatch{width:18px;height:18px}
+  .status{height:26px}
+}
+@media(max-height:660px){
+  .brandline{height:32px}
+  .menurow{height:34px}
+  .quickbar{height:35px}
+  .menu-btn{padding-left:7px;padding-right:7px;font-size:10px}
+  .toolbtn{height:28px;min-width:28px;padding:0 6px}
+  .leftbar{padding:4px 3px;gap:2px}
+  .lefttool{width:31px;height:27px;font-size:15px}
+  .leftsep{margin:1px 0}
+  .leftbar>.swatch{width:16px;height:16px}
+  .status{height:24px;padding:0 8px;gap:10px}
+  .docbar{height:29px}
+}
 </style>
 </head>
 <body>
