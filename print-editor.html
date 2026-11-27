@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GY-GY EDITOR — Visual Prototype 0.6</title>
+<title>GY-GY EDITOR — Visual Prototype 0.7</title>
 <style>
 :root{--bg:#111318;--panel:#1b1e25;--panel2:#242832;--line:#3a414d;--gold:#c5a45d;--gold2:#e1c47e;--text:#eee9dc;--muted:#a9a18f;--active:#293c43;--canvas:#d5d5d2;--teal:#55aebe;--blue:#718cc1;--violet:#927dbb;--green:#83a98a;--amber:#d0a45b}
 *{box-sizing:border-box}body{margin:0;background:#101318;color:var(--text);font:13px/1.4 Inter,Segoe UI,Arial,sans-serif;min-height:100vh}
@@ -188,6 +188,10 @@ const backButton=document.getElementById('btn-back');
 backButton.addEventListener('click',e=>{e.preventDefault();if(window.history.length>1)window.history.back();else window.location.href='hall.html';});
 const notice=document.getElementById('notice');let noticeTimer;
 function inform(message){notice.textContent=message+' — демонстрация прототипа';notice.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.classList.remove('show'),2300)}
+const editorParams=new URLSearchParams(window.location.search);
+const creationMode=editorParams.get('mode');
+if(creationMode==='manual') inform('MANUAL CREATION выбрана. Открыта общая среда EDITOR; рабочие инструменты пока демонстрационные');
+else if(creationMode==='ai') inform('AI CREATION выбрана. AI-сервис пока не подключён; открыт общий EDITOR');
 document.querySelectorAll('[data-menu]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();const was=btn.classList.contains('open');document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('show'));document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('open'));if(!was){btn.classList.add('open');btn.nextElementSibling.classList.add('show')}}));
 document.addEventListener('click',()=>{document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('show'));document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('open'))});
 document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();inform(btn.dataset.action);document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('show'));document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('open'))}));
