@@ -88,13 +88,25 @@
         background: #111;
     }
     .gy-user-badge.gy-user-badge--header .badge-nickname {
-        display: block; max-width: clamp(48px, 10vw, 110px);
-        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        color: var(--gold); font: 700 11px 'Montserrat', sans-serif;
+        display: block;
+        flex: 0 1 auto;
+        min-width: 0;
+        max-width: clamp(48px, 10vw, 110px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--gold);
+        font: 700 11px 'Montserrat', sans-serif;
     }
     .gy-user-badge.gy-user-badge--header .badge-flag {
-        position: absolute; bottom: 1px; left: 25px;
-        width: 13px; height: 9px; object-fit: cover;
+        position: absolute;
+        bottom: 1px;
+        left: 25px;
+        right: auto;
+        width: 13px;
+        min-width: 13px;
+        height: 9px;
+        object-fit: cover;
         border: 1px solid var(--gold);
     }
 
