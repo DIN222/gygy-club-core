@@ -34,29 +34,16 @@
     body {
         display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    /* Единая верхняя полоса: навигация слева, бренд и Passport справа. */
-    .club-header {
-        position: fixed;
+    /* Геометрия верхних элементов приведена к рабочему образцу HALL. */
+    .header-cluster {
+        position: absolute;
         top: max(12px, env(safe-area-inset-top));
-        left: clamp(12px, 2.2vw, 25px);
         right: clamp(12px, 2.2vw, 25px);
         z-index: 1000;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        width: auto;
-        pointer-events: none;
-    }
-    .club-header > * { pointer-events: auto; }
-    .header-cluster {
-        position: static;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
         gap: clamp(9px, 1.4vw, 18px);
-        max-width: 75%;
-        min-width: 0;
+        max-width: calc(100vw - 24px);
     }
     .header-right {
         position: static;
@@ -115,12 +102,14 @@
     }
 
     .ui-nav-arrows {
-        position: static;
-        flex: 0 0 auto;
+        position: absolute;
+        top: max(12px, env(safe-area-inset-top));
+        left: clamp(12px, 2.2vw, 25px);
+        z-index: 1000;
         display: flex;
         align-items: center;
-        gap: clamp(10px, 1.5vw, 16px);
-        font-size: clamp(21px, 2.2vw, 24px);
+        gap: 15px;
+        font-size: 24px;
         font-weight: 900;
         font-family: 'Share Tech Mono', monospace;
         white-space: nowrap;
@@ -224,15 +213,13 @@
 <body>
 
 <div id="identity-bg"></div>
-<div class="club-header" id="club-header">
-    <div class="ui-nav-arrows">
-        <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
-        <a class="back-arrow" id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
-    </div>
-    <div class="header-cluster" id="header-cluster">
-        <div class="header-right">GY-GY</div>
-        <div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
-    </div>
+<div class="ui-nav-arrows">
+    <a class="back-arrow" id="btn-back" title="Back" data-translate-title="nav_back">&lt;</a>
+    <a class="back-arrow" id="btn-home" title="Home" data-translate-title="nav_home">&lt;&lt;</a>
+</div>
+<div class="header-cluster" id="header-cluster">
+    <div class="header-right">GY-GY</div>
+    <div id="passport-badge-container"><!-- заполняется modules/passport.js --></div>
 </div>
 <div class="quote-text" data-translate="identity_quote">There is never too much champagne</div>
 
