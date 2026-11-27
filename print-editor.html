@@ -10,9 +10,14 @@
 button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .app{height:100vh;min-height:620px;display:flex;flex-direction:column;background:var(--bg)}
 .top{background:#191d24;border-bottom:1px solid var(--line);box-shadow:0 3px 14px #0005;z-index:5}
-.brandline{height:39px;display:flex;align-items:center;padding:0 14px;border-bottom:1px solid #343b46;gap:12px}
-.brand{font-family:Georgia,serif;letter-spacing:2px;color:var(--gold2);font-size:15px}.brand small{font:10px Arial;letter-spacing:1.5px;color:var(--muted);margin-left:8px}
-.project-name{margin-left:auto;color:var(--muted);font-size:12px}.save-state{color:#9eaf8c;font-size:11px}
+.brandline{height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 20px;border-bottom:1px solid #343b46;gap:12px}
+.nav-area{display:flex;align-items:center;gap:18px;font-size:25px;font-weight:900;user-select:none}
+.nav-arrow{color:var(--gold2);cursor:pointer;line-height:1;text-decoration:none;transition:opacity .2s,transform .2s}
+.nav-arrow:hover{opacity:.8;transform:scale(1.1)}
+.editor-heading{justify-self:center;color:var(--gold2);font:bold 13px Georgia,serif;letter-spacing:2px}
+.brand-right{justify-self:end;color:var(--gold2);font:bold 20px Georgia,serif;letter-spacing:5px;text-shadow:0 0 5px #000;white-space:nowrap;text-decoration:none}
+.save-state{color:#9eaf8c;font-size:11px;margin-left:10px}
+.project-name{display:none}
 .menurow{height:42px;display:flex;align-items:stretch;padding:0 8px;gap:2px}
 .menu-wrap{position:relative;display:flex}.menu-btn{background:transparent;border:0;padding:0 12px;color:#d9d2c2;font-size:11px;letter-spacing:1px}.menu-btn:hover,.menu-btn.open{background:#293c43;color:var(--teal)}
 .dropdown{display:none;position:absolute;top:40px;left:0;min-width:220px;background:#242a33;border:1px solid #607b83;box-shadow:0 12px 28px #0009;padding:6px;z-index:20}
@@ -96,7 +101,15 @@ html,body{width:100%;height:100%;min-height:0;overflow:hidden}
 <body>
 <div class="app">
 <header class="top">
-  <div class="brandline"><div class="brand">GY-GY <small>EDITOR</small></div><div class="save-state">● DEMO PROJECT</div><div class="project-name">Untitled Print Project</div></div>
+  <div class="brandline">
+    <div class="nav-area" translate="no">
+      <a class="nav-arrow" id="btn-back" href="#" title="Back" aria-label="Back">&lt;</a>
+      <a class="nav-arrow" id="btn-home" href="index.html" title="Home" aria-label="Home">&lt;&lt;</a>
+      <span class="save-state">● DEMO PROJECT</span>
+    </div>
+    <div class="editor-heading">EDITOR</div>
+    <a class="brand-right" href="index.html" translate="no" aria-label="GY-GY Club home">GY-GY</a>
+  </div>
   <nav class="menurow" aria-label="Main menu">
     <div class="menu-wrap"><button class="menu-btn" data-menu="FILE">FILE</button><div class="dropdown"><button class="drop-item" data-action="New project">Новый <span>Ctrl+N</span></button><button class="drop-item" data-action="Open project">Открыть <span>Ctrl+O</span></button><div class="drop-sep"></div><button class="drop-item" data-action="Save project">Сохранить <span>Ctrl+S</span></button><button class="drop-item" data-action="Save as">Сохранить как…</button><div class="drop-sep"></div><button class="drop-item" data-action="Import file">Импорт…</button><button class="drop-item" data-action="Export PNG">Экспорт PNG</button></div></div>
     <div class="menu-wrap"><button class="menu-btn" data-menu="EDIT">EDIT</button><div class="dropdown"><button class="drop-item" data-action="Undo">Отменить <span>Ctrl+Z</span></button><button class="drop-item" data-action="Redo">Повторить <span>Ctrl+Y</span></button><div class="drop-sep"></div><button class="drop-item" data-action="Cut">Вырезать</button><button class="drop-item" data-action="Copy">Копировать</button><button class="drop-item" data-action="Paste">Вставить</button><button class="drop-item" data-action="Delete">Удалить</button></div></div>
@@ -171,6 +184,8 @@ html,body{width:100%;height:100%;min-height:0;overflow:hidden}
 </div>
 <div class="notice" id="notice"></div>
 <script>
+const backButton=document.getElementById('btn-back');
+backButton.addEventListener('click',e=>{e.preventDefault();if(window.history.length>1)window.history.back();else window.location.href='hall.html';});
 const notice=document.getElementById('notice');let noticeTimer;
 function inform(message){notice.textContent=message+' — демонстрация прототипа';notice.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.classList.remove('show'),2300)}
 document.querySelectorAll('[data-menu]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();const was=btn.classList.contains('open');document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('show'));document.querySelectorAll('.menu-btn').forEach(b=>b.classList.remove('open'));if(!was){btn.classList.add('open');btn.nextElementSibling.classList.add('show')}}));
