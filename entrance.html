@@ -262,7 +262,9 @@
     const welcomeFlag = document.getElementById('welcome-flag');
 
     if (returningMember) {
-        languageWrapper.style.display = 'none';
+        // На экране с дверью языковой селектор занимает место навигационных стрелок.
+        // Для участника с Passport он остаётся доступным в компактном виде.
+        languageWrapper.classList.add('collapsed');
     } else {
         const selectedCountry = get('flagCountry', 'gb');
         welcomeFlag.src = `https://flagcdn.com/w20/${selectedCountry}.png`;
