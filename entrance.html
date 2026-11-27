@@ -250,7 +250,7 @@
 <script type="module">
     import { init as initLocalization, renderLanguageList, FULL_LANGUAGES, getCurrentLang } from './core/localization.js';
     import { on } from './core/eventBus.js';
-    import { init as initPassport, hasPassport } from './modules/passport.js';
+    import { init as initPassport, hasPassport, getPassport } from './modules/passport.js';
     import { get } from './core/storage.js';
     import { startAmbient, resetAmbient, playSfx } from './modules/soundscape.js';
 
@@ -262,9 +262,15 @@
     const welcomeFlag = document.getElementById('welcome-flag');
 
     if (returningMember) {
-        // На экране с дверью языковой селектор занимает место навигационных стрелок.
-        // Для участника с Passport он остаётся доступным в компактном виде.
-        languageWrapper.classList.add('collapsed');
+        // На экране с дверью показываем полноценную рамку языка.
+        // Её выбранный язык синхронизирован с флагом в Passport.
+        const passport = getPassport();
+        const passportCountry = passport?.flagCountry || get('flagCountry', 'gb');
+        const passportLanguage = FULL_LANGUAGES.find(lang => lang.country === passportCountry);
+        if (passportLanguage) {
+            document.getElementById('current-flag').src = `https://flagcdn.com/w20/${passportLanguage.country}.png`;
+            document.getElementById('current-lang-name').textContent = passportLanguage.name;
+        }
     } else {
         const selectedCountry = get('flagCountry', 'gb');
         welcomeFlag.src = `https://flagcdn.com/w20/${selectedCountry}.png`;
