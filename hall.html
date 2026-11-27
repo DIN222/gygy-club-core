@@ -76,16 +76,23 @@
         background: #111; color: var(--gold);
         z-index: 1000; cursor: pointer;
     }
-    .gy-user-badge--header .badge-img {
-        display: block; width: 30px; height: 30px;
-        border-radius: 50%; object-fit: cover; flex: 0 0 auto;
+    .gy-user-badge.gy-user-badge--header .badge-img {
+        display: block;
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        max-width: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex: 0 0 30px;
+        background: #111;
     }
-    .gy-user-badge--header .badge-nickname {
+    .gy-user-badge.gy-user-badge--header .badge-nickname {
         display: block; max-width: clamp(48px, 10vw, 110px);
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         color: var(--gold); font: 700 11px 'Montserrat', sans-serif;
     }
-    .gy-user-badge--header .badge-flag {
+    .gy-user-badge.gy-user-badge--header .badge-flag {
         position: absolute; bottom: 1px; left: 25px;
         width: 13px; height: 9px; object-fit: cover;
         border: 1px solid var(--gold);
