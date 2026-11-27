@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.7.5
+  destress-studio.html — De-Stress Studio — v5.7.6
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -121,7 +121,7 @@ a:focus-visible {
   z-index: 3101;
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: center;
+  align-items: start;
   gap: 12px;
   padding: 6px 4px 12px;
   border-bottom: 1px solid var(--line);
@@ -147,9 +147,10 @@ a:focus-visible {
 }
 
 .brand-group {
-  position: absolute;
-  top: 6px;
-  right: 25px;
+  position: relative;
+  top: auto;
+  right: auto;
+  justify-self: end;
   display: flex;
   flex-direction: column;
   align-items: center;
