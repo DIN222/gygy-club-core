@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GY-GY EDITOR — Fabric.js Engine Test 0.1</title>
+<script src="https://cdn.jsdelivr.net/npm/fabric@7.4.0/dist/index.min.js"></script>
+<style>
+:root{--bg:#171512;--panel:#24211c;--panel2:#302b23;--line:#665638;--gold:#c5a15b;--text:#eee7d8;--muted:#b7aa91;--danger:#a84b42}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 Arial,sans-serif}
+header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#100f0d;border-bottom:1px solid var(--line)}
+header strong{letter-spacing:2px;color:var(--gold)}header span{color:var(--muted);font-size:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:7px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+button,.file-label{background:var(--panel2);border:1px solid #6b5938;color:var(--text);padding:7px 10px;border-radius:4px;cursor:pointer;font-size:12px}
+button:hover,.file-label:hover{border-color:var(--gold);color:#fff}button.active{background:#5b4827;border-color:var(--gold)}
+button:disabled{opacity:.35;cursor:not-allowed}
+.layout{display:grid;grid-template-columns:58px minmax(320px,1fr) 250px;height:calc(100vh - 112px);min-height:500px}
+.tools{background:var(--panel);border-right:1px solid var(--line);padding:9px 6px;display:flex;flex-direction:column;gap:7px}
+.tools button{padding:9px 3px;min-height:42px;font-size:11px}
+.workspace{min-width:0;display:flex;flex-direction:column;background:#34312b}
+.workspace-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;color:var(--muted);font-size:12px}
+.canvas-scroll{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:22px;background-color:#39362f;background-image:linear-gradient(45deg,#403d36 25%,transparent 25%),linear-gradient(-45deg,#403d36 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#403d36 75%),linear-gradient(-45deg,transparent 75%,#403d36 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
+.canvas-frame{box-shadow:0 8px 30px #0009;border:1px solid #aaa}
+.side{background:var(--panel);border-left:1px solid var(--line);padding:12px;overflow:auto}
+.side h3{margin:4px 0 10px;color:var(--gold);font-size:12px;letter-spacing:1px}
+.section{padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid #51452f}
+.field{display:flex;flex-direction:column;gap:4px;margin:8px 0;color:var(--muted);font-size:12px}
+input[type=text],input[type=number],select{width:100%;padding:7px;background:#171512;border:1px solid #655638;color:var(--text);border-radius:3px}
+input[type=color]{width:100%;height:30px;background:#171512;border:1px solid #655638}
+.layers{display:flex;flex-direction:column;gap:5px}
+.layer{padding:7px 8px;border:1px solid #54472f;border-radius:3px;background:#1a1814;cursor:pointer;font-size:12px;display:flex;justify-content:space-between}
+.layer.selected{border-color:var(--gold);background:#40341f}
+.status{padding:7px 12px;background:#100f0d;color:var(--muted);font-size:11px;border-top:1px solid var(--line)}
+.note{color:#c9b991;font-size:11px;margin-top:8px}
+@media(max-width:850px){.layout{grid-template-columns:50px minmax(250px,1fr);height:auto;min-height:calc(100vh - 112px)}.side{grid-column:1/-1;border-left:0;border-top:1px solid var(--line);max-height:300px}.canvas-scroll{min-height:440px}}
+</style>
+</head>
+<body>
+<header><strong>GY-GY EDITOR</strong><span>FABRIC.JS ENGINE TEST · 0.1 · LABORATORY BUILD</span></header>
+<div class="toolbar">
+<button id="newBtn">Новый проект</button><button id="saveBtn">Сохранить JSON</button>
+<label class="file-label" for="openProject">Открыть JSON</label><input id="openProject" type="file" accept=".json,application/json" hidden>
+<button id="pngBtn">Экспорт PNG</button><button id="svgBtn">Экспорт SVG</button>
+<button id="undoBtn" disabled>↶ Отмена</button><button id="redoBtn" disabled>↷ Повтор</button>
+<button id="clearBtn">Очистить холст</button>
+</div>
+<div class="layout">
+<aside class="tools">
+<button data-tool="select" class="active" title="Выделение">↖<br>Выбор</button>
+<button data-tool="draw" title="Рисование">✎<br>Кисть</button>
+<button data-tool="text" title="Добавить текст">T<br>Текст</button>
+<button data-tool="rect" title="Прямоугольник">□<br>Форма</button>
+<button data-tool="circle" title="Круг">○<br>Круг</button>
+<button data-tool="line" title="Линия">／<br>Линия</button>
+<label class="file-label" style="text-align:center;padding:9px 2px" for="imageFile">▧<br>Фото</label>
+<input id="imageFile" type="file" accept="image/*" hidden>
+</aside>
+<main class="workspace">
+<div class="workspace-head"><span>DESIGN CANVAS · 900 × 600 px</span><span id="selectionInfo">Нет выбранного объекта</span></div>
+<div class="canvas-scroll"><div class="canvas-frame"><canvas id="editorCanvas" width="900" height="600"></canvas></div></div>
+<div class="status" id="status">Загрузка графического движка…</div>
+</main>
+<aside class="side">
+<div class="section"><h3>СВОЙСТВА ОБЪЕКТА</h3>
+<label class="field">Текст выбранного объекта<input id="objectText" type="text" placeholder="Изменить текст"></label>
+<label class="field">Цвет заливки<input id="fillColor" type="color" value="#c5a15b"></label>
+<label class="field">Цвет линии<input id="strokeColor" type="color" value="#27221a"></label>
+<label class="field">Толщина линии<input id="strokeWidth" type="number" min="0" max="40" value="2"></label>
+<label class="field">Размер текста<input id="fontSize" type="number" min="8" max="180" value="48"></label>
+<button id="applyProps">Применить к объекту</button>
+</div>
+<div class="section"><h3>СЛОИ / ОБЪЕКТЫ</h3>
+<div class="layers" id="layers"><div class="note">Пока нет объектов</div></div>
+<div style="display:flex;gap:5px;margin-top:8px"><button id="upBtn">Выше ↑</button><button id="downBtn">Ниже ↓</button><button id="deleteBtn">Удалить</button></div>
+</div>
+<div class="section"><h3>КИСТЬ</h3>
+<label class="field">Цвет кисти<input id="brushColor" type="color" value="#27221a"></label>
+<label class="field">Размер кисти<input id="brushSize" type="number" min="1" max="80" value="5"></label>
+<button id="applyBrush">Применить кисть</button>
+</div>
+<p class="note">Тестовый стенд. Проекты сохраняются в JSON-файл на вашем устройстве. Серверное хранилище, профильные настройки и клубный архив пока не подключены.</p>
+</aside>
+</div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const status = $('status');
+  const setStatus = message => status.textContent = message;
+  if (!window.fabric) {
+    setStatus('ОШИБКА: Fabric.js не загрузился. Проверьте подключение к интернету и обновите страницу.');
+    return;
+  }
+  const canvas = new fabric.Canvas('editorCanvas', {
+    backgroundColor: '#ffffff',
+    preserveObjectStacking: true,
+    selection: true
+  });
+  let activeTool = 'select';
+  let history = [], historyIndex = -1, restoring = false, historyTimer = null;
+
+  function snapshot() {
+    if (restoring) return;
+    clearTimeout(historyTimer);
+    historyTimer = setTimeout(() => {
+      const json = JSON.stringify(canvas.toJSON());
+      if (history[historyIndex] === json) return;
+      history = history.slice(0, historyIndex + 1);
+      history.push(json);
+      if (history.length > 60) history.shift();
+      historyIndex = history.length - 1;
+      updateHistoryButtons();
+    }, 180);
+  }
+  function updateHistoryButtons() {
+    $('undoBtn').disabled = historyIndex <= 0;
+    $('redoBtn').disabled = historyIndex >= history.length - 1;
+  }
+  async function restoreAt(index) {
+    if (index < 0 || index >= history.length) return;
+    restoring = true;
+    await canvas.loadFromJSON(JSON.parse(history[index]));
+    canvas.renderAll();
+    historyIndex = index;
+    restoring = false;
+    updateHistoryButtons(); refreshLayers();
+    setStatus('Состояние восстановлено из истории.');
+  }
+  function refreshLayers() {
+    const host = $('layers');
+    host.innerHTML = '';
+    const objects = canvas.getObjects();
+    if (!objects.length) {
+      host.innerHTML = '<div class="note">Пока нет объектов</div>';
+      $('selectionInfo').textContent = 'Нет выбранного объекта';
+      return;
+    }
+    objects.forEach((obj, index) => {
+      const item = document.createElement('div');
+      item.className = 'layer' + (canvas.getActiveObject() === obj ? ' selected' : '');
+      const type = obj.type || 'object';
+      const label = obj.text ? obj.text.slice(0, 22) : type;
+      item.textContent = `${index + 1}. ${label}`;
+      item.addEventListener('click', () => { canvas.setActiveObject(obj); canvas.requestRenderAll(); refreshLayers(); });
+      host.appendChild(item);
+    });
+    const selected = canvas.getActiveObject();
+    $('selectionInfo').textContent = selected ? `Выбран: ${selected.type}` : `${objects.length} объектов`;
+  }
+  function add(obj) {
+    canvas.add(obj);
+    canvas.setActiveObject(obj);
+    canvas.requestRenderAll();
+    refreshLayers();
+    snapshot();
+  }
+  function setTool(tool) {
+    activeTool = tool;
+    document.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+    canvas.isDrawingMode = tool === 'draw';
+    canvas.selection = tool === 'select';
+    canvas.defaultCursor = tool === 'select' ? 'default' : 'crosshair';
+    if (tool === 'draw') {
+      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+      canvas.freeDrawingBrush.color = $('brushColor').value;
+      canvas.freeDrawingBrush.width = Number($('brushSize').value) || 5;
+    }
+    setStatus('Активный инструмент: ' + tool);
+  }
+  document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => {
+    const tool = b.dataset.tool;
+    setTool(tool);
+    if (tool === 'text') {
+      const text = new fabric.IText('Ваш текст', {left: 300, top: 250, fontFamily: 'Arial', fontSize: 48, fill: '#27221a'});
+      add(text); setTool('select'); text.enterEditing(); text.selectAll();
+    }
+    if (tool === 'rect') { add(new fabric.Rect({left:300,top:200,width:220,height:140,fill:'#c5a15b',stroke:'#27221a',strokeWidth:2})); setTool('select'); }
+    if (tool === 'circle') { add(new fabric.Circle({left:350,top:200,radius:75,fill:'#c5a15b',stroke:'#27221a',strokeWidth:2})); setTool('select'); }
+    if (tool === 'line') { add(new fabric.Line([250,250,520,350],{stroke:'#27221a',strokeWidth:5,selectable:true})); setTool('select'); }
+  }));
+  canvas.on('object:added', () => { refreshLayers(); snapshot(); });
+  canvas.on('object:modified', () => { refreshLayers(); snapshot(); });
+  canvas.on('object:removed', () => { refreshLayers(); snapshot(); });
+  canvas.on('selection:created', refreshLayers);
+  canvas.on('selection:updated', refreshLayers);
+  canvas.on('selection:cleared', refreshLayers);
+  canvas.on('path:created', () => { refreshLayers(); snapshot(); });
+
+  $('applyProps').addEventListener('click', () => {
+    const obj = canvas.getActiveObject();
+    if (!obj) return setStatus('Сначала выберите объект.');
+    const values = {fill:$('fillColor').value,stroke:$('strokeColor').value,strokeWidth:Number($('strokeWidth').value)||0};
+    if ('fontSize' in obj) values.fontSize = Number($('fontSize').value)||48;
+    if (obj.type === 'i-text' || obj.type === 'textbox' || obj.type === 'text') {
+      const newText = $('objectText').value;
+      if (newText) obj.set('text', newText);
+    }
+    obj.set(values); canvas.requestRenderAll(); snapshot(); refreshLayers();
+    setStatus('Свойства применены.');
+  });
+  canvas.on('selection:created', syncProps);
+  canvas.on('selection:updated', syncProps);
+  function syncProps() {
+    const obj = canvas.getActiveObject(); if (!obj) return;
+    if (obj.fill && typeof obj.fill === 'string' && /^#[0-9a-f]{6}$/i.test(obj.fill)) $('fillColor').value = obj.fill;
+    if (obj.stroke && /^#[0-9a-f]{6}$/i.test(obj.stroke)) $('strokeColor').value = obj.stroke;
+    if (obj.strokeWidth != null) $('strokeWidth').value = obj.strokeWidth;
+    if (obj.fontSize) $('fontSize').value = obj.fontSize;
+    if (obj.text != null) $('objectText').value = obj.text;
+  }
+  $('applyBrush').addEventListener('click', () => {
+    if (!canvas.freeDrawingBrush) canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+    canvas.freeDrawingBrush.color = $('brushColor').value;
+    canvas.freeDrawingBrush.width = Math.max(1, Number($('brushSize').value)||5);
+    setTool('draw'); setStatus('Параметры кисти обновлены.');
+  });
+  $('imageFile').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return;
+    const url = await new Promise((resolve,reject) => { const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
+    try {
+      const img = await fabric.FabricImage.fromURL(url);
+      const maxW=520,maxH=420,scale=Math.min(1,maxW/img.width,maxH/img.height);
+      img.set({left:190,top:90,scaleX:scale,scaleY:scale});
+      add(img); setTool('select'); setStatus('Изображение добавлено: '+file.name);
+    } catch(err) { setStatus('Не удалось загрузить изображение: '+err.message); }
+    e.target.value='';
+  });
+  $('deleteBtn').addEventListener('click', () => {
+    const obj=canvas.getActiveObject(); if(!obj) return;
+    if(obj.type==='activeSelection') obj.forEachObject(o=>canvas.remove(o)); else canvas.remove(obj);
+    canvas.discardActiveObject(); canvas.requestRenderAll(); refreshLayers(); snapshot();
+  });
+  $('upBtn').addEventListener('click',()=>{const o=canvas.getActiveObject();if(o){canvas.bringObjectForward(o);canvas.requestRenderAll();snapshot();refreshLayers();}});
+  $('downBtn').addEventListener('click',()=>{const o=canvas.getActiveObject();if(o){canvas.sendObjectBackwards(o);canvas.requestRenderAll();snapshot();refreshLayers();}});
+  $('undoBtn').addEventListener('click',()=>restoreAt(historyIndex-1));
+  $('redoBtn').addEventListener('click',()=>restoreAt(historyIndex+1));
+  $('newBtn').addEventListener('click',()=>{if(!confirm('Создать новый проект? Несохранённые изменения будут потеряны.'))return;canvas.clear();canvas.backgroundColor='#ffffff';canvas.requestRenderAll();history=[];historyIndex=-1;snapshot();setStatus('Создан новый проект.');});
+  $('clearBtn').addEventListener('click',()=>{canvas.getObjects().slice().forEach(o=>canvas.remove(o));canvas.discardActiveObject();canvas.requestRenderAll();refreshLayers();snapshot();});
+  $('saveBtn').addEventListener('click',()=>{
+    const data=JSON.stringify({format:'GYGY-EDITOR-TEST',version:1,fabricVersion:fabric.version,canvas:canvas.toJSON()},null,2);
+    downloadBlob(data,'gygy-editor-project.json','application/json');setStatus('Проект сохранён в JSON.');
+  });
+  $('openProject').addEventListener('change',async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{const parsed=JSON.parse(await file.text());const payload=parsed.canvas||parsed;restoring=true;await canvas.loadFromJSON(payload);canvas.renderAll();restoring=false;snapshot();refreshLayers();setStatus('Проект восстановлен из '+file.name);}
+    catch(err){restoring=false;setStatus('Ошибка открытия проекта: '+err.message);}
+    e.target.value='';
+  });
+  $('pngBtn').addEventListener('click',()=>{
+    const url=canvas.toDataURL({format:'png',multiplier:2});
+    const a=document.createElement('a');a.href=url;a.download='gygy-editor-export.png';a.click();setStatus('PNG экспортирован (2×).');
+  });
+  $('svgBtn').addEventListener('click',()=>{
+    const svg=canvas.toSVG();downloadBlob(svg,'gygy-editor-export.svg','image/svg+xml');setStatus('SVG экспортирован. Проверьте результат в графическом редакторе перед печатью.');
+  });
+  document.addEventListener('keydown',e=>{
+    if((e.key==='Delete'||e.key==='Backspace')&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){
+      const obj=canvas.getActiveObject();if(obj){canvas.remove(obj);canvas.discardActiveObject();canvas.requestRenderAll();refreshLayers();snapshot();}
+    }
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();restoreAt(historyIndex+(e.shiftKey?1:-1));}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();restoreAt(historyIndex+1);}
+  });
+  function downloadBlob(content,name,type){
+    const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);
+  }
+  snapshot();
+  setStatus('Fabric.js '+fabric.version+' загружен. Проверьте инструменты, историю и экспорт.');
+})();
+</script>
+</body>
+</html>
