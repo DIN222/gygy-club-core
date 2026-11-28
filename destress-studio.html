@@ -1,7 +1,8 @@
 
 <!DOCTYPE html>
 <!--
-  destress-studio.html — De-Stress Studio — v5.7.8
+  destress-studio.html — De-Stress Studio — v5.7.9
+  v5.7.9: подключён общий GY-GY EDITOR (Fabric.js prototype) вместо прежнего визуального прототипа.
   De-Stress Studio v5.3.16
   Основа: v5.3.3; сохранены существующие функции. Passport отображается компактной кнопкой как в BAR; исправлена ширина панели управления; пять функциональных рамок вписаны в подложку и усилены по контуру; заголовки групп оформлены отдельно.
   Добавлено: отдельные действия Passport, выбор случая и выражения,
@@ -2587,7 +2588,7 @@ destressPrintLightbox?.addEventListener('click', async event => {
     const mode = event.target.closest('[data-print-mode]');
     if (mode) {
         const selectedMode = mode.dataset.printMode;
-        const editorUrl = new URL('./print-editor.html', window.location.href);
+        const editorUrl = new URL('./gygy-editor-engine-test.html', window.location.href);
         editorUrl.searchParams.set('mode', selectedMode);
         editorUrl.searchParams.set('source', 'destress');
         window.location.href = editorUrl.href;
@@ -2823,7 +2824,7 @@ document.addEventListener('click', function (event) {
   if (!button) return;
   event.preventDefault();
   event.stopImmediatePropagation();
-  const target = new URL('./print-editor.html', document.baseURI);
+  const target = new URL('./gygy-editor-engine-test.html', document.baseURI);
   target.searchParams.set('mode', button.dataset.printMode);
   target.searchParams.set('source', 'destress');
   window.location.assign(target.href);
